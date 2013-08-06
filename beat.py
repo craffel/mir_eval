@@ -362,20 +362,17 @@ def continuity(annotated_beats,
             if used_annotations[nearest] == 0:
                 # Is this the first beat or first annotation?
                 # If so, look forward.
-                if (m == 0 or nearest == 0 and
-                    m + 1 < generated_beats.shape[0]):
+                if ((m == 0 or nearest == 0) and
+                    (m + 1 < generated_beats.shape[0])):
                     # How far is the generated beat from the annotated beat,
                     # relative to the inter-annotation-interval?
-                    interval_end = annotated_beats[nearest + 1]
-                    interval_start = annotated_beats[nearest]
-                    annotation_interval = interval_end - interval_start
-                    phase = np.abs(min_difference/annotation_interval)
+                    annotated_interval = annotated_beats[nearest + 1] - \
+                                         annotated_beats[nearest]
+                    phase = np.abs(min_difference/annotated_interval)
                     # How close is the inter-beat-interval 
                     # to the inter-annotation-interval?
                     generated_interval = generated_beats[m + 1] - \
                                          generated_beats[m]
-                    annotated_interval = annotated_beats[nearest + 1] - \
-                                         annotated_beats[nearest]
                     period = np.abs(1 - generated_interval/annotated_interval)
                     if (phase < continuity_phase_threshold and 
                         period < continuity_period_threshold):
@@ -389,14 +386,14 @@ def continuity(annotated_beats,
                     # relative to the inter-annotation-interval?
                     annotated_interval = annotated_beats[nearest] - \
                                          annotated_beats[nearest - 1]
-                    phase = np.abs(min_difference/annotation_interval)
+                    phase = np.abs(min_difference/annotated_interval)
                     # How close is the inter-beat-interval
                     # to the inter-annotation-interval?
                     generated_interval = generated_beats[m] - \
                                          generated_beats[m - 1]
                     annotated_interval = annotated_beats[nearest] - \
                                          annotated_beats[nearest - 1]
-                    period = np.abs(1 - generated_interval/annotated_interval) 
+                    period = np.abs(1 - generated_interval/annotated_interval)
                     if (phase < continuity_phase_threshold and
                         period < continuity_period_threshold):
                         # Set this annotation as used
@@ -427,7 +424,7 @@ def continuity(annotated_beats,
 
 # <codecell>
 
-pdef information_gain(annotated_beats,
+def information_gain(annotated_beats,
                      generated_beats,
                      min_beat_time=5.0,
                      bins=41):
