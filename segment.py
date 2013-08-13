@@ -79,8 +79,41 @@ def boundary_deviation(annotated_boundaries, predicted_boundaries):
     return true_to_predicted, predicted_to_true
 
 
-def frame_clustering(annotated_boundaries, predicted_boundaries, frame_size=0.1, beta=1.0):
-    '''Frame-clustering segmentation evaluation.
+def boundaries_to_frames(boundaries, frame_size=0.1):
+    '''Convert a sequence of boundaries to frame-level segment annotations.
+    
+    :parameters:
+    - boundaries : list-like float
+        segment boundary times (in seconds).
+
+    - frame_size : float > 0
+        duration of each frame (in seconds)
+
+    :returns:
+    - y : np.array, dtype=int
+        array of segment labels for each frame
+
+    ..note::
+        It is assumed that `boundaries[-1] == length of song`
+
+    ..note::
+        Segment boundaries will be rounded down to the nearest multiple 
+        of frame_size.
+    '''
+    
+    boundaries = np.sort(boundaries - np.mod(boundaries, frame_size))
+    boundaries = np.unique(np.concatenate(([0], boundaries)))
+
+    # Build the frame label array
+    y = np.zeros(int(boundaries[-1] / frame_size))
+
+    for (i, (start, end)) in enumerate(zip(boundaries[:-1], boundaries[1:])):
+        y[int(start / frame_size):int(end / frame_size)] = i
+
+    return y
+
+def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_size=0.1, beta=1.0):
+    '''Frame-clustering segmentation evaluation by pair-wise agreement.
 
     :parameters:
     - annotated_boundaries : list-like, float
@@ -96,76 +129,112 @@ def frame_clustering(annotated_boundaries, predicted_boundaries, frame_size=0.1,
         beta value for F-measure
 
     :returns:
-    - ARI : float > 0
-        adjusted Rand index
-
-    - AMI : float > 0
-        adjusted mutual information
-
-    - NMI : float > 0
-        normalized mutual information
     - Pair_precision : float > 0
     - Pair_recall   : float > 0
     - Pair_F        : float > 0
         Precision/recall/f-measure of detecting whether
         frames belong in the same cluster
 
-    - Completeness  : float > 0
-    - Homogeneity   : float > 0
-    - V             : float > 0
-        V-measure is the harmonic mean of Completeness and Homogeneity
+    ..note::
+        It is assumed that `boundaries[-1] == length of song`
 
-
-    .. note::
-        Boundaries are assumed to include end-points (0, len(song))
-
-    .. note::
-        All boundaries will be quantized to the nearest multiple of the frame size.
+    ..note::
+        Segment boundaries will be rounded down to the nearest multiple 
+        of frame_size.
     '''
 
-
-    def frame_labels(B):
-        
-        # First, round the boundaries to be a multiple of the frame size
-        B = B - np.mod(B, frame_size)
-
-        # Build the frame label array
-        n = int(B[-1] / frame_size)
-        y = np.zeros(n)
-
-        for (i, (start, end)) in enumerate(zip(B[:-1], B[1:]), 1):
-            y[int(start / frame_size):int(end / frame_size)] = i
-
-        return y
-
-
     # Generate the cluster labels
-    y_true = frame_labels(annotated_boundaries)
-    y_pred = frame_labels(predicted_boundaries)
-
+    y_true = boundaries_to_frames(annotated_boundaries)
+    y_pred = boundaries_to_frames(predicted_boundaries)
     # Make sure we have the same number of frames
     assert(len(y_true) == len(y_pred))
 
-    # pairwise precision-recall
-    def _frame_pairwise_detection(Y1, Y2):
-        
-        # Construct the label-agreement matrices
-        A1 = np.triu(np.equal.outer(Y1, Y1))
-        A2 = np.triu(np.equal.outer(Y2, Y2))
-        
-        matches = float((A1 & A2).sum())
-        P = matches / A1.sum()
-        R = matches / A2.sum()
-        F = 0.0
-        if P > 0 or R > 0:
-            F = (1 + beta**2) * P * R / ((beta**2) * P + R)
-        return P, R, F
+    # Construct the label-agreement matrices
+    A1 = np.triu(np.equal.outer(y_true, y_true))
+    A2 = np.triu(np.equal.outer(y_pred, y_pred))
+    
+    matches = float((A1 & A2).sum())
+    P = matches / A1.sum()
+    R = matches / A2.sum()
+    F = 0.0
+    if P > 0 or R > 0:
+        F = (1 + beta**2) * P * R / ((beta**2) * P + R)
 
-    P, R, F = _frame_pairwise_detection(y_true, y_pred)
+    return P, R, F
+
+
+def frame_clustering_rand(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+    '''Frame-clustering segmentation via Rand index.
+
+    :parameters:
+    - annotated_boundaries : list-like, float
+        ground-truth segment boundary times (in seconds)
+
+    - predicted_boundaries : list-like, float
+        predicted segment boundary times (in seconds)
+
+    - frame_size : float > 0
+        length (in seconds) of frames for clustering
+
+    :returns:
+    - ARI : float > 0
+        Adjusted Rand index between segmentations.
+
+    ..note::
+        It is assumed that `boundaries[-1] == length of song`
+
+    ..note::
+        Segment boundaries will be rounded down to the nearest multiple 
+        of frame_size.
+    '''
+    # Generate the cluster labels
+    y_true = boundaries_to_frames(annotated_boundaries)
+    y_pred = boundaries_to_frames(predicted_boundaries)
+    # Make sure we have the same number of frames
+    assert(len(y_true) == len(y_pred))
 
     # Compute all the clustering metrics
     ## Adjusted rand index
-    ARI = metrics.adjusted_rand_score(y_true, y_pred)
+
+    return metrics.adjusted_rand_score(y_true, y_pred)
+
+def frame_clustering_mutual_information(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+    '''Frame-clustering segmentation via Rand index.
+
+    :parameters:
+    - annotated_boundaries : list-like, float
+        ground-truth segment boundary times (in seconds)
+
+    - predicted_boundaries : list-like, float
+        predicted segment boundary times (in seconds)
+
+    - frame_size : float > 0
+        length (in seconds) of frames for clustering
+
+    :returns:
+    - MI : float >0
+        Mutual information between segmentations
+    - AMI : float 
+        Adjusted mutual information between segmentations.
+    - NMI : float > 0
+        Normalize mutual information between segmentations
+
+    ..note::
+        It is assumed that `boundaries[-1] == length of song`
+
+    ..note::
+        Segment boundaries will be rounded down to the nearest multiple 
+        of frame_size.
+    '''
+    # Generate the cluster labels
+    y_true = boundaries_to_frames(annotated_boundaries)
+    y_pred = boundaries_to_frames(predicted_boundaries)
+    # Make sure we have the same number of frames
+    assert(len(y_true) == len(y_pred))
+
+
+    ## Adjusted mutual information
+    MI = metrics.mutual_info_score(y_true, y_pred)
 
     ## Adjusted mutual information
     AMI = metrics.adjusted_mutual_info_score(y_true, y_pred)
@@ -173,8 +242,43 @@ def frame_clustering(annotated_boundaries, predicted_boundaries, frame_size=0.1,
     ## Normalized mutual information
     NMI = metrics.normalized_mutual_info_score(y_true, y_pred)
 
-    ## Completeness
-    Hom, Comp, V = metrics.homogeneity_completeness_v_measure(y_true, y_pred)
+    return MI, AMI, NMI
+    
+def frame_clustering_v_measure(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+    '''Frame-clustering segmentation via Rand index.
 
-    return ARI, AMI, NMI, P, R, F, Comp, Hom, V
+    :parameters:
+    - annotated_boundaries : list-like, float
+        ground-truth segment boundary times (in seconds)
+
+    - predicted_boundaries : list-like, float
+        predicted segment boundary times (in seconds)
+
+    - frame_size : float > 0
+        length (in seconds) of frames for clustering
+
+    :returns:
+    - H : float 
+        Homogeneity
+    - C : float
+        Completeness
+    - V : float
+        V-measure, harmonic mean of H and C
+    
+    ..note::
+        It is assumed that `boundaries[-1] == length of song`
+
+    ..note::
+        Segment boundaries will be rounded down to the nearest multiple 
+        of frame_size.
+    '''
+
+    # Generate the cluster labels
+    y_true = boundaries_to_frames(annotated_boundaries)
+    y_pred = boundaries_to_frames(predicted_boundaries)
+    # Make sure we have the same number of frames
+    assert(len(y_true) == len(y_pred))
+
+    ## Completeness
+    return metrics.homogeneity_completeness_v_measure(y_true, y_pred)
 
