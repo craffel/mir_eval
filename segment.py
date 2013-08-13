@@ -7,6 +7,7 @@
 '''
 
 import numpy as np
+import sklearn.metrics.cluster as metrics
 
 def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, beta=1.0):
     '''Boundary detection hit-rate.
@@ -76,3 +77,78 @@ def boundary_deviation(annotated_boundaries, predicted_boundaries):
     predicted_to_true = np.median(np.sort(D, axis=0)[0, :])
 
     return true_to_predicted, predicted_to_true
+
+def frame_clustering(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+    '''Frame-clustering segmentation evaluation.
+
+    :parameters:
+    - annotated_boundaries : list-like, float
+        ground-truth segment boundary times (in seconds)
+
+    - predicted_boundaries : list-like, float
+        predicted segment boundary times (in seconds)
+
+    - frame_size : float > 0
+        length (in seconds) of frames for clustering
+
+    :returns:
+    - ARI : float > 0
+        adjusted Rand index
+
+    - AMI : float > 0
+        adjusted mutual information
+
+    - NMI : float > 0
+        normalized mutual information
+
+    - Completeness  : float > 0
+    - Homogeneity   : float > 0
+    - V             : float > 0
+        V-measure is the harmonic mean of Completeness and Homogeneity
+
+
+    .. note::
+        Boundaries are assumed to include end-points (0, len(song))
+
+    .. note::
+        All boundaries will be quantized to the nearest multiple of the frame size.
+    '''
+
+
+    def frame_labels(B):
+        
+        # First, round the boundaries to be a multiple of the frame size
+        B = B - np.mod(B, frame_size)
+
+        # Build the frame label array
+        n = int(B[-1] / frame_size)
+        y = np.zeros(n)
+
+        for (i, (start, end)) in enumerate(zip(B[:-1], B[1:]), 1):
+            y[int(start / frame_size):int(end / frame_size)] = i
+
+        return y
+
+
+    # Generate the cluster labels
+    y_true = frame_labels(annotated_boundaries)
+    y_pred = frame_labels(predicted_boundaries)
+
+    # Make sure we have the same number of frames
+    assert(len(y_true) == len(y_pred))
+
+    # Compute all the clustering metrics
+    ## Adjusted rand index
+    ARI = metrics.adjusted_rand_score(y_true, y_pred)
+
+    ## Adjusted mutual information
+    AMI = metrics.adjusted_mutual_info_score(y_true, y_pred)
+    
+    ## Normalized mutual information
+    NMI = metrics.normalized_mutual_info_score(y_true, y_pred)
+
+    ## Completeness
+    Hom, Comp, V = metrics.homogeneity_completeness_v_measure(y_true, y_pred)
+
+    return ARI, AMI, NMI, Comp, Hom, V
+
