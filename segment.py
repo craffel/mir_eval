@@ -78,7 +78,8 @@ def boundary_deviation(annotated_boundaries, predicted_boundaries):
 
     return true_to_predicted, predicted_to_true
 
-def frame_clustering(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+
+def frame_clustering(annotated_boundaries, predicted_boundaries, frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation evaluation.
 
     :parameters:
@@ -91,6 +92,9 @@ def frame_clustering(annotated_boundaries, predicted_boundaries, frame_size=0.1)
     - frame_size : float > 0
         length (in seconds) of frames for clustering
 
+    - beta : float > 0
+        beta value for F-measure
+
     :returns:
     - ARI : float > 0
         adjusted Rand index
@@ -100,6 +104,11 @@ def frame_clustering(annotated_boundaries, predicted_boundaries, frame_size=0.1)
 
     - NMI : float > 0
         normalized mutual information
+    - Pair_precision : float > 0
+    - Pair_recall   : float > 0
+    - Pair_F        : float > 0
+        Precision/recall/f-measure of detecting whether
+        frames belong in the same cluster
 
     - Completeness  : float > 0
     - Homogeneity   : float > 0
@@ -137,6 +146,23 @@ def frame_clustering(annotated_boundaries, predicted_boundaries, frame_size=0.1)
     # Make sure we have the same number of frames
     assert(len(y_true) == len(y_pred))
 
+    # pairwise precision-recall
+    def _frame_pairwise_detection(Y1, Y2):
+        
+        # Construct the label-agreement matrices
+        A1 = np.triu(np.equal.outer(Y1, Y1))
+        A2 = np.triu(np.equal.outer(Y2, Y2))
+        
+        matches = float((A1 & A2).sum())
+        P = matches / A1.sum()
+        R = matches / A2.sum()
+        F = 0.0
+        if P > 0 or R > 0:
+            F = (1 + beta**2) * P * R / ((beta**2) * P + R)
+        return P, R, F
+
+    P, R, F = _frame_pairwise_detection(y_true, y_pred)
+
     # Compute all the clustering metrics
     ## Adjusted rand index
     ARI = metrics.adjusted_rand_score(y_true, y_pred)
@@ -150,5 +176,5 @@ def frame_clustering(annotated_boundaries, predicted_boundaries, frame_size=0.1)
     ## Completeness
     Hom, Comp, V = metrics.homogeneity_completeness_v_measure(y_true, y_pred)
 
-    return ARI, AMI, NMI, Comp, Hom, V
+    return ARI, AMI, NMI, P, R, F, Comp, Hom, V
 
