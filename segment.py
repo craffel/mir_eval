@@ -51,3 +51,28 @@ def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, b
         F = (1 + beta**2) * P * R / ((beta**2) * P + R)
 
     return P, R, F
+
+def boundary_deviation(annotated_boundaries, predicted_boundaries):
+    '''Compute the median deviations between annotated and predicted boundary times.
+
+    :parameters:
+    - annotated_boundaries : list-like, float
+        ground-truth segment boundary times (in seconds)
+
+    - predicted_boundaries : list-like, float
+        predicted segment boundary times (in seconds)
+
+    :returns:
+    - true_to_predicted : float
+        median time from each true boundary to the closest predicted boundary
+
+    - predicted_to_true : float
+        median time from each predicted boundary to the closest true boundary
+    '''
+
+    D = np.abs( np.subtract.outer(annotated_boundaries, predicted_boundaries) )
+
+    true_to_predicted = np.median(np.sort(D, axis=1)[:, 0])
+    predicted_to_true = np.median(np.sort(D, axis=0)[0, :])
+
+    return true_to_predicted, predicted_to_true
