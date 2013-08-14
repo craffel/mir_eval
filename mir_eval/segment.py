@@ -10,7 +10,10 @@ import numpy as np
 import sklearn.metrics.cluster as metrics
 
 def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, beta=1.0):
-    '''Boundary detection hit-rate.
+    '''Boundary detection hit-rate.  
+
+    A hit is counted whenever an annotated boundary is within `window` of a predicted
+    boundary.
 
     :parameters:
     - annotated_boundaries : list-like, float
@@ -36,8 +39,6 @@ def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, b
 
     # Compute the hits
     D = np.abs( np.subtract.outer(annotated_boundaries, predicted_boundaries)) <= window
-
-    # Note: in these metrics, each boundary can only be counted at most once
 
     # Precision: how many predicted boundaries were hits?
     P = np.mean(D.max(axis=0))
@@ -199,7 +200,7 @@ def frame_clustering_rand(annotated_boundaries, predicted_boundaries, frame_size
     return metrics.adjusted_rand_score(y_true, y_pred)
 
 def frame_clustering_mutual_information(annotated_boundaries, predicted_boundaries, frame_size=0.1):
-    '''Frame-clustering segmentation via Rand index.
+    '''Frame-clustering segmentation: mutual information metrics.
 
     :parameters:
     - annotated_boundaries : list-like, float
@@ -245,7 +246,7 @@ def frame_clustering_mutual_information(annotated_boundaries, predicted_boundari
     return MI, AMI, NMI
     
 def frame_clustering_v_measure(annotated_boundaries, predicted_boundaries, frame_size=0.1):
-    '''Frame-clustering segmentation via Rand index.
+    '''Frame-clustering segmentation: v-measure metrics.
 
     :parameters:
     - annotated_boundaries : list-like, float
