@@ -7,6 +7,7 @@
 '''
 
 import numpy as np
+import scipy.stats
 import sklearn.metrics.cluster as metrics
 
 def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, beta=1.0):
@@ -145,8 +146,8 @@ def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_
     '''
 
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries)
-    y_pred = boundaries_to_frames(predicted_boundaries)
+    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
     assert(len(y_true) == len(y_pred))
 
@@ -189,8 +190,8 @@ def frame_clustering_rand(annotated_boundaries, predicted_boundaries, frame_size
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries)
-    y_pred = boundaries_to_frames(predicted_boundaries)
+    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
     assert(len(y_true) == len(y_pred))
 
@@ -228,8 +229,8 @@ def frame_clustering_mutual_information(annotated_boundaries, predicted_boundari
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries)
-    y_pred = boundaries_to_frames(predicted_boundaries)
+    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
     assert(len(y_true) == len(y_pred))
 
@@ -275,11 +276,62 @@ def frame_clustering_v_measure(annotated_boundaries, predicted_boundaries, frame
     '''
 
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries)
-    y_pred = boundaries_to_frames(predicted_boundaries)
+    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
     assert(len(y_true) == len(y_pred))
 
     ## Completeness
     return metrics.homogeneity_completeness_v_measure(y_true, y_pred)
 
+def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+    '''Frame-clustering segmentation: normalized conditional entropy
+
+    Computes cross-entropy of cluster assignment, normalized by the max-entropy.
+
+    :parameters:
+    - annotated_boundaries : list-like, float
+        ground-truth segment boundary times (in seconds)
+
+    - predicted_boundaries : list-like, float
+        predicted segment boundary times (in seconds)
+
+    - frame_size : float > 0
+        length (in seconds) of frames for clustering
+
+    :returns:
+    - S_over
+        Over-clustering score: 
+        `1 - H(y_pred | y_true) / log(|y_pred|)`
+    - S_under
+        Under-clustering score:
+        `1 - H(y_true | y_pred) / log(|y_true|)`
+
+    ..note::
+    - Towards quantitative measures of evaluating song segmentation.
+      Lukashevich, H. ISMIR 2008.
+    '''
+
+    # Generate the cluster labels
+    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    # Make sure we have the same number of frames
+    assert(len(y_true) == len(y_pred))
+
+    # Make the contingency table
+    C = metrics.contingency_matrix(y_true, y_pred).astype(float)
+
+    n_frames = len(y_true)
+    n_true, n_pred = C.shape
+
+    # Compute the marginals
+    p_pred = C.sum(axis=0) / n_frames
+    p_true = C.sum(axis=1) / n_frames
+
+    H_true_given_pred = p_pred.dot(scipy.stats.entropy(C, base=2))
+    H_pred_given_true = p_true.dot(scipy.stats.entropy(C.T, base=2))
+
+    S_over  = 1. - H_pred_given_true / np.log2(n_pred)
+    S_under = 1. - H_true_given_pred / np.log2(n_true)
+
+    return S_over, S_under
