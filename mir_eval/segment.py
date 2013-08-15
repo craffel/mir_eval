@@ -284,7 +284,7 @@ def frame_clustering_v_measure(annotated_boundaries, predicted_boundaries, frame
     ## Completeness
     return metrics.homogeneity_completeness_v_measure(y_true, y_pred)
 
-def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation: normalized conditional entropy
 
     Computes cross-entropy of cluster assignment, normalized by the max-entropy.
@@ -299,6 +299,9 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
     - frame_size : float > 0
         length (in seconds) of frames for clustering
 
+    - beta : float > 0
+        beta for F-measure
+
     :returns:
     - S_over
         Over-clustering score: 
@@ -307,6 +310,9 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
         Under-clustering score:
         `1 - H(y_true | y_pred) / log(|y_true|)`
 
+    - F
+        F-measure for (S_over, S_under)
+        
     ..note::
     - Towards quantitative measures of evaluating song segmentation.
       Lukashevich, H. ISMIR 2008.
@@ -334,4 +340,8 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
     S_over  = 1. - H_pred_given_true / np.log2(n_pred)
     S_under = 1. - H_true_given_pred / np.log2(n_true)
 
-    return S_over, S_under
+    F = 0.0
+    if S_over > 0 or S_under > 0:
+        F = (1 + beta**2) * S_over * S_under / ((beta**2) * S_over + S_under)
+
+    return S_over, S_under, F
