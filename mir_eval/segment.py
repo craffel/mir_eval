@@ -337,8 +337,15 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
     H_true_given_pred = p_pred.dot(scipy.stats.entropy(C, base=2))
     H_pred_given_true = p_true.dot(scipy.stats.entropy(C.T, base=2))
 
-    S_over  = 1. - H_pred_given_true / np.log2(n_pred)
-    S_under = 1. - H_true_given_pred / np.log2(n_true)
+    if n_pred > 1:
+        S_over  = 1. - H_pred_given_true / np.log2(n_pred)
+    else:
+        S_over = 0.0
+
+    if n_true > 1:
+        S_under = 1. - H_true_given_pred / np.log2(n_true)
+    else:
+        S_under = 0.0
 
     F = 0.0
     if S_over > 0 or S_under > 0:
