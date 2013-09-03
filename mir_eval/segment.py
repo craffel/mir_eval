@@ -149,7 +149,8 @@ def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_
     y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
     y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
-    assert(len(y_true) == len(y_pred))
+    if len(y_true) != len(y_pred):
+        raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
 
     # Construct the label-agreement matrices
     A1 = np.triu(np.equal.outer(y_true, y_true))
@@ -193,7 +194,8 @@ def frame_clustering_rand(annotated_boundaries, predicted_boundaries, frame_size
     y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
     y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
-    assert(len(y_true) == len(y_pred))
+    if len(y_true) != len(y_pred):
+        raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
 
     # Compute all the clustering metrics
     ## Adjusted rand index
@@ -232,7 +234,9 @@ def frame_clustering_mutual_information(annotated_boundaries, predicted_boundari
     y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
     y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
-    assert(len(y_true) == len(y_pred))
+    if len(y_true) != len(y_pred):
+        raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
+
 
 
     ## Adjusted mutual information
@@ -279,7 +283,9 @@ def frame_clustering_v_measure(annotated_boundaries, predicted_boundaries, frame
     y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
     y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
-    assert(len(y_true) == len(y_pred))
+    if len(y_true) != len(y_pred):
+        raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
+
 
     ## Completeness
     return metrics.homogeneity_completeness_v_measure(y_true, y_pred)
@@ -322,7 +328,8 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
     y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
     y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
-    assert(len(y_true) == len(y_pred))
+    if len(y_true) != len(y_pred):
+        raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
 
     # Make the contingency table
     C = metrics.contingency_matrix(y_true, y_pred).astype(float)
