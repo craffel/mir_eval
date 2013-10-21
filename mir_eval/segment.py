@@ -103,7 +103,7 @@ def boundaries_to_frames(boundaries, frame_size=0.1):
         of frame_size.
     '''
     
-    boundaries = np.sort(boundaries - np.mod(boundaries, frame_size))
+    boundaries = np.sort(frame_size * np.round(boundaries / frame_size))
     boundaries = np.unique(np.concatenate(([0], boundaries)))
 
     # Build the frame label array
