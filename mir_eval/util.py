@@ -34,7 +34,38 @@ def multiline(filename, sep='\t'):
             yield np.fromstring(line, sep=sep)
     pass
 
-def import_segment_boundaries(filename, cols=[0,1], sep=None, t_max=None):
+def adjust_segment_boundaries(boundaries, t_min=0.0, t_max=None):
+    '''Adjust the given list of boundary times to span the range [t_min, t_max].
+
+    Any boundaries outside of the specified range will be removed.
+
+    If the boundaries do not span [t_min, t_max], additional boundaries will be added.
+
+    :parameters:
+        - boundaries : np.array
+            Array of boundary times (seconds)
+
+        - t_min : float or None
+            Minimum valid boundary time.
+
+        - t_max : float or None
+            Maximum valid boundary time.
+
+    :returns:
+        - new_boundaries : np.array
+            Boundary times corrected to the given range.
+    '''
+    if t_min is not None:
+        boundaries = np.concatenate( ([t_min], boundaries) )
+        boundaries = boundaries[t_min <= boundaries]
+
+    if t_max is not None:
+        boundaries = np.concatenate( (boundaries, [t_max]) )
+        boundaries = boundaries[boundaries <= t_max]
+
+    return np.unique(boundaries)
+
+def import_segment_boundaries(filename, cols=[0,1], sep=None, t_min=0.0, t_max=None):
     '''Import segment boundaries from an annotation file.  
     In typical MIREX fashion, annotations are formatted as:
 
@@ -56,6 +87,9 @@ def import_segment_boundaries(filename, cols=[0,1], sep=None, t_max=None):
         - sep : string or None
             Field delimiter. See `numpy.loadtxt()` for details.
 
+        - t_min : float
+            Minimum valid boundary time.
+
         - t_max : float or None
             If provided, the boundaries will be truncated or expanded 
             to the given time. This is useful for correcting incomplete
@@ -72,16 +106,4 @@ def import_segment_boundaries(filename, cols=[0,1], sep=None, t_max=None):
     # Flatten out the boundaries, remove dupes
     values = np.unique(values.flatten())
 
-    # Does it start at time 0?
-    if values[0] > 0:
-        values = np.concatenate( ([0.0], values))
-
-    if t_max is not None:
-        # Make sure we're not past the end of the track
-        values = values[values <= t_max]
-
-        # Pad out with a silence segment if undercomplete
-        if values[-1] < t_max:
-            values = np.concatenate((values, [t_max]))
-
-    return values
+    return adjust_segment_boundaries(values, t_min=t_min, t_max=t_max)
