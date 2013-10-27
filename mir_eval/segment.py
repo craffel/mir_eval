@@ -10,7 +10,7 @@ import numpy as np
 import scipy.stats
 import sklearn.metrics.cluster as metrics
 
-def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, beta=1.0):
+def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, beta=1.0, trim=True):
     '''Boundary detection hit-rate.  
 
     A hit is counted whenever an annotated boundary is within `window` of a predicted
@@ -29,6 +29,10 @@ def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, b
     - beta : float > 0
         'beta' for F-measure.
 
+    - trim : boolean
+        if True, the first and last boundaries are ignored.
+        Typically, these denote start (0) and end-markers.
+
     :returns:
     - P : float
         precision of predictions
@@ -37,6 +41,11 @@ def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, b
     - F : float
         F-measure (harmonic mean of P, R)
     '''
+
+    # Suppress the first and last boundaries
+    if trim:
+        annotated_boundaries = annotated_boundaries[1:-1]
+        predicted_boundaries = predicted_boundaries[1:-1]
 
     # Compute the hits
     D = np.abs( np.subtract.outer(annotated_boundaries, predicted_boundaries)) <= window
@@ -55,7 +64,7 @@ def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, b
 
     return P, R, F
 
-def boundary_deviation(annotated_boundaries, predicted_boundaries):
+def boundary_deviation(annotated_boundaries, predicted_boundaries, trim=True):
     '''Compute the median deviations between annotated and predicted boundary times.
 
     :parameters:
@@ -65,6 +74,10 @@ def boundary_deviation(annotated_boundaries, predicted_boundaries):
     - predicted_boundaries : list-like, float
         predicted segment boundary times (in seconds)
 
+    - trim : boolean
+        if True, the first and last boundaries are ignored.
+        Typically, these denote start (0) and end-markers.
+
     :returns:
     - true_to_predicted : float
         median time from each true boundary to the closest predicted boundary
@@ -72,6 +85,11 @@ def boundary_deviation(annotated_boundaries, predicted_boundaries):
     - predicted_to_true : float
         median time from each predicted boundary to the closest true boundary
     '''
+
+    # Suppress the first and last boundaries
+    if trim:
+        annotated_boundaries = annotated_boundaries[1:-1]
+        predicted_boundaries = predicted_boundaries[1:-1]
 
     D = np.abs( np.subtract.outer(annotated_boundaries, predicted_boundaries) )
 
