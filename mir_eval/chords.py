@@ -32,21 +32,34 @@ def evaluate_chords(GT, P, resolution=0.001, trim_method='min', method='MIREX', 
                                                                   does.
 
                                         'Correct'               - chords are correct only if they are identical,
-                                                                  ie 'A:min7' != 'C:maj6'
+                                                                  including enharmonics ie 'F#:maj' != 'Gb:maj'
+
+                                        'Correct_at_pitchclass' - chords are reduced to pitch classes, 
+                                                                  and compared at this level. This means that 
+                                                                  enharmonics and inversions are considered equal
+                                                                  i.e. score('F#:maj', 'Gb:maj') = 1.0 and 
+                                                                  score('C:maj6' = [C,E,G,A], 'A:min7' = [A,C,E,G]) = 1.0                                                                
 
                                         'Correct_at_minmaj'     - chords are mapped to major or minor triads,
-                                                                  and compared at this level
+                                                                  and compared at this level. For example,
+                                                                  score('A:7', 'A:maj') = 1.0, but also
+                                                                  score('A:min', 'A:dim') = 1.0 as dim gets 
+                                                                  mapped to min. Probably a bit sketchy, 
+                                                                  but is a common metric
 
                                         'Correct_at_triad'      - chords are mapped to triad (major, minor, 
                                                                   augmented, diminished, suspended) and 
-                                                                  compared at this level   
+                                                                  compared at this level. For example, 
+                                                                  score('A:7','A:maj') = 1.0, 
+                                                                  score('A:min', 'A:dim') = 0.0   
 
                                         'Correct_at_seventh'    - chords are mapped to 7th type (7, maj7, 
                                                                   min7, minmaj7, susb7, dim7) and compared
-                                                                  at this level        
-                                                                  
-                                        'Correct_at_pitchclass' - chords are reduced to pitch classes, 
-                                                                  and compared at this level                                 
+                                                                  at this level. For example:
+                                                                  score('A:7', 'A:9') = 1.0, 
+                                                                  score('A:7', 'A:maj7') = 0.0      
+
+                               
 
     Outputs: accuracy, float                                                  
   '''
@@ -223,7 +236,7 @@ def score_two_chords(p, gt, method='MIREX', augdim_switch=True):
       return 0.0    
     
   else:
-    raise NameError('No such scoring method: ' + method)         
+    raise NameError('No such scoring method: "' + method + '"')         
 
 def reduce_chords(chords, alphabet):
 
