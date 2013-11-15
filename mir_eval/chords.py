@@ -59,6 +59,14 @@ def evaluate_chords(GT, P, resolution=0.001, trim_method='min', method='MIREX', 
                                                                   score('A:7', 'A:9') = 1.0, 
                                                                   score('A:7', 'A:maj7') = 0.0      
 
+                                        'Pitchclass_recall'     - recall on pitch classes in GT/P. Chords are not
+                                                                  reduced to a simpler alphabet in this evaluation
+
+                                        'Pitchclass_precision'  - precision on pitch classes in GT/P. Chords are not
+                                                                  reduced to a simpler alphabet in this evaluation   
+                                                                  
+                                        'Pitchclass_f'          - f-measure on pitch classes. Chords are not
+                                                                  reduced to a simpler alphabet in this evaluation                                               
                                
 
     Outputs: accuracy, float                                                  
@@ -234,7 +242,67 @@ def score_two_chords(p, gt, method='MIREX', augdim_switch=True):
       return 1.0
     else:
       return 0.0    
+
+  elif method == 'Pitchclass_recall':
+
+    # get pitch classes
+    pc_p = reduce_chords([p], 'MIREX')[0]
+    pc_gt = reduce_chords([gt], 'MIREX')[0]   
+
+    tp = 0; fp = 0; fn = 0 
+    for i_pc_p in pc_p:
+      if i_pc_p in pc_gt:
+        tp = tp + 1
+      else:
+        fp = fp + 1
+
+    for i_pc_gt in pc_gt:
+      if i_pc_gt not in pc_gt:
+        fn = fn + 1        
     
+    return tp / (tp + fn + 0.0)
+
+  elif method == 'Pitchclass_precision':
+    
+    # get pitch classes
+    pc_p = reduce_chords([p], 'MIREX')[0]
+    pc_gt = reduce_chords([gt], 'MIREX')[0] 
+
+    tp = 0; fp = 0; fn = 0 
+    for i_pc_p in pc_p:
+      if i_pc_p in pc_gt:
+        tp = tp + 1
+      else:
+        fp = fp + 1
+
+    for i_pc_gt in pc_gt:
+      if i_pc_gt not in pc_gt:
+        fn = fn + 1        
+    
+    return tp / (tp + fp + 0.0)
+
+  elif method == 'Pitchclass_f':
+    
+    # get pitch classes
+    pc_p = reduce_chords([p], 'MIREX')[0]
+    pc_gt = reduce_chords([gt], 'MIREX')[0] 
+
+    tp = 0; fp = 0; fn = 0 
+    for i_pc_p in pc_p:
+      if i_pc_p in pc_gt:
+        tp = tp + 1
+      else:
+        fp = fp + 1
+
+    for i_pc_gt in pc_gt:
+      if i_pc_gt not in pc_gt:
+        fn = fn + 1        
+    
+    precision = tp / (tp + fp + 0.0)
+    recall = tp / (tp + fn + 0.0)
+
+    return 2.0 * (precision * recall) / (precision + recall)    
+
   else:
     raise NameError('No such scoring method: "' + method + '"')         
 
@@ -403,7 +471,16 @@ def reduce_chords(chords, alphabet):
                'min7(4)':          [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0],
                'maj(*5)':          [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
                'aug/3':            [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-               'dim/b7':           [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0]
+               'dim/b7':           [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
+               'maj/6':            [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
+               'min/#5':           [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+               'dim/#5':           [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
+               'dim/b6':           [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
+               'min/b6':           [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+               'aug/6':            [1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0],
+               'min(7)':           [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+               'aug(7)':           [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1],
+               'aug7':             [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1]
              }
 
   minmaj_map = {'':                'maj',
@@ -547,7 +624,16 @@ def reduce_chords(chords, alphabet):
                'min7(4)':          'min',
                'maj(*5)':          'maj',
                'aug/3':            'maj',
-               'dim/b7':           'min'
+               'dim/b7':           'min',
+               'maj/6':            'maj',
+               'min/#5':           'min',  
+               'dim/#5':           'min',
+               'dim/b6':           'min',
+               'min/b6':           'min',
+               'aug/6':            'maj',
+               'min(7)':           'min',
+               'aug(7)':           'maj',
+               'aug7':             'maj'          
              }
 
   triad_map = {'':                 'maj',
@@ -691,7 +777,16 @@ def reduce_chords(chords, alphabet):
                'min7(4)':          'min',
                'maj(*5)':          'maj',
                'aug/3':            'aug',
-               'dim/b7':           'dim'
+               'dim/b7':           'dim',
+               'maj/6':            'maj',              
+               'min/#5':           'min',  
+               'dim/#5':           'dim',
+               'dim/b6':           'dim',
+               'min/b6':           'min',
+               'aug/6':            'aug',
+               'min(7)':           'min',
+               'aug(7)':           'aug',
+               'aug7':             'aug'           
              }
 
 
@@ -836,7 +931,16 @@ def reduce_chords(chords, alphabet):
                'min7(4)':          'min7',
                'maj(*5)':          'maj',
                'aug/3':            'aug',
-               'dim/b7':           'dim7'
+               'dim/b7':           'dim7',
+               'maj/6':            'maj',               
+               'min/#5':           'min',     
+               'dim/#5':           'dim',
+               'dim/b6':           'dim',
+               'min/b6':           'min',
+               'aug/6':            'aug',
+               'min(7)':           'minmaj7',
+               'aug(7)':           'aug7',
+               'aug7':             'aug7'          
              }
 
   # Collect them           
@@ -847,7 +951,7 @@ def reduce_chords(chords, alphabet):
 
     if chord == 'N':
 
-      new_chords.append((start_time, end_time, chord))
+      new_chords.append(chord)
 
     else:
     
@@ -878,7 +982,7 @@ def reduce_chords(chords, alphabet):
         # the reduced chord is a string
         new_chords.append(enharmonic_root + ':' + reduced_chord)
 
-  return new_chords  
+  return new_chords
 
 def chord_2_rootchordbass(chord):
 
@@ -889,6 +993,7 @@ def chord_2_rootchordbass(chord):
     bass = ''
   else:
     if '/' in chord:
+      # split by '/'
       preslash, bass_preslash = chord.split('/')	
       bass = '/' + bass_preslash
     else:
