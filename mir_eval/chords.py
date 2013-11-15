@@ -69,7 +69,9 @@ def evaluate_chords(GT, P, resolution=0.001, trim_method='min', method='MIREX', 
                                                                   reduced to a simpler alphabet in this evaluation                                               
                                
 
-    Outputs: accuracy, float                                                  
+    Outputs: accuracy, float    
+             GT_sample, list of sampled GT annotations
+             P_sample, list of sampled Prediction                                              
   '''
   import numpy as np
 
@@ -171,9 +173,9 @@ def evaluate_chords(GT, P, resolution=0.001, trim_method='min', method='MIREX', 
       gt = gt.strip()
       accuracy.append(scoring_dict[(p,gt)])
     
-  # 4 - return accuracy
+  # 4 - return accuracy, sampled ground truth and prediction
   # ------------------  
-  return accuracy
+  return accuracy, GT_sample, P_sample
 
 def score_two_chords(p, gt, method='MIREX', augdim_switch=True):
 
