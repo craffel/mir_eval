@@ -155,13 +155,13 @@ def evaluate_chords(GT, P, resolution=0.001, trim_method='min', method='MIREX', 
     # that either GT_sample or P_sample is longer than
     # the other
     if p == 'N' and gt == 'N':
-      accuracy.append(True)
+      accuracy.append(1.0)
     elif p == 'N' and gt != 'N':
-      accuracy.append(False)
+      accuracy.append(0.0)
     elif p != 'N' and gt == 'N':
-      accuracy.append(False)
+      accuracy.append(0.0)
     elif p == None or gt == None:
-      accuracy.append(False)  
+      accuracy.append(0.0)  
     else:
 
 
@@ -171,9 +171,9 @@ def evaluate_chords(GT, P, resolution=0.001, trim_method='min', method='MIREX', 
       gt = gt.strip()
       accuracy.append(scoring_dict[(p,gt)])
     
-  # 4 - return average
+  # 4 - return accuracy
   # ------------------  
-  return np.mean(accuracy)
+  return accuracy
 
 def score_two_chords(p, gt, method='MIREX', augdim_switch=True):
 
@@ -257,8 +257,8 @@ def score_two_chords(p, gt, method='MIREX', augdim_switch=True):
         fp = fp + 1
 
     for i_pc_gt in pc_gt:
-      if i_pc_gt not in pc_gt:
-        fn = fn + 1        
+      if i_pc_gt not in pc_p:
+        fn = fn + 1         
     
     return tp / (tp + fn + 0.0)
 
@@ -276,8 +276,8 @@ def score_two_chords(p, gt, method='MIREX', augdim_switch=True):
         fp = fp + 1
 
     for i_pc_gt in pc_gt:
-      if i_pc_gt not in pc_gt:
-        fn = fn + 1        
+      if i_pc_gt not in pc_p:
+        fn = fn + 1         
     
     return tp / (tp + fp + 0.0)
 
@@ -295,13 +295,18 @@ def score_two_chords(p, gt, method='MIREX', augdim_switch=True):
         fp = fp + 1
 
     for i_pc_gt in pc_gt:
-      if i_pc_gt not in pc_gt:
+      if i_pc_gt not in pc_p:
         fn = fn + 1        
     
     precision = tp / (tp + fp + 0.0)
     recall = tp / (tp + fn + 0.0)
 
-    return 2.0 * (precision * recall) / (precision + recall)    
+    if precision == 0.0 and recall == 0.0:
+      f_measure = 0.0
+    else:
+      f_measure = 2.0 * (precision * recall) / (precision + recall)      
+    
+    return f_measure   
 
   else:
     raise NameError('No such scoring method: "' + method + '"')         
