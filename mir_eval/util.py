@@ -34,7 +34,7 @@ def multiline(filename, sep='\t'):
             yield np.fromstring(line, sep=sep)
     pass
 
-def adjust_segment_boundaries(boundaries, t_min=0.0, t_max=None):
+def adjust_boundaries(boundaries, labels=None, t_min=0.0, t_max=None, prefix='__'):
     '''Adjust the given list of boundary times to span the range [t_min, t_max].
 
     Any boundaries outside of the specified range will be removed.
@@ -45,6 +45,9 @@ def adjust_segment_boundaries(boundaries, t_min=0.0, t_max=None):
         - boundaries : np.array
             Array of boundary times (seconds)
 
+        - labels : list or None
+            Array of labels
+            
         - t_min : float or None
             Minimum valid boundary time.
 
@@ -56,54 +59,121 @@ def adjust_segment_boundaries(boundaries, t_min=0.0, t_max=None):
             Boundary times corrected to the given range.
     '''
     if t_min is not None:
-        boundaries = np.concatenate( ([t_min], boundaries) )
-        boundaries = boundaries[t_min <= boundaries]
+        first_idx = np.argwhere(boundaries >= t_min)
+        
+        if len(first_idx) > 0:
+            # We have boundaries below t_min
+            # Crop them out
+            if labels is not None:
+                labels = labels[first_idx[0]:]
+            boundaries = boundaries[first_idx[0]:]
+            
+        if boundaries[0] > t_min:
+            # Lowest boundary is higher than t_min: add a new boundary and label
+            boundaries = np.concatenate( ([t_min], boundaries) )
+            if labels is not None:
+                labels.insert(0, '%sT_MIN' % prefix)
 
-    if t_max is not None:
-        boundaries = np.concatenate( (boundaries, [t_max]) )
-        boundaries = boundaries[boundaries <= t_max]
+    if t_max is not None:    
+        last_idx = np.argwhere(boundaries > t_max)
+        
+        if len(last_idx) > 0:
+            # We have boundaries above t_max.
+            # Trim to only boundaries <= t_max
+            if labels is not None:
+                labels = labels[:last_idx[0]]
+            boundaries = boundaries[:last_idx[0]]
+        
+        if boundaries[-1] < t_max:
+            # Last boundary is below t_max: add a new boundary and label
+            boundaries = np.concatenate( (boundaries, [t_max]))
+            if labels is not None:
+                labels.append('%sT_MAX' % prefix)
+                
+    return boundaries, labels
 
-    return np.unique(boundaries)
-
-def import_segment_boundaries(filename, cols=[0,1], sep=None, t_min=0.0, t_max=None):
-    '''Import segment boundaries from an annotation file.  
-    In typical MIREX fashion, annotations are formatted as:
-
-    START_1     END_1   LABEL_1
-    START_2     END_2   LABEL_2
-    ...
-
-    where START_* and END_* are given in seconds.
+def import_segments(filename, sep='\t', t_min=0.0, t_max=None, prefix='__', converter=float):
+    '''Import segments from an annotation file.
     
-    We assume that END_i = START_i+1.
-
     :parameters:
-        - filename : string
-            Path to the annotation file
-
-        - cols : list of ints
-            Which columns of the file specify the boundaries
-
-        - sep : string or None
-            Field delimiter. See `numpy.loadtxt()` for details.
-
-        - t_min : float
-            Minimum valid boundary time.
-
-        - t_max : float or None
-            If provided, the boundaries will be truncated or expanded 
-            to the given time. This is useful for correcting incomplete
-            annotations against a ground-truth reference.
-
+      - filename : str
+        Path to the annotation file
+      - sep : str
+        Separator character
+      - t_min : float >=0 or None
+        Trim or pad to this minimum time
+      - t_max : float >=0 or None
+        Trim or pad to this maximum time
+      - prefix : str
+        String to append to any synthetically generated labels
+      - converter : function
+        Function to convert time-stamp data into numerics. Defaults to float().
+        
     :returns:
-        - boundaries : np.array
-            List of all segment boundaries
+      - seg_times : np.ndarray
+        List of segment boundaries
+      - seg_labels : list of str
+        Labels for each segment boundary
     '''
-
-    # Load the input
-    values = np.loadtxt(filename, usecols=cols, delimiter=sep)
-
-    # Flatten out the boundaries, remove dupes
-    values = np.unique(values.flatten())
-
-    return adjust_segment_boundaries(values, t_min=t_min, t_max=t_max)
+    
+    starts = []
+    ends   = []
+    labels = []
+    
+    
+    def interpret_data(data, HAS_ENDS, HAS_LABELS):
+        
+        # If we've already interpreted the data, skip out
+        if HAS_ENDS is not None:
+            return HAS_ENDS, HAS_LABELS
+        
+        if len(data) == 1:
+            # Only have start times
+            HAS_ENDS   = False
+            HAS_LABELS = False
+        elif len(data) == 3:
+            # Start times, end times, and labels
+            HAS_ENDS   = True
+            HAS_LABELS = True
+        else:
+            # If the converter throws a ValueError on the last column,
+            # treat it as a label.
+            try:
+                converter(data[-1])
+                HAS_ENDS = True
+                HAS_LABELS = False
+            except ValueError:
+                HAS_LABELS = True
+                HAS_ENDS = False
+                
+        return HAS_ENDS, HAS_LABELS
+    
+    HAS_ENDS   = None
+    HAS_LABELS = None
+    
+    with open(filename, 'r') as f:
+        for row, data in enumerate(f):
+            
+            # Split the data, filter out empty columns
+            data = filter(lambda x: len(x) > 0, data.strip().split(sep, 3))
+            
+            HAS_ENDS, HAS_LABELS = interpret_data(data, HAS_ENDS, HAS_LABELS)
+            
+            if HAS_LABELS:
+                labels.append(data[-1])
+            else:
+                labels.append('%s%03d' % (prefix, row))
+                
+            if HAS_ENDS:
+                ends.append(converter(data[1]))
+            
+            starts.append(converter(data[0]))
+            
+    if HAS_ENDS:
+        seg_times = np.concatenate([starts, ends[-1:]])
+        labels.append('%sEND' % prefix)
+    else:
+        seg_times = np.asarray(starts)
+            
+    return adjust_boundaries(seg_times, labels=labels, t_min=t_min, t_max=t_max, prefix=prefix)
+            
