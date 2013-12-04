@@ -97,23 +97,27 @@ def import_segments(filename, sep='\t', t_min=0.0, t_max=None, prefix='__', conv
     
     :parameters:
       - filename : str
-        Path to the annotation file
+          Path to the annotation file
       - sep : str
-        Separator character
+          Separator character
       - t_min : float >=0 or None
-        Trim or pad to this minimum time
+          Trim or pad to this minimum time
       - t_max : float >=0 or None
-        Trim or pad to this maximum time
+          Trim or pad to this maximum time
       - prefix : str
-        String to append to any synthetically generated labels
+          String to append to any synthetically generated labels
       - converter : function
-        Function to convert time-stamp data into numerics. Defaults to float().
+          Function to convert time-stamp data into numerics. Defaults to float().
         
     :returns:
       - seg_times : np.ndarray
-        List of segment boundaries
+          List of segment boundaries
       - seg_labels : list of str
-        Labels for each segment boundary
+          Labels for each segment boundary
+
+    :raises:
+      - ValueError
+          If the input data is improperly formed.
     '''
     
     starts = []
@@ -170,10 +174,22 @@ def import_segments(filename, sep='\t', t_min=0.0, t_max=None, prefix='__', conv
             starts.append(converter(data[0]))
             
     if HAS_ENDS:
-        seg_times = np.concatenate([starts, ends[-1:]])
+        # We need to make an extra label for that last boundary time
         labels.append('%sEND' % prefix)
     else:
-        seg_times = np.asarray(starts)
-            
+        # We need to generate the ends vector, and shuffle starts
+        ends    = starts[1:]
+        starts  = starts[:-1]
+    
+    # Verify that everything is in proper order
+    starts      = np.asarray(starts)
+    ends        = np.asarray(ends)
+    bad_segs    = np.argwhere(starts > ends).flatten()
+    if len(bad_segs) > 0:
+        raise ValueError('Segment end precedes start at %s:%d start=%0.3f, end=%0.3f' % (
+                            filename, 1+row, starts[bad_segs[0]], ends[bad_segs[0]]))
+
+    seg_times = np.concatenate([starts, ends[-1:]])
+    
     return adjust_boundaries(seg_times, labels=labels, t_min=t_min, t_max=t_max, prefix=prefix)
             
