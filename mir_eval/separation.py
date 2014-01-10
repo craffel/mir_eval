@@ -141,7 +141,7 @@ def _project(estimated_source, sources, flen):
 
     ## Computing projection ##
     # Distortion filters
-    C = np.linalg.lstsq(G, D)[0].reshape(flen, nsrc, order='F')
+    C = np.linalg.solve(G, D).reshape(flen, nsrc, order='F')
     # Filtering
     sproj = np.zeros(nsampl + flen - 1)
     for i in xrange(nsrc):
