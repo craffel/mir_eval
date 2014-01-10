@@ -27,9 +27,9 @@ def bss_eval_sources(estimated_sources, sources):
 
     :parameters:
       - estimated_sources: ndarray
-          nsrc x nsampl matrix containing estimated sources
+          (nsrc, nsampl) matrix containing estimated sources
       - sources: ndarray
-          nsrc x nsampl matrix containing true sources
+          (nsrc, nsampl) matrix containing true sources
 
     :returns:
       - SDR: ndarray
