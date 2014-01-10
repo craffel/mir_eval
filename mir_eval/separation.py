@@ -60,10 +60,10 @@ def bss_eval_sources(estimated_sources, sources):
     if sources.ndim == 1:
         sources = sources[np.newaxis, :]
 
-    nsrc, nsampl = estimated_sources.shape
     if sources.shape != estimated_sources.shape:
         raise ValueError('The shape of estimated sources and the true sources '
                          'should match.')
+    nsrc, nsampl = estimated_sources.shape
 
     # compute criteria for all possible pair matches
     SDR = np.empty((nsrc, nsrc))
