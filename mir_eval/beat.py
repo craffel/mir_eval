@@ -38,9 +38,6 @@ def _clean_beats(annotated_beats, generated_beats, min_beat_time=5.0):
     if not (annotated_beats > min_beat_time).any():
         error = 'No annotated beats found before {}s'.format(min_beat_time)
         raise ValueError(error)
-    if not (generated_beats > min_beat_time).any():
-        error = 'No generated beats found before {}s'.format(min_beat_time)
-        raise ValueError(error)
     # Make sure no beat times are huge
     if (annotated_beats > 30000).any() or (generated_beats > 30000).any():
         error = 'Very large beat times found - they should be in seconds.'
@@ -48,7 +45,7 @@ def _clean_beats(annotated_beats, generated_beats, min_beat_time=5.0):
     # Make sure no beat times are negative
     if (annotated_beats < 0).any() or (generated_beats < 0).any():
         raise ValueError('Beat locations should not be negative')
-    
+
     # Make sure beats are sorted
     annotated_beats = np.sort(annotated_beats)
     generated_beats = np.sort(generated_beats)
@@ -109,6 +106,9 @@ def f_measure(annotated_beats,
     annotated_beats, generated_beats = _clean_beats(annotated_beats,
                                                     generated_beats,
                                                     min_beat_time)
+    # Special case when annotated beats are empty
+    if generated_beats.shape == (0,):
+        return 0
     # Values for calculating F measure
     false_positives = 0.0
     false_negatives = 0.0
@@ -165,6 +165,9 @@ def cemgil(annotated_beats,
     annotated_beats, generated_beats = _clean_beats(annotated_beats,
                                                     generated_beats, 
                                                     min_beat_time)
+    # Special case when annotated beats are empty
+    if generated_beats.shape == (0,):
+        return 0
     # We'll compute Cemgil's accuracy for each variation
     accuracies = []
     for annotated_beats in _get_annotated_beat_variations(annotated_beats):
@@ -208,6 +211,9 @@ def goto(annotated_beats,
     annotated_beats, generated_beats = _clean_beats(annotated_beats,
                                                     generated_beats,
                                                     min_beat_time)
+    # Special case when annotated beats are empty
+    if generated_beats.shape == (0,):
+        return 0
     # Error for each beat
     beat_error = np.ones(annotated_beats.shape[0])
     # Flag for whether the annotated and generated beats are paired
@@ -286,6 +292,9 @@ def p_score(annotated_beats,
     annotated_beats, generated_beats = _clean_beats(annotated_beats,
                                                     generated_beats,
                                                     min_beat_time)
+    # Special case when annotated beats are empty
+    if generated_beats.shape == (0,):
+        return 0
     # Quantize beats to 10ms
     fs = 1.0/(0.010)
     # Get the largest time index
@@ -338,6 +347,9 @@ def continuity(annotated_beats,
     annotated_beats, generated_beats = _clean_beats(annotated_beats,
                                                     generated_beats,
                                                     min_beat_time)
+    # Special case when annotated beats are empty
+    if generated_beats.shape == (0,):
+        return 0
     # Accuracies for each variation
     continuous_accuracies = []
     total_accuracies = []
@@ -443,6 +455,9 @@ def information_gain(annotated_beats,
     annotated_beats, generated_beats = _clean_beats(annotated_beats,
                                                     generated_beats,
                                                     min_beat_time)
+    # Special case when annotated beats are empty
+    if generated_beats.shape == (0,):
+        return 0
     # Get entropy for annotated beats->generated beats
     # and generated beats->annotated beats
     forward_entropy = _get_entropy(annotated_beats, generated_beats, bins)
