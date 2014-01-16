@@ -7,5 +7,6 @@ from . import onset
 from . import segment
 from . import separation
 from . import util
+from . import sonify
 
 __version__ = '0.0.1'
