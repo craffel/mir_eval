@@ -9,11 +9,10 @@ Source separation evaluation:
 '''
 
 import numpy as np
-import scipy.linalg
+from scipy.linalg import toeplitz
 import itertools
 
 from . import util
-
 
 def bss_eval_sources(estimated_sources, sources):
     '''BSS_EVAL_SOURCES
@@ -32,12 +31,12 @@ def bss_eval_sources(estimated_sources, sources):
           (nsrc, nsampl) matrix containing true sources
 
     :returns:
-      - SDR: ndarray
-          (nsrc, ) vector of Signal to Distortion Ratios
-      - SIR: ndarray
-          (nsrc, ) vector of Source to Interference Ratios
-      - SAR: ndarray
-          (nsrc, ) vector of Sources to Artifacts Ratios
+      - sdr: ndarray
+          (nsrc, ) vector of Signal to Distortion Ratios (SDR)
+      - sir: ndarray
+          (nsrc, ) vector of Source to Interference Ratios (SIR)
+      - sar: ndarray
+          (nsrc, ) vector of Sources to Artifacts Ratios (SAR)
       - perm: ndarray
           (nsrc, ) vector containing the best ordering of estimated sources in
           the mean SIR sense (estimated source number perm[j] corresponds to
@@ -66,15 +65,15 @@ def bss_eval_sources(estimated_sources, sources):
     nsrc = estimated_sources.shape[0]
 
     # compute criteria for all possible pair matches
-    SDR = np.empty((nsrc, nsrc))
-    SIR = np.empty((nsrc, nsrc))
-    SAR = np.empty((nsrc, nsrc))
+    sdr = np.empty((nsrc, nsrc))
+    sir = np.empty((nsrc, nsrc))
+    sar = np.empty((nsrc, nsrc))
     for jest in xrange(nsrc):
         for jtrue in xrange(nsrc):
             s_true, e_spat, e_interf, e_artif = \
                     _bss_decomp_mtifilt(estimated_sources[jest], sources,
                                         jtrue, 512)
-            SDR[jest, jtrue], SIR[jest, jtrue], SAR[jest, jtrue] = \
+            sdr[jest, jtrue], sir[jest, jtrue], sar[jest, jtrue] = \
                     _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
     # select the best ordering
@@ -82,10 +81,10 @@ def bss_eval_sources(estimated_sources, sources):
     mean_sir = np.empty(len(perms))
     dum = np.arange(nsrc)
     for (i, perm) in enumerate(perms):
-        mean_sir[i] = np.mean(SIR[perm, dum])
+        mean_sir[i] = np.mean(sir[perm, dum])
     popt = perms[np.argmax(mean_sir)]
     idx = (popt, dum)
-    return (SDR[idx], SIR[idx], SAR[idx], popt)
+    return (sdr[idx], sir[idx], sar[idx], popt)
 
 
 def _bss_decomp_mtifilt(estimated_source, sources, j, flen):
@@ -130,7 +129,7 @@ def _project(estimated_source, sources, flen):
         for j in xrange(nsrc):
             ssf = sf[i] * np.conj(sf[j])
             ssf = np.real(np.fft.ifft(ssf))
-            ss = scipy.linalg.toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])),
+            ss = toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])),
                                        r=ssf[:flen])
             G[i * flen: (i+1) * flen, j * flen: (j+1) * flen] = ss
             G[j * flen: (j+1) * flen, i * flen: (i+1) * flen] = ss.T
@@ -161,7 +160,7 @@ def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
     '''
     # energy ratios
     s_filt = s_true + e_spat
-    SDR = 10 * np.log10(np.sum(s_filt**2) / np.sum((e_interf + e_artif)**2))
-    SIR = 10 * np.log10(np.sum(s_filt**2) / np.sum(e_interf**2))
-    SAR = 10 * np.log10(np.sum((s_filt + e_interf)**2) / np.sum(e_artif**2))
-    return (SDR, SIR, SAR)
+    sdr = 10 * np.log10(np.sum(s_filt**2) / np.sum((e_interf + e_artif)**2))
+    sir = 10 * np.log10(np.sum(s_filt**2) / np.sum(e_interf**2))
+    sar = 10 * np.log10(np.sum((s_filt + e_interf)**2) / np.sum(e_artif**2))
+    return (sdr, sir, sar)
