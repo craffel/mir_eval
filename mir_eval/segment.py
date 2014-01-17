@@ -1,5 +1,5 @@
 # CREATED:2013-08-13 12:02:42 by Brian McFee <brm2132@columbia.edu>
-'''Structural segmentation evaluation, following the protocols of MIREX2012:
+'''Structural segmentation evaluation, following the protocols of MIREX2012.
     - Boundary detection
         - (precision, recall, f-measure)
         - median distance to nearest boundary
