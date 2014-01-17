@@ -206,21 +206,21 @@ def frame_clustering_rand(annotated_boundaries, predicted_boundaries, frame_size
     '''Frame-clustering segmentation via Rand index.
 
     :parameters:
-    - annotated_boundaries : list-like, float
-        ground-truth segment boundary times (in seconds)
+        - annotated_boundaries : list-like, float
+            ground-truth segment boundary times (in seconds)
 
-    - predicted_boundaries : list-like, float
-        predicted segment boundary times (in seconds)
+        - predicted_boundaries : list-like, float
+            predicted segment boundary times (in seconds)
 
-    - frame_size : float > 0
-        length (in seconds) of frames for clustering
+        - frame_size : float > 0
+            length (in seconds) of frames for clustering
 
     :returns:
-    - ARI : float > 0
-        Adjusted Rand index between segmentations.
+        - ARI : float > 0
+            Adjusted Rand index between segmentations.
 
     ..note::
-        It is assumed that `boundaries[-1] == length of song`
+        It is assumed that ``boundaries[-1]`` == length of song
 
     ..note::
         Segment boundaries will be rounded down to the nearest multiple 
@@ -232,9 +232,6 @@ def frame_clustering_rand(annotated_boundaries, predicted_boundaries, frame_size
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
-
-    # Compute all the clustering metrics
-    ## Adjusted rand index
 
     return metrics.adjusted_rand_score(y_true, y_pred)
 
@@ -286,46 +283,6 @@ def frame_clustering_mutual_information(annotated_boundaries, predicted_boundari
 
     return MI, AMI, NMI
     
-def frame_clustering_v_measure(annotated_boundaries, predicted_boundaries, frame_size=0.1):
-    '''Frame-clustering segmentation: v-measure metrics.
-
-    :parameters:
-    - annotated_boundaries : list-like, float
-        ground-truth segment boundary times (in seconds)
-
-    - predicted_boundaries : list-like, float
-        predicted segment boundary times (in seconds)
-
-    - frame_size : float > 0
-        length (in seconds) of frames for clustering
-
-    :returns:
-    - H : float 
-        Homogeneity
-    - C : float
-        Completeness
-    - V : float
-        V-measure, harmonic mean of H and C
-    
-    ..note::
-        It is assumed that `boundaries[-1] == length of song`
-
-    ..note::
-        Segment boundaries will be rounded down to the nearest multiple 
-        of frame_size.
-    '''
-
-    # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
-    # Make sure we have the same number of frames
-    if len(y_true) != len(y_pred):
-        raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
-
-
-    ## Completeness
-    return metrics.homogeneity_completeness_v_measure(y_true, y_pred)
-
 def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation: normalized conditional entropy
 
