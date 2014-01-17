@@ -288,43 +288,44 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
     Computes cross-entropy of cluster assignment, normalized by the max-entropy.
 
     :parameters:
-    - annotated_boundaries : list-like, float
-        ground-truth segment boundary times (in seconds)
+        - annotated_boundaries : list-like, float
+            ground-truth segment boundary times (in seconds)
 
-    - predicted_boundaries : list-like, float
-        predicted segment boundary times (in seconds)
+        - predicted_boundaries : list-like, float
+            predicted segment boundary times (in seconds)
 
-    - frame_size : float > 0
-        length (in seconds) of frames for clustering
+        - frame_size : float > 0
+            length (in seconds) of frames for clustering
 
-    - beta : float > 0
-        beta for F-measure
+        - beta : float > 0
+            beta for F-measure
 
     :returns:
-    - S_over
-        Over-clustering score: 
-        `1 - H(y_pred | y_true) / log(|y_pred|)`
-    - S_under
-        Under-clustering score:
-        `1 - H(y_true | y_pred) / log(|y_true|)`
+        - S_over
+            Over-clustering score: 
+            ``1 - H(y_pred | y_true) / log(|y_pred|)``
 
-    - F
-        F-measure for (S_over, S_under)
+        - S_under
+            Under-clustering score:
+            ``1 - H(y_true | y_pred) / log(|y_true|)``
+
+        - F
+            F-measure for (S_over, S_under)
         
-    ..note::
-    - Towards quantitative measures of evaluating song segmentation.
-      Lukashevich, H. ISMIR 2008.
+    ..note:: Towards quantitative measures of evaluating song segmentation.
+        Lukashevich, H. ISMIR 2008.
     '''
 
     # Generate the cluster labels
     y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
     y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
 
     # Make the contingency table
-    contingency = util.contingency_matrix(y_true, y_pred).astype(float)
+    contingency = metrics.contingency_matrix(y_true, y_pred).astype(float)
 
     n_frames = len(y_true)
     n_true, n_pred = contingency.shape
@@ -333,7 +334,7 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
     p_pred = contingency.sum(axis=0) / n_frames
     p_true = contingency.sum(axis=1) / n_frames
 
-    true_given_pred = p_pred.dot(scipy.stats.entropy(contingency, base=2))
+    true_given_pred = p_pred.dot(scipy.stats.entropy(contingency,   base=2))
     pred_given_true = p_true.dot(scipy.stats.entropy(contingency.T, base=2))
 
     score_over = 0.0
