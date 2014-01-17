@@ -2,6 +2,9 @@
 
 import numpy as np
 
+# TODO:   2014-01-17 13:21:22 by Brian McFee <brm2132@columbia.edu>
+# contingency table 
+
 def f_measure(precision, recall, beta=1.0):
     '''Compute the f-measure from precision and recall scores.
 
@@ -216,12 +219,10 @@ def import_segments(filename, sep='\t', t_min=0.0, t_max=None, prefix='__', conv
 
     return adjust_boundaries(seg_times, labels=labels, t_min=t_min, t_max=t_max, prefix=prefix)
 
-
 def nextpow2(x):
     '''Compute the smallest n such that 2^n >= x
     '''
     return np.ceil(np.log2(x))
-
 
 def fftfilt(b, x, n_fft=None):
     '''Raw translation of MATLAB fftfilt function (for only 1-d signal).
