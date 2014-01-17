@@ -75,7 +75,6 @@ def print_evaluation(prediction_file, M):
 
     pass
 
-
 def process_arguments():
     '''Argparse function to get the program parameters'''
 
