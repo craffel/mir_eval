@@ -68,7 +68,7 @@ def evaluate(truth_file=None, prediction_file=None):
     # And print them
     print os.path.basename(prediction_file)
     for key, value in M.iteritems():
-        print '%20s:\t%0.3f' % (key, value)
+        print '\t%12s:\t%0.3f' % (key, value)
 
     pass
 
