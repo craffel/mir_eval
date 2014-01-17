@@ -51,68 +51,66 @@ def boundaries_to_segments(boundaries, labels=None):
 
     return segments, segment_labels
 
-# TODO:   2014-01-17 15:45:13 by Brian McFee <brm2132@columbia.edu>
-# boundaries => times, could be beat events
-def adjust_boundaries(boundaries, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
-    '''Adjust the given list of boundary times to span the range [t_min, t_max].
+def adjust_times(times, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
+    '''Adjust the given list of event times to span the range [t_min, t_max].
 
-    Any boundaries outside of the specified range will be removed.
+    Any event times outside of the specified range will be removed.
 
-    If the boundaries do not span [t_min, t_max], additional boundaries will be added.
+    If the times do not span [t_min, t_max], additional events will be inserted.
 
     :parameters:
-        - boundaries : np.array
-            Array of boundary times (seconds)
+        - times : np.array
+            Array of event times (seconds)
 
         - labels : list or None
             Array of labels
 
         - t_min : float or None
-            Minimum valid boundary time.
+            Minimum valid event time.
 
         - t_max : float or None
-            Maximum valid boundary time.
+            Maximum valid event time.
         
         - label_prefix : str
             Prefix string to use for synthetic labels
 
     :returns:
-        - new_boundaries : np.array
-            Boundary times corrected to the given range.
+        - new_times : np.array
+            Event times corrected to the given range.
     '''
     if t_min is not None:
-        first_idx = np.argwhere(boundaries >= t_min)
+        first_idx = np.argwhere(times>= t_min)
 
         if len(first_idx) > 0:
-            # We have boundaries below t_min
+            # We have events below t_min
             # Crop them out
             if labels is not None:
                 labels = labels[first_idx[0]:]
-            boundaries = boundaries[first_idx[0]:]
+            times = times[first_idx[0]:]
 
-        if boundaries[0] > t_min:
+        if times[0] > t_min:
             # Lowest boundary is higher than t_min: add a new boundary and label
-            boundaries = np.concatenate( ([t_min], boundaries) )
+            times = np.concatenate( ([t_min], times) )
             if labels is not None:
                 labels.insert(0, '%sT_MIN' % label_prefix)
 
     if t_max is not None:
-        last_idx = np.argwhere(boundaries > t_max)
+        last_idx = np.argwhere(times > t_max)
 
         if len(last_idx) > 0:
             # We have boundaries above t_max.
             # Trim to only boundaries <= t_max
             if labels is not None:
                 labels = labels[:last_idx[0]]
-            boundaries = boundaries[:last_idx[0]]
+            times = times[:last_idx[0]]
 
-        if boundaries[-1] < t_max:
+        if times[-1] < t_max:
             # Last boundary is below t_max: add a new boundary and label
-            boundaries = np.concatenate( (boundaries, [t_max]))
+            times = np.concatenate( (times, [t_max]))
             if labels is not None:
                 labels.append('%sT_MAX' % label_prefix)
 
-    return boundaries, labels
+    return times, labels
 
 def nextpow2(x):
     '''Compute the smallest n such that 2^n >= x
