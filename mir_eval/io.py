@@ -4,103 +4,125 @@ import numpy as np
 
 from . import util
 
-def import_segments(filename, sep='\t', t_min=0.0, t_max=None, prefix='__', converter=float):
-    '''Import segments from an annotation file.
+def load_events(filename, delimiter='\t', converter=None, label_prefix='__'):
+    '''Import time-stamp events from an annotation file.  This is primarily useful for
+    processing events which lack duration, such as beats or onsets.
+
+    The annotation file may be either of two formats:
+      - Single-column.  Each line contains a single value, corresponding to the time of
+        the annotated event.
+
+      - Double-column.  Each line contains two values, separated by ``delimiter``: the
+        first contains the time of the annotated event, and the second contains its
+        label.
 
     :parameters:
       - filename : str
           Path to the annotation file
-      - sep : str
+
+      - delimiter : str
           Separator character
-      - t_min : float >=0 or None
-          Trim or pad to this minimum time
-      - t_max : float >=0 or None
-          Trim or pad to this maximum time
-      - prefix : str
-          String to append to any synthetically generated labels
+
       - converter : function
           Function to convert time-stamp data into numerics. Defaults to float().
 
-    :returns:
-      - seg_times : np.ndarray
-          List of segment boundaries
-      - seg_labels : list of str
-          Labels for each segment boundary
+      - label_prefix : str
+          String to append to any synthetically generated labels
 
-    :raises:
-      - ValueError
-          If the input data is improperly formed.
+    :returns:
+      - event_times : np.ndarray
+          array of event times (float)
+      - event_labels : list of str
+          list of corresponding event labels
     '''
 
-    starts = []
-    ends   = []
-    labels = []
+    if converter is None:
+        converter = float
 
+    times   = []
+    labels  = []
 
-    def interpret_data(data, HAS_ENDS, HAS_LABELS):
+    with open(filename, 'r') as input_file:
+        for row, line in enumerate(input_file, 1):
+            data = filter(lambda x: len(x) > 0, line.strip().split(delimiter))
+            
+            if len(data) > 2:
+                data[2:] = delimiter.join(data[2:])
 
-        # If we've already interpreted the data, skip out
-        if HAS_ENDS is not None:
-            return HAS_ENDS, HAS_LABELS
+            if len(data) == 1:
+                times.append(converter(data[0]))
+                labels.append('%s%d' % (label_prefix, row))
 
-        if len(data) == 1:
-            # Only have start times
-            HAS_ENDS   = False
-            HAS_LABELS = False
-        elif len(data) == 3:
-            # Start times, end times, and labels
-            HAS_ENDS   = True
-            HAS_LABELS = True
-        else:
-            # If the converter throws a ValueError on the last column,
-            # treat it as a label.
-            try:
-                converter(data[-1])
-                HAS_ENDS = True
-                HAS_LABELS = False
-            except ValueError:
-                HAS_LABELS = True
-                HAS_ENDS = False
+            elif len(data) == 2:
+                times.append(converter(data[0]))
+                labels.append(data[1])
 
-        return HAS_ENDS, HAS_LABELS
-
-    HAS_ENDS   = None
-    HAS_LABELS = None
-
-    with open(filename, 'r') as f:
-        for row, data in enumerate(f):
-
-            # Split the data, filter out empty columns
-            data = filter(lambda x: len(x) > 0, data.strip().split(sep, 3))
-
-            HAS_ENDS, HAS_LABELS = interpret_data(data, HAS_ENDS, HAS_LABELS)
-
-            if HAS_LABELS:
-                labels.append(data[-1])
             else:
-                labels.append('%s%03d' % (prefix, row))
+                raise ValueError('Parse error on %s:%d:\n\t%s' % (filename, row, line))
 
-            if HAS_ENDS:
-                ends.append(converter(data[1]))
+    times = np.asarray(times)
 
-            starts.append(converter(data[0]))
+    return times, labels
 
-    if HAS_ENDS:
-        # We need to make an extra label for that last boundary time
-        labels.append('%sEND' % prefix)
-    else:
-        # We need to generate the ends vector, and shuffle starts
-        ends    = starts[1:]
-        starts  = starts[:-1]
+def load_annotation(filename, delimiter='\t', converter=None, label_prefix='__'):
+    '''Import annotation events from an annotation file.  This is primarily useful for
+    processing events which span a duration, such as segmentation, chords, or instrument
+    activation.
 
-    # Verify that everything is in proper order
-    starts      = np.asarray(starts)
-    ends        = np.asarray(ends)
-    bad_segs    = np.argwhere(starts > ends).flatten()
-    if len(bad_segs) > 0:
-        raise ValueError('Segment end precedes start at %s:%d start=%0.3f, end=%0.3f' % (
-                            filename, 1+row, starts[bad_segs[0]], ends[bad_segs[0]]))
+    The annotation file may be either of two formats:
+      - Double-column.  Each line contains two values, separated by ``delimiter``, 
+        corresponding to the start and end time annotated event.
 
-    seg_times = np.concatenate([starts, ends[-1:]])
+      - Triple-column.  Each line contains three values, separated by ``delimiter``.
+        The first two values specify the start and end times, the last value specifies
+        the label for the event (e.g. "Verse" or "A:min").
 
-    return util.adjust_boundaries(seg_times, labels=labels, t_min=t_min, t_max=t_max, prefix=prefix)
+    :parameters:
+      - filename : str
+          Path to the annotation file
+
+      - delimiter : str
+          Separator character
+
+      - converter : function
+          Function to convert time-stamp data into numerics. Defaults to float().
+
+      - label_prefix : str
+          String to append to any synthetically generated labels
+
+    :returns:
+      - event_times : np.ndarray, shape=(n_events, 2)
+          array of event start and end times
+
+      - event_labels : list of str
+          list of corresponding event labels
+    '''
+
+    if converter is None:
+        converter = float
+
+    times   = []
+    labels  = []
+
+    with open(filename, 'r') as input_file:
+        for row, line in enumerate(input_file, 1):
+            data = filter(lambda x: len(x) > 0, line.strip().split(delimiter))
+
+            if len(data) > 3:
+                data[2] = delimiter.join(data[2:])
+
+            if len(data) == 2:
+                times.append([converter(data[0]), converter(data[1])])
+                labels.append('%s%d' % (label_prefix, row))
+            
+            elif len(data) == 3:
+                times.append([converter(data[0]), converter(data[1])])
+                labels.append(data[2])
+
+            else:
+                raise ValueError('parse error %s:%d:\n%s' % (filename, row, line))
+
+    times = np.asarray(times)
+    
+    return times, labels
+

@@ -113,7 +113,7 @@ def boundary_deviation(annotated_boundaries, predicted_boundaries, trim=True):
 
     return true_to_predicted, predicted_to_true
 
-def boundaries_to_frames(boundaries, frame_size=0.1):
+def _boundaries_to_frames(boundaries, frame_size=0.1):
     '''Convert a sequence of boundaries to frame-level segment annotations.
     
     :parameters:
@@ -185,8 +185,8 @@ def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_
     '''
 
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
@@ -227,8 +227,8 @@ def frame_clustering_ari(annotated_boundaries, predicted_boundaries, frame_size=
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
@@ -264,8 +264,8 @@ def frame_clustering_mi(annotated_boundaries, predicted_boundaries, frame_size=0
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
 
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
@@ -317,8 +317,8 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
     '''
 
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
 
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):

@@ -25,7 +25,13 @@ def f_measure(precision, recall, beta=1.0):
 
     return (1 + beta**2) * precision * recall / ((beta**2) * precision + recall)
 
-def adjust_boundaries(boundaries, labels=None, t_min=0.0, t_max=None, prefix='__'):
+# TODO:   2014-01-17 15:46:06 by Brian McFee <brm2132@columbia.edu>
+# segments => boundaries 
+# boundaries => segments
+
+# TODO:   2014-01-17 15:45:13 by Brian McFee <brm2132@columbia.edu>
+# boundaries => times, could be beat events
+def adjust_boundaries(boundaries, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
     '''Adjust the given list of boundary times to span the range [t_min, t_max].
 
     Any boundaries outside of the specified range will be removed.
@@ -44,6 +50,9 @@ def adjust_boundaries(boundaries, labels=None, t_min=0.0, t_max=None, prefix='__
 
         - t_max : float or None
             Maximum valid boundary time.
+        
+        - label_prefix : str
+            Prefix string to use for synthetic labels
 
     :returns:
         - new_boundaries : np.array
@@ -63,7 +72,7 @@ def adjust_boundaries(boundaries, labels=None, t_min=0.0, t_max=None, prefix='__
             # Lowest boundary is higher than t_min: add a new boundary and label
             boundaries = np.concatenate( ([t_min], boundaries) )
             if labels is not None:
-                labels.insert(0, '%sT_MIN' % prefix)
+                labels.insert(0, '%sT_MIN' % label_prefix)
 
     if t_max is not None:
         last_idx = np.argwhere(boundaries > t_max)
@@ -79,7 +88,7 @@ def adjust_boundaries(boundaries, labels=None, t_min=0.0, t_max=None, prefix='__
             # Last boundary is below t_max: add a new boundary and label
             boundaries = np.concatenate( (boundaries, [t_max]))
             if labels is not None:
-                labels.append('%sT_MAX' % prefix)
+                labels.append('%sT_MAX' % label_prefix)
 
     return boundaries, labels
 
