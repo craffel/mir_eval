@@ -202,8 +202,8 @@ def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_
 
     return precision, recall, f_measure
 
-def frame_clustering_rand(annotated_boundaries, predicted_boundaries, frame_size=0.1):
-    '''Frame-clustering segmentation via Rand index.
+def frame_clustering_ari(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+    '''Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
 
     :parameters:
         - annotated_boundaries : list-like, float
