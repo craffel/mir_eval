@@ -2,6 +2,29 @@
 
 import numpy as np
 
+def f_measure(precision, recall, beta=1.0):
+    '''Compute the f-measure from precision and recall scores.
+
+    :parameters:
+        - precision : float in (0, 1]
+            Precision
+
+        - recall : float in (0, 1]
+            Recall
+
+        - beta : float > 0
+            Weighting factor for f-measure
+
+    :returns:
+        - f_measure : float
+            The weighted f-measure
+    '''
+
+    if precision == 0 and recall == 0:
+        return 0.0
+
+    return (1 + beta**2) * precision * recall / ((beta**2) * precision + recall)
+
 def multiline(filename, sep='\t'):
     '''Iterate over rows from a ragged, multi-line file.
         This is primarily useful for tasks which may contain multiple variable-length

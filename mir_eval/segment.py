@@ -10,36 +10,49 @@ import numpy as np
 import scipy.stats
 import sklearn.metrics.cluster as metrics
 
+from . import util
+
 def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, beta=1.0, trim=True):
     '''Boundary detection hit-rate.  
 
-    A hit is counted whenever an annotated boundary is within `window` of a predicted
+    A hit is counted whenever an annotated boundary is within ``window`` of a predicted
     boundary.
 
+    :usage:
+        >>> # With 0.5s windowing
+        >>> annotated, true_labels = mir_eval.util.import_segments('truth.csv')
+        >>> predicted, pred_labels = mir_eval.util.import_segments('prediction.csv')
+        >>> P05, R05, F05 = mir_eval.segment.boundary_detection(annotated, predicted, window=0.5)
+        >>> # With 3s windowing
+        >>> P3, R3, F3 = mir_eval.segment.boundary_detection(annotated, predicted, window=3)
+
+
     :parameters:
-    - annotated_boundaries : list-like, float
-        ground-truth segment boundary times (in seconds)
+        - annotated_boundaries : list-like, float
+            ground-truth segment boundary times (in seconds)
 
-    - predicted_boundaries : list-like, float
-        predicted segment boundary times (in seconds)
+        - predicted_boundaries : list-like, float
+            predicted segment boundary times (in seconds)
 
-    - window : float > 0
-        size of the window of 'correctness' around ground-truth beats (in seconds)
+        - window : float > 0
+            size of the window of 'correctness' around ground-truth beats (in seconds)
 
-    - beta : float > 0
-        'beta' for F-measure.
+        - beta : float > 0
+            weighting constant for F-measure.
 
-    - trim : boolean
-        if True, the first and last boundaries are ignored.
-        Typically, these denote start (0) and end-markers.
+        - trim : boolean
+            if ``True``, the first and last boundaries are ignored.
+            Typically, these denote start (0) and end-markers.
 
     :returns:
-    - P : float
-        precision of predictions
-    - R : float
-        recall of ground-truth beats
-    - F : float
-        F-measure (harmonic mean of P, R)
+        - precision : float
+            precision of predictions
+
+        - recall : float
+            recall of ground-truth beats
+
+        - f_measure : float
+            F-measure (weighted harmonic mean of ``precision`` and ``recall``)
     '''
 
     # Suppress the first and last boundaries
@@ -48,42 +61,44 @@ def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, b
         predicted_boundaries = predicted_boundaries[1:-1]
 
     # Compute the hits
-    D = np.abs( np.subtract.outer(annotated_boundaries, predicted_boundaries)) <= window
+    dist        = np.abs( np.subtract.outer(annotated_boundaries, predicted_boundaries)) <= window
 
     # Precision: how many predicted boundaries were hits?
-    P = np.mean(D.max(axis=0))
+    precision   = np.mean(dist.max(axis=0))
 
     # Recall: how many of the boundaries did we catch?
-    R = np.mean(D.max(axis=1))
+    recall      = np.mean(dist.max(axis=1))
 
     # And the f-measure
-    F = 0.0
+    f_measure   = util.f_measure(precision, recall, beta=beta)
 
-    if P > 0 or R > 0:
-        F = (1 + beta**2) * P * R / ((beta**2) * P + R)
-
-    return P, R, F
+    return precision, recall, f_measure
 
 def boundary_deviation(annotated_boundaries, predicted_boundaries, trim=True):
     '''Compute the median deviations between annotated and predicted boundary times.
 
+    :usage:
+        >>> annotated, true_labels = mir_eval.util.import_segments('truth.csv')
+        >>> predicted, pred_labels = mir_eval.util.import_segments('prediction.csv')
+        >>> t_to_p, p_to_t = mir_eval.segment.boundary_deviation(annotated, predicted)
+
     :parameters:
-    - annotated_boundaries : list-like, float
-        ground-truth segment boundary times (in seconds)
+        - annotated_boundaries : list-like, float
+            ground-truth segment boundary times (in seconds)
 
-    - predicted_boundaries : list-like, float
-        predicted segment boundary times (in seconds)
+        - predicted_boundaries : list-like, float
+            predicted segment boundary times (in seconds)
 
-    - trim : boolean
-        if True, the first and last boundaries are ignored.
-        Typically, these denote start (0) and end-markers.
+        - trim : boolean
+            if ``True``, the first and last boundaries are ignored.
+            Typically, these denote start (0) and end-markers.
 
     :returns:
-    - true_to_predicted : float
-        median time from each true boundary to the closest predicted boundary
+        - true_to_predicted : float
+            median time from each true boundary to the closest predicted boundary
 
-    - predicted_to_true : float
-        median time from each predicted boundary to the closest true boundary
+        - predicted_to_true : float
+            median time from each predicted boundary to the closest true boundary
     '''
 
     # Suppress the first and last boundaries
@@ -91,34 +106,33 @@ def boundary_deviation(annotated_boundaries, predicted_boundaries, trim=True):
         annotated_boundaries = annotated_boundaries[1:-1]
         predicted_boundaries = predicted_boundaries[1:-1]
 
-    D = np.abs( np.subtract.outer(annotated_boundaries, predicted_boundaries) )
+    dist = np.abs( np.subtract.outer(annotated_boundaries, predicted_boundaries) )
 
-    true_to_predicted = np.median(np.sort(D, axis=1)[:, 0])
-    predicted_to_true = np.median(np.sort(D, axis=0)[0, :])
+    true_to_predicted = np.median(np.sort(dist, axis=1)[:, 0])
+    predicted_to_true = np.median(np.sort(dist, axis=0)[0, :])
 
     return true_to_predicted, predicted_to_true
-
 
 def boundaries_to_frames(boundaries, frame_size=0.1):
     '''Convert a sequence of boundaries to frame-level segment annotations.
     
     :parameters:
-    - boundaries : list-like float
-        segment boundary times (in seconds).
+        - boundaries : list-like float
+            segment boundary times (in seconds).
 
-    - frame_size : float > 0
-        duration of each frame (in seconds)
+        - frame_size : float > 0
+            duration of each frame (in seconds)
 
     :returns:
-    - y : np.array, dtype=int
-        array of segment labels for each frame
+        - y : np.array, dtype=int
+            array of segment labels for each frame
 
     ..note::
-        It is assumed that `boundaries[-1] == length of song`
+        It is assumed that ``boundaries[-1]` == length of song
 
     ..note::
         Segment boundaries will be rounded down to the nearest multiple 
-        of frame_size.
+        of ``frame_size``.
     '''
     
     boundaries = np.sort(frame_size * np.round(boundaries / frame_size))
@@ -136,31 +150,38 @@ def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_
     '''Frame-clustering segmentation evaluation by pair-wise agreement.
 
     :parameters:
-    - annotated_boundaries : list-like, float
-        ground-truth segment boundary times (in seconds)
+        - annotated_boundaries : list-like, float
+            ground-truth segment boundary times (in seconds)
 
-    - predicted_boundaries : list-like, float
-        predicted segment boundary times (in seconds)
+        - predicted_boundaries : list-like, float
+            predicted segment boundary times (in seconds)
 
-    - frame_size : float > 0
-        length (in seconds) of frames for clustering
+        - frame_size : float > 0
+            length (in seconds) of frames for clustering
 
-    - beta : float > 0
-        beta value for F-measure
+        - beta : float > 0
+            beta value for F-measure
 
     :returns:
-    - Pair_precision : float > 0
-    - Pair_recall   : float > 0
-    - Pair_F        : float > 0
-        Precision/recall/f-measure of detecting whether
-        frames belong in the same cluster
+        - Pair_precision : float > 0
+        - Pair_recall   : float > 0
+        - Pair_F        : float > 0
+            Precision/recall/f-measure of detecting whether
+            frames belong in the same cluster
+
+    :raises:
+        - ValueError
+            If ``annotated_boundaries`` and ``predicted_boundaries`` do not span the
+            same time duration.
 
     ..note::
-        It is assumed that `boundaries[-1] == length of song`
+        It is assumed that ``boundaries[-1]`` == length of song
 
     ..note::
         Segment boundaries will be rounded down to the nearest multiple 
         of frame_size.
+
+    ..seealso:: mir_eval.util.adjust_boundaries
     '''
 
     # Generate the cluster labels
@@ -171,18 +192,15 @@ def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
 
     # Construct the label-agreement matrices
-    A1 = np.triu(np.equal.outer(y_true, y_true))
-    A2 = np.triu(np.equal.outer(y_pred, y_pred))
+    agree_true  = np.triu(np.equal.outer(y_true, y_true))
+    agree_pred  = np.triu(np.equal.outer(y_pred, y_pred))
     
-    matches = float((A1 & A2).sum())
-    P = matches / A1.sum()
-    R = matches / A2.sum()
-    F = 0.0
-    if P > 0 or R > 0:
-        F = (1 + beta**2) * P * R / ((beta**2) * P + R)
+    matches     = float((agree_true & agree_pred).sum())
+    precision   = matches / agree_true.sum()
+    recall      = matches / agree_pred.sum()
+    f_measure   = util.f_measure(precision, recall, beta=beta)
 
-    return P, R, F
-
+    return precision, recall, f_measure
 
 def frame_clustering_rand(annotated_boundaries, predicted_boundaries, frame_size=0.1):
     '''Frame-clustering segmentation via Rand index.
