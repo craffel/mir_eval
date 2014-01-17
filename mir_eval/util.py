@@ -27,6 +27,19 @@ def f_measure(precision, recall, beta=1.0):
 
 def segments_to_boundaries(times, labels=None, label_prefix='__'):
     '''Convert segment start-end times into boundaries.
+    :parameters:
+      - times : np.ndarray, shape=(n_events, 2)
+          Array of segment start and end-times
+          
+      - labels : None or list of str
+          Optional list of strings describing each event
+          
+    :returns:
+      - boundaries : np.ndarray, shape=(n_segments + 1)
+          Segment boundary times, including the end of the final segment
+
+      - labels : list of str or None
+          Labels for each event
     '''
 
     boundaries = np.unique(np.ravel(times))
@@ -40,7 +53,22 @@ def segments_to_boundaries(times, labels=None, label_prefix='__'):
     return boundaries, boundary_labels
 
 def boundaries_to_segments(boundaries, labels=None):
-    '''Convert event boundaries into segments'''
+    '''Convert event boundaries into segments
+    
+    :parameters:
+      - boundaries : list-like
+          List of event times
+          
+      - labels : None or list of str
+          Optional list of strings describing each event
+          
+    :returns:
+      - segments : np.ndarray, shape=(n_segments, 2)
+          Start and end time for each segment
+
+      - labels : list of str or None
+          Labels for each event.
+    '''
 
     segments = np.asarray(zip(boundaries[:-1], boundaries[1:]))
 
