@@ -25,9 +25,31 @@ def f_measure(precision, recall, beta=1.0):
 
     return (1 + beta**2) * precision * recall / ((beta**2) * precision + recall)
 
-# TODO:   2014-01-17 15:46:06 by Brian McFee <brm2132@columbia.edu>
-# segments => boundaries 
-# boundaries => segments
+def segments_to_boundaries(times, labels=None, label_prefix='__'):
+    '''Convert segment start-end times into boundaries.
+    '''
+
+    boundaries = np.unique(np.ravel(times))
+
+    if labels is None:
+        boundary_labels = None
+    else:
+        boundary_labels = [seg_label for seg_label in labels]
+        boundary_labels.append('%sEND' % label_prefix)
+
+    return boundaries, boundary_labels
+
+def boundaries_to_segments(boundaries, labels=None):
+    '''Convert event boundaries into segments'''
+
+    segments = np.asarray(zip(boundaries[:-1], boundaries[1:]))
+
+    if labels is None:
+        segment_labels = None
+    else:
+        segment_labels = labels[:-1]
+
+    return segments, segment_labels
 
 # TODO:   2014-01-17 15:45:13 by Brian McFee <brm2132@columbia.edu>
 # boundaries => times, could be beat events

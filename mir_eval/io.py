@@ -2,8 +2,6 @@
 
 import numpy as np
 
-from . import util
-
 def load_events(filename, delimiter='\t', converter=None, label_prefix='__'):
     '''Import time-stamp events from an annotation file.  This is primarily useful for
     processing events which lack duration, such as beats or onsets.
