@@ -324,7 +324,7 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
 
     # Make the contingency table
-    contingency = metrics.contingency_matrix(y_true, y_pred).astype(float)
+    contingency = util.contingency_matrix(y_true, y_pred).astype(float)
 
     n_frames = len(y_true)
     n_true, n_pred = contingency.shape
