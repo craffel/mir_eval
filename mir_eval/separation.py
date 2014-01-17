@@ -12,7 +12,7 @@ import numpy as np
 import scipy.linalg
 import itertools
 
-import util
+from . import util
 
 
 def bss_eval_sources(estimated_sources, sources):
@@ -63,7 +63,7 @@ def bss_eval_sources(estimated_sources, sources):
     if sources.shape != estimated_sources.shape:
         raise ValueError('The shape of estimated sources and the true sources '
                          'should match.')
-    nsrc, nsampl = estimated_sources.shape
+    nsrc = estimated_sources.shape[0]
 
     # compute criteria for all possible pair matches
     SDR = np.empty((nsrc, nsrc))
@@ -72,17 +72,18 @@ def bss_eval_sources(estimated_sources, sources):
     for jest in xrange(nsrc):
         for jtrue in xrange(nsrc):
             s_true, e_spat, e_interf, e_artif = \
-                    _bss_decomp_mtifilt(estimated_sources[jest], sources, jtrue, 512)
+                    _bss_decomp_mtifilt(estimated_sources[jest], sources,
+                                        jtrue, 512)
             SDR[jest, jtrue], SIR[jest, jtrue], SAR[jest, jtrue] = \
                     _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
     # select the best ordering
     perms = list(itertools.permutations(xrange(nsrc)))
-    meanSIR = np.empty(len(perms))
+    mean_sir = np.empty(len(perms))
     dum = np.arange(nsrc)
     for (i, perm) in enumerate(perms):
-        meanSIR[i] = np.mean(SIR[perm, dum])
-    popt = perms[np.argmax(meanSIR)]
+        mean_sir[i] = np.mean(SIR[perm, dum])
+    popt = perms[np.argmax(mean_sir)]
     idx = (popt, dum)
     return (SDR[idx], SIR[idx], SAR[idx], popt)
 
@@ -99,7 +100,8 @@ def _bss_decomp_mtifilt(estimated_source, sources, j, flen):
     # true source image
     s_true = np.hstack((sources[j], np.zeros(flen - 1)))
     # spatial (or filtering) distortion
-    e_spat = _project(estimated_source, sources[j, np.newaxis, :], flen) - s_true
+    e_spat = _project(estimated_source, sources[j, np.newaxis, :],
+                      flen) - s_true
     # interference
     e_interf = _project(estimated_source, sources, flen) - s_true - e_spat
     # artifacts
