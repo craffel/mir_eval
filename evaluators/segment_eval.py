@@ -94,7 +94,7 @@ if __name__ == '__main__':
     # Get the parameters
     parameters = process_arguments()
 
-    # Run the beat tracker
+    # Compute all the scores
     scores = evaluate(**parameters)
     print_evaluation(parameters['prediction_file'], scores)
 
