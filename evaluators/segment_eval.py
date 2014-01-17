@@ -65,12 +65,16 @@ def evaluate(truth_file=None, prediction_file=None):
     M['S_Over'], M['S_Under'], M['S_F'] = mir_eval.segment.frame_clustering_nce(annotated_boundaries,
                                                                     predicted_boundaries)
 
+    return M
+
+def print_evaluation(prediction_file, M):
     # And print them
     print os.path.basename(prediction_file)
     for key, value in M.iteritems():
         print '\t%12s:\t%0.3f' % (key, value)
 
     pass
+
 
 def process_arguments():
     '''Argparse function to get the program parameters'''
@@ -92,4 +96,6 @@ if __name__ == '__main__':
     parameters = process_arguments()
 
     # Run the beat tracker
-    evaluate(**parameters)
+    scores = evaluate(**parameters)
+    print_evaluation(parameters['prediction_file'], scores)
+
