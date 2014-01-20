@@ -30,10 +30,10 @@ def segments_to_boundaries(times, labels=None, label_prefix='__'):
     :parameters:
       - times : np.ndarray, shape=(n_events, 2)
           Array of segment start and end-times
-          
+
       - labels : None or list of str
           Optional list of strings describing each event
-          
+
     :returns:
       - boundaries : np.ndarray, shape=(n_segments + 1)
           Segment boundary times, including the end of the final segment
@@ -54,14 +54,14 @@ def segments_to_boundaries(times, labels=None, label_prefix='__'):
 
 def boundaries_to_segments(boundaries, labels=None):
     '''Convert event boundaries into segments
-    
+
     :parameters:
       - boundaries : list-like
           List of event times
-          
+
       - labels : None or list of str
           Optional list of strings describing each event
-          
+
     :returns:
       - segments : np.ndarray, shape=(n_segments, 2)
           Start and end time for each segment
@@ -98,7 +98,7 @@ def adjust_times(times, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
 
         - t_max : float or None
             Maximum valid event time.
-        
+
         - label_prefix : str
             Prefix string to use for synthetic labels
 
@@ -139,82 +139,3 @@ def adjust_times(times, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
                 labels.append('%sT_MAX' % label_prefix)
 
     return times, labels
-
-def nextpow2(x):
-    '''Compute the smallest n such that 2^n >= x
-    '''
-    return np.ceil(np.log2(x))
-
-def fftfilt(b, x, n_fft=None):
-    '''Raw translation of MATLAB fftfilt function (for only 1-d signal).
-        Filter the 1-d signal x with the FIR filter described by the
-        coefficients in b using the overlap-add method. If the FFT
-        length n_fft is not specified, it and the overlap-add block length
-        are selected so as to minimize the computational cost of
-        the filtering operation.
-
-    :parameters:
-      - b : np.array
-          FIR filter coefficients
-
-      - x : np.array
-          Input signal to be filtered
-
-      - n_fft : float or None
-          FFT size
-
-    :returns:
-      - y : np.array
-          The filtered output signal
-
-    :raises:
-      - ValueError
-          If the FIR filter is too long (> 2^20)
-    '''
-    nx = len(x)
-    nb = len(b)
-    if nb > 2**20:
-        raise ValueError('Filters of length greater than 2^20 are not supported.')
-
-    # Determine the FFT and block lengths to use:
-    if n_fft is None:
-        if nb >= nx:
-            n_fft = 2**nextpow2(nb + nx - 1)
-            L = nx
-        else:
-            fft_flops = np.array([18, 59, 138, 303, 660, 1441, 3150, 6875,
-                                  14952, 32373, 69762, 149647, 319644, 680105,
-                                  1441974, 3047619, 6422736, 13500637,
-                                  28311786, 59244791])
-            n = 2**np.arange(1, 21)
-            dum = (n > (nb - 1))
-            n, fft_flops = n[dum], fft_flops[dum]
-            L = n - nb + 1
-            idx = np.argmin(np.ceil(float(nx) / L) * fft_flops)
-            n_fft, L = n[idx], L[idx]
-    else:
-        if n_fft < nb:
-            n_fft = nb
-        n_fft = 2**nextpow2(n_fft)
-        L = n_fft - nb + 1
-
-    n_fft = int(n_fft)
-    B = np.fft.fft(b, n=n_fft)
-    y = np.zeros_like(x, dtype='complex')
-
-    # overlap and add
-    istart = 0
-    while istart < nx:
-        iend = min(istart + L, nx)
-        if iend == istart + 1:
-            # need to fft a scalar
-            X = x[istart] * np.ones((n_fft, 1))
-        else:
-            X = np.fft.fft(x[istart: iend], n=n_fft)
-        Y = np.fft.ifft(X * B)
-        yend = min(nx, istart + n_fft)
-        y[istart: yend] += Y[:(yend - istart)]
-        istart += L
-    if not (np.any(np.imag(x)) or np.any(np.imag(b))):
-        y = np.real(y)
-    return y
