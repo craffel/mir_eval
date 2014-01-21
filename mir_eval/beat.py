@@ -508,7 +508,7 @@ def _get_entropy(annotated_beats, generated_beats, bins):
         if closest_beat == (annotated_beats.shape[0] - 1):
             interval = .5*(annotated_beats[-1] - annotated_beats[-2])
         else:
-            if absolute_error > 0:
+            if absolute_error < 0:
                 # Closest annotation is the one before the current beat
                 # so look at previous inner-annotation-interval
                 start = annotated_beats[closest_beat]
