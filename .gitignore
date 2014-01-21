@@ -26,10 +26,6 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
-# Data files
-*/data/*
-*.mat
-
 # OS generated files #
 .DS_Store
 .DS_Store?
