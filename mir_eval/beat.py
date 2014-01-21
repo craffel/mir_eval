@@ -6,8 +6,8 @@
 '''
 A variety of evaluation techniques for determining a beat tracker's accuracy
 Based on the methods described in
-    Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley. 
-    "Evaluation Methods for Musical Audio Beat Tracking Algorithms", 
+    Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
+    "Evaluation Methods for Musical Audio Beat Tracking Algorithms",
     Queen Mary University of London Technical Report C4DM-TR-09-06
     London, United Kingdom, 8 October 2009.
 See also the Beat Evaluation Toolbox:
@@ -24,13 +24,13 @@ def _clean_beats(annotated_beats, generated_beats, min_beat_time=5.0):
     '''
     Utility function to "clean up" the beats.
     Validates and sorts beat times and removes beats before min_beat_time
-    
+
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
         min_beat_time - Ignore all beats before this time, in seconds
     '''
-    
+
     # Make sure beat locations are 1-d np ndarrays
     if len(annotated_beats.shape) != 1 or len(generated_beats.shape) != 1:
         raise ValueError('Beat locations should be 1-d numpy ndarray')
@@ -58,8 +58,8 @@ def _clean_beats(annotated_beats, generated_beats, min_beat_time=5.0):
 
 def _get_annotated_beat_variations(annotated_beats):
     '''
-    Return metric variations of the annotated beats (double tempo, half tempo, etc)
-    
+    Return metric variations of the annotated beats
+
     Input:
         annotated_beats - np.ndarry of beat locations in seconds
     Output:
@@ -73,7 +73,7 @@ def _get_annotated_beat_variations(annotated_beats):
     # Create annotations at twice the metric level
     interpolated_indices = np.arange(0, annotated_beats.shape[0]-.5, .5)
     original_indices = np.arange(0, annotated_beats.shape[0])
-    double_annotated_beats = np.interp(interpolated_indices, 
+    double_annotated_beats = np.interp(interpolated_indices,
                                        original_indices,
                                        annotated_beats)
     # Return metric variations:
@@ -81,7 +81,7 @@ def _get_annotated_beat_variations(annotated_beats):
     return (annotated_beats,
            double_annotated_beats[1::2],
            double_annotated_beats,
-           annotated_beats[::2], 
+           annotated_beats[::2],
            annotated_beats[1::2])
 
 # <codecell>
@@ -93,7 +93,7 @@ def f_measure(annotated_beats,
     '''
     Compute the F-measure of correct vs incorrectly predicted beats.
     "Corectness" is determined over a small window.
-    
+
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
@@ -136,7 +136,7 @@ def f_measure(annotated_beats,
     false_positives += false_positives + generated_beats.shape[0]
     # Calculate F-measure ensuring that we don't divide by 0
     if 2.0*true_positives + false_positives + false_negatives > 0:
-        f_score = 2.0*true_positives/(2.0*true_positives 
+        f_score = 2.0*true_positives/(2.0*true_positives
                                       + false_positives
                                       + false_negatives)
     else:
@@ -151,7 +151,7 @@ def cemgil(annotated_beats,
            cemgil_sigma=0.04):
     '''
     Cemgil's score, computes a gaussian error of each generated beat.
-    
+
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
@@ -163,7 +163,7 @@ def cemgil(annotated_beats,
     '''
     # Validate and clean up beat times
     annotated_beats, generated_beats = _clean_beats(annotated_beats,
-                                                    generated_beats, 
+                                                    generated_beats,
                                                     min_beat_time)
     # Special case when annotated beats are empty
     if generated_beats.shape == (0,):
@@ -182,7 +182,7 @@ def cemgil(annotated_beats,
         accuracy /= .5*(generated_beats.shape[0] + annotated_beats.shape[0])
         # Add it to our list of accuracy scores
         accuracies.append(accuracy)
-    # Return raw accuracy with non-varied annotations 
+    # Return raw accuracy with non-varied annotations
     # and maximal accuracy across all variations
     return accuracies[0], np.max(accuracies)
 
@@ -195,15 +195,18 @@ def goto(annotated_beats,
          goto_mu=0.2,
          goto_sigma=0.2):
     '''
-    Calculate Goto's accuracy, which is binary 1 or 0 depending on some specific heuristic criteria
-    
+    Calculate Goto's score, a binary 1 or 0 depending on some specific
+    heuristic criteria
+
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
         min_beat_time - Ignore all beats before this time, in seconds
-        goto_threshold - Threshold of beat error for a beat to be considered correct
-        goto_mu - The mean of the beat errors in the continuously correct track must be less than this
-        goto_sigma - The std of the beat errors in the continuously correct track must be less than this
+        goto_threshold - Threshold of beat error for a beat to be "correct"
+        goto_mu - The mean of the beat errors in the continuously correct
+            track must be less than this
+        goto_sigma - The std of the beat errors in the continuously
+            correct track must be less than this
     Output:
         goto_score - Binary 1 or 0 if some specific criteria are met
     '''
@@ -266,7 +269,7 @@ def goto(annotated_beats,
     # If we have a track
     if goto_criteria:
         # Are mean and std of the track less than the required thresholds?
-        if np.mean( track ) < goto_mu and np.std( track ) < goto_sigma:
+        if np.mean(track) < goto_mu and np.std(track) < goto_sigma:
             goto_criteria = 3
     # If all criteria are met, score is 100%!
     return 1.0*(goto_criteria == 3)
@@ -278,13 +281,15 @@ def p_score(annotated_beats,
             min_beat_time=5.0,
             p_score_threshold=0.2):
     '''
-    Get McKinney's P-score, based on the autocorrelation of the annotated and generated beats
-    
+    Get McKinney's P-score.
+    Based on the autocorrelation of the annotated and generated beats
+
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
         min_beat_time - Ignore all beats before this time, in seconds
-        p_score_threshold - Window size will be p_score_threshold*median(inter_annotation_intervals)
+        p_score_threshold - Window size will be
+            p_score_threshold*median(inter_annotation_intervals)
     Output:
         correlation - McKinney's P-score
     '''
@@ -296,16 +301,18 @@ def p_score(annotated_beats,
     if generated_beats.shape == (0,):
         return 0
     # Quantize beats to 10ms
-    fs = 1.0/(0.010)
+    sampling_rate = 1.0/(0.010)
     # Get the largest time index
-    end_point = np.int(np.ceil(np.max([np.max(generated_beats), 
+    end_point = np.int(np.ceil(np.max([np.max(generated_beats),
                                        np.max(annotated_beats)])))
     # Make impulse trains with impulses at beat locations
-    annotations_train = np.zeros(end_point*fs + 1)
-    annotations_train[np.array(np.ceil(annotated_beats*fs), dtype=np.int)] = 1.0
-    generated_train = np.zeros(end_point*fs + 1)
-    generated_train[np.array(np.ceil( generated_beats*fs), dtype=np.int)] = 1.0
-    # Window size to take the correlation over 
+    annotations_train = np.zeros(end_point*sampling_rate + 1)
+    beat_indices = np.ceil(annotated_beats*sampling_rate).astype(np.int)
+    annotations_train[beat_indices] = 1.0
+    generated_train = np.zeros(end_point*sampling_rate + 1)
+    beat_indices = np.ceil(generated_beats*sampling_rate).astype(np.int)
+    generated_train[beat_indices] = 1.0
+    # Window size to take the correlation over
     # defined as .2*median(inter-annotation-intervals)
     annotation_intervals = np.diff(np.flatnonzero(annotations_train))
     win_size = np.round(p_score_threshold*np.median(annotation_intervals))
@@ -316,7 +323,7 @@ def p_score(annotated_beats,
     # Truncate to only valid lags (those corresponding to the window)
     start = middle_lag - win_size
     end = middle_lag + win_size + 1
-    train_correlation = train_correlation[start:end] 
+    train_correlation = train_correlation[start:end]
     # Compute and return the P-score
     n_beats = np.max([generated_beats.shape[0], annotated_beats.shape[0]])
     return np.sum(train_correlation)/n_beats
@@ -329,14 +336,17 @@ def continuity(annotated_beats,
                continuity_phase_threshold=0.175,
                continuity_period_threshold=0.175):
     '''
-    Get metrics based on how much of the generated beat sequence is continually correct
-    
+    Get metrics based on how much of the generated beat sequence is
+    continually correct.
+
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
         min_beat_time - Ignore all beats before this time, in seconds
-        continuity_phase_threshold - Allowable ratio of how far is the generated beat can be from the annotated beat
-        continuity_period_threshold - Allowable distance between the inter-beat-interval and the inter-annotation-interval
+        continuity_phase_threshold - Allowable ratio of how far is the
+            generated beat can be from the annotated beat
+        continuity_period_threshold - Allowable distance between the
+            inter-beat-interval and the inter-annotation-interval
     Output:
         CMLc - Correct metric level, continuous accuracy
         CMLt - Correct metric level, total accuracy (continuity not required)
@@ -381,12 +391,12 @@ def continuity(annotated_beats,
                     annotated_interval = annotated_beats[nearest + 1] - \
                                          annotated_beats[nearest]
                     phase = np.abs(min_difference/annotated_interval)
-                    # How close is the inter-beat-interval 
+                    # How close is the inter-beat-interval
                     # to the inter-annotation-interval?
                     generated_interval = generated_beats[m + 1] - \
                                          generated_beats[m]
                     period = np.abs(1 - generated_interval/annotated_interval)
-                    if (phase < continuity_phase_threshold and 
+                    if (phase < continuity_phase_threshold and
                         period < continuity_period_threshold):
                         # Set this annotation as used
                         used_annotations[nearest] = 1
@@ -414,7 +424,7 @@ def continuity(annotated_beats,
                         beat_success = 1
             # Set whether this beat is matched or not
             beat_successes[m] = beat_success
-        # Add 0s at the begnning and end 
+        # Add 0s at the begnning and end
         # so that we at least find the beginning/end of the generated beats
         beat_successes = np.append(np.append(0, beat_successes), 0)
         # Where is the beat not a match?
@@ -441,8 +451,9 @@ def information_gain(annotated_beats,
                      min_beat_time=5.0,
                      bins=41):
     '''
-    Get the information gain - K-L divergence of the beat error histogram to a uniform histogram
-    
+    Get the information gain - K-L divergence of the beat error histogram
+    to a uniform histogram
+
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
@@ -470,11 +481,12 @@ def information_gain(annotated_beats,
     else:
         information_gain_score = (norm - backward_entropy)/norm
     return information_gain_score
-    
+
 def _get_entropy(annotated_beats, generated_beats, bins):
     '''
-    Helper function for information gain (needs to be run twice - once backwards, once forwards)
-    
+    Helper function for information gain
+    (needs to be run twice - once backwards, once forwards)
+
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
@@ -482,7 +494,7 @@ def _get_entropy(annotated_beats, generated_beats, bins):
     Output:
         entropy - Entropy of beat error histogram
     '''
-    beat_error = np.zeros( generated_beats.shape[0] )
+    beat_error = np.zeros(generated_beats.shape[0])
     for n in xrange(generated_beats.shape[0]):
         # Get index of closest annotation to this beat
         beat_distances = generated_beats[n] - annotated_beats
@@ -523,9 +535,9 @@ def _get_entropy(annotated_beats, generated_beats, bins):
     # Add the last bin height to the first bin
     raw_bin_values[0] += raw_bin_values[-1]
     # Turn into a proper probability distribution
-    raw_bin_values = raw_bin_values/(1.0*np.sum( raw_bin_values ))
+    raw_bin_values = raw_bin_values/(1.0*np.sum(raw_bin_values))
     # Set zero-valued bins to 1 to make the entropy calculation well-behaved
     raw_bin_values[raw_bin_values == 0] = 1
     # Calculate entropy
-    return -np.sum( raw_bin_values * np.log2( raw_bin_values ) )
+    return -np.sum(raw_bin_values * np.log2(raw_bin_values))
 
