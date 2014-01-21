@@ -301,7 +301,7 @@ def p_score(annotated_beats,
     if generated_beats.shape == (0,):
         return 0
     # Quantize beats to 10ms
-    sampling_rate = 1.0/(0.010)
+    sampling_rate = int(1.0/0.010)
     # Get the largest time index
     end_point = np.int(np.ceil(np.max([np.max(generated_beats),
                                        np.max(annotated_beats)])))
@@ -315,7 +315,7 @@ def p_score(annotated_beats,
     # Window size to take the correlation over
     # defined as .2*median(inter-annotation-intervals)
     annotation_intervals = np.diff(np.flatnonzero(annotations_train))
-    win_size = np.round(p_score_threshold*np.median(annotation_intervals))
+    win_size = int(np.round(p_score_threshold*np.median(annotation_intervals)))
     # Get full correlation
     train_correlation = np.correlate(annotations_train, generated_train, 'full')
     # Get the middle element - note we are rounding down on purpose here
