@@ -1,5 +1,5 @@
 # CREATED:2013-08-13 12:02:42 by Brian McFee <brm2132@columbia.edu>
-'''Structural segmentation evaluation, following the protocols of MIREX2012:
+'''Structural segmentation evaluation, following the protocols of MIREX2012.
     - Boundary detection
         - (precision, recall, f-measure)
         - median distance to nearest boundary
@@ -113,7 +113,7 @@ def boundary_deviation(annotated_boundaries, predicted_boundaries, trim=True):
 
     return true_to_predicted, predicted_to_true
 
-def boundaries_to_frames(boundaries, frame_size=0.1):
+def _boundaries_to_frames(boundaries, frame_size=0.1):
     '''Convert a sequence of boundaries to frame-level segment annotations.
     
     :parameters:
@@ -185,8 +185,8 @@ def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_
     '''
 
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
@@ -202,8 +202,8 @@ def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_
 
     return precision, recall, f_measure
 
-def frame_clustering_rand(annotated_boundaries, predicted_boundaries, frame_size=0.1):
-    '''Frame-clustering segmentation via Rand index.
+def frame_clustering_ari(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+    '''Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
 
     :parameters:
         - annotated_boundaries : list-like, float
@@ -227,15 +227,15 @@ def frame_clustering_rand(annotated_boundaries, predicted_boundaries, frame_size
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
 
     return metrics.adjusted_rand_score(y_true, y_pred)
 
-def frame_clustering_mutual_information(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+def frame_clustering_mi(annotated_boundaries, predicted_boundaries, frame_size=0.1):
     '''Frame-clustering segmentation: mutual information metrics.
 
     :parameters:
@@ -264,24 +264,23 @@ def frame_clustering_mutual_information(annotated_boundaries, predicted_boundari
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
 
+    # Mutual information
+    mutual_info         = metrics.mutual_info_score(y_true, y_pred)
 
-
-    ## Adjusted mutual information
-    MI = metrics.mutual_info_score(y_true, y_pred)
-
-    ## Adjusted mutual information
-    AMI = metrics.adjusted_mutual_info_score(y_true, y_pred)
+    # Adjusted mutual information
+    adj_mutual_info     = metrics.adjusted_mutual_info_score(y_true, y_pred)
     
-    ## Normalized mutual information
-    NMI = metrics.normalized_mutual_info_score(y_true, y_pred)
+    # Normalized mutual information
+    norm_mutual_info    = metrics.normalized_mutual_info_score(y_true, y_pred)
 
-    return MI, AMI, NMI
+    return mutual_info, adj_mutual_info, norm_mutual_info
     
 def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation: normalized conditional entropy
@@ -289,66 +288,63 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
     Computes cross-entropy of cluster assignment, normalized by the max-entropy.
 
     :parameters:
-    - annotated_boundaries : list-like, float
-        ground-truth segment boundary times (in seconds)
+        - annotated_boundaries : list-like, float
+            ground-truth segment boundary times (in seconds)
 
-    - predicted_boundaries : list-like, float
-        predicted segment boundary times (in seconds)
+        - predicted_boundaries : list-like, float
+            predicted segment boundary times (in seconds)
 
-    - frame_size : float > 0
-        length (in seconds) of frames for clustering
+        - frame_size : float > 0
+            length (in seconds) of frames for clustering
 
-    - beta : float > 0
-        beta for F-measure
+        - beta : float > 0
+            beta for F-measure
 
     :returns:
-    - S_over
-        Over-clustering score: 
-        `1 - H(y_pred | y_true) / log(|y_pred|)`
-    - S_under
-        Under-clustering score:
-        `1 - H(y_true | y_pred) / log(|y_true|)`
+        - S_over
+            Over-clustering score: 
+            ``1 - H(y_pred | y_true) / log(|y_pred|)``
 
-    - F
-        F-measure for (S_over, S_under)
+        - S_under
+            Under-clustering score:
+            ``1 - H(y_true | y_pred) / log(|y_true|)``
+
+        - F
+            F-measure for (S_over, S_under)
         
-    ..note::
-    - Towards quantitative measures of evaluating song segmentation.
-      Lukashevich, H. ISMIR 2008.
+    ..note:: Towards quantitative measures of evaluating song segmentation.
+        Lukashevich, H. ISMIR 2008.
     '''
 
     # Generate the cluster labels
-    y_true = boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
+    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
 
     # Make the contingency table
-    C = metrics.contingency_matrix(y_true, y_pred).astype(float)
+    contingency = metrics.contingency_matrix(y_true, y_pred).astype(float)
 
     n_frames = len(y_true)
-    n_true, n_pred = C.shape
+    n_true, n_pred = contingency.shape
 
     # Compute the marginals
-    p_pred = C.sum(axis=0) / n_frames
-    p_true = C.sum(axis=1) / n_frames
+    p_pred = contingency.sum(axis=0) / n_frames
+    p_true = contingency.sum(axis=1) / n_frames
 
-    H_true_given_pred = p_pred.dot(scipy.stats.entropy(C, base=2))
-    H_pred_given_true = p_true.dot(scipy.stats.entropy(C.T, base=2))
+    true_given_pred = p_pred.dot(scipy.stats.entropy(contingency,   base=2))
+    pred_given_true = p_true.dot(scipy.stats.entropy(contingency.T, base=2))
 
+    score_over = 0.0
     if n_pred > 1:
-        S_over  = 1. - H_pred_given_true / np.log2(n_pred)
-    else:
-        S_over = 0.0
+        score_over  = 1. - pred_given_true / np.log2(n_pred)
 
+    score_under = 0.0
     if n_true > 1:
-        S_under = 1. - H_true_given_pred / np.log2(n_true)
-    else:
-        S_under = 0.0
+        score_under = 1. - true_given_pred / np.log2(n_true)
 
-    F = 0.0
-    if S_over > 0 or S_under > 0:
-        F = (1 + beta**2) * S_over * S_under / ((beta**2) * S_over + S_under)
+    f_measure = util.f_measure(score_over, score_under, beta=beta)
 
-    return S_over, S_under, F
+    return score_over, score_under, f_measure

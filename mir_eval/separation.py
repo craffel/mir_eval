@@ -10,9 +10,9 @@ Source separation evaluation:
 
 import numpy as np
 from scipy.linalg import toeplitz
+from scipy.signal import fftconvolve
 import itertools
 
-from . import util
 
 def bss_eval_sources(estimated_sources, sources):
     '''BSS_EVAL_SOURCES
@@ -120,7 +120,7 @@ def _project(estimated_source, sources, flen):
     # zero padding and FFT of input data
     sources = np.hstack((sources, np.zeros((nsrc, flen - 1))))
     estimated_source = np.hstack((estimated_source, np.zeros(flen - 1)))
-    n_fft = int(2**util.nextpow2(nsampl + flen - 1))
+    n_fft = int(2**np.ceil(np.log2(nsampl + flen - 1)))
     sf = np.fft.fft(sources, n=n_fft, axis=1)
     sef = np.fft.fft(estimated_source, n=n_fft)
     # inner products between delayed versions of sources
@@ -149,7 +149,7 @@ def _project(estimated_source, sources, flen):
     # Filtering
     sproj = np.zeros(nsampl + flen - 1)
     for i in xrange(nsrc):
-        sproj += util.fftfilt(C[:, i], sources[i])
+        sproj += fftconvolve(C[:, i], sources[i])[:nsampl + flen - 1]
     return sproj
 
 

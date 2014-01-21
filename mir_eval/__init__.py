@@ -3,6 +3,8 @@
 
 # Import all submodules (for each task)
 from . import beat
+from . import chords
+from . import io
 from . import onset
 from . import segment
 from . import separation
