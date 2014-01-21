@@ -18,12 +18,13 @@ from . import util
 
 def f_measure(annotated_onsets, generated_onsets, window=.05):
     """
-    Compute the F-measure, precision, and recall for a sequence of generated onsets
-    
+    Compute the F-measure, precision, and recall for a sequence of onsets
+
     Input:
         annotated_onsets - np.ndarray of reference onset times, in seconds
         generated_onsets - np.ndarray of generated onset times, in seconds
-        window - An onset is correct if it is within +/-window seconds from an annotation, default .05
+        window - An onset is correct if it is within +/-window seconds from an
+            annotation, default .05
     Output:
         f_measure - 2*precision*recall/(precision + recall)
         precision - (# true positives)/(# true positives + # false positives)
