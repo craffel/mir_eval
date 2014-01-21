@@ -12,6 +12,7 @@ Based in part on this script:
 # <codecell>
 
 import numpy as np
+from . import util
 
 # <codecell>
 
@@ -28,6 +29,12 @@ def f_measure(annotated_onsets, generated_onsets, window=.05):
         precision - (# true positives)/(# true positives + # false positives)
         recall - (# true positives)/(# true positives + # false negatives)
     """
+    # If both onset lists are empty, call it perfect accuracy
+    if annotated_onsets.size == 0 and generated_onsets.size == 0:
+        return 1., 1., 1.
+    # If one list is empty and the other isn't, call it 0 accuracy
+    elif annotated_onsets.size == 0 or generated_onsets.size == 0:
+        return 0., 0., 0.
     # Counting the correct/incorrect onsets in this way requires sorting first
     annotated_onsets.sort()
     generated_onsets.sort()
@@ -70,5 +77,5 @@ def f_measure(annotated_onsets, generated_onsets, window=.05):
     precision = true_positives/(true_positives + false_positives)
     recall = true_positives/(true_positives + false_negatives)
     # Compute F-measure and return all statistics
-    return 2*precision*recall/(precision + recall), precision, recall
+    return util.f_measure(precision, recall), precision, recall
 
