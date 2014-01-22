@@ -53,14 +53,14 @@ def clicks(times, fs, click=None, length=None):
 
 # <codecell>
 
-def piano_roll(piano_roll, frequencies, times, fs, function=np.sin, length=None):
+def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     '''
-    Synthesize a semigram using sinusoids
+    Reverse synthesis of a time-frequency representation of a signal
     
     Input:
-        piano_roll - np.ndarray where piano_roll[n, m] is the magnitude of frequencies[n] from times[n] to times[n + 1]
-        frequencies - np.ndarray of size piano_roll.shape[0] denoting the frequency of each row of piano_roll
-        times - np.ndarray of size piano_roll.shape[1] denoting the start time of each column of piano_roll
+        gram - np.ndarray where gram[n, m] is the magnitude of frequencies[n] from times[n] to times[n + 1]
+        frequencies - np.ndarray of size gram.shape[0] denoting the frequency of each row of gram
+        times - np.ndarray of size gram.shape[1] denoting the start time of each column of gram
         fs - desired sampling rate of the output signal
         function - function to use to synthesize notes, should be 2\pi-periodic
         length - desired number of samples in the output signal, defaults to times[-1]*fs
@@ -69,14 +69,15 @@ def piano_roll(piano_roll, frequencies, times, fs, function=np.sin, length=None)
     '''
     # Default value for length
     if length is None:
-        length = times[-1]*fs
+        length = int(times[-1]*fs)
     def _fast_synthesize(frequency):
         ''' A faster (approximte) way to synthesize a signal - synthesize a few periods then repeat that signal '''
         # Generate ten periods at this frequency
         ten_periods = int(10*fs*(1./frequency))
         short_signal = function(2*np.pi*np.arange(ten_periods)*frequency/fs)
         # Repeat the signal until it's of the desired length
-        return np.tile(short_signal, np.ceil(length/short_signal.shape[0]))[:length]
+        n_repeats = int(np.ceil(length/short_signal.shape[0]))
+        return np.tile(short_signal, n_repeats)[:length]
     # Pre-allocate output signal
     output = np.zeros(length)
     for n, frequency in enumerate(frequencies):
@@ -84,7 +85,7 @@ def piano_roll(piano_roll, frequencies, times, fs, function=np.sin, length=None)
         wave = _fast_synthesize(frequency)
         # Scale each time interval by the piano roll magnitude
         for m, (start, end) in enumerate(zip(times[:-1], times[1:])):
-            wave[int(start*fs):int(end*fs)] *= piano_roll[n, m]
+            wave[int(start*fs):int(end*fs)] *= gram[n, m]
         # Sume into the aggregate output waveform
         output += wave
     # Normalize
