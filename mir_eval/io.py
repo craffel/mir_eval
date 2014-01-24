@@ -44,6 +44,12 @@ def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
 
     splitter = re.compile(delimiter)
 
+    # Note: we do io manually here for two reasons.
+    #   1. The csv module has difficulties with unicode, which may lead 
+    #      to failures on certain annotation strings
+    # 
+    #   2. numpy's text loader does not handle non-numeric data
+    # 
     with open(filename, 'r') as input_file:
         for row, line in enumerate(input_file, 1):
             data = splitter.split(line.strip(), 1)
