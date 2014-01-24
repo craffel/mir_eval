@@ -1,9 +1,10 @@
 """Annotation input/output functions"""
 
 import numpy as np
+import re
 
-def load_events(filename, delimiter='\t', converter=None, label_prefix='__'):
-    '''Import time-stamp events from an annotation file.  This is primarily useful for
+def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
+    r'''Import time-stamp events from an annotation file.  This is primarily useful for
     processing events which lack duration, such as beats or onsets.
 
     The annotation file may be either of two formats:
@@ -19,7 +20,8 @@ def load_events(filename, delimiter='\t', converter=None, label_prefix='__'):
           Path to the annotation file
 
       - delimiter : str
-          Separator character
+          Separator regular expression.  
+          By default, lines will be split by any amount of whitespace ('\s+')
 
       - converter : function
           Function to convert time-stamp data into numerics. Defaults to float().
@@ -40,12 +42,11 @@ def load_events(filename, delimiter='\t', converter=None, label_prefix='__'):
     times   = []
     labels  = []
 
+    splitter = re.compile(delimiter)
+
     with open(filename, 'r') as input_file:
         for row, line in enumerate(input_file, 1):
-            data = filter(lambda x: len(x) > 0, line.strip().split(delimiter))
-            
-            if len(data) > 2:
-                data[2:] = delimiter.join(data[2:])
+            data = splitter.split(line.strip(), 1)
 
             if len(data) == 1:
                 times.append(converter(data[0]))
@@ -62,8 +63,8 @@ def load_events(filename, delimiter='\t', converter=None, label_prefix='__'):
 
     return times, labels
 
-def load_annotation(filename, delimiter='\t', converter=None, label_prefix='__'):
-    '''Import annotation events from an annotation file.  This is primarily useful for
+def load_annotation(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
+    r'''Import annotation events from an annotation file.  This is primarily useful for
     processing events which span a duration, such as segmentation, chords, or instrument
     activation.
 
@@ -80,7 +81,8 @@ def load_annotation(filename, delimiter='\t', converter=None, label_prefix='__')
           Path to the annotation file
 
       - delimiter : str
-          Separator character
+          Separator regular expression.  
+          By default, lines will be split by any amount of whitespace ('\s+')
 
       - converter : function
           Function to convert time-stamp data into numerics. Defaults to float().
@@ -102,12 +104,11 @@ def load_annotation(filename, delimiter='\t', converter=None, label_prefix='__')
     times   = []
     labels  = []
 
+    splitter = re.compile(delimiter)
+
     with open(filename, 'r') as input_file:
         for row, line in enumerate(input_file, 1):
-            data = filter(lambda x: len(x) > 0, line.strip().split(delimiter))
-
-            if len(data) > 3:
-                data[2] = delimiter.join(data[2:])
+            data = splitter.split(line.strip(), 2)
 
             if len(data) == 2:
                 times.append([converter(data[0]), converter(data[1])])
