@@ -25,7 +25,7 @@ def test_bss_eval():
     sdr, sir, sar, perm = mir_eval.separation.bss_eval_sources(
         estimated_sources, sources)
     # make sure they all match
-    assert np.allclose(sdr, r_sdr.ravel())
-    assert np.allclose(sir, r_sir.ravel())
-    assert np.allclose(sar, r_sar.ravel())
-    assert np.all(perm == r_perm.ravel())
+    assert np.allclose(sdr, r_sdr)
+    assert np.allclose(sir, r_sir)
+    assert np.allclose(sar, r_sar)
+    assert np.all(perm == r_perm)
