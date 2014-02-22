@@ -107,14 +107,14 @@ def adjust_times(times, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
             Event times corrected to the given range.
     '''
     if t_min is not None:
-        first_idx = np.argwhere(times>= t_min)
+        first_idx = np.argwhere(times >= t_min)
 
         if len(first_idx) > 0:
             # We have events below t_min
             # Crop them out
             if labels is not None:
-                labels = labels[first_idx[0]:]
-            times = times[first_idx[0]:]
+                labels = labels[int(first_idx[0]):]
+            times = times[int(first_idx[0]):]
 
         if times[0] > t_min:
             # Lowest boundary is higher than t_min: add a new boundary and label
@@ -129,8 +129,8 @@ def adjust_times(times, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
             # We have boundaries above t_max.
             # Trim to only boundaries <= t_max
             if labels is not None:
-                labels = labels[:last_idx[0]]
-            times = times[:last_idx[0]]
+                labels = labels[:int(last_idx[0])]
+            times = times[:int(last_idx[0])]
 
         if times[-1] < t_max:
             # Last boundary is below t_max: add a new boundary and label
