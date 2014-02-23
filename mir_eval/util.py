@@ -165,7 +165,8 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
             if labels is not None:
                 labels = labels[int(first_idx[0]):]
             # Clip to the range (t_min, +inf)
-            intervals = np.maximum(t_min, intervals[int(first_idx[0]):])
+            intervals = intervals[int(first_idx[0]):]
+        intervals = np.maximum(t_min, intervals)
 
         if intervals[0, 0] > t_min:
             # Lowest boundary is higher than t_min: add a new boundary and label
@@ -183,7 +184,9 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
             if labels is not None:
                 labels = labels[:int(last_idx[0])]
             # Clip to the range (-inf, t_max)
-            intervals = np.minimum(t_max, intervals[:int(last_idx[0])])
+            intervals = intervals[:int(last_idx[0])]
+
+        intervals = np.minimum(t_max, intervals)
 
         if intervals[-1, -1] < t_max:
             # Last boundary is below t_max: add a new boundary and label
@@ -192,8 +195,6 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
                 labels.append('%sT_MAX' % label_prefix)
 
     return intervals, labels
-
-
 
 def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
     '''Adjust the given list of event times to span the range [t_min, t_max].
