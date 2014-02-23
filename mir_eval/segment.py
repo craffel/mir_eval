@@ -56,8 +56,8 @@ def boundary_detection(reference_intervals, estimated_intervals, window=0.5, bet
     '''
 
     # Convert intervals to boundaries
-    reference_boundaries = util.segments_to_boundaries(reference_intervals)
-    estimated_boundaries = util.segments_to_boundaries(estimated_intervals)
+    reference_boundaries = util.intervals_to_boundaries(reference_intervals)[0]
+    estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)[0]
 
     # Suppress the first and last intervals
     if trim:
@@ -106,8 +106,8 @@ def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
     '''
 
     # Convert intervals to boundaries
-    reference_boundaries = util.segments_to_boundaries(reference_intervals)
-    estimated_boundaries = util.segments_to_boundaries(estimated_intervals)
+    reference_boundaries = util.intervals_to_boundaries(reference_intervals)[0]
+    estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)[0]
 
     # Suppress the first and last intervals
     if trim:
@@ -121,15 +121,29 @@ def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
 
     return true_to_estimated, estimated_to_true
 
-def frame_clustering_pairwise(reference_intervals, estimated_intervals, frame_size=0.1, beta=1.0):
+def frame_clustering_pairwise(reference_intervals, reference_labels, 
+                              estimated_intervals, estimated_labels, 
+                              frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation evaluation by pair-wise agreement.
 
-    :parameters:
-        - reference_intervals : list-like, float
-            ground-truth segment boundary times (in seconds)
+    :usage:
+        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
+        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
+        >>> precision, recall, f   = mir_eval.segment.frame_clustering_pairwise(reference, true_labels,
+                                                                                estimated, pred_labels)
 
-        - estimated_intervals : list-like, float
-            estimated segment boundary times (in seconds)
+    :parameters:
+        - reference_intervals : np.ndarray, shape=(n, 2)
+            reference segment intervals, as returned by `mir_eval.io.load_annotation`
+
+        - reference_labels : list, shape=(n,)
+            reference segment labels, as returned by `mir_eval.io.load_annotation`
+
+        - estimated_intervals : np.ndarray, shape=(m, 2)
+            estimated segment intervals, as returned by `mir_eval.io.load_annotation`
+
+        - estimated_labels : list, shape=(m,)
+            estimated segment labels, as returned by `mir_eval.io.load_annotation`
 
         - frame_size : float > 0
             length (in seconds) of frames for clustering
@@ -149,19 +163,17 @@ def frame_clustering_pairwise(reference_intervals, estimated_intervals, frame_si
             If ``reference_intervals`` and ``estimated_intervals`` do not span the
             same time duration.
 
-    ..note::
-        It is assumed that ``intervals[-1]`` == length of song
-
-    ..note::
-        Segment intervals will be rounded down to the nearest multiple 
-        of frame_size.
-
     ..seealso:: mir_eval.util.adjust_intervals
     '''
 
     # Generate the cluster labels
-    y_true = _intervals_to_frames(reference_intervals, frame_size=frame_size)
-    y_pred = _intervals_to_frames(estimated_intervals, frame_size=frame_size)
+    y_true = util.intervals_to_samples(reference_intervals, reference_labels, sample_size=frame_size)
+    y_true, true_id_to_label = util.index_labels(y_true)
+
+    # Map to index space
+    y_pred = util.intervals_to_samples(estimated_intervals, estimated_labels, sample_size=frame_size)
+    y_pred, pred_id_to_label = util.index_labels(y_pred)
+
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1], estimated_intervals[-1]))
@@ -177,8 +189,16 @@ def frame_clustering_pairwise(reference_intervals, estimated_intervals, frame_si
 
     return precision, recall, f_measure
 
-def frame_clustering_ari(reference_intervals, estimated_intervals, frame_size=0.1):
+def frame_clustering_ari(reference_intervals, reference_labels,
+                         estimated_intervals, estimated_labels,
+                         frame_size=0.1):
     '''Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
+
+    :usage:
+        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
+        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
+        >>> ari_score              = mir_eval.segment.frame_clustering_ari(reference, true_labels,
+                                                                           estimated, pred_labels)
 
     :parameters:
         - reference_intervals : list-like, float
@@ -202,16 +222,29 @@ def frame_clustering_ari(reference_intervals, estimated_intervals, frame_size=0.
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = _intervals_to_frames(reference_intervals, frame_size=frame_size)
-    y_pred = _intervals_to_frames(estimated_intervals, frame_size=frame_size)
+    y_true = util.intervals_to_samples(reference_intervals, reference_labels, sample_size=frame_size)
+    y_true, true_id_to_label = util.index_labels(y_true)
+
+    # Map to index space
+    y_pred = util.intervals_to_samples(estimated_intervals, estimated_labels, sample_size=frame_size)
+    y_pred, pred_id_to_label = util.index_labels(y_pred)
+
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
         raise ValueError('Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1], estimated_intervals[-1]))
 
     return metrics.adjusted_rand_score(y_true, y_pred)
 
-def frame_clustering_mi(reference_intervals, estimated_intervals, frame_size=0.1):
+def frame_clustering_mi(reference_intervals, reference_labels,
+                        estimated_intervals, estimated_labels,
+                        frame_size=0.1):
     '''Frame-clustering segmentation: mutual information metrics.
+
+    :usage:
+        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
+        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
+        >>> mi, ami, nmi           = mir_eval.segment.frame_clustering_mi(reference, true_labels,
+                                                                          estimated, pred_labels)
 
     :parameters:
     - reference_intervals : list-like, float
@@ -239,8 +272,12 @@ def frame_clustering_mi(reference_intervals, estimated_intervals, frame_size=0.1
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = _intervals_to_frames(reference_intervals, frame_size=frame_size)
-    y_pred = _intervals_to_frames(estimated_intervals, frame_size=frame_size)
+    y_true = util.intervals_to_samples(reference_intervals, reference_labels, sample_size=frame_size)
+    y_true, true_id_to_label = util.index_labels(y_true)
+
+    # Map to index space
+    y_pred = util.intervals_to_samples(estimated_intervals, estimated_labels, sample_size=frame_size)
+    y_pred, pred_id_to_label = util.index_labels(y_pred)
 
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
@@ -257,10 +294,19 @@ def frame_clustering_mi(reference_intervals, estimated_intervals, frame_size=0.1
 
     return mutual_info, adj_mutual_info, norm_mutual_info
     
-def frame_clustering_nce(reference_intervals, estimated_intervals, frame_size=0.1, beta=1.0):
+def frame_clustering_nce(reference_intervals, reference_labels,
+                         estimated_intervals, estimated_labels,
+                         frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation: normalized conditional entropy
 
     Computes cross-entropy of cluster assignment, normalized by the max-entropy.
+
+    :usage:
+        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
+        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
+        >>> S_over, S_under, F     = mir_eval.segment.frame_clustering_nce(reference, true_labels,
+                                                                           estimated, pred_labels)
+
 
     :parameters:
         - reference_intervals : list-like, float
@@ -292,8 +338,12 @@ def frame_clustering_nce(reference_intervals, estimated_intervals, frame_size=0.
     '''
 
     # Generate the cluster labels
-    y_true = _intervals_to_frames(reference_intervals, frame_size=frame_size)
-    y_pred = _intervals_to_frames(estimated_intervals, frame_size=frame_size)
+    y_true = util.intervals_to_samples(reference_intervals, reference_labels, sample_size=frame_size)
+    y_true, true_id_to_label = util.index_labels(y_true)
+
+    # Map to index space
+    y_pred = util.intervals_to_samples(estimated_intervals, estimated_labels, sample_size=frame_size)
+    y_pred, pred_id_to_label = util.index_labels(y_pred)
 
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):

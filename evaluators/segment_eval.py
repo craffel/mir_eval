@@ -16,54 +16,43 @@ from collections import OrderedDict
 
 import mir_eval
 
-def evaluate(truth_file=None, prediction_file=None):
+def evaluate(ref_file=None, prediction_file=None):
     '''Load data and perform the evaluation'''
 
     # load the data
-    truth_segs, truth_labels    = mir_eval.io.load_annotation(truth_file)
-    pred_segs, pred_labels      = mir_eval.io.load_annotation(prediction_file)
-
-    # Convert to boundaries
-    annotated_boundaries        = mir_eval.util.segments_to_boundaries(truth_segs)[0]
-    predicted_boundaries        = mir_eval.util.segments_to_boundaries(pred_segs)[0]
-
-    # Adjust the predictions to match the annotation time span (0 to end-of-track)
-
-    # The [0] at the end is to just get the boundaries without the labels
-    predicted_boundaries        = mir_eval.util.adjust_times(predicted_boundaries, 
-                                                        t_min=annotated_boundaries.min(), 
-                                                        t_max=annotated_boundaries.max())[0]
+    ref_intervals, ref_labels   = mir_eval.io.load_annotation(ref_file)
+    est_intervals, est_labels   = mir_eval.io.load_annotation(prediction_file)
 
     # Now compute all the metrics
     
     M = OrderedDict()
     # Boundary detection
-    M['P@0.5'], M['R@0.5'], M['F@0.5']  = mir_eval.segment.boundary_detection(annotated_boundaries,
-                                                                  predicted_boundaries,
+    M['P@0.5'], M['R@0.5'], M['F@0.5']  = mir_eval.segment.boundary_detection(ref_intervals,
+                                                                  est_intervals,
                                                                   window=0.5)
 
-    M['P@3.0'], M['R@3.0'], M['F@3.0']  = mir_eval.segment.boundary_detection(annotated_boundaries,
-                                                                 predicted_boundaries,
+    M['P@3.0'], M['R@3.0'], M['F@3.0']  = mir_eval.segment.boundary_detection(ref_intervals,
+                                                                 est_intervals,
                                                                  window=3.0)
     # Boundary deviation
-    M['True-to-Pred'], M['Pred-to-True'] = mir_eval.segment.boundary_deviation(annotated_boundaries,
-                                                                  predicted_boundaries)
+    M['True-to-Pred'], M['Pred-to-True'] = mir_eval.segment.boundary_deviation(ref_intervals,
+                                                                  est_intervals)
 
     # Pairwise clustering
-    M['Pair-P'], M['Pair-R'], M['Pair-F'] = mir_eval.segment.frame_clustering_pairwise(annotated_boundaries,
-                                                                         predicted_boundaries)
+#     M['Pair-P'], M['Pair-R'], M['Pair-F'] = mir_eval.segment.frame_clustering_pairwise(reference_boundaries,
+#                                                                          estimated_boundaries)
 
     # Adjusted rand index
-    M['ARI']                     = mir_eval.segment.frame_clustering_ari(annotated_boundaries,
-                                                                    predicted_boundaries)
+#     M['ARI']                     = mir_eval.segment.frame_clustering_ari(reference_boundaries,
+#                                                                     estimated_boundaries)
 
     # Mutual information metrics
-    M['MI'], M['AMI'], M['NMI']            = mir_eval.segment.frame_clustering_mi(annotated_boundaries,
-                                                                   predicted_boundaries)
+#     M['MI'], M['AMI'], M['NMI']            = mir_eval.segment.frame_clustering_mi(reference_boundaries,
+#                                                                    estimated_boundaries)
 
     # Conditional entropy metrics
-    M['S_Over'], M['S_Under'], M['S_F'] = mir_eval.segment.frame_clustering_nce(annotated_boundaries,
-                                                                    predicted_boundaries)
+#     M['S_Over'], M['S_Under'], M['S_F'] = mir_eval.segment.frame_clustering_nce(reference_boundaries,
+#                                                                     estimated_boundaries)
 
     return M
 
@@ -80,7 +69,7 @@ def process_arguments():
 
     parser = argparse.ArgumentParser(description='mir_eval segmentation evaluation')
 
-    parser.add_argument(    'truth_file',
+    parser.add_argument(    'ref_file',
                             action      =   'store',
                             help        =   'path to the ground truth annotation')
 
