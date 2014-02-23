@@ -20,19 +20,19 @@ def boundary_detection(reference_intervals, estimated_intervals, window=0.5, bet
 
     :usage:
         >>> # With 0.5s windowing
-        >>> reference, true_labels = mir_eval.util.import_segments('truth.csv')
-        >>> estimated, pred_labels = mir_eval.util.import_segments('prediction.csv')
+        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
+        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
         >>> P05, R05, F05 = mir_eval.segment.boundary_detection(reference, estimated, window=0.5)
         >>> # With 3s windowing
         >>> P3, R3, F3 = mir_eval.segment.boundary_detection(reference, estimated, window=3)
 
 
     :parameters:
-        - reference_intervals : list-like, float
-            ground-truth segment boundary times (in seconds)
+        - reference_intervals : np.ndarray, shape=(n, 2)
+            reference segment intervals, as returned by `mir_eval.io.load_annotation`
 
-        - estimated_intervals : list-like, float
-            estimated segment boundary times (in seconds)
+        - estimated_intervals : np.ndarray, shape=(m, 2)
+            estimated segment intervals, as returned by `mir_eval.io.load_annotation`
 
         - window : float > 0
             size of the window of 'correctness' around ground-truth beats (in seconds)
@@ -41,7 +41,7 @@ def boundary_detection(reference_intervals, estimated_intervals, window=0.5, bet
             weighting constant for F-measure.
 
         - trim : boolean
-            if ``True``, the first and last intervals are ignored.
+            if ``True``, the first and last boundary times are ignored.
             Typically, these denote start (0) and end-markers.
 
     :returns:
@@ -55,13 +55,17 @@ def boundary_detection(reference_intervals, estimated_intervals, window=0.5, bet
             F-measure (weighted harmonic mean of ``precision`` and ``recall``)
     '''
 
+    # Convert intervals to boundaries
+    reference_boundaries = util.segments_to_boundaries(reference_intervals)
+    estimated_boundaries = util.segments_to_boundaries(estimated_intervals)
+
     # Suppress the first and last intervals
     if trim:
-        reference_intervals = reference_intervals[1:-1]
-        estimated_intervals = estimated_intervals[1:-1]
+        reference_boundaries = reference_boundaries[1:-1]
+        estimated_boundaries = estimated_boundaries[1:-1]
 
     # Compute the hits
-    dist        = np.abs( np.subtract.outer(reference_intervals, estimated_intervals)) <= window
+    dist        = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries)) <= window
 
     # Precision: how many estimated intervals were hits?
     precision   = np.mean(dist.max(axis=0))
@@ -78,16 +82,16 @@ def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
     '''Compute the median deviations between reference and estimated boundary times.
 
     :usage:
-        >>> reference, true_labels = mir_eval.util.import_segments('truth.csv')
-        >>> estimated, pred_labels = mir_eval.util.import_segments('prediction.csv')
+        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
+        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
         >>> t_to_p, p_to_t = mir_eval.segment.boundary_deviation(reference, estimated)
 
     :parameters:
-        - reference_intervals : list-like, float
-            ground-truth segment boundary times (in seconds)
+        - reference_intervals : np.ndarray, shape=(n, 2)
+            reference segment intervals, as returned by `mir_eval.io.load_annotation`
 
-        - estimated_intervals : list-like, float
-            estimated segment boundary times (in seconds)
+        - estimated_intervals : np.ndarray, shape=(m, 2)
+            estimated segment intervals, as returned by `mir_eval.io.load_annotation`
 
         - trim : boolean
             if ``True``, the first and last intervals are ignored.
@@ -101,50 +105,21 @@ def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
             median time from each estimated boundary to the closest true boundary
     '''
 
+    # Convert intervals to boundaries
+    reference_boundaries = util.segments_to_boundaries(reference_intervals)
+    estimated_boundaries = util.segments_to_boundaries(estimated_intervals)
+
     # Suppress the first and last intervals
     if trim:
-        reference_intervals = reference_intervals[1:-1]
-        estimated_intervals = estimated_intervals[1:-1]
+        reference_boundaries = reference_boundaries[1:-1]
+        estimated_boundaries = estimated_boundaries[1:-1]
 
-    dist = np.abs( np.subtract.outer(reference_intervals, estimated_intervals) )
+    dist = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries) )
 
     true_to_estimated = np.median(np.sort(dist, axis=1)[:, 0])
     estimated_to_true = np.median(np.sort(dist, axis=0)[0, :])
 
     return true_to_estimated, estimated_to_true
-
-def _intervals_to_frames(intervals, frame_size=0.1):
-    '''Convert a sequence of intervals to frame-level segment annotations.
-    
-    :parameters:
-        - intervals : list-like float
-            segment boundary times (in seconds).
-
-        - frame_size : float > 0
-            duration of each frame (in seconds)
-
-    :returns:
-        - y : np.array, dtype=int
-            array of segment labels for each frame
-
-    ..note::
-        It is assumed that ``intervals[-1]` == length of song
-
-    ..note::
-        Segment intervals will be rounded down to the nearest multiple 
-        of ``frame_size``.
-    '''
-    
-    intervals = np.sort(frame_size * np.round(intervals / frame_size))
-    intervals = np.unique(np.concatenate(([0], intervals)))
-
-    # Build the frame label array
-    y = np.zeros(int(intervals[-1] / frame_size))
-
-    for (i, (start, end)) in enumerate(zip(intervals[:-1], intervals[1:])):
-        y[int(start / frame_size):int(end / frame_size)] = i
-
-    return y
 
 def frame_clustering_pairwise(reference_intervals, estimated_intervals, frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation evaluation by pair-wise agreement.

@@ -90,10 +90,10 @@ def f_measure(precision, recall, beta=1.0):
 
     return (1 + beta**2) * precision * recall / ((beta**2) * precision + recall)
 
-def segments_to_boundaries(times, labels=None, label_prefix='__'):
-    '''Convert segment start-end times into boundaries.
+def intervals_to_boundaries(intervals, labels=None, label_prefix='__'):
+    '''Convert segment interval times into boundaries.
     :parameters:
-      - times : np.ndarray, shape=(n_events, 2)
+      - intervals : np.ndarray, shape=(n_events, 2)
           Array of segment start and end-times
 
       - labels : None or list of str
@@ -107,7 +107,7 @@ def segments_to_boundaries(times, labels=None, label_prefix='__'):
           Labels for each event
     '''
 
-    boundaries = np.unique(np.ravel(times))
+    boundaries = np.unique(np.ravel(intervals))
 
     if labels is None:
         boundary_labels = None
@@ -117,8 +117,8 @@ def segments_to_boundaries(times, labels=None, label_prefix='__'):
 
     return boundaries, boundary_labels
 
-def boundaries_to_segments(boundaries, labels=None):
-    '''Convert event boundaries into segments
+def boundaries_to_intervals(boundaries, labels=None):
+    '''Convert an array of event times into intervals
 
     :parameters:
       - boundaries : list-like
@@ -135,14 +135,14 @@ def boundaries_to_segments(boundaries, labels=None):
           Labels for each event.
     '''
 
-    segments = np.asarray(zip(boundaries[:-1], boundaries[1:]))
+    intervals = np.asarray(zip(boundaries[:-1], boundaries[1:]))
 
     if labels is None:
-        segment_labels = None
+        interval_labels = None
     else:
-        segment_labels = labels[:-1]
+        interval_labels = labels[:-1]
 
-    return segments, segment_labels
+    return intervals, interval_labels
 
 def adjust_times(times, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
     '''Adjust the given list of event times to span the range [t_min, t_max].
