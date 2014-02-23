@@ -24,11 +24,6 @@ def evaluate(truth_file=None, prediction_file=None):
     truth_beats, truth_labels    = mir_eval.io.load_events(truth_file)
     pred_beats, pred_labels      = mir_eval.io.load_events(prediction_file)
 
-    # Adjust the predictions to match the annotation time span (0 to end-of-track)
-    pred_beats                  = mir_eval.util.adjust_times(pred_beats, 
-                                                        t_min=truth_beats.min(), 
-                                                        t_max=truth_beats.max())[0]
-
     # Now compute all the metrics
     
     M = OrderedDict()
