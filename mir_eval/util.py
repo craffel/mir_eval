@@ -144,7 +144,58 @@ def boundaries_to_intervals(boundaries, labels=None):
 
     return intervals, interval_labels
 
-def adjust_times(times, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
+def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
+    '''Adjust a list of time intervals to span the range [t_min, t_max].
+
+    Any intervals lying completely outside the specified range will be removed.
+
+    Any intervals lying partially outside the specified range will be truncated.
+
+    If the specified range exceeds the span of the provided data in either direction,
+    additional intervals will be appended.
+
+    '''
+
+    if t_min is not None:
+        # Find the intervals that end at or after t_min
+        first_idx = np.argwhere(intervals[:, 1] >= t_min)
+        
+        if len(first_idx) > 0:
+            # If we have events below t_min, crop them out
+            if labels is not None:
+                labels = labels[int(first_idx[0]):]
+            # Clip to the range (t_min, +inf)
+            intervals = np.maximum(t_min, intervals[int(first_idx[0]):])
+
+        if intervals[0, 0] > t_min:
+            # Lowest boundary is higher than t_min: add a new boundary and label
+            intervals = np.vstack( ([t_min, intervals[0, 0]], intervals) )
+            if labels is not None:
+                labels.insert(0, '%sT_MIN' % label_prefix)
+
+    if t_max is not None:
+        # Find the intervals that begin after t_max
+        last_idx = np.argwhere(intervals[:, 0] > t_max)
+
+        if len(last_idx) > 0:
+            # We have boundaries above t_max.
+            # Trim to only boundaries <= t_max
+            if labels is not None:
+                labels = labels[:int(last_idx[0])]
+            # Clip to the range (-inf, t_max)
+            intervals = np.minimum(t_max, intervals[:int(last_idx[0])])
+
+        if intervals[-1, -1] < t_max:
+            # Last boundary is below t_max: add a new boundary and label
+            intervals = np.vstack( (intervals, [intervals[-1, -1], t_max]) )
+            if labels is not None:
+                labels.append('%sT_MAX' % label_prefix)
+
+    return intervals, labels
+
+
+
+def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
     '''Adjust the given list of event times to span the range [t_min, t_max].
 
     Any event times outside of the specified range will be removed.
@@ -152,7 +203,7 @@ def adjust_times(times, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
     If the times do not span [t_min, t_max], additional events will be inserted.
 
     :parameters:
-        - times : np.array
+        - events : np.array
             Array of event times (seconds)
 
         - labels : list or None
@@ -172,35 +223,35 @@ def adjust_times(times, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
             Event times corrected to the given range.
     '''
     if t_min is not None:
-        first_idx = np.argwhere(times >= t_min)
+        first_idx = np.argwhere(events >= t_min)
 
         if len(first_idx) > 0:
             # We have events below t_min
             # Crop them out
             if labels is not None:
                 labels = labels[int(first_idx[0]):]
-            times = times[int(first_idx[0]):]
+            events = events[int(first_idx[0]):]
 
-        if times[0] > t_min:
+        if events[0] > t_min:
             # Lowest boundary is higher than t_min: add a new boundary and label
-            times = np.concatenate( ([t_min], times) )
+            events = np.concatenate( ([t_min], events) )
             if labels is not None:
                 labels.insert(0, '%sT_MIN' % label_prefix)
 
     if t_max is not None:
-        last_idx = np.argwhere(times > t_max)
+        last_idx = np.argwhere(events> t_max)
 
         if len(last_idx) > 0:
             # We have boundaries above t_max.
             # Trim to only boundaries <= t_max
             if labels is not None:
                 labels = labels[:int(last_idx[0])]
-            times = times[:int(last_idx[0])]
+            events = events[:int(last_idx[0])]
 
-        if times[-1] < t_max:
+        if events[-1] < t_max:
             # Last boundary is below t_max: add a new boundary and label
-            times = np.concatenate( (times, [t_max]))
+            events= np.concatenate( (events, [t_max]))
             if labels is not None:
                 labels.append('%sT_MAX' % label_prefix)
 
-    return times, labels
+    return events, labels
