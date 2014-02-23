@@ -12,27 +12,27 @@ import sklearn.metrics.cluster as metrics
 
 from . import util
 
-def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, beta=1.0, trim=True):
+def boundary_detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, trim=True):
     '''Boundary detection hit-rate.  
 
-    A hit is counted whenever an annotated boundary is within ``window`` of a predicted
+    A hit is counted whenever an reference boundary is within ``window`` of a estimated
     boundary.
 
     :usage:
         >>> # With 0.5s windowing
-        >>> annotated, true_labels = mir_eval.util.import_segments('truth.csv')
-        >>> predicted, pred_labels = mir_eval.util.import_segments('prediction.csv')
-        >>> P05, R05, F05 = mir_eval.segment.boundary_detection(annotated, predicted, window=0.5)
+        >>> reference, true_labels = mir_eval.util.import_segments('truth.csv')
+        >>> estimated, pred_labels = mir_eval.util.import_segments('prediction.csv')
+        >>> P05, R05, F05 = mir_eval.segment.boundary_detection(reference, estimated, window=0.5)
         >>> # With 3s windowing
-        >>> P3, R3, F3 = mir_eval.segment.boundary_detection(annotated, predicted, window=3)
+        >>> P3, R3, F3 = mir_eval.segment.boundary_detection(reference, estimated, window=3)
 
 
     :parameters:
-        - annotated_boundaries : list-like, float
+        - reference_intervals : list-like, float
             ground-truth segment boundary times (in seconds)
 
-        - predicted_boundaries : list-like, float
-            predicted segment boundary times (in seconds)
+        - estimated_intervals : list-like, float
+            estimated segment boundary times (in seconds)
 
         - window : float > 0
             size of the window of 'correctness' around ground-truth beats (in seconds)
@@ -41,7 +41,7 @@ def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, b
             weighting constant for F-measure.
 
         - trim : boolean
-            if ``True``, the first and last boundaries are ignored.
+            if ``True``, the first and last intervals are ignored.
             Typically, these denote start (0) and end-markers.
 
     :returns:
@@ -55,18 +55,18 @@ def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, b
             F-measure (weighted harmonic mean of ``precision`` and ``recall``)
     '''
 
-    # Suppress the first and last boundaries
+    # Suppress the first and last intervals
     if trim:
-        annotated_boundaries = annotated_boundaries[1:-1]
-        predicted_boundaries = predicted_boundaries[1:-1]
+        reference_intervals = reference_intervals[1:-1]
+        estimated_intervals = estimated_intervals[1:-1]
 
     # Compute the hits
-    dist        = np.abs( np.subtract.outer(annotated_boundaries, predicted_boundaries)) <= window
+    dist        = np.abs( np.subtract.outer(reference_intervals, estimated_intervals)) <= window
 
-    # Precision: how many predicted boundaries were hits?
+    # Precision: how many estimated intervals were hits?
     precision   = np.mean(dist.max(axis=0))
 
-    # Recall: how many of the boundaries did we catch?
+    # Recall: how many of the intervals did we catch?
     recall      = np.mean(dist.max(axis=1))
 
     # And the f-measure
@@ -74,50 +74,50 @@ def boundary_detection(annotated_boundaries, predicted_boundaries, window=0.5, b
 
     return precision, recall, f_measure
 
-def boundary_deviation(annotated_boundaries, predicted_boundaries, trim=True):
-    '''Compute the median deviations between annotated and predicted boundary times.
+def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
+    '''Compute the median deviations between reference and estimated boundary times.
 
     :usage:
-        >>> annotated, true_labels = mir_eval.util.import_segments('truth.csv')
-        >>> predicted, pred_labels = mir_eval.util.import_segments('prediction.csv')
-        >>> t_to_p, p_to_t = mir_eval.segment.boundary_deviation(annotated, predicted)
+        >>> reference, true_labels = mir_eval.util.import_segments('truth.csv')
+        >>> estimated, pred_labels = mir_eval.util.import_segments('prediction.csv')
+        >>> t_to_p, p_to_t = mir_eval.segment.boundary_deviation(reference, estimated)
 
     :parameters:
-        - annotated_boundaries : list-like, float
+        - reference_intervals : list-like, float
             ground-truth segment boundary times (in seconds)
 
-        - predicted_boundaries : list-like, float
-            predicted segment boundary times (in seconds)
+        - estimated_intervals : list-like, float
+            estimated segment boundary times (in seconds)
 
         - trim : boolean
-            if ``True``, the first and last boundaries are ignored.
+            if ``True``, the first and last intervals are ignored.
             Typically, these denote start (0) and end-markers.
 
     :returns:
-        - true_to_predicted : float
-            median time from each true boundary to the closest predicted boundary
+        - true_to_estimated : float
+            median time from each true boundary to the closest estimated boundary
 
-        - predicted_to_true : float
-            median time from each predicted boundary to the closest true boundary
+        - estimated_to_true : float
+            median time from each estimated boundary to the closest true boundary
     '''
 
-    # Suppress the first and last boundaries
+    # Suppress the first and last intervals
     if trim:
-        annotated_boundaries = annotated_boundaries[1:-1]
-        predicted_boundaries = predicted_boundaries[1:-1]
+        reference_intervals = reference_intervals[1:-1]
+        estimated_intervals = estimated_intervals[1:-1]
 
-    dist = np.abs( np.subtract.outer(annotated_boundaries, predicted_boundaries) )
+    dist = np.abs( np.subtract.outer(reference_intervals, estimated_intervals) )
 
-    true_to_predicted = np.median(np.sort(dist, axis=1)[:, 0])
-    predicted_to_true = np.median(np.sort(dist, axis=0)[0, :])
+    true_to_estimated = np.median(np.sort(dist, axis=1)[:, 0])
+    estimated_to_true = np.median(np.sort(dist, axis=0)[0, :])
 
-    return true_to_predicted, predicted_to_true
+    return true_to_estimated, estimated_to_true
 
-def _boundaries_to_frames(boundaries, frame_size=0.1):
-    '''Convert a sequence of boundaries to frame-level segment annotations.
+def _intervals_to_frames(intervals, frame_size=0.1):
+    '''Convert a sequence of intervals to frame-level segment annotations.
     
     :parameters:
-        - boundaries : list-like float
+        - intervals : list-like float
             segment boundary times (in seconds).
 
         - frame_size : float > 0
@@ -128,33 +128,33 @@ def _boundaries_to_frames(boundaries, frame_size=0.1):
             array of segment labels for each frame
 
     ..note::
-        It is assumed that ``boundaries[-1]` == length of song
+        It is assumed that ``intervals[-1]` == length of song
 
     ..note::
-        Segment boundaries will be rounded down to the nearest multiple 
+        Segment intervals will be rounded down to the nearest multiple 
         of ``frame_size``.
     '''
     
-    boundaries = np.sort(frame_size * np.round(boundaries / frame_size))
-    boundaries = np.unique(np.concatenate(([0], boundaries)))
+    intervals = np.sort(frame_size * np.round(intervals / frame_size))
+    intervals = np.unique(np.concatenate(([0], intervals)))
 
     # Build the frame label array
-    y = np.zeros(int(boundaries[-1] / frame_size))
+    y = np.zeros(int(intervals[-1] / frame_size))
 
-    for (i, (start, end)) in enumerate(zip(boundaries[:-1], boundaries[1:])):
+    for (i, (start, end)) in enumerate(zip(intervals[:-1], intervals[1:])):
         y[int(start / frame_size):int(end / frame_size)] = i
 
     return y
 
-def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_size=0.1, beta=1.0):
+def frame_clustering_pairwise(reference_intervals, estimated_intervals, frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation evaluation by pair-wise agreement.
 
     :parameters:
-        - annotated_boundaries : list-like, float
+        - reference_intervals : list-like, float
             ground-truth segment boundary times (in seconds)
 
-        - predicted_boundaries : list-like, float
-            predicted segment boundary times (in seconds)
+        - estimated_intervals : list-like, float
+            estimated segment boundary times (in seconds)
 
         - frame_size : float > 0
             length (in seconds) of frames for clustering
@@ -171,25 +171,25 @@ def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_
 
     :raises:
         - ValueError
-            If ``annotated_boundaries`` and ``predicted_boundaries`` do not span the
+            If ``reference_intervals`` and ``estimated_intervals`` do not span the
             same time duration.
 
     ..note::
-        It is assumed that ``boundaries[-1]`` == length of song
+        It is assumed that ``intervals[-1]`` == length of song
 
     ..note::
-        Segment boundaries will be rounded down to the nearest multiple 
+        Segment intervals will be rounded down to the nearest multiple 
         of frame_size.
 
-    ..seealso:: mir_eval.util.adjust_boundaries
+    ..seealso:: mir_eval.util.adjust_intervals
     '''
 
     # Generate the cluster labels
-    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _intervals_to_frames(reference_intervals, frame_size=frame_size)
+    y_pred = _intervals_to_frames(estimated_intervals, frame_size=frame_size)
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
-        raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
+        raise ValueError('Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1], estimated_intervals[-1]))
 
     # Construct the label-agreement matrices
     agree_true  = np.triu(np.equal.outer(y_true, y_true))
@@ -202,15 +202,15 @@ def frame_clustering_pairwise(annotated_boundaries, predicted_boundaries, frame_
 
     return precision, recall, f_measure
 
-def frame_clustering_ari(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+def frame_clustering_ari(reference_intervals, estimated_intervals, frame_size=0.1):
     '''Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
 
     :parameters:
-        - annotated_boundaries : list-like, float
+        - reference_intervals : list-like, float
             ground-truth segment boundary times (in seconds)
 
-        - predicted_boundaries : list-like, float
-            predicted segment boundary times (in seconds)
+        - estimated_intervals : list-like, float
+            estimated segment boundary times (in seconds)
 
         - frame_size : float > 0
             length (in seconds) of frames for clustering
@@ -220,30 +220,30 @@ def frame_clustering_ari(annotated_boundaries, predicted_boundaries, frame_size=
             Adjusted Rand index between segmentations.
 
     ..note::
-        It is assumed that ``boundaries[-1]`` == length of song
+        It is assumed that ``intervals[-1]`` == length of song
 
     ..note::
-        Segment boundaries will be rounded down to the nearest multiple 
+        Segment intervals will be rounded down to the nearest multiple 
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _intervals_to_frames(reference_intervals, frame_size=frame_size)
+    y_pred = _intervals_to_frames(estimated_intervals, frame_size=frame_size)
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
-        raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
+        raise ValueError('Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1], estimated_intervals[-1]))
 
     return metrics.adjusted_rand_score(y_true, y_pred)
 
-def frame_clustering_mi(annotated_boundaries, predicted_boundaries, frame_size=0.1):
+def frame_clustering_mi(reference_intervals, estimated_intervals, frame_size=0.1):
     '''Frame-clustering segmentation: mutual information metrics.
 
     :parameters:
-    - annotated_boundaries : list-like, float
+    - reference_intervals : list-like, float
         ground-truth segment boundary times (in seconds)
 
-    - predicted_boundaries : list-like, float
-        predicted segment boundary times (in seconds)
+    - estimated_intervals : list-like, float
+        estimated segment boundary times (in seconds)
 
     - frame_size : float > 0
         length (in seconds) of frames for clustering
@@ -257,19 +257,19 @@ def frame_clustering_mi(annotated_boundaries, predicted_boundaries, frame_size=0
         Normalize mutual information between segmentations
 
     ..note::
-        It is assumed that `boundaries[-1] == length of song`
+        It is assumed that `intervals[-1] == length of song`
 
     ..note::
-        Segment boundaries will be rounded down to the nearest multiple 
+        Segment intervals will be rounded down to the nearest multiple 
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _intervals_to_frames(reference_intervals, frame_size=frame_size)
+    y_pred = _intervals_to_frames(estimated_intervals, frame_size=frame_size)
 
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
-        raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
+        raise ValueError('Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1], estimated_intervals[-1]))
 
     # Mutual information
     mutual_info         = metrics.mutual_info_score(y_true, y_pred)
@@ -282,17 +282,17 @@ def frame_clustering_mi(annotated_boundaries, predicted_boundaries, frame_size=0
 
     return mutual_info, adj_mutual_info, norm_mutual_info
     
-def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=0.1, beta=1.0):
+def frame_clustering_nce(reference_intervals, estimated_intervals, frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation: normalized conditional entropy
 
     Computes cross-entropy of cluster assignment, normalized by the max-entropy.
 
     :parameters:
-        - annotated_boundaries : list-like, float
+        - reference_intervals : list-like, float
             ground-truth segment boundary times (in seconds)
 
-        - predicted_boundaries : list-like, float
-            predicted segment boundary times (in seconds)
+        - estimated_intervals : list-like, float
+            estimated segment boundary times (in seconds)
 
         - frame_size : float > 0
             length (in seconds) of frames for clustering
@@ -317,12 +317,12 @@ def frame_clustering_nce(annotated_boundaries, predicted_boundaries, frame_size=
     '''
 
     # Generate the cluster labels
-    y_true = _boundaries_to_frames(annotated_boundaries, frame_size=frame_size)
-    y_pred = _boundaries_to_frames(predicted_boundaries, frame_size=frame_size)
+    y_true = _intervals_to_frames(reference_intervals, frame_size=frame_size)
+    y_pred = _intervals_to_frames(estimated_intervals, frame_size=frame_size)
 
     # Make sure we have the same number of frames
     if len(y_true) != len(y_pred):
-        raise ValueError('Timing mismatch: %.3f vs %.3f' % (annotated_boundaries[-1], predicted_boundaries[-1]))
+        raise ValueError('Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1], estimated_intervals[-1]))
 
     # Make the contingency table: shape = (n_true, n_pred)
     contingency = metrics.contingency_matrix(y_true, y_pred).astype(float)

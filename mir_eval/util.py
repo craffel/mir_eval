@@ -2,6 +2,71 @@
 
 import numpy as np
 
+def index_labels(labels):
+    '''Convert a list of string identifiers into numerical indices.
+
+    :parameters:
+        - labels : list, shape=(n,)
+          A list of annotations, e.g., segment or chord labels from an annotation file.
+          ``labels[i]`` can be any hashable type (such as `str` or `int`)
+
+    :returns:
+        - indices : list, shape=(n,)
+          Numerical representation of `labels`
+
+        - index_to_label : dict
+          Mapping to convert numerical indices back to labels.
+          `labels[i] == index_to_label[indices[i]]``
+    '''
+
+    label_to_index = {}
+    index_to_label = {}
+
+    # First, build the unique label mapping
+    for index, s in enumerate(sorted(set(labels))):
+        label_to_index[s]       = index
+        index_to_label[index]   = s
+
+    # Remap the labels to indices
+    indices = [label_to_index[s] for s in labels]
+
+    # Return the converted labels, and the inverse mapping
+    return indices, index_to_label
+
+def intervals_to_samples(intervals, labels, sample_size=0.1):
+    '''Convert an array of labeled time intervals to annotated samples.
+    
+    :parameters:
+        - intervals : np.ndarray, shape=(n, d)
+            An array of time intervals, as returned by
+            ``mir_eval.io.load_annotation``.
+            The `i`th interval spans time ``intervals[i, 0]`` to ``intervals[i, 1]``.
+
+        - labels : list, shape=(n,)
+            The annotation for each interval
+
+        - sample_size : float > 0
+            duration of each sample to be generated (in seconds)
+
+    :returns:
+        - sample_labels : list
+            array of segment labels for each generated sample
+
+    ..note::
+        Segment intervals will be rounded down to the nearest multiple 
+        of ``frame_size``.
+    '''
+
+    # Round intervals to the sample size
+    intervals = np.round(intervals / sample_size)
+
+    # Build the frame label array
+    y = []
+    for (i, (start, end)) in enumerate(zip(intervals[:, 0], intervals[:, 1])):
+        y.extend([labels[i]] * int( (end - start) ))
+
+    return y
+
 def f_measure(precision, recall, beta=1.0):
     '''Compute the f-measure from precision and recall scores.
 
