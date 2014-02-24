@@ -64,6 +64,10 @@ def boundary_detection(reference_intervals, estimated_intervals, window=0.5, bet
         reference_boundaries = reference_boundaries[1:-1]
         estimated_boundaries = estimated_boundaries[1:-1]
 
+    # If we have no boundaries, we get no score.
+    if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
+        return 0.0, 0.0, 0.0
+
     # Compute the hits
     dist        = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries)) <= window
 
@@ -113,6 +117,10 @@ def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
     if trim:
         reference_boundaries = reference_boundaries[1:-1]
         estimated_boundaries = estimated_boundaries[1:-1]
+
+    # If we have no boundaries, we get no score.
+    if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
+        return 0.0, 0.0, 0.0
 
     dist = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries) )
 
