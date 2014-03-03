@@ -3,7 +3,7 @@
 
 # Import all submodules (for each task)
 from . import beat
-from . import chords
+from . import chord
 from . import input_output as io
 from . import onset
 from . import segment
