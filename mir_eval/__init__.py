@@ -10,5 +10,6 @@ from . import segment
 from . import separation
 from . import util
 from . import sonify
+from . import melody
 
 __version__ = '0.0.1'
