@@ -180,7 +180,6 @@ def load_jams_range(filename, feature_name, annotator=0, converter=None,
         print "Error: could not open %s (JAMS module not installed?)" % filename
         return [], []
 
-    print "processing ", filename
     times   = []
     labels  = []
     for data in jam[feature_name][annotator].data:

@@ -251,7 +251,7 @@ def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix='__')
 
         if events[-1] < t_max:
             # Last boundary is below t_max: add a new boundary and label
-            events= np.concatenate( (events, [t_max]))
+            events= np.concatenate( (events, [t_max]) )
             if labels is not None:
                 labels.append('%sT_MAX' % label_prefix)
 
