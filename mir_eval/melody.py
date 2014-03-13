@@ -74,13 +74,18 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     # est_freq = est_cent
 
     # STEP 3
-    # in case the sequences don't start at time 0
+    # Add sample in case the sequences don't start at time 0
+    # first keep backup of original time sequences for plotting
+    ref_time_plt = ref_time
+    est_time_plt = est_time
+    # then check if missing sample at time 0
     if ref_time[0] > 0:
         ref_time = np.insert(ref_time, 0, 0)
         ref_cent = np.insert(ref_cent, 0, ref_cent[0])
     if est_time[0] > 0:
         est_time = np.insert(est_time, 0, 0)
         est_cent = np.insert(est_cent, 0, est_cent[0])
+
 
     # STEP 4
     # sample to common hop size using linear interpolation
@@ -100,26 +105,28 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     # of start point.
     index_orig = 0
     index_interp = 0
-    while index_orig < len(ref_cent)-1:
-        if np.logical_xor(ref_cent[index_orig]>0,ref_cent[index_orig+1]>0):
+    while index_orig < len(ref_cent) - 1:
+        if np.logical_xor(ref_cent[index_orig] > 0,
+                          ref_cent[index_orig + 1] > 0):
             while index_interp < len(ref_time_grid) and ref_time_grid[
                 index_interp] <= ref_time[index_orig]:
                 index_interp += 1
             while index_interp < len(ref_time_grid) and ref_time_grid[
-                index_interp] < ref_time[index_orig+1]:
+                index_interp] < ref_time[index_orig + 1]:
                 ref_cent_interp[index_interp] = ref_cent[index_orig]
                 index_interp += 1
         index_orig += 1
 
     index_orig = 0
     index_interp = 0
-    while index_orig < len(est_cent)-1:
-        if np.logical_xor(est_cent[index_orig]>0,est_cent[index_orig+1]>0):
+    while index_orig < len(est_cent) - 1:
+        if np.logical_xor(est_cent[index_orig] > 0,
+                          est_cent[index_orig + 1] > 0):
             while index_interp < len(est_time_grid) and est_time_grid[
                 index_interp] <= est_time[index_orig]:
                 index_interp += 1
             while index_interp < len(est_time_grid) and est_time_grid[
-                index_interp] < est_time[index_orig+1]:
+                index_interp] < est_time[index_orig + 1]:
                 est_cent_interp[index_interp] = est_cent[index_orig]
                 index_interp += 1
         index_orig += 1
@@ -128,32 +135,33 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     # restore original sign to interpolated sequences
     index_orig = 0
     index_interp = 0
-    while index_orig < len(ref_freq)-1:
-        if ref_freq[index_orig]<0:
+    while index_orig < len(ref_freq) - 1:
+        if ref_freq[index_orig] < 0:
             while index_interp < len(ref_time_grid) and ref_time_grid[
                 index_interp] < ref_time[index_orig]:
                 index_interp += 1
             while index_interp < len(ref_time_grid) and ref_time_grid[
-                index_interp] < ref_time[index_orig+1]:
+                index_interp] < ref_time[index_orig + 1]:
                 ref_cent_interp[index_interp] *= -1
                 index_interp += 1
         index_orig += 1
 
     index_orig = 0
     index_interp = 0
-    while index_orig < len(est_freq)-1:
-        if est_freq[index_orig]<0:
+    while index_orig < len(est_freq) - 1:
+        if est_freq[index_orig] < 0:
             while index_interp < len(est_time_grid) and est_time_grid[
                 index_interp] < est_time[index_orig]:
                 index_interp += 1
             while index_interp < len(est_time_grid) and est_time_grid[
-                index_interp] < est_time[index_orig+1]:
+                index_interp] < est_time[index_orig + 1]:
                 est_cent_interp[index_interp] *= -1
                 index_interp += 1
         index_orig += 1
 
     # STEP 7
     # ensure the estimated sequence is the same length as the reference
+    est_time_grid = ref_time_grid
     len_diff = len(ref_cent_interp) - len(est_cent_interp)
     if len_diff >= 0:
         est_cent_interp = np.append(est_cent_interp, np.zeros(len_diff))
@@ -207,7 +215,8 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
 
     # STEP 10
     # Raw chroma = same as raw pitch except that octave errors are ignored.
-    cent_diff_chroma = abs(cent_diff - 1200 * np.floor(cent_diff/1200.0 + 0.5))
+    cent_diff_chroma = abs(
+        cent_diff - 1200 * np.floor(cent_diff / 1200.0 + 0.5))
     raw_chroma = sum(cent_diff_chroma[v_ref] <= 50) / float(sum(v_ref))
 
     # debug
@@ -230,24 +239,29 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     # print cent_diff
 
     if plotmatch:
-
-        green = (0,1,0)
-        yellow = (1,1,0)
+        green = (0, 1, 0)
+        yellow = (1, 1, 0)
 
         plt.figure()
-        plt.plot(ref_time,ref_freq,'-bo',est_time,est_freq,'-ro')
+        plt.plot(ref_time_plt, ref_freq, 'b.', est_time_plt, est_freq, 'r.')
         plt.title("Original sequences")
 
-        plt.figure()
-        p = plt.plot(ref_time_grid,ref_cent_interp,'-bo',est_time_grid,
-                  est_cent_interp,
-                 '-ro',est_time_grid[cent_diff_chroma <=50],
-                 est_cent_interp[cent_diff_chroma<=50],'yo',est_time_grid[
-                cent_diff <=50],est_cent_interp[cent_diff <=50],'go')
-        plt.title("Resampled sequences")
-        plt.setp(p[2],'color',yellow)
-        plt.setp(p[3],'color',green)
+        print len(ref_time_grid),len(ref_cent_interp)
+        print len(est_time_grid),len(est_cent_interp)
 
+        plt.figure()
+        p = plt.plot(ref_time_grid, ref_cent_interp, 'b.', est_time_grid,
+                     est_cent_interp,
+                     'r.', est_time_grid[cent_diff_chroma <= 50],
+                     est_cent_interp[cent_diff_chroma <= 50], 'y.',
+                     est_time_grid[
+                         cent_diff <= 50], est_cent_interp[cent_diff <= 50],
+                     'g.')
+        plt.title("Resampled sequences")
+        plt.setp(p[0], 'color', 'b', 'markeredgecolor', 'b')
+        plt.setp(p[1], 'color', 'r', 'markeredgecolor', 'r')
+        plt.setp(p[2], 'color', yellow, 'markeredgecolor', yellow)
+        plt.setp(p[3], 'color', green, 'markeredgecolor', green)
 
     return vx_recall, vx_false_alm, raw_pitch, raw_chroma, overall_accuracy
 
