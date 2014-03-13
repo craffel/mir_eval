@@ -96,9 +96,11 @@ def evaluate_melody(ref, est, hop=0.010):
     index_interp = 0
     while index_orig < len(ref_cent)-1:
         if np.logical_xor(ref_cent[index_orig]>0,ref_cent[index_orig+1]>0):
-            while ref_time_grid[index_interp] <= ref_time[index_orig]:
+            while index_interp < len(ref_time_grid) and ref_time_grid[
+                index_interp] <= ref_time[index_orig]:
                 index_interp += 1
-            while ref_time_grid[index_interp] < ref_time[index_orig+1]:
+            while index_interp < len(ref_time_grid) and ref_time_grid[
+                index_interp] < ref_time[index_orig+1]:
                 ref_cent_interp[index_interp] = ref_cent[index_orig]
                 index_interp += 1
         index_orig += 1
@@ -107,10 +109,11 @@ def evaluate_melody(ref, est, hop=0.010):
     index_interp = 0
     while index_orig < len(est_cent)-1:
         if np.logical_xor(est_cent[index_orig]>0,est_cent[index_orig+1]>0):
-            while est_time_grid[index_interp] <= est_time[index_orig]:
+            while index_interp < len(est_time_grid) and est_time_grid[
+                index_interp] <= est_time[index_orig]:
                 index_interp += 1
-            while est_time_grid[index_interp] < est_time[index_orig+1]:
-                print est_time_grid[index_interp],est_time[index_orig+1]
+            while index_interp < len(est_time_grid) and est_time_grid[
+                index_interp] < est_time[index_orig+1]:
                 est_cent_interp[index_interp] = est_cent[index_orig]
                 index_interp += 1
         index_orig += 1
@@ -121,9 +124,11 @@ def evaluate_melody(ref, est, hop=0.010):
     index_interp = 0
     while index_orig < len(ref_freq)-1:
         if ref_freq[index_orig]<0:
-            while ref_time_grid[index_interp] < ref_time[index_orig]:
+            while index_interp < len(ref_time_grid) and ref_time_grid[
+                index_interp] < ref_time[index_orig]:
                 index_interp += 1
-            while ref_time_grid[index_interp] < ref_time[index_orig+1]:
+            while index_interp < len(ref_time_grid) and ref_time_grid[
+                index_interp] < ref_time[index_orig+1]:
                 ref_cent_interp[index_interp] *= -1
                 index_interp += 1
         index_orig += 1
@@ -132,9 +137,11 @@ def evaluate_melody(ref, est, hop=0.010):
     index_interp = 0
     while index_orig < len(est_freq)-1:
         if est_freq[index_orig]<0:
-            while est_time_grid[index_interp] < est_time[index_orig]:
+            while index_interp < len(est_time_grid) and est_time_grid[
+                index_interp] < est_time[index_orig]:
                 index_interp += 1
-            while est_time_grid[index_interp] < est_time[index_orig+1]:
+            while index_interp < len(est_time_grid) and est_time_grid[
+                index_interp] < est_time[index_orig+1]:
                 est_cent_interp[index_interp] *= -1
                 index_interp += 1
         index_orig += 1
