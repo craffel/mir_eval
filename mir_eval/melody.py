@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import sys
 
 
-def evaluate_melody(ref, est, hop=0.010):
+def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     '''
     Evaluate two melody (predominant f0) transcriptions, where the first is
     treated as the reference (ground truth) and the second as the estimate to
@@ -37,6 +37,12 @@ def evaluate_melody(ref, est, hop=0.010):
     J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody Extraction
     from Polyphonic Music Signals: Approaches, Applications and Challenges",
     IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
+
+    IF plotmatch is set to True, the method will also produce two plots:
+    the first simply displays the original sequences (ref in blue, est in red).
+    The second will display the resampled sequences, ref in blue, and est in
+    3 possible colours: red = mismatch, yellow = chroma match, green = pitch
+    match.
     '''
 
     # STEP 1
@@ -219,12 +225,29 @@ def evaluate_melody(ref, est, hop=0.010):
     # print "overall_accuracy:",overall_accuracy
 
     # debug
-    plt.figure()
-    plt.plot(ref_time,ref_freq,'-bo',est_time,est_freq,'-ro')
+    # print ref_cent_interp
+    # print est_cent_interp
+    # print cent_diff
 
-    plt.figure()
-    plt.plot(ref_time_grid,ref_cent_interp,'-bo',est_time_grid,est_cent_interp,
-             '-ro')
+    if plotmatch:
+
+        green = (0,1,0)
+        yellow = (1,1,0)
+
+        plt.figure()
+        plt.plot(ref_time,ref_freq,'-bo',est_time,est_freq,'-ro')
+        plt.title("Original sequences")
+
+        plt.figure()
+        p = plt.plot(ref_time_grid,ref_cent_interp,'-bo',est_time_grid,
+                  est_cent_interp,
+                 '-ro',est_time_grid[cent_diff_chroma <=50],
+                 est_cent_interp[cent_diff_chroma<=50],'yo',est_time_grid[
+                cent_diff <=50],est_cent_interp[cent_diff <=50],'go')
+        plt.title("Resampled sequences")
+        plt.setp(p[2],'color',yellow)
+        plt.setp(p[3],'color',green)
+
 
     return vx_recall, vx_false_alm, raw_pitch, raw_chroma, overall_accuracy
 
