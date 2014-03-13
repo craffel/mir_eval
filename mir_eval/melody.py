@@ -15,11 +15,11 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     treated as the reference (ground truth) and the second as the estimate to
     be evaluated.
 
-    Each melody should be a numpy array with 2 elements, the first being a
-    numpy array of timestamps and the second a numpy array of frequency values
-    in Hz. Unvoiced frames are indicated either by 0Hz or by a negative
-    Hz value - negative values represent the algorithm's pitch estimate for
-    frames it has determined as unvoiced, in case they are in fact voiced.
+    Each melody should be an array with 2 elements, the first being an array
+    of timestamps and the second an array of frequency values in Hz. Unvoiced
+    frames are indicated either by 0Hz or by a negative Hz value - negative
+    values represent the algorithm's pitch estimate for frames it has
+    determined as unvoiced, in case they are in fact voiced.
 
     For a frame-by-frame comparison, both sequences are resampled using the
     provided hop size (in seconds), the default being 10 ms. The frequency
@@ -44,6 +44,35 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     3 possible colours: red = mismatch, yellow = chroma match, green = pitch
     match.
     '''
+
+    # STEP 0
+    # Cast to numpy arrays and run safety checks
+    try:
+        ref = np.asarray(ref, dtype=np.float64)
+    except ValueError:
+        print 'Error: ref could not be read, ' \
+              'are the time and frequency sequences of the same length?'
+        return None
+    try:
+        est = np.asarray(est, dtype=np.float64)
+    except ValueError:
+        print 'Error: est could not be read, ' \
+              'are the time and frequency sequences of the same length?'
+        return None
+
+    if ref.shape[0] != 2:
+        print 'Error: ref should be of dimension (2,x), but is of dimension',\
+            ref.shape
+        return None
+    if est.shape[0] != 2:
+        print 'Error: est should of dimension (2,x), but is of dimension', \
+            est.shape
+        return None
+
+    if len(ref[0])==0 or len(est[0])==0:
+        print 'Error: one of the inputs seems to be empty?'
+        return None
+
 
     # STEP 1
     # For convenience, separate time and frequency arrays
@@ -245,9 +274,6 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
         plt.figure()
         plt.plot(ref_time_plt, ref_freq, 'b.', est_time_plt, est_freq, 'r.')
         plt.title("Original sequences")
-
-        print len(ref_time_grid),len(ref_cent_interp)
-        print len(est_time_grid),len(est_cent_interp)
 
         plt.figure()
         p = plt.plot(ref_time_grid, ref_cent_interp, 'b.', est_time_grid,
