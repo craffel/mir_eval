@@ -270,25 +270,30 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
 
     if plotmatch:
         green = (0, 1, 0)
-        yellow = (1, 1, 0)
+        yellow = (.9, .9, 0)
 
         plt.figure()
         plt.plot(ref_time_plt, ref_freq, 'b.', est_time_plt, est_freq, 'r.')
         plt.title("Original sequences")
+        plt.legend(['ref','est'], loc='upper right')
 
         plt.figure()
-        p = plt.plot(ref_time_grid, ref_cent_interp, 'b.', est_time_grid,
-                     est_cent_interp,
-                     'r.', est_time_grid[cent_diff_chroma <= 50],
-                     est_cent_interp[cent_diff_chroma <= 50], 'y.',
-                     est_time_grid[
-                         cent_diff <= 50], est_cent_interp[cent_diff <= 50],
-                     'g.')
+        p = range(4)
+        p[0] = plt.plot(ref_time_grid, ref_cent_interp, 'b.')
+        p[1] = plt.plot(est_time_grid, est_cent_interp, 'r.')
+        p[2] = plt.plot(est_time_grid[cent_diff_chroma <= 50], est_cent_interp[
+            cent_diff_chroma <= 50], '.y')
+        p[3] = plt.plot(est_time_grid[cent_diff <= 50], est_cent_interp[
+            cent_diff <= 50], 'g.')
+
         plt.title("Resampled sequences")
         plt.setp(p[0], 'color', 'b', 'markeredgecolor', 'b')
         plt.setp(p[1], 'color', 'r', 'markeredgecolor', 'r')
         plt.setp(p[2], 'color', yellow, 'markeredgecolor', yellow)
         plt.setp(p[3], 'color', green, 'markeredgecolor', green)
+
+        plt.legend(['ref','est: mismatch', 'est: chroma match', 'est: pitch '
+                    'match'], loc='upper right')
 
     return vx_recall, vx_false_alm, raw_pitch, raw_chroma, overall_accuracy
 
