@@ -91,10 +91,11 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     # STEP 2
     # take absolute values (since negative values are allowed) and convert
     # non-zero Hz values into cents (using 10Hz for 0 cents)
+    base_frequency = 10.0
     ref_cent = np.zeros(len(ref_freq))
     ref_nonz_ind = np.nonzero(ref_freq)[0]
     ref_cent[ref_nonz_ind] = 1200 * np.log2(np.abs(ref_freq[ref_nonz_ind]) /
-                                            10.0)
+                                            base_frequency)
     # sign now restored after interpolation, so comment out next 3 lines
     # ref_neg_ind = np.nonzero(ref_freq < 0)[0]
     # ref_cent[ref_neg_ind] = np.negative(ref_cent[ref_neg_ind])
@@ -103,7 +104,7 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     est_cent = np.zeros(len(est_freq))
     est_nonz_ind = np.nonzero(est_freq)[0]
     est_cent[est_nonz_ind] = 1200 * np.log2(np.abs(est_freq[est_nonz_ind]) /
-                                            10.0)
+                                            base_frequency)
     # sign now restored after interpolation, so comment out next 3 lines
     # est_neg_ind = np.nonzero(est_freq < 0)[0]
     # est_cent[est_neg_ind] = np.negative(est_cent[est_neg_ind])
@@ -139,9 +140,8 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     # fix interpolated values between non-zero/zero transitions:
     # interpolating these values doesn't make sense, so replace with value
     # of start point.
-    index_orig = 0
     index_interp = 0
-    while index_orig < len(ref_cent) - 1:
+    for index_orig in range(len(ref_cent) - 1):
         if np.logical_xor(ref_cent[index_orig] > 0,
                           ref_cent[index_orig + 1] > 0):
             while index_interp < len(ref_time_grid) and ref_time_grid[
@@ -151,11 +151,10 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
                 index_interp] < ref_time[index_orig + 1]:
                 ref_cent_interp[index_interp] = ref_cent[index_orig]
                 index_interp += 1
-        index_orig += 1
+        # index_orig += 1
 
-    index_orig = 0
     index_interp = 0
-    while index_orig < len(est_cent) - 1:
+    for index_orig in range(len(est_cent) - 1):
         if np.logical_xor(est_cent[index_orig] > 0,
                           est_cent[index_orig + 1] > 0):
             while index_interp < len(est_time_grid) and est_time_grid[
@@ -165,13 +164,11 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
                 index_interp] < est_time[index_orig + 1]:
                 est_cent_interp[index_interp] = est_cent[index_orig]
                 index_interp += 1
-        index_orig += 1
 
     # STEP 6
     # restore original sign to interpolated sequences
-    index_orig = 0
     index_interp = 0
-    while index_orig < len(ref_freq) - 1:
+    for index_orig in range(len(ref_freq) - 1):
         if ref_freq[index_orig] < 0:
             while index_interp < len(ref_time_grid) and ref_time_grid[
                 index_interp] < ref_time[index_orig]:
@@ -180,11 +177,9 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
                 index_interp] < ref_time[index_orig + 1]:
                 ref_cent_interp[index_interp] *= -1
                 index_interp += 1
-        index_orig += 1
 
-    index_orig = 0
     index_interp = 0
-    while index_orig < len(est_freq) - 1:
+    for index_orig in range(len(est_freq) - 1):
         if est_freq[index_orig] < 0:
             while index_interp < len(est_time_grid) and est_time_grid[
                 index_interp] < est_time[index_orig]:
@@ -193,7 +188,6 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
                 index_interp] < est_time[index_orig + 1]:
                 est_cent_interp[index_interp] *= -1
                 index_interp += 1
-        index_orig += 1
 
     # STEP 7
     # ensure the estimated sequence is the same length as the reference
