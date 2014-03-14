@@ -15,34 +15,41 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     treated as the reference (ground truth) and the second as the estimate to
     be evaluated.
 
-    Each melody should be an array with 2 elements, the first being an array
-    of timestamps and the second an array of frequency values in Hz. Unvoiced
-    frames are indicated either by 0Hz or by a negative Hz value - negative
-    values represent the algorithm's pitch estimate for frames it has
-    determined as unvoiced, in case they are in fact voiced.
+    Input:
+        ref - array of shape (2,x), ref[0] contains timestamps and ref[1]
+              the corresponding reference frequency values in Hz (see *).
+        est - array of shape (2,x), ref[0] contains timestamps and ref[1]
+              the corresponding estimate frequency values in Hz (see **).
+        hop - the desired hop size (in seconds) to compare the reference and
+              estimate sequences (see ***)
+        plotmatch - when True, will plot the reference and estimate sequences
+                    (see ****)
 
-    For a frame-by-frame comparison, both sequences are resampled using the
-    provided hop size (in seconds), the default being 10 ms. The frequency
-    values of the resampled sequences are obtained via linear interpolation
-    of the original values converted to a cent scale.
+    Output:
+        voicing recall -            Fraction of voiced frames in ref estimated as voiced in est
+        voicing false alarm rate -  Fraction of unvoiced frames in ref estimated as voiced in est
+        raw pitch -                 Fraction of voiced frames in ref for which est gives a correct pitch estimate (within 50 cents)
+        raw chroma -                Same as raw pitch, but ignores octave errors
+        overall accuracy -          Overall performance measure combining pitch and voicing
 
-     The output consists of five evaluation measures:
-     - voicing recall
-     - voicing false alarm rate
-     - raw pitch
-     - raw chroma
-     - overall accuracy
+        For a detailed explanation of the measures please refer to:
+        J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody Extraction
+        from Polyphonic Music Signals: Approaches, Applications and Challenges",
+        IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 
-    For a detailed explanation of the measures please refer to:
-    J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody Extraction
-    from Polyphonic Music Signals: Approaches, Applications and Challenges",
-    IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
-
-    IF plotmatch is set to True, the method will also produce two plots:
-    the first simply displays the original sequences (ref in blue, est in red).
-    The second will display the resampled sequences, ref in blue, and est in
-    3 possible colours: red = mismatch, yellow = chroma match, green = pitch
-    match.
+    *    Unvoiced frames should be indicated by 0 Hz.
+    **   Unvoiced frames can be indicated either by 0 Hz or by a negative Hz
+         value - negative values represent the algorithm's pitch estimate for
+         frames it has determined as unvoiced, in case they are in fact voiced.
+    ***  For a frame-by-frame comparison, both sequences are resampled using
+         the provided hop size (in seconds), the default being 10 ms. The
+         frequency values of the resampled sequences are obtained via linear
+         interpolation of the original frequency values converted using a cent
+         scale.
+    **** Two plots will be generated: the first simply displays the original
+         sequences (ref in blue, est in red). The second will display the
+         resampled sequences, ref in blue, and est in 3 possible colours:
+         red = mismatch, yellow = chroma match, green = pitch match.
     '''
 
     # STEP 0
