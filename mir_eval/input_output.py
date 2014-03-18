@@ -209,7 +209,8 @@ def load_time_series(filename, delimiter=None):
 
         - delimiter : str
         Column separator. By default, lines will be split by any amount of
-        whitespace. For .csv files comma ',' is always used as the delimiter.
+        whitespace, unless the file ending is .csv, in which case a comma ','
+        is used as the delimiter.
 
         :returns:
         - times : np.ndarray
