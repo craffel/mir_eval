@@ -60,35 +60,6 @@ def evaluate(truth_file=None, prediction_file=None, hop=0.010):
          scale.
     '''
 
-    # # STEP 0
-    # # Cast to numpy arrays and run safety checks
-    # try:
-    #     ref = np.asarray(ref, dtype=np.float64)
-    # except ValueError:
-    #     print 'Error: ref could not be read, ' \
-    #           'are the time and frequency sequences of the same length?'
-    #     return None
-    # try:
-    #     est = np.asarray(est, dtype=np.float64)
-    # except ValueError:
-    #     print 'Error: est could not be read, ' \
-    #           'are the time and frequency sequences of the same length?'
-    #     return None
-    #
-    # if ref.shape[0] != 2:
-    #     print 'Error: ref should be of dimension (2,x), but is of dimension',\
-    #         ref.shape
-    #     return None
-    # if est.shape[0] != 2:
-    #     print 'Error: est should of dimension (2,x), but is of dimension', \
-    #         est.shape
-    #     return None
-    #
-    # if len(ref[0])==0 or len(est[0])==0:
-    #     print 'Error: one of the inputs seems to be empty?'
-    #     return None
-
-
     # STEP 1
     # load the data
     ref_time, ref_freq = mir_eval.io.load_time_series(truth_file)

@@ -225,8 +225,20 @@ def load_time_series(filename, delimiter=None):
     if os.path.splitext(filename)[1] == '.csv':
         delimiter = ','
 
-    data = np.loadtxt(filename,'float','#',delimiter)
-    times = data.T[0]
-    values = data.T[1]
+    try:
+        data = np.loadtxt(filename,'float','#',delimiter)
+    except ValueError:
+        print 'Error: could no load', os.path.basename(filename), 'please check it is in the correct 2 column format'
+        return np.asarray([]), np.asarray([])
+
+    data = data.T
+
+    # we do however want to make sure the data is in the right format!
+    if data.shape[0] != 2:
+        print 'Error:', os.path.basename(filename), 'should be of dimension (2,x), but is of dimension', data.shape
+        return np.asarray([]), np.asarray([])
+
+    times = data[0]
+    values = data[1]
 
     return times, values
