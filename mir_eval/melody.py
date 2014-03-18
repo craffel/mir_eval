@@ -1,201 +1,49 @@
 # CREATED:2014-03-07 by Justin Salamon <justin.salamon@nyu.edu>
 '''
 Melody extraction evaluation, based on the protocols used in MIREX since 2005.
+
+For a detailed explanation of the measures please refer to:
+J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody Extraction
+from Polyphonic Music Signals: Approaches, Applications and Challenges",
+IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 '''
 
 import numpy as np
-import scipy as sp
 import sys
 
 
-def evaluate_melody(ref, est, hop=0.010):
+def voicing_measures(ref_voicing, est_voicing):
     '''
-    Evaluate two melody (predominant f0) transcriptions, where the first is
-    treated as the reference (ground truth) and the second as the estimate to
-    be evaluated.
+    Compute the voicing recall and false alarm rates given two voicing indicator
+    sequences, one as reference (truth) and the other as the estimate (prediction).
+    The sequences must be of the same length.
 
     Input:
-        ref - array of shape (2,x), ref[0] contains timestamps and ref[1]
-              the corresponding reference frequency values in Hz (see *).
-        est - array of shape (2,x), ref[0] contains timestamps and ref[1]
-              the corresponding estimate frequency values in Hz (see **).
-        hop - the desired hop size (in seconds) to compare the reference and
-              estimate sequences (see ***)
-        plotmatch - when True, will plot the reference and estimate sequences
-                    (see ****)
+    - ref_voicing : np.array or list
+    Reference voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
+
+    - est_voicing : np.array or list
+    Estimate voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
 
     Output:
-        voicing recall -            Fraction of voiced frames in ref estimated as voiced in est
-        voicing false alarm rate -  Fraction of unvoiced frames in ref estimated as voiced in est
-        raw pitch -                 Fraction of voiced frames in ref for which est gives a correct pitch estimate (within 50 cents)
-        raw chroma -                Same as raw pitch, but ignores octave errors
-        overall accuracy -          Overall performance measure combining pitch and voicing
+    - vx_recall: float
+    Voicing recall rate, the fraction of voiced frames in ref indicated as voiced in est
 
-        For a detailed explanation of the measures please refer to:
-        J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody Extraction
-        from Polyphonic Music Signals: Approaches, Applications and Challenges",
-        IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
-
-    *    Unvoiced frames should be indicated by 0 Hz.
-    **   Unvoiced frames can be indicated either by 0 Hz or by a negative Hz
-         value - negative values represent the algorithm's pitch estimate for
-         frames it has determined as unvoiced, in case they are in fact voiced.
-    ***  For a frame-by-frame comparison, both sequences are resampled using
-         the provided hop size (in seconds), the default being 10 ms. The
-         frequency values of the resampled sequences are obtained via linear
-         interpolation of the original frequency values converted to a cent
-         scale.
-    **** Two plots will be generated: the first simply displays the original
-         sequences (ref in blue, est in red). The second will display the
-         resampled sequences, ref in blue, and est in 3 possible colours:
-         red = mismatch, yellow = chroma match, green = pitch match.
+    - vx_false_alarm : float
+    Voicing false alarm rate, the fraction of unvoiced frames in ref indicated as voiced in est
     '''
 
-    # STEP 0
-    # Cast to numpy arrays and run safety checks
-    try:
-        ref = np.asarray(ref, dtype=np.float64)
-    except ValueError:
-        print 'Error: ref could not be read, ' \
-              'are the time and frequency sequences of the same length?'
-        return None
-    try:
-        est = np.asarray(est, dtype=np.float64)
-    except ValueError:
-        print 'Error: est could not be read, ' \
-              'are the time and frequency sequences of the same length?'
+    # check for equal length
+    if len(ref_voicing) != len(est_voicing):
+        print "Error: inputs must be arrays or lists of the same length"
         return None
 
-    if ref.shape[0] != 2:
-        print 'Error: ref should be of dimension (2,x), but is of dimension',\
-            ref.shape
-        return None
-    if est.shape[0] != 2:
-        print 'Error: est should of dimension (2,x), but is of dimension', \
-            est.shape
-        return None
+    # convert to booleans
+    v_ref = np.asarray(ref_voicing) > 0
+    v_est = np.asarray(est_voicing) > 0
 
-    if len(ref[0])==0 or len(est[0])==0:
-        print 'Error: one of the inputs seems to be empty?'
-        return None
-
-
-    # STEP 1
-    # For convenience, separate time and frequency arrays
-    ref_time = ref[0]
-    ref_freq = ref[1]
-    est_time = est[0]
-    est_freq = est[1]
-
-    # STEP 2
-    # take absolute values (since negative values are allowed) and convert
-    # non-zero Hz values into cents (using 10Hz for 0 cents)
-    base_frequency = 10.0
-    ref_cent = np.zeros(len(ref_freq))
-    ref_nonz_ind = np.nonzero(ref_freq)[0]
-    ref_cent[ref_nonz_ind] = 1200 * np.log2(np.abs(ref_freq[ref_nonz_ind]) /
-                                            base_frequency)
-
-    est_cent = np.zeros(len(est_freq))
-    est_nonz_ind = np.nonzero(est_freq)[0]
-    est_cent[est_nonz_ind] = 1200 * np.log2(np.abs(est_freq[est_nonz_ind]) /
-                                            base_frequency)
-
-    # STEP 3
-    # Add sample in case the sequences don't start at time 0
-    # first keep backup of original time sequences for plotting
-    ref_time_plt = ref_time
-    est_time_plt = est_time
-    # then check if missing sample at time 0
-    if ref_time[0] > 0:
-        ref_time = np.insert(ref_time, 0, 0)
-        ref_cent = np.insert(ref_cent, 0, ref_cent[0])
-    if est_time[0] > 0:
-        est_time = np.insert(est_time, 0, 0)
-        est_cent = np.insert(est_cent, 0, est_cent[0])
-
-
-    # STEP 4
-    # sample to common hop size using linear interpolation
-    ref_interp_func = sp.interpolate.interp1d(ref_time, ref_cent)
-    ref_time_grid = np.linspace(0, hop * np.floor(ref_time[-1] / hop),
-                                np.floor(ref_time[-1] / hop) + 1)
-    ref_cent_interp = ref_interp_func(ref_time_grid)
-
-    est_interp_func = sp.interpolate.interp1d(est_time, est_cent)
-    est_time_grid = np.linspace(0, hop * np.floor(est_time[-1] / hop),
-                                np.floor(est_time[-1] / hop) + 1)
-    est_cent_interp = est_interp_func(est_time_grid)
-
-    # STEP 5
-    # fix interpolated values between non-zero/zero transitions:
-    # interpolating these values doesn't make sense, so replace with value
-    # of start point.
-    index_interp = 0
-    for index_orig in range(len(ref_cent) - 1):
-        if np.logical_xor(ref_cent[index_orig] > 0,
-                          ref_cent[index_orig + 1] > 0):
-            while index_interp < len(ref_time_grid) and ref_time_grid[
-                index_interp] <= ref_time[index_orig]:
-                index_interp += 1
-            while index_interp < len(ref_time_grid) and ref_time_grid[
-                index_interp] < ref_time[index_orig + 1]:
-                ref_cent_interp[index_interp] = ref_cent[index_orig]
-                index_interp += 1
-
-    index_interp = 0
-    for index_orig in range(len(est_cent) - 1):
-        if np.logical_xor(est_cent[index_orig] > 0,
-                          est_cent[index_orig + 1] > 0):
-            while index_interp < len(est_time_grid) and est_time_grid[
-                index_interp] <= est_time[index_orig]:
-                index_interp += 1
-            while index_interp < len(est_time_grid) and est_time_grid[
-                index_interp] < est_time[index_orig + 1]:
-                est_cent_interp[index_interp] = est_cent[index_orig]
-                index_interp += 1
-
-    # STEP 6
-    # restore original sign to interpolated sequences
-    index_interp = 0
-    for index_orig in range(len(ref_freq) - 1):
-        if ref_freq[index_orig] < 0:
-            while index_interp < len(ref_time_grid) and ref_time_grid[
-                index_interp] < ref_time[index_orig]:
-                index_interp += 1
-            while index_interp < len(ref_time_grid) and ref_time_grid[
-                index_interp] < ref_time[index_orig + 1]:
-                ref_cent_interp[index_interp] *= -1
-                index_interp += 1
-
-    index_interp = 0
-    for index_orig in range(len(est_freq) - 1):
-        if est_freq[index_orig] < 0:
-            while index_interp < len(est_time_grid) and est_time_grid[
-                index_interp] < est_time[index_orig]:
-                index_interp += 1
-            while index_interp < len(est_time_grid) and est_time_grid[
-                index_interp] < est_time[index_orig + 1]:
-                est_cent_interp[index_interp] *= -1
-                index_interp += 1
-
-    # STEP 7
-    # ensure the estimated sequence is the same length as the reference
-    est_time_grid = ref_time_grid
-    len_diff = len(ref_cent_interp) - len(est_cent_interp)
-    if len_diff >= 0:
-        est_cent_interp = np.append(est_cent_interp, np.zeros(len_diff))
-    else:
-        est_cent_interp = np.resize(est_cent_interp, len(ref_cent_interp))
-
-
-    # STEP 8
-    # calculate voicing measures
-    v_ref = (ref_cent_interp > 0)
-    v_est = (est_cent_interp > 0)
-
-    uv_ref = (ref_cent_interp <= 0)
-    uv_est = (est_cent_interp <= 0)
+    uv_ref = np.asarray(ref_voicing) <= 0
+    uv_est = np.asarray(est_voicing) <= 0
 
     # How voicing is computed
     #        | v_ref | uv_ref |
@@ -218,31 +66,138 @@ def evaluate_melody(ref, est, hop=0.010):
     # reference that are declared as voiced by the estimate
     vx_false_alm = FP / float(FP + TN + sys.float_info.epsilon)
 
+    return vx_recall, vx_false_alm
 
-    # STEP 9
+
+def raw_pitch_accuracy(ref_cent, ref_voicing, est_cent, est_voicing):
+    '''
+    Compute the raw pitch accuracy given two pitch (frequency) sequences in cents
+    and matching voicing indicator sequences. The first pitch and voicing arrays
+    are treated as the reference (truth), and the second two as the estimate (prediction).
+    All 4 sequences must be of the same length.
+
+    Input:
+    - ref_cent : np.array
+    Reference pitch sequence in cents
+
+    - ref_voicing : np.array or list
+    Reference voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
+
+    - est_cent : np.array
+    Estimate pitch sequence in cents
+
+    - est_voicing : np.array or list
+    Estimate voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
+
+    Output:
+    - raw_pitch: float
+    Raw pitch accuracy, the fraction of voiced frames in ref_cent for which est_cent
+    provides a correct frequency values (within 50 cents).
+    '''
+
+    l1,l2,l3,l4 = len(ref_cent),len(ref_voicing),len(est_cent),len(est_voicing)
+    if l1 != l2 or l1 != l3 or l1 != l4:
+        print "Error: all 4 sequences must be of the same length"
+        return None
+
+    # convert to booleans
+    v_ref = np.asarray(ref_voicing) > 0
+
     # Raw pitch = the number of voiced frames in the reference for which the
     # estimate provides a correct frequency value (within 50 cents).
-    # NB: voicing estimation is ignored in this measure (hence the abs)
-    cent_diff = np.abs(np.abs(ref_cent_interp) - np.abs(est_cent_interp))
+    # NB: voicing estimation is ignored in this measure
+    cent_diff = np.abs(ref_cent - est_cent)
     raw_pitch = sum(cent_diff[v_ref] <= 50) / float(sum(v_ref))
 
+    return raw_pitch
 
-    # STEP 10
+
+def raw_chroma_accuracy(ref_cent, ref_voicing, est_cent, est_voicing):
+    '''
+    Compute the raw chroma accuracy given two pitch (frequency) sequences in cents
+    and matching voicing indicator sequences. The first pitch and voicing arrays
+    are treated as the reference (truth), and the second two as the estimate (prediction).
+    All 4 sequences must be of the same length.
+
+    Input:
+    - ref_cent : np.array
+    Reference pitch sequence in cents
+
+    - ref_voicing : np.array or list
+    Reference voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
+
+    - est_cent : np.array
+    Estimate pitch sequence in cents
+
+    - est_voicing : np.array or list
+    Estimate voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
+
+    Output:
+    - raw_chroma: float
+    Raw chroma accuracy, the fraction of voiced frames in ref_cent for which est_cent
+    provides a correct frequency values (within 50 cents), ignoring octave errors
+    '''
+
+    l1,l2,l3,l4 = len(ref_cent),len(ref_voicing),len(est_cent),len(est_voicing)
+    if l1 != l2 or l1 != l3 or l1 != l4:
+        print "Error: all 4 sequences must be of the same length"
+        return None
+
+    # convert to booleans
+    v_ref = np.asarray(ref_voicing) > 0
+
     # Raw chroma = same as raw pitch except that octave errors are ignored.
-    cent_diff_chroma = abs(
-        cent_diff - 1200 * np.floor(cent_diff / 1200.0 + 0.5))
+    cent_diff = np.abs(ref_cent - est_cent)
+    cent_diff_chroma = abs(cent_diff - 1200 * np.floor(cent_diff / 1200.0 + 0.5))
     raw_chroma = sum(cent_diff_chroma[v_ref] <= 50) / float(sum(v_ref))
 
-
-    # STEP 11
-    # Overall accuracy = combine voicing and raw pitch to give an overall
-    # performance measure
-    cent_diff_overall = np.abs(ref_cent_interp - est_cent_interp)
-    overall_accuracy = (sum(cent_diff_overall[v_ref] <= 50) + TN) / float(len(
-        ref_cent_interp))
+    return raw_chroma
 
 
-    return vx_recall, vx_false_alm, raw_pitch, raw_chroma, overall_accuracy
+def overall_accuracy(ref_cent, ref_voicing, est_cent, est_voicing):
+    '''
+    Compute the overall accuracy given two pitch (frequency) sequences in cents
+    and matching voicing indicator sequences. The first pitch and voicing arrays
+    are treated as the reference (truth), and the second two as the estimate (prediction).
+    All 4 sequences must be of the same length.
+
+    Input:
+    - ref_cent : np.array
+    Reference pitch sequence in cents
+
+    - ref_voicing : np.array or list
+    Reference voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
+
+    - est_cent : np.array
+    Estimate pitch sequence in cents
+
+    - est_voicing : np.array or list
+    Estimate voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
+
+    Output:
+    - overall_accuracy: float
+    Overall accuracy, the total fraction of correctly estimates frames, where
+    provides a correct frequency values (within 50 cents).
+    '''
+
+    l1,l2,l3,l4 = len(ref_cent),len(ref_voicing),len(est_cent),len(est_voicing)
+    if l1 != l2 or l1 != l3 or l1 != l4:
+        print "Error: all 4 sequences must be of the same length"
+        return None
+
+    # Compute boolean voicing indicators
+    v_ref = np.asarray(ref_voicing) > 0
+    v_est = np.asarray(est_voicing) > 0
+    uv_ref = np.asarray(ref_voicing) <= 0
+    uv_est = np.asarray(est_voicing) <= 0
+
+    # True negatives = frames correctly estimates as unvoiced
+    TN = sum(uv_ref * uv_est)
+
+    cent_diff = np.abs(ref_cent - est_cent)
+    overall_accuracy = (sum(cent_diff[v_ref * v_est] <= 50) + TN) / float(len(ref_cent))
+
+    return overall_accuracy
 
 
 
