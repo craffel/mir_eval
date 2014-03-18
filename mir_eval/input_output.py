@@ -2,6 +2,7 @@
 
 import numpy as np
 import re
+import os
 try:
     import jams
 except:
@@ -191,3 +192,40 @@ def load_jams_range(filename, feature_name, annotator=0, converter=None,
     times = np.asarray(times)
     
     return times, labels
+
+
+def load_time_series(filename, delimiter=None):
+    r'''Import a time series from an annotation file.  This is primarily useful for
+        processing dense time series with timestamps and corresponding numeric values
+
+        The annotation file must be of the following format:
+        - Double-column.  Each line contains two values, separated by ``delimiter``: the
+        first contains the timestamp, and the second contains its corresponding
+        numeric value.
+
+        :parameters:
+        - filename : str
+        Path to the annotation file
+
+        - delimiter : str
+        Column separator. By default, lines will be split by any amount of
+        whitespace. For .csv files comma ',' is always used as the delimiter.
+
+        :returns:
+        - times : np.ndarray
+        array of timestamps (float)
+        - values : np.ndarray
+        array of corresponding numeric values (float)
+        '''
+
+    # Note: unlike load_events, here we expect float data in both columns,
+    # so we can just use numpy's text load (np.loadtxt)
+
+    if os.path.splitext(filename)[1] == '.csv':
+        delimiter = ','
+
+    data = np.loadtxt(filename,'float','#',delimiter)
+    times = data.T[0]
+    values = data.T[1]
+
+    return times, values
