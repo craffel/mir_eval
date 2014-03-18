@@ -7,6 +7,7 @@ Compute melody extraction evaluation measures
 Usage:
 
 ./melody_eval.py TRUTH.TXT PREDICTION.TXT
+(CSV files also accepted)
 
 For a detailed explanation of the measures please refer to:
 
