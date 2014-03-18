@@ -129,6 +129,11 @@ def evaluate(truth_file=None, prediction_file=None, hop=0.010):
 
 
 def restore_sign_to_resampled(times, values, time_grid, values_resampled):
+    '''
+    Given a time series and a resampled version of it, this function looks at
+    the sign of the original series and ensures the sign of the resampled values
+    matches that of the original for overlapping timestamps.
+    '''
     index_interp = 0
     for index_orig in range(len(values) - 1):
         if values[index_orig] < 0:
@@ -142,6 +147,13 @@ def restore_sign_to_resampled(times, values, time_grid, values_resampled):
 
 
 def fix_zero_transitions(times, values, time_grid, values_resampled):
+    '''
+    Given a time series and a resampled version of it, this function looks at
+    the original series to determine where there were transitions to/from zero,
+    and ensures that the values in the second series which are just in between
+    these transitions are set to the start value, rather than a nonsensical
+    interpolated value.
+    '''
     index_interp = 0
     for index_orig in range(len(values) - 1):
         if np.logical_xor(values[index_orig] > 0,
@@ -156,6 +168,13 @@ def fix_zero_transitions(times, values, time_grid, values_resampled):
 
 
 def resample_time_series(times, values, hop):
+    '''
+    Given timestamps, corresponding values, and a desired hop size,
+    resamples the time series to the given hop size and returns the new time
+    grid and corresponding values.
+    NB: the series is assumed to start at time 0 (time[0] = 0)
+    NB: values are interpolated using linear interpolation
+    '''
     interp_func = sp.interpolate.interp1d(times, values)
     time_grid = np.linspace(0, hop * np.floor(times[-1] / hop), np.floor(times[-1] / hop) + 1)
     values_resampled = interp_func(time_grid)
@@ -164,9 +183,11 @@ def resample_time_series(times, values, hop):
 
 
 def hz2cents(freq_hz):
-    # Convert an array of frequency values in Hz to cents using 10 Hz as the
-    # base frequency (i.e. 10 Hz = 0 cents)
-    # NB: 0 Hz values are not converted!
+    '''
+    Convert an array of frequency values in Hz to cents using 10 Hz as the
+    base frequency (i.e. 10 Hz = 0 cents)
+    NB: 0 Hz values are not converted!
+    '''
     base_frequency = 10.0
     freq_cent = np.zeros(len(freq_hz))
     freq_nonz_ind = np.nonzero(freq_hz)[0]
@@ -176,7 +197,9 @@ def hz2cents(freq_hz):
 
 
 def print_evaluation(prediction_file, M):
-
+    '''
+    Pretty print the melody extraction evaluation measures
+    '''
     keys = M.keys()
     keys.append(os.path.basename(prediction_file))
     print '%s\t%s\t%s\t%s\t%s\t(%s)' % tuple(keys)
