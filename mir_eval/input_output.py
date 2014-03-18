@@ -228,15 +228,13 @@ def load_time_series(filename, delimiter=None):
     try:
         data = np.loadtxt(filename,'float','#',delimiter)
     except ValueError:
-        print 'Error: could no load', os.path.basename(filename), 'please check it is in the correct 2 column format'
-        return np.asarray([]), np.asarray([])
+        raise ValueError('Error: could no load %s, please check if it is in the correct 2 column format' % os.path.basename(filename))
 
     data = data.T
 
     # we do however want to make sure the data is in the right format!
     if data.shape[0] != 2:
-        print 'Error:', os.path.basename(filename), 'should be of dimension (2,x), but is of dimension', data.shape
-        return np.asarray([]), np.asarray([])
+        raise ValueError('Error: %s should be of dimension (2,x), but is of dimension %s' % (os.path.basename(filename),data.shape))
 
     times = data[0]
     values = data[1]
