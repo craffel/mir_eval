@@ -5,11 +5,10 @@ Melody extraction evaluation, based on the protocols used in MIREX since 2005.
 
 import numpy as np
 import scipy as sp
-import matplotlib.pyplot as plt
 import sys
 
 
-def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
+def evaluate_melody(ref, est, hop=0.010):
     '''
     Evaluate two melody (predominant f0) transcriptions, where the first is
     treated as the reference (ground truth) and the second as the estimate to
@@ -44,7 +43,7 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     ***  For a frame-by-frame comparison, both sequences are resampled using
          the provided hop size (in seconds), the default being 10 ms. The
          frequency values of the resampled sequences are obtained via linear
-         interpolation of the original frequency values converted using a cent
+         interpolation of the original frequency values converted to a cent
          scale.
     **** Two plots will be generated: the first simply displays the original
          sequences (ref in blue, est in red). The second will display the
@@ -96,19 +95,11 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     ref_nonz_ind = np.nonzero(ref_freq)[0]
     ref_cent[ref_nonz_ind] = 1200 * np.log2(np.abs(ref_freq[ref_nonz_ind]) /
                                             base_frequency)
-    # sign now restored after interpolation, so comment out next 3 lines
-    # ref_neg_ind = np.nonzero(ref_freq < 0)[0]
-    # ref_cent[ref_neg_ind] = np.negative(ref_cent[ref_neg_ind])
-    # ref_freq = ref_cent
 
     est_cent = np.zeros(len(est_freq))
     est_nonz_ind = np.nonzero(est_freq)[0]
     est_cent[est_nonz_ind] = 1200 * np.log2(np.abs(est_freq[est_nonz_ind]) /
                                             base_frequency)
-    # sign now restored after interpolation, so comment out next 3 lines
-    # est_neg_ind = np.nonzero(est_freq < 0)[0]
-    # est_cent[est_neg_ind] = np.negative(est_cent[est_neg_ind])
-    # est_freq = est_cent
 
     # STEP 3
     # Add sample in case the sequences don't start at time 0
@@ -151,7 +142,6 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
                 index_interp] < ref_time[index_orig + 1]:
                 ref_cent_interp[index_interp] = ref_cent[index_orig]
                 index_interp += 1
-        # index_orig += 1
 
     index_interp = 0
     for index_orig in range(len(est_cent) - 1):
@@ -228,9 +218,6 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     # reference that are declared as voiced by the estimate
     vx_false_alm = FP / float(FP + TN + sys.float_info.epsilon)
 
-    # debug
-    # print "vx_recall:", vx_recall
-    # print "vx_false_alm:", vx_false_alm
 
     # STEP 9
     # Raw pitch = the number of voiced frames in the reference for which the
@@ -239,9 +226,6 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     cent_diff = np.abs(np.abs(ref_cent_interp) - np.abs(est_cent_interp))
     raw_pitch = sum(cent_diff[v_ref] <= 50) / float(sum(v_ref))
 
-    # debug
-    # print cent_diff[v_ref]
-    # print "raw_pitch:",raw_pitch
 
     # STEP 10
     # Raw chroma = same as raw pitch except that octave errors are ignored.
@@ -249,9 +233,6 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
         cent_diff - 1200 * np.floor(cent_diff / 1200.0 + 0.5))
     raw_chroma = sum(cent_diff_chroma[v_ref] <= 50) / float(sum(v_ref))
 
-    # debug
-    # print cent_diff_chroma[v_ref]
-    # print "raw_chroma:",raw_chroma
 
     # STEP 11
     # Overall accuracy = combine voicing and raw pitch to give an overall
@@ -260,40 +241,6 @@ def evaluate_melody(ref, est, hop=0.010, plotmatch=False):
     overall_accuracy = (sum(cent_diff_overall[v_ref] <= 50) + TN) / float(len(
         ref_cent_interp))
 
-    # debug
-    # print "overall_accuracy:",overall_accuracy
-
-    # debug
-    # print ref_cent_interp
-    # print est_cent_interp
-    # print cent_diff
-
-    if plotmatch:
-        green = (0, 1, 0)
-        yellow = (.9, .9, 0)
-
-        plt.figure()
-        plt.plot(ref_time_plt, ref_freq, 'b.', est_time_plt, est_freq, 'r.')
-        plt.title("Original sequences")
-        plt.legend(['ref','est'], loc='upper right')
-
-        plt.figure()
-        p = range(4)
-        p[0] = plt.plot(ref_time_grid, ref_cent_interp, 'b.')
-        p[1] = plt.plot(est_time_grid, est_cent_interp, 'r.')
-        p[2] = plt.plot(est_time_grid[cent_diff_chroma <= 50], est_cent_interp[
-            cent_diff_chroma <= 50], '.y')
-        p[3] = plt.plot(est_time_grid[cent_diff <= 50], est_cent_interp[
-            cent_diff <= 50], 'g.')
-
-        plt.title("Resampled sequences")
-        plt.setp(p[0], 'color', 'b', 'markeredgecolor', 'b')
-        plt.setp(p[1], 'color', 'r', 'markeredgecolor', 'r')
-        plt.setp(p[2], 'color', yellow, 'markeredgecolor', yellow)
-        plt.setp(p[3], 'color', green, 'markeredgecolor', green)
-
-        plt.legend(['ref','est: mismatch', 'est: chroma match', 'est: pitch '
-                    'match'], loc='upper right')
 
     return vx_recall, vx_false_alm, raw_pitch, raw_chroma, overall_accuracy
 
