@@ -35,7 +35,7 @@ def index_labels(labels):
 
 def intervals_to_samples(intervals, labels, sample_size=0.1):
     '''Convert an array of labeled time intervals to annotated samples.
-    
+
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
@@ -53,7 +53,7 @@ def intervals_to_samples(intervals, labels, sample_size=0.1):
             array of segment labels for each generated sample
 
     ..note::
-        Segment intervals will be rounded down to the nearest multiple 
+        Segment intervals will be rounded down to the nearest multiple
         of ``frame_size``.
     '''
 
@@ -90,32 +90,19 @@ def f_measure(precision, recall, beta=1.0):
 
     return (1 + beta**2) * precision * recall / ((beta**2) * precision + recall)
 
-def intervals_to_boundaries(intervals, labels=None, label_prefix='__'):
+def intervals_to_boundaries(intervals):
     '''Convert segment interval times into boundaries.
+    
     :parameters:
       - intervals : np.ndarray, shape=(n_events, 2)
           Array of segment start and end-times
 
-      - labels : None or list of str
-          Optional list of strings describing each event
-
     :returns:
       - boundaries : np.ndarray, shape=(n_segments + 1)
           Segment boundary times, including the end of the final segment
-
-      - labels : list of str or None
-          Labels for each event
     '''
 
-    boundaries = np.unique(np.ravel(intervals))
-
-    if labels is None:
-        boundary_labels = None
-    else:
-        boundary_labels = [seg_label for seg_label in labels]
-        boundary_labels.append('%sEND' % label_prefix)
-
-    return boundaries, boundary_labels
+    return np.unique(np.ravel(intervals))
 
 def boundaries_to_intervals(boundaries, labels=None):
     '''Convert an array of event times into intervals
@@ -159,7 +146,7 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
     if t_min is not None:
         # Find the intervals that end at or after t_min
         first_idx = np.argwhere(intervals[:, 1] >= t_min)
-        
+
         if len(first_idx) > 0:
             # If we have events below t_min, crop them out
             if labels is not None:

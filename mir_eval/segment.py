@@ -13,7 +13,7 @@ import sklearn.metrics.cluster as metrics
 from . import util
 
 def boundary_detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, trim=True):
-    '''Boundary detection hit-rate.  
+    '''Boundary detection hit-rate.
 
     A hit is counted whenever an reference boundary is within ``window`` of a estimated
     boundary.
@@ -56,8 +56,8 @@ def boundary_detection(reference_intervals, estimated_intervals, window=0.5, bet
     '''
 
     # Convert intervals to boundaries
-    reference_boundaries = util.intervals_to_boundaries(reference_intervals)[0]
-    estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)[0]
+    reference_boundaries = util.intervals_to_boundaries(reference_intervals)
+    estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)
 
     # Suppress the first and last intervals
     if trim:
@@ -110,8 +110,8 @@ def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
     '''
 
     # Convert intervals to boundaries
-    reference_boundaries = util.intervals_to_boundaries(reference_intervals)[0]
-    estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)[0]
+    reference_boundaries = util.intervals_to_boundaries(reference_intervals)
+    estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)
 
     # Suppress the first and last intervals
     if trim:
@@ -129,8 +129,8 @@ def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
 
     return true_to_estimated, estimated_to_true
 
-def frame_clustering_pairwise(reference_intervals, reference_labels, 
-                              estimated_intervals, estimated_labels, 
+def frame_clustering_pairwise(reference_intervals, reference_labels,
+                              estimated_intervals, estimated_labels,
                               frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation evaluation by pair-wise agreement.
 
@@ -189,7 +189,7 @@ def frame_clustering_pairwise(reference_intervals, reference_labels,
     # Construct the label-agreement matrices
     agree_true  = np.triu(np.equal.outer(y_true, y_true))
     agree_pred  = np.triu(np.equal.outer(y_pred, y_pred))
-    
+
     matches     = float((agree_true & agree_pred).sum())
     precision   = matches / agree_true.sum()
     recall      = matches / agree_pred.sum()
@@ -226,7 +226,7 @@ def frame_clustering_ari(reference_intervals, reference_labels,
         It is assumed that ``intervals[-1]`` == length of song
 
     ..note::
-        Segment intervals will be rounded down to the nearest multiple 
+        Segment intervals will be rounded down to the nearest multiple
         of frame_size.
     '''
     # Generate the cluster labels
@@ -267,7 +267,7 @@ def frame_clustering_mi(reference_intervals, reference_labels,
     :returns:
     - MI : float >0
         Mutual information between segmentations
-    - AMI : float 
+    - AMI : float
         Adjusted mutual information between segmentations.
     - NMI : float > 0
         Normalize mutual information between segmentations
@@ -276,7 +276,7 @@ def frame_clustering_mi(reference_intervals, reference_labels,
         It is assumed that `intervals[-1] == length of song`
 
     ..note::
-        Segment intervals will be rounded down to the nearest multiple 
+        Segment intervals will be rounded down to the nearest multiple
         of frame_size.
     '''
     # Generate the cluster labels
@@ -296,12 +296,12 @@ def frame_clustering_mi(reference_intervals, reference_labels,
 
     # Adjusted mutual information
     adj_mutual_info     = metrics.adjusted_mutual_info_score(y_true, y_pred)
-    
+
     # Normalized mutual information
     norm_mutual_info    = metrics.normalized_mutual_info_score(y_true, y_pred)
 
     return mutual_info, adj_mutual_info, norm_mutual_info
-    
+
 def frame_clustering_nce(reference_intervals, reference_labels,
                          estimated_intervals, estimated_labels,
                          frame_size=0.1, beta=1.0):
@@ -331,7 +331,7 @@ def frame_clustering_nce(reference_intervals, reference_labels,
 
     :returns:
         - S_over
-            Over-clustering score: 
+            Over-clustering score:
             ``1 - H(y_pred | y_true) / log(|y_pred|)``
 
         - S_under
@@ -340,7 +340,7 @@ def frame_clustering_nce(reference_intervals, reference_labels,
 
         - F
             F-measure for (S_over, S_under)
-        
+
     ..note:: Towards quantitative measures of evaluating song segmentation.
         Lukashevich, H. ISMIR 2008.
     '''
@@ -361,7 +361,7 @@ def frame_clustering_nce(reference_intervals, reference_labels,
     contingency = metrics.contingency_matrix(y_true, y_pred).astype(float)
 
     # Compute the marginals
-    p_pred = contingency.sum(axis=0) / len(y_true) 
+    p_pred = contingency.sum(axis=0) / len(y_true)
     p_true = contingency.sum(axis=1) / len(y_true)
 
     true_given_pred = p_pred.dot(scipy.stats.entropy(contingency,   base=2))
