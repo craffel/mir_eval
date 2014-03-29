@@ -92,13 +92,13 @@ def f_measure(precision, recall, beta=1.0):
 
 def intervals_to_boundaries(intervals):
     '''Convert segment interval times into boundaries.
-    
+
     :parameters:
       - intervals : np.ndarray, shape=(n_events, 2)
           Array of segment start and end-times
 
     :returns:
-      - boundaries : np.ndarray, shape=(n_segments + 1)
+      - boundaries : np.ndarray
           Segment boundary times, including the end of the final segment
     '''
 
