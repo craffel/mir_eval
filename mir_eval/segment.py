@@ -12,6 +12,79 @@ import sklearn.metrics.cluster as metrics
 
 from . import util
 
+def __validate_intervals(intervals):
+
+    # Validate interval shape
+    if intervals.ndim != 2 or intervals.shape[1] != 2:
+        raise ValueError('Segment intervals should be n-by-2 numpy ndarray')
+
+    # Make sure no beat times are negative
+    if (intervals < 0).any():
+        raise ValueError('Negative interval times found')
+
+    # Make sure beat times are increasing
+    if intervals[0, 0] != 0.0:
+        raise ValueError('Segment intervals do not start at 0')
+    
+
+def validate_boundaries(metric):
+    '''Decorator which checks that the input annotations to a metric
+    look like valid segment times, and throws helpful errors if not.
+    
+    :parameters:
+        - metric : function
+            Evaluation metric function.  First two arguments must be 
+            reference_intervals and estimated_intervals.
+    
+    :returns:
+        - metric_validated : function
+            The function with the segment intervals are validated
+    '''
+    def metric_validated(reference_intervals, estimated_intervals, *args, **kwargs):
+        for intervals in [reference_intervals, estimated_intervals]:
+            __validate_intervals(intervals)
+
+        if reference_intervals[-1, 1] != estimated_intervals[-1, 1]:
+            raise ValueError('End times do not match')
+
+        return metric(reference_intervals, estimated_intervals, *args, **kwargs)
+
+    return metric_validated
+
+def validate_labels(metric):
+    '''Decorator which checks that the input annotations to a metric
+    look like valid segment times, and throws helpful errors if not.
+    
+    :parameters:
+        - metric : function
+            Evaluation metric function.  First four arguments must be 
+            reference_annotations, reference_labels,
+            estimated_annotations, and estimated_labels.
+    
+    :returns:
+        - metric_validated : function
+            The function with the segment intervals are validated
+    '''
+    def metric_validated(   reference_intervals, reference_labels, 
+                            estimated_intervals, estimated_labels,
+                            *args, **kwargs):
+
+        for (intervals, labels) in [(reference_intervals, reference_labels),
+                                    (estimated_intervals, estimated_labels)]:
+
+            __validate_intervals(intervals)
+            if intervals.shape[0] != len(labels):
+                raise ValueError('Number of intervals does not match number of labels')
+
+        if reference_intervals[-1, 1] != estimated_intervals[-1, 1]:
+            raise ValueError('End times do not match')
+
+        return metric(  reference_intervals, reference_labels,
+                        estimated_intervals, estimated_labels, *args, **kwargs)
+
+    return metric_validated
+
+@validate_boundaries
 def boundary_detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, trim=True):
     '''Boundary detection hit-rate.
 
@@ -82,6 +155,7 @@ def boundary_detection(reference_intervals, estimated_intervals, window=0.5, bet
 
     return precision, recall, f_measure
 
+@validate_boundaries
 def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
     '''Compute the median deviations between reference and estimated boundary times.
 
@@ -129,6 +203,7 @@ def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
 
     return true_to_estimated, estimated_to_true
 
+@validate_labels
 def frame_clustering_pairwise(reference_intervals, reference_labels,
                               estimated_intervals, estimated_labels,
                               frame_size=0.1, beta=1.0):
@@ -197,6 +272,7 @@ def frame_clustering_pairwise(reference_intervals, reference_labels,
 
     return precision, recall, f_measure
 
+@validate_labels
 def frame_clustering_ari(reference_intervals, reference_labels,
                          estimated_intervals, estimated_labels,
                          frame_size=0.1):
@@ -243,6 +319,7 @@ def frame_clustering_ari(reference_intervals, reference_labels,
 
     return metrics.adjusted_rand_score(y_true, y_pred)
 
+@validate_labels
 def frame_clustering_mi(reference_intervals, reference_labels,
                         estimated_intervals, estimated_labels,
                         frame_size=0.1):
@@ -302,6 +379,7 @@ def frame_clustering_mi(reference_intervals, reference_labels,
 
     return mutual_info, adj_mutual_info, norm_mutual_info
 
+@validate_labels
 def frame_clustering_nce(reference_intervals, reference_labels,
                          estimated_intervals, estimated_labels,
                          frame_size=0.1, beta=1.0):
