@@ -139,8 +139,31 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
     Any intervals lying partially outside the specified range will be truncated.
 
     If the specified range exceeds the span of the provided data in either direction,
-    additional intervals will be appended.
+    additional intervals will be appended.  Any appended intervals will be prepended
+    with label_prefix.
 
+    :parameters:
+        - intervals : np.ndarray, shape=(n_events, 2)
+            Array of segment start and end-times
+
+        - labels : list, len=n_events or None
+            List of labels
+
+        - t_min : float or None
+            Minimum interval start time.
+
+        - t_max : float or None
+            Maximum interval end time.
+
+        - label_prefix : str
+            Prefix string to use for synthetic labels
+
+    :returns:
+        - new_intervals : np.array
+            Intervals spanning [t_min, t_max]
+
+        - new_labels : list
+            List of labels for new_labels
     '''
 
     if t_min is not None:
@@ -188,14 +211,15 @@ def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix='__')
 
     Any event times outside of the specified range will be removed.
 
-    If the times do not span [t_min, t_max], additional events will be inserted.
+    If the times do not span [t_min, t_max], additional events will be added with
+    the prefix label_prefix.
 
     :parameters:
         - events : np.array
             Array of event times (seconds)
 
         - labels : list or None
-            Array of labels
+            List of labels
 
         - t_min : float or None
             Minimum valid event time.
