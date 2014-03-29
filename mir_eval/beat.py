@@ -20,39 +20,36 @@ import numpy as np
 
 # <codecell>
 
-def _clean_beats(annotated_beats, generated_beats, min_beat_time=5.0):
+def validate(metric):
+    '''Decorator which checks that the input annotations to a metric
+    look like valid beat time arrays, and throws helpful errors if not.
+    
+    :parameters:
+        - metric : function
+            Evaluation metric function.  First two arguments must be 
+            reference_beats and estimated_beats.
+    
+    :returns:
+        - metric_validated : function
+            The function with the beat times validated
     '''
-    Utility function to "clean up" the beats.
-    Validates and sorts beat times and removes beats before min_beat_time
-
-    Input:
-        annotated_beats - np.ndarray of reference beat times, in seconds
-        generated_beats - np.ndarray of query beat times, in seconds
-        min_beat_time - Ignore all beats before this time, in seconds
-    '''
-
-    # Make sure beat locations are 1-d np ndarrays
-    if len(annotated_beats.shape) != 1 or len(generated_beats.shape) != 1:
-        raise ValueError('Beat locations should be 1-d numpy ndarray')
-    # Make sure some beats fall before min_beat_time
-    if not (annotated_beats > min_beat_time).any():
-        error = 'No annotated beats found before {}s'.format(min_beat_time)
-        raise ValueError(error)
-    # Make sure no beat times are huge
-    if (annotated_beats > 30000).any() or (generated_beats > 30000).any():
-        error = 'Very large beat times found - they should be in seconds.'
-        raise ValueError(error)
-    # Make sure no beat times are negative
-    if (annotated_beats < 0).any() or (generated_beats < 0).any():
-        raise ValueError('Beat locations should not be negative')
-
-    # Make sure beats are sorted
-    annotated_beats = np.sort(annotated_beats)
-    generated_beats = np.sort(generated_beats)
-    # Ignore beats up to min_beat_time
-    annotated_beats = annotated_beats[annotated_beats > min_beat_time]
-    generated_beats = generated_beats[generated_beats > min_beat_time]
-    return annotated_beats, generated_beats
+    def metric_validated(annotated_beats, generated_beats, *args, **kwargs):
+        for beats in [annotated_beats, generated_beats]:
+            # Make sure beat locations are 1-d np ndarrays
+            if beats.ndim != 1:
+                raise ValueError('Beat locations should be 1-d numpy ndarray')
+            # Make sure no beat times are huge
+            if (beats > 30000).any():
+                error = 'Very large beat times found - they should be in seconds.'
+                raise ValueError(error)
+            # Make sure no beat times are negative
+            if (beats < 0).any():
+                raise ValueError('Negative beat locations found')
+            # Make sure beat times are increasing
+            if (np.diff(beats) < 0).any():
+                raise ValueError('Beats should be sorted.')
+        return metric(annotated_beats, generated_beats, *args, **kwargs)
+    return metric_validated
 
 # <codecell>
 
@@ -86,9 +83,9 @@ def _get_annotated_beat_variations(annotated_beats):
 
 # <codecell>
 
+@validate
 def f_measure(annotated_beats,
               generated_beats,
-              min_beat_time=5.0,
               f_measure_threshod=0.07):
     '''
     Compute the F-measure of correct vs incorrectly predicted beats.
@@ -97,17 +94,12 @@ def f_measure(annotated_beats,
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
-        min_beat_time - Ignore all beats before this time, in seconds
         f_measure_threshold - Window size, in seconds
     Output:
         f_score - The computed F-measure score
     '''
-    # Validate and clean up beat times
-    annotated_beats, generated_beats = _clean_beats(annotated_beats,
-                                                    generated_beats,
-                                                    min_beat_time)
-    # Special case when annotated beats are empty
-    if generated_beats.shape == (0,):
+    # When generated beats are empty, no beats are correct; metric is 0
+    if generated_beats.size == 0:
         return 0
     # Values for calculating F measure
     false_positives = 0.0
@@ -145,9 +137,9 @@ def f_measure(annotated_beats,
 
 # <codecell>
 
+@validate
 def cemgil(annotated_beats,
            generated_beats,
-           min_beat_time=5.0,
            cemgil_sigma=0.04):
     '''
     Cemgil's score, computes a gaussian error of each generated beat.
@@ -155,18 +147,13 @@ def cemgil(annotated_beats,
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
-        min_beat_time - Ignore all beats before this time, in seconds
         cemgil_sigma - Sigma parameter of gaussian error windows
     Output:
         cemgil_score - Cemgil's score for the original annotated beats
         cemgil_max - The best Cemgil score for all metrical variations
     '''
-    # Validate and clean up beat times
-    annotated_beats, generated_beats = _clean_beats(annotated_beats,
-                                                    generated_beats,
-                                                    min_beat_time)
-    # Special case when annotated beats are empty
-    if generated_beats.shape == (0,):
+    # When generated beats are empty, no beats are correct; metric is 0
+    if generated_beats.size == 0:
         return 0
     # We'll compute Cemgil's accuracy for each variation
     accuracies = []
@@ -188,9 +175,9 @@ def cemgil(annotated_beats,
 
 # <codecell>
 
+@validate
 def goto(annotated_beats,
          generated_beats,
-         min_beat_time=5.0,
          goto_threshold=0.2,
          goto_mu=0.2,
          goto_sigma=0.2):
@@ -201,7 +188,6 @@ def goto(annotated_beats,
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
-        min_beat_time - Ignore all beats before this time, in seconds
         goto_threshold - Threshold of beat error for a beat to be "correct"
         goto_mu - The mean of the beat errors in the continuously correct
             track must be less than this
@@ -210,12 +196,8 @@ def goto(annotated_beats,
     Output:
         goto_score - Binary 1 or 0 if some specific criteria are met
     '''
-    # Validate and clean up beat times
-    annotated_beats, generated_beats = _clean_beats(annotated_beats,
-                                                    generated_beats,
-                                                    min_beat_time)
-    # Special case when annotated beats are empty
-    if generated_beats.shape == (0,):
+    # When generated beats are empty, no beats are correct; metric is 0
+    if generated_beats.size == 0:
         return 0
     # Error for each beat
     beat_error = np.ones(annotated_beats.shape[0])
@@ -276,9 +258,9 @@ def goto(annotated_beats,
 
 # <codecell>
 
+@validate
 def p_score(annotated_beats,
             generated_beats,
-            min_beat_time=5.0,
             p_score_threshold=0.2):
     '''
     Get McKinney's P-score.
@@ -287,18 +269,13 @@ def p_score(annotated_beats,
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
-        min_beat_time - Ignore all beats before this time, in seconds
         p_score_threshold - Window size will be
             p_score_threshold*median(inter_annotation_intervals)
     Output:
         correlation - McKinney's P-score
     '''
-    # Validate and clean up beat times
-    annotated_beats, generated_beats = _clean_beats(annotated_beats,
-                                                    generated_beats,
-                                                    min_beat_time)
-    # Special case when annotated beats are empty
-    if generated_beats.shape == (0,):
+    # When generated beats are empty, no beats are correct; metric is 0
+    if generated_beats.size == 0:
         return 0
     # Quantize beats to 10ms
     sampling_rate = int(1.0/0.010)
@@ -330,9 +307,9 @@ def p_score(annotated_beats,
 
 # <codecell>
 
+@validate
 def continuity(annotated_beats,
                generated_beats,
-               min_beat_time=5.0,
                continuity_phase_threshold=0.175,
                continuity_period_threshold=0.175):
     '''
@@ -342,7 +319,6 @@ def continuity(annotated_beats,
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
-        min_beat_time - Ignore all beats before this time, in seconds
         continuity_phase_threshold - Allowable ratio of how far is the
             generated beat can be from the annotated beat
         continuity_period_threshold - Allowable distance between the
@@ -353,12 +329,8 @@ def continuity(annotated_beats,
         AMLc - Any metric level, continuous accuracy
         AMLt - Any metric level, total accuracy (continuity not required)
     '''
-    # Validate and clean up beat times
-    annotated_beats, generated_beats = _clean_beats(annotated_beats,
-                                                    generated_beats,
-                                                    min_beat_time)
-    # Special case when annotated beats are empty
-    if generated_beats.shape == (0,):
+    # When generated beats are empty, no beats are correct; metric is 0
+    if generated_beats.size == 0:
         return 0
     # Accuracies for each variation
     continuous_accuracies = []
@@ -446,9 +418,9 @@ def continuity(annotated_beats,
 
 # <codecell>
 
+@validate
 def information_gain(annotated_beats,
                      generated_beats,
-                     min_beat_time=5.0,
                      bins=41):
     '''
     Get the information gain - K-L divergence of the beat error histogram
@@ -457,20 +429,15 @@ def information_gain(annotated_beats,
     Input:
         annotated_beats - np.ndarray of reference beat times, in seconds
         generated_beats - np.ndarray of query beat times, in seconds
-        min_beat_time - Ignore all beats before this time, in seconds
         bins - Number of bins in the beat error histogram
     Output:
         information_gain_score - Entropy of beat error histogram
     '''
+    # When generated beats are empty, no beats are correct; metric is 0
+    if generated_beats.size == 0:
+        return 0
     # To match beat evaluation toolbox
     bins -= 1
-    # Validate and clean up beat times
-    annotated_beats, generated_beats = _clean_beats(annotated_beats,
-                                                    generated_beats,
-                                                    min_beat_time)
-    # Special case when annotated beats are empty
-    if generated_beats.shape == (0,):
-        return 0
     # Get entropy for annotated beats->generated beats
     # and generated beats->annotated beats
     forward_entropy = _get_entropy(annotated_beats, generated_beats, bins)
