@@ -17,6 +17,7 @@ See also the Beat Evaluation Toolbox:
 # <codecell>
 
 import numpy as np
+from . import util
 
 # <codecell>
 
@@ -60,7 +61,7 @@ def validate(metric):
                 raise ValueError('Beat locations should be 1-d numpy ndarray')
             # Make sure no beat times are huge
             if (beats > 30000).any():
-                raise ValueError('A beat with time {}'.format(beats.max()) + \
+                raise ValueError('A beat at time {}'.format(beats.max()) + \
                                  ' was found; should be in seconds.')
             # Make sure no beat times are negative
             if (beats < 0).any():
@@ -122,9 +123,9 @@ def f_measure(reference_beats,
     if estimated_beats.size == 0:
         return 0
     # Values for calculating F measure
-    false_positives = 0.0
-    false_negatives = 0.0
-    true_positives = 0.0
+    false_positives = 0
+    false_negatives = 0
+    true_positives = 0
     for beat in reference_beats:
         # Calculate window edges
         window_min = beat - f_measure_threshod
@@ -137,23 +138,19 @@ def f_measure(reference_beats,
         estimated_beats = np.delete(estimated_beats, beats_in_window)
         # No beats found in window - add a false negative
         if beats_in_window.shape[0] == 0:
-            false_negatives += 1.0
+            false_negatives += 1
         # One or more beats in the window
         elif beats_in_window.shape[0] >= 1:
             # Add a hit and false positives for each spurious beat
-            true_positives += 1.0
+            true_positives += 1
             if beats_in_window.shape[0] > 1:
                 false_positives += beats_in_window.shape[0] - 1
     # Add in all remaining beats to false positives
     false_positives += false_positives + estimated_beats.shape[0]
-    # Calculate F-measure ensuring that we don't divide by 0
-    if 2.0*true_positives + false_positives + false_negatives > 0:
-        f_score = 2.0*true_positives/(2.0*true_positives
-                                      + false_positives
-                                      + false_negatives)
-    else:
-        f_score = 0
-    return f_score
+    # Compute precision and recall
+    precision = true_positives/float(true_positives + false_positives)
+    recall = true_positives/float(true_positives + false_negatives)
+    return util.f_measure(precision, recall)
 
 # <codecell>
 
