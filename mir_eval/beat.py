@@ -20,6 +20,23 @@ import numpy as np
 
 # <codecell>
 
+def trim_beats(beats, min_beat_time=5.):
+    '''Removes beats before min_beat_time.  A common preprocessing step.
+
+    :parameters:
+        - beats : ndarray
+            Array of beat times in seconds.
+        - min_beat_time : float
+            Minimum beat time to allow, default 5
+    :returns:
+        - beats_trimmed : ndarray
+            Trimmed beat array.
+    '''
+    # Remove beats before min_beat_time and sort for convenience
+    return np.sort(beats[beats > min_beat_time])
+
+# <codecell>
+
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
     look like valid beat time arrays, and throws helpful errors if not.
