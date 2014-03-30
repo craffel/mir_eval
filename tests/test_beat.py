@@ -27,5 +27,4 @@ def test_beat_functions():
     for name, function in functions.items():
         my_score = function(reference_beats, estimated_beats)
         their_score = bet_scores[name]
-        print name, my_score, their_score
         assert np.allclose(my_score, their_score)
