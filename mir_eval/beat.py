@@ -32,8 +32,8 @@ def trim_beats(beats, min_beat_time=5.):
         - beats_trimmed : ndarray
             Trimmed beat array.
     '''
-    # Remove beats before min_beat_time and sort for convenience
-    return np.sort(beats[beats > min_beat_time])
+    # Remove beats before min_beat_time
+    return beats[beats > min_beat_time]
 
 # <codecell>
 
