@@ -51,20 +51,23 @@ def validate(metric):
             The function with the beat times validated
     '''
     def metric_validated(reference_beats, estimated_beats, *args, **kwargs):
+        '''
+        Metric with input beat annotations validated
+        '''
         for beats in [reference_beats, estimated_beats]:
             # Make sure beat locations are 1-d np ndarrays
             if beats.ndim != 1:
                 raise ValueError('Beat locations should be 1-d numpy ndarray')
             # Make sure no beat times are huge
             if (beats > 30000).any():
-                error = 'Very large beat times found - they should be in seconds.'
-                raise ValueError(error)
+                raise ValueError('A beat with time {}'.format(beats.max()) + \
+                                 ' was found; should be in seconds.')
             # Make sure no beat times are negative
             if (beats < 0).any():
                 raise ValueError('Negative beat locations found')
             # Make sure beat times are increasing
             if (np.diff(beats) < 0).any():
-                raise ValueError('Beats should be sorted.')
+                raise ValueError('Beats should be in increasing order.')
         return metric(reference_beats, estimated_beats, *args, **kwargs)
     return metric_validated
 
@@ -530,3 +533,4 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     raw_bin_values[raw_bin_values == 0] = 1
     # Calculate entropy
     return -np.sum(raw_bin_values * np.log2(raw_bin_values))
+
