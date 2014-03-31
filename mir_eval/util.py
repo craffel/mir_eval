@@ -1,6 +1,8 @@
 """Utility sub-module for mir-eval"""
 
 import numpy as np
+import os
+
 
 def index_labels(labels):
     '''Convert a list of string identifiers into numerical indices.
@@ -33,14 +35,17 @@ def index_labels(labels):
     # Return the converted labels, and the inverse mapping
     return indices, index_to_label
 
-def intervals_to_samples(intervals, labels, sample_size=0.1):
+
+def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
+                         fill_value=None):
     '''Convert an array of labeled time intervals to annotated samples.
 
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
             ``mir_eval.io.load_annotation``.
-            The `i`th interval spans time ``intervals[i, 0]`` to ``intervals[i, 1]``.
+            The `i`th interval spans time ``intervals[i, 0]`` to
+            ``intervals[i, 1]``.
 
         - labels : list, shape=(n,)
             The annotation for each interval
@@ -58,14 +63,12 @@ def intervals_to_samples(intervals, labels, sample_size=0.1):
     '''
 
     # Round intervals to the sample size
-    intervals = np.round(intervals / sample_size)
+    num_samples = np.floor(intervals.max() / sample_size)
+    time_points = (np.arange(num_samples) * sample_size + offset).tolist()
+    sampled_labels = interpolate_intervals(
+        intervals, labels, time_points, fill_value)
 
-    # Build the frame label array
-    y = []
-    for (i, (start, end)) in enumerate(zip(intervals[:, 0], intervals[:, 1])):
-        y.extend([labels[i]] * int( (end - start) ))
-
-    return y
+    return time_points, sampled_labels
 
 
 def interpolate_intervals(intervals, labels, time_points, fill_value=None):
@@ -77,7 +80,8 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
             ``mir_eval.io.load_annotation``.
-            The `i`th interval spans time ``intervals[i, 0]`` to ``intervals[i, 1]``.
+            The `i`th interval spans time ``intervals[i, 0]`` to
+            ``intervals[i, 1]``.
 
         - labels : list, shape=(n,)
             The annotation for each interval
@@ -300,3 +304,40 @@ def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix='__')
                 labels.append('%sT_MAX' % label_prefix)
 
     return events, labels
+
+
+def intersect_files(flist1, flist2):
+    '''Return the intersection of two sets of filepaths, based on the file name
+    (after the final '/') and ignoring the file extension.
+
+    For example,
+    >>> flist1 = ['/a/b/abc.lab', '/c/d/123.lab', '/e/f/xyz.lab']
+    >>> flist2 = ['/g/h/xyz.npy', '/i/j/123.txt', '/k/l/456.lab']
+    >>> sublist1, sublist2 = instersect_files(flist1, flist2)
+    >>> print sublist1
+    ['/e/f/xyz.lab',
+     '/c/d/123.lab']
+    >>> print sublist2
+    ['/g/h/xyz.npy',
+     '/i/j/123.txt'])
+
+    :parameters:
+        - flist1 : list of filepaths
+        - flist2 : list of filepaths
+
+    :returns:
+        - sublist1 : list of filepaths
+        - sublist2 : list of filepaths
+    '''
+    def fname(abs_path):
+        return os.path.splitext(os.path.split(f)[-1])[0]
+
+    fmap = dict([(fname(f), f) for f in flist1])
+    print fmap
+    pairs = [list(), list()]
+    for f in flist2:
+        if fname(f) in fmap:
+            pairs[0].append(fmap[fname(f)])
+            pairs[1].append(f)
+
+    return pairs
