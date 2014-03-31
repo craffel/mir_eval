@@ -35,7 +35,7 @@ def index_labels(labels):
 
 def intervals_to_samples(intervals, labels, sample_size=0.1):
     '''Convert an array of labeled time intervals to annotated samples.
-    
+
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
@@ -53,7 +53,7 @@ def intervals_to_samples(intervals, labels, sample_size=0.1):
             array of segment labels for each generated sample
 
     ..note::
-        Segment intervals will be rounded down to the nearest multiple 
+        Segment intervals will be rounded down to the nearest multiple
         of ``frame_size``.
     '''
 
@@ -66,6 +66,39 @@ def intervals_to_samples(intervals, labels, sample_size=0.1):
         y.extend([labels[i]] * int( (end - start) ))
 
     return y
+
+
+def interpolate_intervals(intervals, labels, time_points, fill_value=None):
+    '''Assign labels to a set of points in time given a set of intervals.
+
+    Note: Times outside of the known boundaries are mapped to None by default.
+
+    :parameters:
+        - intervals : np.ndarray, shape=(n, d)
+            An array of time intervals, as returned by
+            ``mir_eval.io.load_annotation``.
+            The `i`th interval spans time ``intervals[i, 0]`` to ``intervals[i, 1]``.
+
+        - labels : list, shape=(n,)
+            The annotation for each interval
+
+        - time_points : array_like, shape=(m,)
+            Points in time to assign labels.
+
+    :returns:
+    -------
+        - aligned_labels : list
+            Labels corresponding to the given time points.
+    '''
+    aligned_labels = []
+    for tpoint in time_points:
+        if tpoint < intervals.min() or tpoint > intervals.max():
+            aligned_labels.append(fill_value)
+        else:
+            index = np.argmax(intervals[:, 0] > tpoint) - 1
+            aligned_labels.append(labels[index])
+    return aligned_labels
+
 
 def f_measure(precision, recall, beta=1.0):
     '''Compute the f-measure from precision and recall scores.
@@ -159,7 +192,7 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
     if t_min is not None:
         # Find the intervals that end at or after t_min
         first_idx = np.argwhere(intervals[:, 1] >= t_min)
-        
+
         if len(first_idx) > 0:
             # If we have events below t_min, crop them out
             if labels is not None:
