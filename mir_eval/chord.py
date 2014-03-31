@@ -7,6 +7,7 @@ Note that pitch class counting starts at C, e.g.
 import numpy as np
 
 NO_CHORD = "N"
+NO_CHORD_ENCODED = -1, np.array([0]*12), np.array([0]*12), -1
 
 
 class InvalidChordException(BaseException):
@@ -14,6 +15,7 @@ class InvalidChordException(BaseException):
     pass
 
 
+# --- Chord Primitives ---
 def _pitch_classes():
     '''Map from pitch class (str) to semitone (int).'''
     pitch_classes = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
@@ -192,6 +194,7 @@ def reduce_extended_quality(quality):
     return EXTENDED_QUALITY_REDUX.get(quality, (quality, set()))
 
 
+# --- Chord Label Parsing ---
 def _validate(chord_label):
     '''Test for well-formedness of a chord label.
 
@@ -217,7 +220,7 @@ def _validate(chord_label):
             "Received: '%s'" % chord_label)
 
 
-def split(chord_label, extended_chords=False):
+def split(chord_label, reduce_extended_chords=False):
     '''Parse a chord label into its four constituent parts:
     - root
     - quality
@@ -263,7 +266,7 @@ def split(chord_label, extended_chords=False):
     else:
         root = chord_label
 
-    if not extended_chords:
+    if not reduce_extended_chords:
         quality, addl_extensions = reduce_extended_quality(quality)
         extensions.update(addl_extensions)
 
@@ -300,3 +303,93 @@ def join(root, quality='', extensions=None, bass=''):
         chord_label += "/%s" % bass
     _validate(chord_label)
     return chord_label
+
+
+# --- Chords to Numerical Representations ---
+def encode(chord_label, reduce_extended_chords=False):
+    """Translate a chord label to numerical representations for evaluation.
+
+    :parameters:
+    - chord_label: str
+        Chord label to encode.
+
+    - reduce_extended_chords: bool, default=False
+        Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
+        extensions.
+
+    :returns:
+    -root_number: int
+        Absolute semitone of the chord's root.
+
+    - quality_bitmap: np.ndarray of ints, in [0, 1]
+        12-dim vector of relative semitones in the chord quality.
+
+    - note_bitmap: np.ndarray of ints, in [0, 1]
+        12-dim vector of relative semitones in the chord spelling.
+
+    - bass_number: int
+        Relative semitone of the chord's bass note, e.g. 0=root, 7=fifth, etc.
+
+    :raises:
+    - InvalidChordException: Thrown if the given bass note is not explicitly
+        named as an extension.
+    """
+
+    if chord_label == NO_CHORD:
+        return NO_CHORD_ENCODED
+    root, quality, exts, bass = split(
+        chord_label, reduce_extended_chords=reduce_extended_chords)
+
+    root_number = pitch_class_to_semitone(root)
+    bass_number = scale_degree_to_semitone(bass)
+    quality_bitmap = quality_to_bitmap(quality)
+
+    note_bitmap = np.array(quality_bitmap)
+    for sd in list(exts):
+        note_bitmap += scale_degree_to_bitmap(sd)
+
+    note_bitmap = (note_bitmap > 0).astype(np.int)
+    if not note_bitmap[bass_number]:
+        raise InvalidChordException(
+            "Given bass scale degree is absent from this chord: "
+            "%s" % chord_label)
+    return root_number, quality_bitmap, note_bitmap, bass_number
+
+
+def encode_many(chord_labels, reduce_extended_chords=False):
+    """Translate a set of chord labels to numerical representations for sane
+    evaluation.
+
+    :parameters:
+    - chord_labels: list
+        Set of chord labels to encode.
+
+    - reduce_extended_chords: bool, default=True
+        Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
+        extensions.
+
+    Returns
+    -------
+    - root_number: np.ndarray of ints
+        Absolute semitone of the chord's root.
+
+    - quality_bitmap: np.ndarray of ints, in [0, 1]
+        12-dim vector of relative semitones in the given chord quality.
+
+    - note_bitmap: np.ndarray of ints, in [0, 1]
+        12-dim vector of relative semitones in the given chord spelling.
+
+    - bass_number: np.ndarray
+        Relative semitones of the chord's bass notes.
+
+    :raises:
+    - InvalidChordException: Thrown if the given bass note is not explicitly
+        named as an extension.
+    """
+    num_items = len(chord_labels)
+    roots, basses = np.zeros([2, num_items], dtype=np.int)
+    qualities, notes = np.zeros([2, num_items, 12], dtype=np.int)
+    for i, c in enumerate(chord_labels):
+        roots[i], qualities[i], notes[i], basses[i] = encode(
+            c, reduce_extended_chords)
+    return roots, qualities, notes, basses

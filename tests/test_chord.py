@@ -2,7 +2,7 @@
 """
 
 import unittest
-
+import numpy as np
 from mir_eval import chord
 
 
@@ -92,6 +92,27 @@ class ChordTests(unittest.TestCase):
                          'F#:hdim7/b7')
         self.assertEqual(chord.join('F#', 'hdim7', {'*b3', '4'}, 'b7'),
                          'F#:hdim7(*b3,4)/b7')
+
+    def test_encode(self):
+        root, quality, notes, bass = chord.encode('B:maj(*1,*3)/5')
+        self.assertEqual(root, 11)
+        self.assertEqual(quality.tolist(),
+                         [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0])
+        self.assertEqual(notes.tolist(),
+                         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
+        self.assertEqual(bass, 7)
+
+        root, quality, notes, bass = chord.encode('G:dim')
+        self.assertEqual(root, 7)
+        self.assertEqual(quality.tolist(),
+                         [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0])
+        self.assertEqual(notes.tolist(),
+                         [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0])
+        self.assertEqual(bass, 0)
+
+        # Non-chord bass notes *must* be explicitly named as extensions.
+        self.assertRaises(
+            chord.InvalidChordException, chord.encode, 'G:dim(4)/6')
 
 if __name__ == "__main__":
     unittest.main()
