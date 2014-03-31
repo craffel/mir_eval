@@ -123,32 +123,19 @@ def f_measure(precision, recall, beta=1.0):
 
     return (1 + beta**2) * precision * recall / ((beta**2) * precision + recall)
 
-def intervals_to_boundaries(intervals, labels=None, label_prefix='__'):
+def intervals_to_boundaries(intervals):
     '''Convert segment interval times into boundaries.
+
     :parameters:
       - intervals : np.ndarray, shape=(n_events, 2)
           Array of segment start and end-times
 
-      - labels : None or list of str
-          Optional list of strings describing each event
-
     :returns:
-      - boundaries : np.ndarray, shape=(n_segments + 1)
+      - boundaries : np.ndarray
           Segment boundary times, including the end of the final segment
-
-      - labels : list of str or None
-          Labels for each event
     '''
 
-    boundaries = np.unique(np.ravel(intervals))
-
-    if labels is None:
-        boundary_labels = None
-    else:
-        boundary_labels = [seg_label for seg_label in labels]
-        boundary_labels.append('%sEND' % label_prefix)
-
-    return boundaries, boundary_labels
+    return np.unique(np.ravel(intervals))
 
 def boundaries_to_intervals(boundaries, labels=None):
     '''Convert an array of event times into intervals
@@ -185,8 +172,31 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
     Any intervals lying partially outside the specified range will be truncated.
 
     If the specified range exceeds the span of the provided data in either direction,
-    additional intervals will be appended.
+    additional intervals will be appended.  Any appended intervals will be prepended
+    with label_prefix.
 
+    :parameters:
+        - intervals : np.ndarray, shape=(n_events, 2)
+            Array of segment start and end-times
+
+        - labels : list, len=n_events or None
+            List of labels
+
+        - t_min : float or None
+            Minimum interval start time.
+
+        - t_max : float or None
+            Maximum interval end time.
+
+        - label_prefix : str
+            Prefix string to use for synthetic labels
+
+    :returns:
+        - new_intervals : np.array
+            Intervals spanning [t_min, t_max]
+
+        - new_labels : list
+            List of labels for new_labels
     '''
 
     if t_min is not None:
@@ -234,14 +244,15 @@ def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix='__')
 
     Any event times outside of the specified range will be removed.
 
-    If the times do not span [t_min, t_max], additional events will be inserted.
+    If the times do not span [t_min, t_max], additional events will be added with
+    the prefix label_prefix.
 
     :parameters:
         - events : np.array
             Array of event times (seconds)
 
         - labels : list or None
-            Array of labels
+            List of labels
 
         - t_min : float or None
             Minimum valid event time.

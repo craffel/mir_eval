@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='mir_eval',
-    version='0.0.1',
+    version='0.0.0',
     description='Common accuracy scores for common audio/music processing tasks.',
     author='Colin Raffel',
     author_email='craffel@gmail.com',
