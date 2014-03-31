@@ -50,8 +50,14 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
         - labels : list, shape=(n,)
             The annotation for each interval
 
+        - offset : float > 0
+            Phase offset of the sampled time grid (in seconds)
+
         - sample_size : float > 0
             duration of each sample to be generated (in seconds)
+
+        - fill_value : type(labels[0])
+            Object to use for the label with out-of-range time points.
 
     :returns:
         - sample_labels : list
@@ -63,7 +69,7 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
     '''
 
     # Round intervals to the sample size
-    num_samples = np.floor(intervals.max() / sample_size)
+    num_samples = int(np.floor(intervals.max() / sample_size))
     time_points = (np.arange(num_samples) * sample_size + offset).tolist()
     sampled_labels = interpolate_intervals(
         intervals, labels, time_points, fill_value)
