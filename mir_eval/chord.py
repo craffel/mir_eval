@@ -1,7 +1,88 @@
-'''Chord Definitions -- because some things just need to be hard-coded.
+'''Functions and other supporting code for wrangling and comparing chords for
+evaluation purposes.
 
-Note that pitch class counting starts at C, e.g.
-     C: 0, D:2, E:4, F:5, ...
+
+Conventions:
+-------------------------------
+- Pitch class counting starts at C, e.g. C: 0, D:2, E:4, F:5, etc.
+
+
+Defintions:
+-------------------------------
+- chord label: String representation of a chord name, e.g. "G:maj(4)/5"
+- scale degree: String representation of a diatonic interval, relative to the
+    root note, e.g. 'b6', '#5', or '7'
+- bass interval: String representation of the bass note's scale degree.
+- bitmap: Positional binary vector indicating active pitch classes; may be
+    absolute or relative depending on context in the code.
+
+
+A Note on Comparison Functions:
+-------------------------------
+There are, for better or worse, a variety of ways that chords can be compared
+in a musically justifiable manner. While some rules may have tradition, and
+therefore inertia in their favor, there is no single 'right' way to compare
+two sequences of chord labels. Embracing this reality, several comparison
+rules are provided in the hope that this may allow for more nuanced insight
+into the performance and, ultimately, the behaviour of a computational system.
+
+'mirex'
+- count pitch class overlap. Requires
+  an additional switch argument:
+
+'mirex-augdim'
+- augdim_switch. Boolean. If True,
+  only require 2 pitch classes in common
+  with gt to get a point for augmented
+  or diminished chords and 3 otherwise.
+  Strange, but seems to be what MIREX team
+  does.
+
+'exact'
+- chords are correct only if they are identical,
+  including enharmonics ie 'F#:maj' != 'Gb:maj'
+
+'pitch_class'
+- chords are reduced to pitch classes,
+  and compared at this level. This means that
+  enharmonics and inversions are considered equal
+  i.e. score('F#:maj', 'Gb:maj') = 1.0 and
+  score('C:maj6' = [C,E,G,A], 'A:min7' = [A,C,E,G]) = 1.0
+
+'dyads'
+- chords are mapped to major or minor dyads,
+  and compared at this level. For example,
+  score_thirds('A:7', 'A:maj') = 1.0, but also
+  score_thirds('A:min', 'A:dim') = 1.0 as dim gets
+  mapped to min. Probably a bit sketchy,
+  but is a common metric
+
+'triads'
+- chords are mapped to triad (major, minor,
+  augmented, diminished, suspended) and
+  compared at this level. For example,
+  score('A:7','A:maj') = 1.0,
+  score('A:min', 'A:dim') = 0.0
+
+'sevenths'
+- chords are mapped to 7th type (7, maj7,
+  min7, minmaj7, susb7, dim7) and compared
+  at this level. For example:
+  score('A:7', 'A:9') = 1.0,
+  score('A:7', 'A:maj7') = 0.0
+
+'pitch_class-recall'
+- recall on pitch classes in ref/est. Chords are not
+  reduced to a simpler alphabet in this evaluation
+
+'pitch_class-precision'
+- precision on pitch classes in ref/est. Chords are not
+  reduced to a simpler alphabet in this evaluation
+
+'pitch_class-f'
+- f-measure on pitch classes. Chords are not
+reduced to a simpler alphabet in this evaluation
+
 '''
 
 import numpy as np
@@ -195,7 +276,7 @@ def reduce_extended_quality(quality):
 
 
 # --- Chord Label Parsing ---
-def _validate(chord_label):
+def validate_chord_label(chord_label):
     '''Test for well-formedness of a chord label.
 
     :parameters:
@@ -241,7 +322,7 @@ def split(chord_label, reduce_extended_chords=False):
         Split version of the chord label.
     '''
     chord_label = str(chord_label)
-    _validate(chord_label)
+    validate_chord_label(chord_label)
     if chord_label == NO_CHORD:
         return [chord_label, '', set(), '']
 
@@ -266,7 +347,7 @@ def split(chord_label, reduce_extended_chords=False):
     else:
         root = chord_label
 
-    if not reduce_extended_chords:
+    if reduce_extended_chords:
         quality, addl_extensions = reduce_extended_quality(quality)
         extensions.update(addl_extensions)
 
@@ -301,7 +382,7 @@ def join(root, quality='', extensions=None, bass=''):
         chord_label += "(%s)" % ",".join(extensions)
     if bass:
         chord_label += "/%s" % bass
-    _validate(chord_label)
+    validate_chord_label(chord_label)
     return chord_label
 
 
@@ -393,3 +474,104 @@ def encode_many(chord_labels, reduce_extended_chords=False):
         roots[i], qualities[i], notes[i], basses[i] = encode(
             c, reduce_extended_chords)
     return roots, qualities, notes, basses
+
+
+def rotate_bitmap_to_root(bitmap, root):
+    '''Circularly shift a relative bitmap to its asbolute pitch classes.
+
+    For clarity, the best explanation is an example. Given 'G:Maj', the root
+    and quality map are as follows:
+        root=5
+        quality=[1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]  # Relative chord shape
+
+    After rotating to the root, the resulting bitmap becomes:
+        abs_quality = [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1]  # G, B, and D
+
+    :parameters:
+        - bitmap: np.ndarray, shape=(12,)
+            Bitmap of active notes, relative to the given root.
+
+        - root: int
+            Absolute pitch class number.
+
+    :returns:
+        - bitmap: np.ndarray, shape=(12,)
+            Absolute bitmap of active pitch classes.
+    '''
+    assert bitmap.ndim == 1, "Currently only 1D bitmaps are supported."
+    idxs = list(np.nonzero(bitmap))
+    idxs[-1] = (idxs[-1] + root) % 12
+    abs_bitmap = np.zeros_like(bitmap)
+    abs_bitmap[idxs] = 1
+    return abs_bitmap
+
+
+def rotate_bass_to_root(bass, root):
+    '''Rotate a relative bass interval to its asbolute pitch class.
+
+    :parameters:
+        - bass: int
+            Relative bass interval.
+        - root: int
+            Absolute root pitch class.
+
+    :returns:
+        - bass: int
+            Pitch class of the bass intervalself.
+    '''
+    return (bass + root) % 12
+
+
+# --- Evaluation Routines ---
+def validate(comparison):
+    '''Decorator which checks that the input annotations to a comparison
+    function look like valid chord labels.
+
+    :parameters:
+        - comparison : function
+            Evaluation comparison function.  First two arguments must be
+            reference_labels and estimated_labels.
+
+    :returns:
+        - comparison_validated : function
+            The function with the labels validated.
+    '''
+    def comparison_validated(reference_labels, estimated_labels, *args,
+                             **kwargs):
+        '''
+        Comparison with labels validated.
+        '''
+        N = len(reference_labels)
+        M = len(estimated_labels)
+        if N != M:
+            raise ValueError(
+                "Chord comparison received different length lists: "
+                "len(reference)=%d\tlen(estimates)=%d" % (N, M))
+        for labels in [reference_labels, estimated_labels]:
+            for chord_label in labels:
+                validate_chord_label(chord_label)
+
+        return comparison(reference_labels, estimated_labels, *args, **kwargs)
+    return comparison_validated
+
+
+@validate
+def score_dyads(reference_labels, estimated_labels):
+    '''Score chords along dyadic (root and third) relationships.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in {0.0, 1.0}
+    '''
+    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
+    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+
+    correct_root = ref_roots == est_roots
+    correct_third = ref_qualities[:, 3] == est_qualities[:, 3]
+    return (correct_root * correct_third).astype(np.float)

@@ -57,21 +57,21 @@ class ChordTests(unittest.TestCase):
         # Good chords should pass.
         for chord_label in ['C', 'Eb:min/5', 'A#:dim7',
                             'B:maj(*1,*5)/3', 'A#:sus4']:
-            chord._validate(chord_label)
+            chord.validate_chord_label(chord_label)
 
         # Bad chords should fail.
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "C::maj")
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "C//5")
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "C((4)")
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "C5))")
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "C:maj(*3/3")
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "Cmaj*3/3)")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "C::maj")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "C//5")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "C((4)")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "C5))")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "C:maj(*3/3")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "Cmaj*3/3)")
 
     def test_split(self):
         self.assertEqual(chord.split('C'), ['C', 'maj', set(), '1'])
@@ -113,6 +113,21 @@ class ChordTests(unittest.TestCase):
         # Non-chord bass notes *must* be explicitly named as extensions.
         self.assertRaises(
             chord.InvalidChordException, chord.encode, 'G:dim(4)/6')
+
+    def test_score_dyads(self):
+        ref = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min']
+        est = ['N', 'N',     'C:aug', 'C:dim', 'C:dim']
+        ans = [1.0,  0.0,     1.0,     0.0,     1.0]
+        self.assertEqual(chord.score_dyads(ref, est).tolist(), ans)
+        ref = ['C:maj',  'G:min',  'C:maj', 'C:min',   'C:min']
+        est = ['C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:dim']
+        ans = [1.0,       0.0,      0.0,     1.0,       1.0]
+        self.assertEqual(chord.score_dyads(ref, est).tolist(), ans)
+        ref = ['C:maj',  'F:maj',  'C:maj',     'A:maj', 'A:maj']
+        est = ['C:maj6', 'F:min6', 'C:minmaj7', 'A:7',   'A:9']
+        ans = [1.0,       0.0,      0.0,         1.0,     1.0]
+        self.assertEqual(chord.score_dyads(ref, est).tolist(), ans)
+
 
 if __name__ == "__main__":
     unittest.main()
