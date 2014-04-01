@@ -26,62 +26,66 @@ two sequences of chord labels. Embracing this reality, several comparison
 rules are provided in the hope that this may allow for more nuanced insight
 into the performance and, ultimately, the behaviour of a computational system.
 
-'mirex'
-- count pitch class overlap. Requires
-  an additional switch argument:
+- 'mirex'*
+    A estimated chord is considered correct if it shares at least three pitch
+    classes in common.
 
-'mirex-augdim'
-- augdim_switch. Boolean. If True,
-  only require 2 pitch classes in common
-  with gt to get a point for augmented
-  or diminished chords and 3 otherwise.
-  Strange, but seems to be what MIREX team
-  does.
+- 'mirex-augdim'*
+    Same as above, with the difference being an estimation only needs 2 pitch
+    classes in common with the reference to be considered 'correct' for
+    augmented or diminished chords, instead of the normal 3 pitches.
 
-'exact'
-- chords are correct only if they are identical,
-  including enharmonics ie 'F#:maj' != 'Gb:maj'
+- 'near-exact'*
+    Chords are correct only if they are nearly identical to the level of
+    extensions, e.g. score('F#:maj(6)/5', 'F#:maj/5') = 1.0; this includes
+    enharmonic spellings, e.g. score('F#:maj', 'Gb:maj') = 0.0.
 
-'pitch_class'
-- chords are reduced to pitch classes,
-  and compared at this level. This means that
-  enharmonics and inversions are considered equal
-  i.e. score('F#:maj', 'Gb:maj') = 1.0 and
-  score('C:maj6' = [C,E,G,A], 'A:min7' = [A,C,E,G]) = 1.0
+- 'pitch_class'*
+    Chords are compared at the level of pitch classes. This means that
+    enharmonics and inversions are considered equal, e.g. score('F#:maj',
+    'Gb:maj') = 1.0 and score('C:maj6'=[C,E,G,A], 'A:min7'=[A,C,E,G]) = 1.0.
 
-'dyads'
-- chords are mapped to major or minor dyads,
-  and compared at this level. For example,
-  score_thirds('A:7', 'A:maj') = 1.0, but also
-  score_thirds('A:min', 'A:dim') = 1.0 as dim gets
-  mapped to min. Probably a bit sketchy,
-  but is a common metric
+- 'dyads'
+    Chords are compared at the level of major or minor dyads (root and third),
+    For example, both score('A:7', 'A:maj') and score('A:min', 'A:dim') equal
+    1.0, as the third is major and minor in quality, respectively.
 
-'triads'
-- chords are mapped to triad (major, minor,
-  augmented, diminished, suspended) and
-  compared at this level. For example,
-  score('A:7','A:maj') = 1.0,
-  score('A:min', 'A:dim') = 0.0
+- 'dyads-inv'
+    Same as above, but sensitive to inversions.
 
-'sevenths'
-- chords are mapped to 7th type (7, maj7,
-  min7, minmaj7, susb7, dim7) and compared
-  at this level. For example:
-  score('A:7', 'A:9') = 1.0,
-  score('A:7', 'A:maj7') = 0.0
+- 'triads'
+    Chords are considered at the level of triads (major, minor, augmented,
+    diminished, suspended), meaning that, in addition to the root, the quality
+    is only considered through #5th scale degree (for augmented chords). For
+    example, score('A:7', 'A:maj') = 1.0, while score('A:min', 'A:dim') and
+    score('A:aug', 'A:maj') = 0.0.
 
-'pitch_class-recall'
-- recall on pitch classes in ref/est. Chords are not
-  reduced to a simpler alphabet in this evaluation
+- 'triads-inv'
+    Same as above, but sensitive to inversions.
 
-'pitch_class-precision'
-- precision on pitch classes in ref/est. Chords are not
-  reduced to a simpler alphabet in this evaluation
+- 'tetrads'
+    Chords are considered at the level of the entire quality in closed voicing,
+    i.e. spanning only a single octave; extended chords (9's, 11's and 13's)
+    are rolled into a single octave with any upper voices included as
+    extensions. For example, score('A:7', 'A:9') = 1.0 and score('A:7',
+    'A:maj7') = 0.0.
 
-'pitch_class-f'
-- f-measure on pitch classes. Chords are not
-reduced to a simpler alphabet in this evaluation
+- 'tetrads-inv'
+    Same as above, but sensitive to inversions.
+
+- 'pitch_class-recall'*
+    Recall on pitch classes in ref/est, based on the best-guess spelling of the
+    chord given all information at hand, including extensions. For example,
+    both score("A:min(*5)"=[A, C], "C:maj6(*3)"=[C, G, A]) and
+    score("C:maj(*3, *5)"=[C], "C:min(*b3, *5)"=[C]) = 1.0.
+
+- 'pitch_class-precision'*
+    Precision on pitch classes in ref/est, using the same rules described in
+    pitch class recall.
+
+- 'pitch_class-f'*
+    The harmonic mean (f-measure) is computed with the above recall and
+    precision measures.
 
 '''
 
@@ -242,6 +246,8 @@ def quality_to_bitmap(quality):
 
 # Maps extended chord qualities to the subset above, translating additional
 # voicings to extensions as a set of scale degrees (strings).
+# TODO(ejhumphrey): Revisit how minmaj7's are mapped. This is how TMC did it,
+#   but MMV handles it like a separate quality (rather than an add7).
 EXTENDED_QUALITY_REDUX = {
     'minmaj7': ('min',  set(['7'])),
     'maj9':    ('maj7', set(['9'])),
@@ -557,7 +563,7 @@ def validate(comparison):
 
 @validate
 def score_dyads(reference_labels, estimated_labels):
-    '''Score chords along dyadic (root and third) relationships.
+    '''Score chords along dyadic (root & third) relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -575,3 +581,124 @@ def score_dyads(reference_labels, estimated_labels):
     correct_root = ref_roots == est_roots
     correct_third = ref_qualities[:, 3] == est_qualities[:, 3]
     return (correct_root * correct_third).astype(np.float)
+
+
+@validate
+def score_dyads_inv(reference_labels, estimated_labels):
+    '''Score chords along dyadic (root, third, & bass) relationships.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in {0.0, 1.0}
+    '''
+    ref_data = encode_many(reference_labels, True)
+    ref_roots, ref_qualities, ref_bass = ref_data[0], ref_data[1], ref_data[3]
+    est_data = encode_many(estimated_labels, True)
+    est_roots, est_qualities, est_bass = est_data[0], est_data[1], est_data[3]
+
+    correct_root = ref_roots == est_roots
+    correct_bass = ref_bass == est_bass
+    correct_third = ref_qualities[:, 3] == est_qualities[:, 3]
+    return (correct_root * correct_third * correct_bass).astype(np.float)
+
+
+@validate
+def score_triads(reference_labels, estimated_labels):
+    '''Score chords along triad (root & quality to #5) relationships.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in {0.0, 1.0}
+    '''
+    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
+    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+
+    correct_root = ref_roots == est_roots
+    correct_quality = np.all(
+        np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
+    return (correct_root * correct_quality).astype(np.float)
+
+
+@validate
+def score_triads_inv(reference_labels, estimated_labels):
+    '''Score chords along triad (root, quality to #5, & bass) relationships.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in {0.0, 1.0}
+    '''
+    ref_data = encode_many(reference_labels, True)
+    ref_roots, ref_qualities, ref_bass = ref_data[0], ref_data[1], ref_data[3]
+    est_data = encode_many(estimated_labels, True)
+    est_roots, est_qualities, est_bass = est_data[0], est_data[1], est_data[3]
+
+    correct_root = ref_roots == est_roots
+    correct_bass = ref_bass == est_bass
+    correct_quality = np.all(
+        np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
+    return (correct_root * correct_quality * correct_bass).astype(np.float)
+
+
+@validate
+def score_tetrads(reference_labels, estimated_labels):
+    '''Score chords along tetrad (root & full quality) relationships.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in {0.0, 1.0}
+    '''
+    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
+    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+
+    correct_root = ref_roots == est_roots
+    correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
+    return (correct_root * correct_quality).astype(np.float)
+
+
+@validate
+def score_tetrads_inv(reference_labels, estimated_labels):
+    '''Score chords along seventh (root, quality) relationships.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in {0.0, 1.0}
+    '''
+    ref_data = encode_many(reference_labels, True)
+    ref_roots, ref_qualities, ref_bass = ref_data[0], ref_data[1], ref_data[3]
+    est_data = encode_many(estimated_labels, True)
+    est_roots, est_qualities, est_bass = est_data[0], est_data[1], est_data[3]
+
+    correct_root = ref_roots == est_roots
+    correct_bass = ref_bass == est_bass
+    correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
+    return (correct_root * correct_quality * correct_bass).astype(np.float)
