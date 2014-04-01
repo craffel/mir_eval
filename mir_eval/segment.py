@@ -44,7 +44,7 @@ def validate_boundaries(metric):
         for intervals in [reference_intervals, estimated_intervals]:
             __validate_intervals(intervals)
 
-        if reference_intervals[-1, 1] != estimated_intervals[-1, 1]:
+        if not np.allclose(reference_intervals[-1, 1], estimated_intervals[-1, 1]):
             raise ValueError('End times do not match')
 
         return metric(reference_intervals, estimated_intervals, *args, **kwargs)
@@ -76,7 +76,7 @@ def validate_labels(metric):
             if intervals.shape[0] != len(labels):
                 raise ValueError('Number of intervals does not match number of labels')
 
-        if reference_intervals[-1, 1] != estimated_intervals[-1, 1]:
+        if not np.allclose(reference_intervals[-1, 1], estimated_intervals[-1, 1]):
             raise ValueError('End times do not match')
 
         return metric(  reference_intervals, reference_labels,
