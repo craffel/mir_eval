@@ -23,7 +23,7 @@ def __validate_intervals(intervals):
         raise ValueError('Negative interval times found')
 
     # Make sure beat times are increasing
-    if intervals[0, 0] != 0.0:
+    if not np.allclose(intervals[0, 0], 0.0):
         raise ValueError('Segment intervals do not start at 0')
 
 
