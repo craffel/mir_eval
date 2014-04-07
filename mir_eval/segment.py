@@ -22,10 +22,6 @@ def __validate_intervals(intervals):
     if (intervals < 0).any():
         raise ValueError('Negative interval times found')
 
-    # Make sure beat times are increasing
-    if not np.allclose(intervals[0, 0], 0.0):
-        raise ValueError('Segment intervals do not start at 0')
-
 
 def validate_boundaries(metric):
     '''Decorator which checks that the input annotations to a metric
@@ -43,9 +39,6 @@ def validate_boundaries(metric):
     def metric_validated(reference_intervals, estimated_intervals, *args, **kwargs):
         for intervals in [reference_intervals, estimated_intervals]:
             __validate_intervals(intervals)
-
-        if not np.allclose(reference_intervals[-1, 1], estimated_intervals[-1, 1]):
-            raise ValueError('End times do not match')
 
         return metric(reference_intervals, estimated_intervals, *args, **kwargs)
 
@@ -75,6 +68,10 @@ def validate_labels(metric):
             __validate_intervals(intervals)
             if intervals.shape[0] != len(labels):
                 raise ValueError('Number of intervals does not match number of labels')
+
+            # Make sure beat times are increasing
+            if not np.allclose(intervals[0, 0], 0.0):
+                raise ValueError('Segment intervals do not start at 0')
 
         if not np.allclose(reference_intervals[-1, 1], estimated_intervals[-1, 1]):
             raise ValueError('End times do not match')
