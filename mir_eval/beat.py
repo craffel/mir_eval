@@ -17,6 +17,7 @@ See also the Beat Evaluation Toolbox:
 # <codecell>
 
 import numpy as np
+import functools
 from . import util
 
 # <codecell>
@@ -52,6 +53,8 @@ def validate(metric):
         - metric_validated : function
             The function with the beat times validated
     '''
+    # Retain docstring, etc
+    @functools.wraps(metric)
     def metric_validated(reference_beats, estimated_beats, *args, **kwargs):
         '''
         Metric with input beat annotations validated
