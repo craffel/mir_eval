@@ -243,12 +243,32 @@ def load_time_series(filename, delimiter=None):
 
 
 def load_patterns(filename):
-    '''TODO'''
+    """Loads the patters contained in the filename and puts them into a list
+    of patterns, each pattern being a list of occurrence, and each
+    occurrence being a list of (onset, midi) pairs.
+
+    The input file must be formatted as described in MIREX 2013:
+        http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_\
+            %26_Sections
+
+    :param filename: The input file path containing the patterns of a given
+        given piece using the MIREX 2013 format.
+    :type filename: str.
+    :returns: list -- the list of patterns, containing all their occurrences,
+        using the following format:
+            P = [pattern1, ..., patternN]
+            pattern = [occurrence1, ..., occurrenceM]
+            occurrence = [onset_midi1, ..., onset_midiO]
+            onset_midi = (onset_time, midi_number)
+        E.g.:
+            P = [[[(77.0, 67.0), (77.5, 77.0), ... ]]]
+    """
 
     def append_if_necessary(list, element):
+        """Appends element to a list only if the element is not an empty
+        list."""
         if element != []:
             list.append(element)
-
 
     with open(filename, "r") as input_file:
         P = []              # List with all the patterns
