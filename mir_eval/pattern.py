@@ -1,4 +1,4 @@
-'''Functions for evaluating the task of pattern discovery.
+"""Functions for evaluating the task of pattern discovery.
 
 Input Format
 ============
@@ -11,8 +11,8 @@ Metrics implemented
 Standard Precision, Recall and F1 Score
 ---------------------------------------
 
-Strict metric in order to find the exact patterns. Used and described in this
-paper:
+Strict metric in order to find the possibly transposed patterns of exact
+length. Used and described in this paper:
 
 Tom Collins, Jeremy Thurlow, Robin Laney, Alistair Willis, and Paul H.
 Garthwaite. A comparative evaluation of algorithms for discovering
@@ -27,10 +27,9 @@ Establishment Precision, Recall and F1 Score
 
 
 
-Metrics developed by Tom Colins and David Meredith.
 
 Written by Oriol Nieto (oriol@nyu.edu), 2014
-'''
+"""
 
 
 import functools
