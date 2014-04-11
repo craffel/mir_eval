@@ -33,7 +33,12 @@ import numpy as np
 def standard_metrics(reference_patterns, estimated_patterns):
     '''Standard Precision, Recall and F1 Score
     '''
-
-def load_patternns(filename):
-    '''TODO'''
     pass
+
+
+
+
+
+
+
+
