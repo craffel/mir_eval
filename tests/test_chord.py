@@ -2,7 +2,7 @@
 """
 
 import unittest
-
+import numpy as np
 from mir_eval import chord
 
 
@@ -57,21 +57,21 @@ class ChordTests(unittest.TestCase):
         # Good chords should pass.
         for chord_label in ['C', 'Eb:min/5', 'A#:dim7',
                             'B:maj(*1,*5)/3', 'A#:sus4']:
-            chord._validate(chord_label)
+            chord.validate_chord_label(chord_label)
 
         # Bad chords should fail.
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "C::maj")
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "C//5")
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "C((4)")
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "C5))")
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "C:maj(*3/3")
-        self.assertRaises(
-            chord.InvalidChordException, chord._validate, "Cmaj*3/3)")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "C::maj")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "C//5")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "C((4)")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "C5))")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "C:maj(*3/3")
+        self.assertRaises(chord.InvalidChordException,
+                          chord.validate_chord_label, "Cmaj*3/3)")
 
     def test_split(self):
         self.assertEqual(chord.split('C'), ['C', 'maj', set(), '1'])
@@ -92,6 +92,82 @@ class ChordTests(unittest.TestCase):
                          'F#:hdim7/b7')
         self.assertEqual(chord.join('F#', 'hdim7', {'*b3', '4'}, 'b7'),
                          'F#:hdim7(*b3,4)/b7')
+
+    def test_encode(self):
+        root, quality, notes, bass = chord.encode('B:maj(*1,*3)/5')
+        self.assertEqual(root, 11)
+        self.assertEqual(quality.tolist(),
+                         [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0])
+        self.assertEqual(notes.tolist(),
+                         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
+        self.assertEqual(bass, 7)
+
+        root, quality, notes, bass = chord.encode('G:dim')
+        self.assertEqual(root, 7)
+        self.assertEqual(quality.tolist(),
+                         [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0])
+        self.assertEqual(notes.tolist(),
+                         [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0])
+        self.assertEqual(bass, 0)
+
+        # Non-chord bass notes *must* be explicitly named as extensions.
+        self.assertRaises(
+            chord.InvalidChordException, chord.encode, 'G:dim(4)/6')
+
+    def test_score_dyads(self):
+        ref = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min']
+        est = ['N', 'N',     'C:aug', 'C:dim', 'C:dim']
+        ans = [1.0,  0.0,     1.0,     0.0,     1.0]
+        self.assertEqual(chord.score_dyads(ref, est).tolist(), ans)
+        ref = ['C:maj',  'G:min',  'C:maj', 'C:min',   'C:min']
+        est = ['C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:min7']
+        ans = [1.0,       0.0,      0.0,     1.0,       1.0]
+        self.assertEqual(chord.score_dyads(ref, est).tolist(), ans)
+        ref = ['C:maj',  'F:maj',  'C:maj',     'A:maj', 'A:maj']
+        est = ['C:maj6', 'F:min6', 'C:minmaj7', 'A:7',   'A:9']
+        ans = [1.0,       0.0,      0.0,         1.0,     1.0]
+        self.assertEqual(chord.score_dyads(ref, est).tolist(), ans)
+
+    def test_score_dyads_inv(self):
+        ref = ['C:maj/5',  'G:min',    'C:maj',   'C:min/b3',   'C:min']
+        est = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:hdim7/b3', 'C:dim']
+        ans = [1.0,         0.0,        0.0,       1.0,          1.0]
+        self.assertEqual(chord.score_dyads_inv(ref, est).tolist(), ans)
+
+    def test_score_triads(self):
+        ref = ['C:min',  'C:maj', 'C:maj', 'C:min', 'C:maj']
+        est = ['C:min7', 'C:7',   'C:aug', 'C:dim', 'C:sus2']
+        ans = [1.0,       1.0,     0.0,     0.0,     0.0]
+        self.assertEqual(chord.score_triads(ref, est).tolist(), ans)
+        ref = ['C:maj',  'G:min',     'C:maj', 'C:min',   'C:min']
+        est = ['C:sus4', 'G:minmaj7', 'G:maj', 'C:hdim7', 'C:min6']
+        ans = [0.0,       1.0,         0.0,     0.0,       1.0]
+        self.assertEqual(chord.score_triads(ref, est).tolist(), ans)
+
+    def test_score_triads_inv(self):
+        ref = ['C:maj/5',  'G:min',    'C:maj', 'C:min/b3',  'C:min/b3']
+        est = ['C:maj7/5', 'G:min7/5', 'C:7/5', 'C:min6/b3', 'C:dim/b3']
+        ans = [1.0,         0.0,        0.0,     1.0,         0.0]
+        self.assertEqual(chord.score_triads_inv(ref, est).tolist(), ans)
+
+    def test_score_tetrads(self):
+        ref = ['C:min',  'C:maj',  'C:7', 'C:maj7',   'C:sus2']
+        est = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2']
+        ans = [0.0,       0.0,      1.0,   1.0,        1.0]
+        self.assertEqual(chord.score_tetrads(ref, est).tolist(), ans)
+
+        # TODO(ejhumphrey): Revisit how minmaj7's are mapped.
+        ref = ['C:7/3',   'G:min',  'C:maj', 'C:min',   'C:min']
+        est = ['C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7']  # um..?
+        ans = [1.0,        0.0,      0.0,     0.0,       1.0]
+        self.assertEqual(chord.score_tetrads(ref, est).tolist(), ans)
+
+    def test_score_tetrads_inv(self):
+        ref = ['C:maj7/5', 'G:min',    'C:7/5',  'C:min/b3',   'C:min']
+        est = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:minmaj7/7']
+        ans = [0.0,         0.0,        1.0,      0.0,          0.0]
+        self.assertEqual(chord.score_tetrads_inv(ref, est).tolist(), ans)
+
 
 if __name__ == "__main__":
     unittest.main()
