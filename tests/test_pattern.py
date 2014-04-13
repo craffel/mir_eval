@@ -33,5 +33,14 @@ class PatternTests(unittest.TestCase):
         self.assertAlmostEqual(P, 0.25, delta=delta)
         self.assertAlmostEqual(R, 0.33333, delta=delta)
 
+    def test_three_layer_FPR(self):
+        delta = 1e-3
+        ref_P = input_output.load_patterns("data/pattern/reference-poly.txt")
+        est_P = input_output.load_patterns("data/pattern/estimate-poly.txt")
+        F, P, R = pattern.three_layer_FPR(ref_P, est_P)
+        self.assertAlmostEqual(F, 0.28571, delta=delta)
+        self.assertAlmostEqual(P, 0.25, delta=delta)
+        self.assertAlmostEqual(R, 0.33333, delta=delta)
+
 if __name__ == "__main__":
     unittest.main()

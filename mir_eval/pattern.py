@@ -79,7 +79,7 @@ def validate(metric):
 
 @validate
 def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
-    """Standard Precision, Recall and F1 Score.
+    """Standard F1 Score, Precision and Recall.
 
     This metric checks if the prorotype patterns of the reference match
     possible translated patterns in the prototype patterns of the estimations.
@@ -121,5 +121,57 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     # Compute the standard measures
     precision = k / float(nQ)
     recall = k / float(nP)
+    f_measure = util.f_measure(precision, recall)
+    return f_measure, precision, recall
+
+
+@validate
+def establishment_FPR(reference_patterns, estimated_patterns):
+    """Establishment F1 Score, Precision and Recall.
+    """
+    pass
+
+@validate
+def three_layer_FPR(reference_patterns, estimated_patterns):
+    """Three Layer F1 Score, Precision and Recall.
+    """
+
+    nP = len(reference_patterns)    # Number of patterns in the reference
+    nQ = len(estimated_patterns)    # Number of patterns in the estimation
+    matrix_FPR = np.zeros((nP, nQ, 3))  # Matrix, where axis=2 is:
+                                        #   F_measure, Precision, Recall
+
+    for iP in xrange(nP):
+        ref_pattern = reference_patterns[iP]
+        mPcurr = len(ref_pattern)       # Number of occurrences in ref pattern
+        lP = np.zeros(mPcurr)
+        for i, element in enumerate(ref_pattern):
+            lP[i] = len(element)
+        for iQ in xrange(nQ):
+            est_pattern = estimated_patterns[iQ]
+            mQcurr = len(est_pattern)   # Number of occurrences in est pattern
+            lQ = np.zeros(mQcurr)
+            for i, element in enumerate(est_pattern):
+                lQ[i] = len(element)
+            FPR = np.zeros((mPcurr, mQcurr, 3))
+
+            for jP in xrange(mPcurr):
+                for jQ in xrange(mQcurr):
+                    # Find intersection between reference and estimation
+                    occ_P = set()
+                    [occ_P.add(tuple(midi_onset)) for midi_onset in ref_pattern[jP]]
+                    occ_Q = set()
+                    [occ_P.add(tuple(midi_onset)) for midi_onset in est_pattern[jQ]]
+                    s = len( occ_P & occ_Q )    # Size of the interesection
+                    FPR[jP, jQ, 1] = s / float(lQ[jQ])
+                    FPR[jP, jQ, 2] = s / float(lP[jP])
+                    FPR[jP, jQ, 0] = util.f_measure(FPR[jP, jQ, 1],
+                                                    FPR[jP, jQ, 2])
+            matrix_FPR[iP, iQ, 1] = np.mean(np.max(FPR[:,:,0], axis=0))
+            matrix_FPR[iP, iQ, 2] = np.mean(np.max(FPR[:,:,0], axis=1))
+            matrix_FPR[iP, iQ, 0] = util.f_measure(matrix_FPR[iP, iQ, 1],
+                                                   matrix_FPR[iP, iQ, 2])
+    precision = np.mean(np.max(matrix_FPR[:, :, 0], axis=0))
+    recall = np.mean(np.max(matrix_FPR[:, :, 0], axis=1))
     f_measure = util.f_measure(precision, recall)
     return f_measure, precision, recall
