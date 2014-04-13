@@ -80,7 +80,7 @@ def validate(metric):
         for patterns in [reference_patterns, estimated_patterns]:
             for pattern in patterns:
                 if len(pattern) <= 0:
-                    raise ValueError("A pattern must contain at least one "
+                    raise ValueError("Each pattern must contain at least one "
                                      "occurrence.")
                 for occurrence in pattern:
                     for onset_midi in occurrence:
@@ -106,6 +106,10 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     :param estimated_patterns: The estimated patterns using the same format as
         the one load_patterns in the input_output module returns.
     :type estimated_patterns: list
+    :param tol: Tolerance level when comparing reference against estimation.
+        Default parameter is the one found in the original matlab code by
+        Tom Collins used for MIREX 2013.
+    :type tol: float
     :returns:
         - f_measure : float
             The standard F1 Score
@@ -142,15 +146,31 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
 @validate
 def establishment_FPR(reference_patterns, estimated_patterns):
     """Establishment F1 Score, Precision and Recall.
+
+    :param reference_patterns: The reference patterns using the same format as
+        the one load_patterns in the input_output module returns.
+    :type reference_patterns: list
+    :param estimated_patterns: The estimated patterns using the same format as
+        the one load_patterns in the input_output module returns.
+    :type estimated_patterns: list
+    :returns:
+        - f_measure : float
+            The establishment F1 Score
+        - precision : float
+            The establishment Precision
+        - recall : float
+            The establishment Recall
     """
-    pass
+
+
+
 
 
 @validate
 def three_layer_FPR(reference_patterns, estimated_patterns):
     """Three Layer F1 Score, Precision and Recall. As described by Meridith.
 
-    TOD: Add publication. Collins 2014?
+    TODO: Add publication. Collins 2014?
 
     :param reference_patterns: The reference patterns using the same format as
         the one load_patterns in the input_output module returns.
@@ -166,17 +186,18 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         - recall : float
             The three-layer Recall
     """
+    pass
 
     def compute_first_layer_PR(ref_occs, est_occs):
         """Computes the first layer Precision and Recall values given the
         set of occurrences in the reference and the set of occurrences in the
         estimation."""
         # Find intersection between reference and estimation
-        occ_P = set([tuple(midi_onset)
+        set_P = set([tuple(midi_onset)
                     for midi_onset in ref_occs])
-        occ_Q = set([tuple(midi_onset)
+        set_Q = set([tuple(midi_onset)
                     for midi_onset in est_occs])
-        s = len(occ_P & occ_Q)    # Size of the intersection
+        s = len(set_P & set_Q)    # Size of the intersection
 
         # Compute the first layer scores
         precision = s / float(len(ref_occs))
