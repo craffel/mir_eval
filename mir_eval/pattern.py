@@ -131,46 +131,82 @@ def establishment_FPR(reference_patterns, estimated_patterns):
     """
     pass
 
+
 @validate
 def three_layer_FPR(reference_patterns, estimated_patterns):
-    """Three Layer F1 Score, Precision and Recall.
-    As described by Meridith.
+    """Three Layer F1 Score, Precision and Recall. As described by Meridith.
+
+    :param reference_patterns: The reference patterns using the same format as
+        the one load_patterns in the input_output module returns.
+    :type reference_patterns: list
+    :param estimated_patterns: The estimated patterns using the same format as
+        the one load_patterns in the input_output module returns.
+    :type estimated_patterns: list
+    :returns:
+        - f_measure : float
+            The three-layer F1 Score
+        - precision : float
+            The three-layer Precision
+        - recall : float
+            The three-layer Recall
     """
 
-    nP = len(reference_patterns)    # Number of patterns in the reference
-    nQ = len(estimated_patterns)    # Number of patterns in the estimation
-    matrix_FPR = np.zeros((nP, nQ, 3))  # Matrix, where axis=2 is:
-                                        #   F_measure, Precision, Recall
-    for iP in xrange(nP):
-        ref_pattern = reference_patterns[iP]
-        mPcurr = len(ref_pattern)       # Number of occurrences in ref pattern
-        lP = np.zeros(mPcurr)
-        for i, element in enumerate(ref_pattern):
-            lP[i] = len(element)
-        for iQ in xrange(nQ):
-            est_pattern = estimated_patterns[iQ]
-            mQcurr = len(est_pattern)   # Number of occurrences in est pattern
-            lQ = np.zeros(mQcurr)
-            for i, element in enumerate(est_pattern):
-                lQ[i] = len(element)
-            FPR = np.zeros((mPcurr, mQcurr, 3))
-            for jP in xrange(mPcurr):
-                for jQ in xrange(mQcurr):
-                    # Find intersection between reference and estimation
-                    occ_P = set()
-                    [occ_P.add(tuple(midi_onset)) for midi_onset in ref_pattern[jP]]
-                    occ_Q = set()
-                    [occ_Q.add(tuple(midi_onset)) for midi_onset in est_pattern[jQ]]
-                    s = len( occ_P & occ_Q )    # Size of the interesection
-                    FPR[jP, jQ, 1] = s / float(lQ[jQ])
-                    FPR[jP, jQ, 2] = s / float(lP[jP])
-                    FPR[jP, jQ, 0] = util.f_measure(FPR[jP, jQ, 1],
-                                                    FPR[jP, jQ, 2])
-            matrix_FPR[iP, iQ, 1] = np.mean(np.max(FPR[:,:,0], axis=0))
-            matrix_FPR[iP, iQ, 2] = np.mean(np.max(FPR[:,:,0], axis=1))
-            matrix_FPR[iP, iQ, 0] = util.f_measure(matrix_FPR[iP, iQ, 1],
-                                                   matrix_FPR[iP, iQ, 2])
-    precision = np.mean(np.max(matrix_FPR[:, :, 0], axis=0))
-    recall = np.mean(np.max(matrix_FPR[:, :, 0], axis=1))
-    f_measure = util.f_measure(precision, recall)
-    return f_measure, precision, recall
+    def compute_first_layer_PR(ref_occs, est_occs):
+        """Computes the first layer Precision and Recall values given the
+        set of occurrences in the reference and the set of occurrences in the
+        estimation."""
+        # Find intersection between reference and estimation
+        occ_P = set([tuple(midi_onset)
+                    for midi_onset in ref_occs])
+        occ_Q = set([tuple(midi_onset)
+                    for midi_onset in est_occs])
+        s = len(occ_P & occ_Q)    # Size of the intersection
+
+        # Compute the first layer scores
+        precision = s / float(len(ref_occs))
+        recall = s / float(len(est_occs))
+        return precision, recall
+
+    def compute_second_layer_PR(ref_pattern, est_pattern):
+        """Computes the second layer Precision and Recall values given the
+        set of occurrences in the reference and the set of occurrences in the
+        estimation."""
+        # Compute the first layer scores
+        F_1 = compute_layer(ref_pattern, est_pattern)
+
+        # Compute the second layer scores
+        precision = np.mean(np.max(F_1, axis=0))
+        recall = np.mean(np.max(F_1, axis=1))
+        return precision, recall
+
+    def compute_layer(ref_elements, est_elements, layer=1):
+        """Computes the F-measure matrix for a given layer. The reference and
+        estimated elements can be either patters or occurrences, depending
+        on the layer.
+
+        For layer 1, the elements must be occurrences.
+        For layer 2, the elements must be patterns.
+        """
+        nP = len(ref_elements)      # Number of elements in reference
+        nQ = len(est_elements)      # Number of elements in estimation
+        F = np.zeros((nP, nQ))      # F-measure matrix for the given layer
+        for iP in xrange(nP):
+            for iQ in xrange(nQ):
+                if layer == 1:
+                    func = compute_first_layer_PR
+                elif layer == 2:
+                    func = compute_second_layer_PR
+
+                # Compute layer scores
+                precision, recall = func(ref_elements[iP], est_elements[iQ])
+                F[iP, iQ] = util.f_measure(precision, recall)
+        return F
+
+    # Compute the second layer (it includes the first layer)
+    F_2 = compute_layer(reference_patterns, estimated_patterns, layer=2)
+
+    # Compute the final scores (third layer)
+    precision_3 = np.mean(np.max(F_2, axis=0))
+    recall_3 = np.mean(np.max(F_2, axis=1))
+    f_measure_3 = util.f_measure(precision_3, recall_3)
+    return f_measure_3, precision_3, recall_3
