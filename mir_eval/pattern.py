@@ -91,6 +91,52 @@ def validate(metric):
     return metric_validated
 
 
+def _occurrence_intersection(occ_P, occ_Q):
+    """Computes the intersection between two occurrences.
+
+    :param occ_P: List of tuples containing (onset, midi) pairs representing
+        the reference occurrence.
+    :type occ_P: list
+    :param occ_Q: List of tuples containing (onset, midi) pairs representing
+        the estimated occurrence.
+    :type occ_Q: list
+    :returns:
+        - Set of the intersection between occ_P and occ_Q
+    """
+    set_P = set([tuple(onset_midi) for onset_midi in occ_P])
+    set_Q = set([tuple(onset_midi) for onset_midi in occ_Q])
+    return set_P & set_Q    # Return the intersection
+
+
+def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
+    """Computes the score matrix between the patterns P and Q.
+
+    :param P: Pattern containing a list of occurrences.
+    :type P: list
+    :param Q: Pattern containing a list of occurrences.
+    :type Q: list
+    :param similarity_metric: A string representing the metric to be used
+        when computing the similarity matrix. Accepted values:
+            - "cardinality_score": Count of the intersection between
+                occurrences.
+    :returns:
+        - The score matrix between P and Q using the similarity_metric.
+    """
+    sm = np.zeros((len(P), len(Q)))     # The score matrix
+    for iP, occ_P in enumerate(P):
+        for iQ, occ_Q in enumerate(Q):
+            if similarity_metric == "cardinality_score":
+                denom = float(np.max([len(occ_P), len(occ_Q)]))
+                # Compute the score
+                sm[iP, iQ] = len(_occurrence_intersection(occ_P, occ_Q)) / \
+                    denom
+            # TODO: More scores: 'normalised matching socre'
+            else:
+                raise ValueError("The similarity metric (%s) can only be: "
+                                 "'cardinality_score'.")
+    return sm
+
+
 @validate
 def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     """Standard F1 Score, Precision and Recall.
@@ -162,8 +208,19 @@ def establishment_FPR(reference_patterns, estimated_patterns):
             The establishment Recall
     """
 
+    nP = len(reference_patterns)    # Number of elements in reference
+    nQ = len(estimated_patterns)    # Number of elements in estimation
+    S = np.zeros((nP, nQ))          # Establishment matrix
+    for iP, ref_pattern in enumerate(reference_patterns):
+        for iQ, est_pattern in enumerate(estimated_patterns):
+            s = _compute_score_matrix(ref_pattern, est_pattern)
+            S[iP, iQ] = np.max(s)
 
-
+    # Compute scores
+    precision = np.mean(np.max(S, axis=0))
+    recall = np.mean(np.max(S, axis=1))
+    f_measure = util.f_measure(precision, recall)
+    return f_measure, precision, recall
 
 
 @validate
@@ -192,12 +249,8 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         """Computes the first layer Precision and Recall values given the
         set of occurrences in the reference and the set of occurrences in the
         estimation."""
-        # Find intersection between reference and estimation
-        set_P = set([tuple(midi_onset)
-                    for midi_onset in ref_occs])
-        set_Q = set([tuple(midi_onset)
-                    for midi_onset in est_occs])
-        s = len(set_P & set_Q)    # Size of the intersection
+        # Find the length of the intersection between reference and estimation
+        s = len(_occurrence_intersection(ref_occs, est_occs))
 
         # Compute the first layer scores
         precision = s / float(len(ref_occs))
