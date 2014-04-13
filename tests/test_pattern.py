@@ -42,6 +42,14 @@ class PatternTests(unittest.TestCase):
         self.assertAlmostEqual(P, 0.25927, delta=self.delta)
         self.assertAlmostEqual(R, 0.24606, delta=self.delta)
 
+    def test_occurrence_FPR(self):
+        F, P, R = pattern.occurrence_FPR(self.ref_P, self.est_P, thres=.5)
+        print F, P, R
+        pass
+        #self.assertAlmostEqual(F, 0.25249, delta=self.delta)
+        #self.assertAlmostEqual(P, 0.25927, delta=self.delta)
+        #self.assertAlmostEqual(R, 0.24606, delta=self.delta)
+
     def test_three_layer_FPR(self):
         F, P, R = pattern.three_layer_FPR(self.ref_P, self.est_P)
         self.assertAlmostEqual(F, 0.10211, delta=self.delta)

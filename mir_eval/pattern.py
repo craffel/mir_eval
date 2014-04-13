@@ -119,6 +119,7 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
         when computing the similarity matrix. Accepted values:
             - "cardinality_score": Count of the intersection between
                 occurrences.
+    :type similarity_metric: str
     :returns:
         - The score matrix between P and Q using the similarity_metric.
     """
@@ -190,7 +191,8 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
 
 
 @validate
-def establishment_FPR(reference_patterns, estimated_patterns):
+def establishment_FPR(reference_patterns, estimated_patterns,
+                      similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
 
     :param reference_patterns: The reference patterns using the same format as
@@ -199,6 +201,11 @@ def establishment_FPR(reference_patterns, estimated_patterns):
     :param estimated_patterns: The estimated patterns using the same format as
         the one load_patterns in the input_output module returns.
     :type estimated_patterns: list
+    :param similarity_metric: A string representing the metric to be used
+        when computing the similarity matrix. Accepted values:
+            - "cardinality_score": Count of the intersection between
+                occurrences.
+    :type similarity_metric: str
     :returns:
         - f_measure : float
             The establishment F1 Score
@@ -213,12 +220,52 @@ def establishment_FPR(reference_patterns, estimated_patterns):
     S = np.zeros((nP, nQ))          # Establishment matrix
     for iP, ref_pattern in enumerate(reference_patterns):
         for iQ, est_pattern in enumerate(estimated_patterns):
-            s = _compute_score_matrix(ref_pattern, est_pattern)
+            s = _compute_score_matrix(ref_pattern, est_pattern,
+                                      similarity_metric)
             S[iP, iQ] = np.max(s)
 
     # Compute scores
     precision = np.mean(np.max(S, axis=0))
     recall = np.mean(np.max(S, axis=1))
+    f_measure = util.f_measure(precision, recall)
+    return f_measure, precision, recall
+
+
+@validate
+def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
+                   similarity_metric="cardinality_score"):
+    """Establishment F1 Score, Precision and Recall.
+
+    :param similarity_metric: A string representing the metric to be used
+        when computing the similarity matrix. Accepted values:
+            - "cardinality_score": Count of the intersection between
+                occurrences.
+    :type similarity_metric: str
+    """
+    nP = len(reference_patterns)    # Number of elements in reference
+    nQ = len(estimated_patterns)    # Number of elements in estimation
+    O_PR = np.zeros((nP, nQ, 2))    # Occurrence matrix with Precision and
+                                    #   Recall in its last dimension
+    rel_idx = np.empty((0, 2))      # Index of the values that are greater
+                                    # than the specified threshold
+    for iP, ref_pattern in enumerate(reference_patterns):
+        for iQ, est_pattern in enumerate(estimated_patterns):
+            s = _compute_score_matrix(ref_pattern, est_pattern,
+                                      similarity_metric)
+            if np.max(s) >= thres:
+                O_PR[iP, iQ, 0] = np.mean(np.max(s, axis=0))
+                O_PR[iP, iQ, 1] = np.mean(np.max(s, axis=1))
+                rel_idx = np.vstack((rel_idx, [iP, iQ]))
+
+    # Compute the scores
+    if len(rel_idx) == 0:
+        precision = 0
+        recall = 0
+    else:
+        precision = np.mean(np.max(O_PR[rel_idx[:, 0], rel_idx[:, 1], 0],
+                                   axis=0))
+        recall = np.mean(np.max(O_PR[rel_idx[:, 0], rel_idx[:, 1], 1],
+                                axis=1))
     f_measure = util.f_measure(precision, recall)
     return f_measure, precision, recall
 
@@ -243,8 +290,6 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         - recall : float
             The three-layer Recall
     """
-    pass
-
     def compute_first_layer_PR(ref_occs, est_occs):
         """Computes the first layer Precision and Recall values given the
         set of occurrences in the reference and the set of occurrences in the
