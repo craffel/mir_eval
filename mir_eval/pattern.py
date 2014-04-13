@@ -134,13 +134,13 @@ def establishment_FPR(reference_patterns, estimated_patterns):
 @validate
 def three_layer_FPR(reference_patterns, estimated_patterns):
     """Three Layer F1 Score, Precision and Recall.
+    As described by Meridith.
     """
 
     nP = len(reference_patterns)    # Number of patterns in the reference
     nQ = len(estimated_patterns)    # Number of patterns in the estimation
     matrix_FPR = np.zeros((nP, nQ, 3))  # Matrix, where axis=2 is:
                                         #   F_measure, Precision, Recall
-
     for iP in xrange(nP):
         ref_pattern = reference_patterns[iP]
         mPcurr = len(ref_pattern)       # Number of occurrences in ref pattern
@@ -154,14 +154,13 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
             for i, element in enumerate(est_pattern):
                 lQ[i] = len(element)
             FPR = np.zeros((mPcurr, mQcurr, 3))
-
             for jP in xrange(mPcurr):
                 for jQ in xrange(mQcurr):
                     # Find intersection between reference and estimation
                     occ_P = set()
                     [occ_P.add(tuple(midi_onset)) for midi_onset in ref_pattern[jP]]
                     occ_Q = set()
-                    [occ_P.add(tuple(midi_onset)) for midi_onset in est_pattern[jQ]]
+                    [occ_Q.add(tuple(midi_onset)) for midi_onset in est_pattern[jQ]]
                     s = len( occ_P & occ_Q )    # Size of the interesection
                     FPR[jP, jQ, 1] = s / float(lQ[jQ])
                     FPR[jP, jQ, 2] = s / float(lP[jP])
