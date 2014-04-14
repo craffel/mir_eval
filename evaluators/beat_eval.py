@@ -25,9 +25,9 @@ def evaluate(truth_file=None, prediction_file=None):
     pred_beats, pred_labels      = mir_eval.io.load_events(prediction_file)
 
     # Now compute all the metrics
-    
+
     M = OrderedDict()
-    
+
     # F-Measure
     M['F-meas'] = mir_eval.beat.f_measure(truth_beats, pred_beats)
 
@@ -39,11 +39,12 @@ def evaluate(truth_file=None, prediction_file=None):
     # This metric is deprecated
     # M['Goto'] = mir_eval.beat.goto(truth_beats, pred_beats)
 
+
     # P-Score
     M['P-score'] = mir_eval.beat.p_score(truth_beats, pred_beats)
 
     # Continuity metrics
-    M['CMLc'], M['CMLt'], M['AMLc'], M['AMLt'] = mir_eval.beat.continuity(truth_beats, 
+    M['CMLc'], M['CMLt'], M['AMLc'], M['AMLt'] = mir_eval.beat.continuity(truth_beats,
                                                                           pred_beats)
 
     # Information gain
@@ -73,7 +74,7 @@ def process_arguments():
                             help        =   'path to the prediction file')
 
     return vars(parser.parse_args(sys.argv[1:]))
-   
+
 if __name__ == '__main__':
     # Get the parameters
     parameters = process_arguments()
