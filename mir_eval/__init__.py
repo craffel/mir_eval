@@ -11,5 +11,6 @@ from . import separation
 from . import util
 from . import sonify
 from . import melody
+from . import pattern
 
 __version__ = '0.0.1'
