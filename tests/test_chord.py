@@ -2,7 +2,6 @@
 """
 
 import unittest
-import numpy as np
 from mir_eval import chord
 
 
