@@ -11,10 +11,8 @@ Usage:
 import argparse
 import glob
 import os
-import sys
 
 from collections import OrderedDict
-import numpy as np
 
 from mir_eval import io
 import mir_eval.chord as chord
@@ -38,8 +36,25 @@ def collect_fileset(reference_dir, estimation_dir, fext='lab'):
     return ref_files, est_files
 
 
-def evaluate_pair(reference_file, estimation_file, scores=['dyads']):
-    '''Load data and perform the evaluation'''
+def evaluate_pair(reference_file, estimation_file, vocabularies=['dyads']):
+    '''Load data and perform the evaluation between a pair of annotations.
+
+    :parameters:
+    - reference_file: str
+        Path to a reference annotation.
+
+    - estimation_file: str
+        Path to an estimated annotation.
+
+    - vocabularies: list of strings
+        Comparisons to make between the reference and estimated sequences.
+
+    :returns:
+    -result: dict
+        Dictionary containing the averaged scores for each vocabulary, along
+        with the total duration of the file ('_weight') and any errors
+        ('_error') caught in the process.
+    '''
 
     # load the data
     ref_intervals, ref_labels = io.load_annotation(reference_file)
@@ -58,9 +73,9 @@ def evaluate_pair(reference_file, estimation_file, scores=['dyads']):
         ref_intervals, ref_labels, est_intervals, est_labels)
 
     # Now compute all the metrics
-    result = OrderedDict(weight=intervals.max())
+    result = OrderedDict(_weight=intervals.max())
     try:
-        for vocab in scores:
+        for vocab in vocabularies:
             result[vocab] = chord.score(
                 ref_labels, est_labels, intervals, vocab)
     except chord.InvalidChordException as err:
@@ -83,10 +98,12 @@ def print_evaluation(prediction_file, result):
 
 
 def print_summary(results):
+    '''
+    '''
     file_errors = []
     chord_errors = set()
-    print "'%s'\n%s" % (chord.InvalidChordException().name,
-                        '-'*len(chord.InvalidChordException().name))
+    print "\n'%s'\n%s" % (chord.InvalidChordException().name,
+                          '-'*len(chord.InvalidChordException().name))
     for item in results:
         err_pair = item.get("_error", None)
         if err_pair:
@@ -95,9 +112,34 @@ def print_summary(results):
             file_errors.append(err_pair[1])
 
 
-def process_arguments():
-    '''Argparse function to get the program parameters'''
+def parse_input_data(reference_data, estimation_data):
+    '''
+    '''
+    if all([os.path.isdir(a) for a in (reference_data, estimation_data)]):
+        ref_files, est_files = collect_fileset(reference_data, estimation_data)
+    else:
+        for a in (reference_data, estimation_data):
+            if not os.path.exists(a):
+                raise ValueError("File does not exist: %s" % a)
+        ref_files = [reference_data]
+        est_files = [estimation_data]
+    return ref_files, est_files
 
+
+def main(reference_data, estimation_data, vocabularies):
+    '''
+    '''
+    ref_files, est_files = parse_input_data(reference_data, estimation_data)
+    # Compute all the scores
+    results = []
+    for ref, est in zip(ref_files, est_files):
+        results.append(evaluate_pair(ref, est, vocabularies))
+        print_evaluation(ref, results[-1])
+
+    print_summary(results)
+
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='mir_eval chord recognition evaluation')
 
@@ -109,28 +151,12 @@ def process_arguments():
         'estimation_data', action='store',
         help='Path to estimation annotation file or directory.')
 
-    args = parser.parse_args(sys.argv[1:])
-    data = [args.reference_data, args.estimation_data]
-    if all([os.path.isdir(a) for a in data]):
-        ref_files, est_files = collect_fileset(data[0],
-                                               data[1])
-    else:
-        for a in data:
-            if not os.path.exists(a):
-                raise ValueError("File does not exist: %s" % a)
-        ref_files = [args.reference_data]
-        est_files = [args.estimation_data]
-    return ref_files, est_files
+    parser.add_argument(
+        '-v', '--vocabularies', nargs='+', type=str)
 
+    parser.add_argument(
+        '-strict_bass', '--strict_bass', type=bool, default=False)
 
-if __name__ == '__main__':
-    # Get the parameters
-    ref_files, est_files = process_arguments()
-
-    # Compute all the scores
-    results = []
-    for r, f in zip(ref_files, est_files):
-        results.append(evaluate_pair(r, f))
-        print_evaluation(r, results[-1])
-
-    print_summary(results)
+    args = parser.parse_args()
+    chord.STRICT_BASS_INTERVALS = args.strict_bass
+    main(args.reference_data, args.estimation_data, args.vocabularies)
