@@ -11,10 +11,39 @@ Source separation evaluation:
 import numpy as np
 from scipy.linalg import toeplitz
 from scipy.signal import fftconvolve
+import functools
+import collections
 import itertools
 
+def validate(metric):
+    '''Decorator which checks that the input data to a metric
+    are valid, and throws helpful errors if not.
 
-def bss_eval_sources(estimated_sources, sources):
+    :parameters:
+        - metric : function
+            Evaluation metric function.  First two arguments must be
+            reference_sources and estimated_sources.
+
+    :returns:
+        - metric_validated : function
+            The function with the onset locations validated
+    '''
+    # Retain docstring, etc
+    @functools.wraps(metric)
+    def metric_validated(reference_sources, estimated_sources, *args, **kwargs):
+        '''
+        Metric with input validated
+        '''
+        if reference_sources.shape != estimated_sources.shape:
+            raise ValueError('The shape of estimated sources and the true sources '
+                             'should match.  reference_sources.shape = {}, '
+                             'estimated_sources = {}'.format(reference_sources.shape,
+                                                             estimated_sources.shape))
+            return metric(reference_onsets, estimated_onsets, *args, **kwargs)
+    return metric_validated
+
+
+def bss_eval_sources(reference_sources, estimated_sources):
     '''BSS_EVAL_SOURCES
         MATLAB translation of BSS_EVAL Toolbox
 
@@ -25,26 +54,22 @@ def bss_eval_sources(estimated_sources, sources):
         512, as described in Section III.B of the reference below.
 
     :parameters:
-      - estimated_sources: ndarray
-          (nsrc, nsampl) matrix containing estimated sources
-      - sources: ndarray
-          (nsrc, nsampl) matrix containing true sources
+        - reference_sources: ndarray
+            (nsrc, nsampl) matrix containing true sources
+        - estimated_sources: ndarray
+            (nsrc, nsampl) matrix containing estimated sources
 
     :returns:
-      - sdr: ndarray
-          (nsrc, ) vector of Signal to Distortion Ratios (SDR)
-      - sir: ndarray
-          (nsrc, ) vector of Source to Interference Ratios (SIR)
-      - sar: ndarray
-          (nsrc, ) vector of Sources to Artifacts Ratios (SAR)
-      - perm: ndarray
-          (nsrc, ) vector containing the best ordering of estimated sources in
-          the mean SIR sense (estimated source number perm[j] corresponds to
-          true source number j)
-
-    :raises:
-      - ValueError
-          if the shape of estimated sources and the true sources doesn't match.
+        - sdr: ndarray
+            (nsrc, ) vector of Signal to Distortion Ratios (SDR)
+        - sir: ndarray
+            (nsrc, ) vector of Source to Interference Ratios (SIR)
+        - sar: ndarray
+            (nsrc, ) vector of Sources to Artifacts Ratios (SAR)
+        - perm: ndarray
+            (nsrc, ) vector containing the best ordering of estimated sources in
+            the mean SIR sense (estimated source number perm[j] corresponds to
+            true source number j)
 
     Reference:
         Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
@@ -56,12 +81,9 @@ def bss_eval_sources(estimated_sources, sources):
     # make sure the input is of shape (nsrc, nsampl)
     if estimated_sources.ndim == 1:
         estimated_sources = estimated_sources[np.newaxis, :]
-    if sources.ndim == 1:
-        sources = sources[np.newaxis, :]
+    if reference_sources.ndim == 1:
+        reference_sources = reference_sources[np.newaxis, :]
 
-    if sources.shape != estimated_sources.shape:
-        raise ValueError('The shape of estimated sources and the true sources '
-                         'should match.')
     nsrc = estimated_sources.shape[0]
 
     # compute criteria for all possible pair matches
@@ -71,7 +93,7 @@ def bss_eval_sources(estimated_sources, sources):
     for jest in xrange(nsrc):
         for jtrue in xrange(nsrc):
             s_true, e_spat, e_interf, e_artif = \
-                    _bss_decomp_mtifilt(estimated_sources[jest], sources,
+                    _bss_decomp_mtifilt(reference_sources, estimated_sources[jest],
                                         jtrue, 512)
             sdr[jest, jtrue], sir[jest, jtrue], sar[jest, jtrue] = \
                     _bss_source_crit(s_true, e_spat, e_interf, e_artif)
@@ -87,7 +109,7 @@ def bss_eval_sources(estimated_sources, sources):
     return (sdr[idx], sir[idx], sar[idx], popt)
 
 
-def _bss_decomp_mtifilt(estimated_source, sources, j, flen):
+def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
     '''
     Decomposition of an estimated source image into four components
     representing respectively the true source image, spatial (or filtering)
@@ -97,33 +119,33 @@ def _bss_decomp_mtifilt(estimated_source, sources, j, flen):
     nsampl = estimated_source.size
     ## decomposition ##
     # true source image
-    s_true = np.hstack((sources[j], np.zeros(flen - 1)))
+    s_true = np.hstack((reference_sources[j], np.zeros(flen - 1)))
     # spatial (or filtering) distortion
-    e_spat = _project(estimated_source, sources[j, np.newaxis, :],
+    e_spat = _project(reference_sources[j, np.newaxis, :], estimated_source,
                       flen) - s_true
     # interference
-    e_interf = _project(estimated_source, sources, flen) - s_true - e_spat
+    e_interf = _project(reference_sources, estimated_source, flen) - s_true - e_spat
     # artifacts
     e_artif = -s_true - e_spat - e_interf
     e_artif[:nsampl] += estimated_source
     return (s_true, e_spat, e_interf, e_artif)
 
 
-def _project(estimated_source, sources, flen):
+def _project(reference_sources, estimated_source, flen):
     '''
     Least-squares projection of estimated source on the subspace spanned by
-    delayed versions of sources, with delays between 0 and flen-1
+    delayed versions of reference sources, with delays between 0 and flen-1
     '''
-    nsrc, nsampl = sources.shape
+    nsrc, nsampl = reference_sources.shape
 
     ## computing coefficients of least squares problem via FFT ##
     # zero padding and FFT of input data
-    sources = np.hstack((sources, np.zeros((nsrc, flen - 1))))
+    reference_sources = np.hstack((reference_sources, np.zeros((nsrc, flen - 1))))
     estimated_source = np.hstack((estimated_source, np.zeros(flen - 1)))
     n_fft = int(2**np.ceil(np.log2(nsampl + flen - 1)))
-    sf = np.fft.fft(sources, n=n_fft, axis=1)
+    sf = np.fft.fft(reference_sources, n=n_fft, axis=1)
     sef = np.fft.fft(estimated_source, n=n_fft)
-    # inner products between delayed versions of sources
+    # inner products between delayed versions of reference_sources
     G = np.zeros((nsrc * flen, nsrc * flen))
     for i in xrange(nsrc):
         for j in xrange(nsrc):
@@ -133,7 +155,7 @@ def _project(estimated_source, sources, flen):
                                        r=ssf[:flen])
             G[i * flen: (i+1) * flen, j * flen: (j+1) * flen] = ss
             G[j * flen: (j+1) * flen, i * flen: (i+1) * flen] = ss.T
-    # inner products between estimated_source and delayed versions of sources
+    # inner products between estimated_source and delayed versions of reference_sources
     D = np.zeros(nsrc * flen)
     for i in xrange(nsrc):
         ssef = sf[i] * np.conj(sef)
@@ -149,7 +171,7 @@ def _project(estimated_source, sources, flen):
     # Filtering
     sproj = np.zeros(nsampl + flen - 1)
     for i in xrange(nsrc):
-        sproj += fftconvolve(C[:, i], sources[i])[:nsampl + flen - 1]
+        sproj += fftconvolve(C[:, i], reference_sources[i])[:nsampl + flen - 1]
     return sproj
 
 
@@ -164,3 +186,8 @@ def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
     sir = 10 * np.log10(np.sum(s_filt**2) / np.sum(e_interf**2))
     sar = 10 * np.log10(np.sum((s_filt + e_interf)**2) / np.sum(e_artif**2))
     return (sdr, sir, sar)
+
+# Create a dictionary which maps the name of each metric
+# to the function used to compute it
+metrics = collections.OrderedDict()
+metrics['bss_eval'] = bss_eval_sources

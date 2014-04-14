@@ -14,7 +14,7 @@ from scipy import io
 def test_bss_eval():
     # load the randomly generated sources and estimated sources
     signals_mat = io.loadmat('data/separation/source_signals.mat')
-    estimated_sources, sources = signals_mat['se'], signals_mat['s']
+    reference_sources, estimated_sources = signals_mat['s'], signals_mat['se']
     # load the referred output from BSS_eval MATLAB implementation
     # note that vector loaded from .mat file are reshaped to 2-d
     metrics_mat = io.loadmat('data/separation/bss_output_MATLAB.mat')
@@ -23,7 +23,7 @@ def test_bss_eval():
         metrics_mat['perm'].ravel()
 
     sdr, sir, sar, perm = mir_eval.separation.bss_eval_sources(
-        estimated_sources, sources)
+        reference_sources, estimated_sources)
     # make sure they all match
     assert np.allclose(sdr, r_sdr)
     assert np.allclose(sir, r_sir)
