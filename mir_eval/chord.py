@@ -752,9 +752,9 @@ def compare_mirex(reference_labels, estimated_labels):
     '''
     MIN_INTERSECTION = 3
     ref_data = encode_many(reference_labels, True)
-    ref_notes = rotate_bitmaps_to_roots(ref_data[1], ref_data[0])
+    ref_notes = rotate_bitmaps_to_roots(ref_data[2], ref_data[0])
     est_data = encode_many(estimated_labels, True)
-    est_notes = rotate_bitmaps_to_roots(est_data[1], est_data[0])
+    est_notes = rotate_bitmaps_to_roots(est_data[2], est_data[0])
 
     correct_notes = (ref_notes * est_notes).sum(axis=-1)
     return (correct_notes >= MIN_INTERSECTION).astype(np.float)
