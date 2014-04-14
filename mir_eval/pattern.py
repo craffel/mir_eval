@@ -25,7 +25,8 @@ Standard Precision, Recall and F1 Score
 ---------------------------------------
 
 Strict metric in order to find the possibly transposed patterns of exact
-length. Used and described here:
+length. This is the only metric that considers transposed patterns.
+Used and described here:
 
 Tom Collins, Jeremy Thurlow, Robin Laney, Alistair Willis, and Paul H.
 Garthwaite. A comparative evaluation of algorithms for discovering
@@ -35,12 +36,21 @@ Veltkamp (Eds), Proc ISMIR, pp. 3-8, Utrecht, 2010.
 Establishment Precision, Recall and F1 Score
 --------------------------------------------
 
-TODO
+This metric evaluates the amount of patterns that were successfully identified
+by the estimated results, no matter how many occurrences they found.
+In other words, this metric captures how the algorithm successfully
+_established_ that a pattern repeated at least twice, and this pattern is also
+found in the reference annotation.
 
 Occurrence Precision, Recall and F1 Score
 -----------------------------------------
 
-TODO
+Evaluation of how well an estimation can effectively identify all the
+occurrences of the found patterns, independently of how many patterns have
+been discovered. This metric has a threshold parameter that indicates how
+similar two occurrences must be in order to be considered equal.
+
+In MIREX, this evaluation is run twice, with thresholds .75 and .5.
 
 Three-layer Precision, Recall and F1 Score
 ------------------------------------------
@@ -242,6 +252,15 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
                    similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
 
+    :param reference_patterns: The reference patterns using the same format as
+        the one load_patterns in the input_output module returns.
+    :type reference_patterns: list
+    :param estimated_patterns: The estimated patterns using the same format as
+        the one load_patterns in the input_output module returns.
+    :type estimated_patterns: list
+    :param thres: How much similar two occcurrences must be in order to be
+        considered equal.
+    :type thres: float
     :param similarity_metric: A string representing the metric to be used
         when computing the similarity matrix. Accepted values:
             - "cardinality_score": Count of the intersection between
