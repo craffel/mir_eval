@@ -93,6 +93,8 @@ import numpy as np
 
 NO_CHORD = "N"
 NO_CHORD_ENCODED = -1, np.array([0]*12), np.array([0]*12), -1
+# See Line 445
+STRICT_BASS_INTERVALS = False
 
 
 class InvalidChordException(BaseException):
@@ -440,12 +442,12 @@ def encode(chord_label, reduce_extended_chords=False):
         note_bitmap += scale_degree_to_bitmap(sd)
 
     note_bitmap = (note_bitmap > 0).astype(np.int)
-    if not note_bitmap[bass_number]:
-        # TODO(ejhumphrey): Return to this.
-        # note_bitmap[bass_number] = 1.0
+    if not note_bitmap[bass_number] and STRICT_BASS_INTERVALS:
         raise InvalidChordException(
             "Given bass scale degree is absent from this chord: "
             "%s" % chord_label, chord_label)
+    else:
+        note_bitmap[bass_number] = 1.0
     return root_number, quality_bitmap, note_bitmap, bass_number
 
 

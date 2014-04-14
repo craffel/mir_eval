@@ -110,9 +110,17 @@ class ChordTests(unittest.TestCase):
                          [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0])
         self.assertEqual(bass, 0)
 
-        # Non-chord bass notes *must* be explicitly named as extensions.
+        # Non-chord bass notes *must* be explicitly named as extensions when
+        #   STRICT_BASS_INTERVALS == True
+        chord.STRICT_BASS_INTERVALS = True
         self.assertRaises(
             chord.InvalidChordException, chord.encode, 'G:dim(4)/6')
+        # Otherwise, we can cut a little slack.
+        chord.STRICT_BASS_INTERVALS = False
+        root, quality, notes, bass = chord.encode('G:dim(4)/6')
+        self.assertEqual(bass, 9)
+        self.assertEqual(notes.tolist(),
+                         [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0])
 
     def test_encode_many(self):
         input_list = ['B:maj(*1,*3)/5',
