@@ -18,6 +18,7 @@ See also the Beat Evaluation Toolbox:
 
 import numpy as np
 import functools
+import collections
 from . import util
 
 # <codecell>
@@ -613,4 +614,15 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     raw_bin_values[raw_bin_values == 0] = 1
     # Calculate entropy
     return -np.sum(raw_bin_values * np.log2(raw_bin_values))
+
+# <codecell>
+
+# Create a dictionary which maps the name of each metric 
+# to the function used to compute it
+metrics = collections.OrderedDict()
+metrics['F-measure'] = f_measure
+metrics['Cemgil'] = cemgil
+metrics['P-score'] = p_score
+metrics['Continuity'] = continuity
+metrics['Information Gain'] = information_gain
 
