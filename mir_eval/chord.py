@@ -27,7 +27,7 @@ rules are provided in the hope that this may allow for more nuanced insight
 into the performance and, ultimately, the behaviour of a computational system.
 
 - 'mirex'*
-    A estimated chord is considered correct if it shares at least three pitch
+    A estimated chord is considered correct if it shares *at least* three pitch
     classes in common.
 
 - 'mirex-augdim'*
@@ -516,12 +516,35 @@ def rotate_bitmap_to_root(bitmap, root):
         - bitmap: np.ndarray, shape=(12,)
             Absolute bitmap of active pitch classes.
     '''
+    bitmap = np.asarray(bitmap)
     assert bitmap.ndim == 1, "Currently only 1D bitmaps are supported."
     idxs = list(np.nonzero(bitmap))
     idxs[-1] = (idxs[-1] + root) % 12
     abs_bitmap = np.zeros_like(bitmap)
     abs_bitmap[idxs] = 1
     return abs_bitmap
+
+
+def rotate_bitmaps_to_roots(bitmaps, roots):
+    '''Circularly shift a relative bitmaps to asbolute pitch classes.
+
+    See rotate_bitmap_to_root for more information.
+
+    :parameters:
+        - bitmap: np.ndarray, shape=(N, 12)
+            Bitmap of active notes, relative to the given root.
+
+        - root: np.ndarray, shape=(N,)
+            Absolute pitch class number.
+
+    :returns:
+        - bitmap: np.ndarray, shape=(N, 12)
+            Absolute bitmaps of active pitch classes.
+    '''
+    abs_bitmaps = []
+    for bitmap, root in zip(bitmaps, roots):
+        abs_bitmaps.append(rotate_bitmap_to_root(bitmap, root))
+    return np.asarray(abs_bitmaps)
 
 
 def rotate_bass_to_root(bass, root):
@@ -713,7 +736,32 @@ def compare_tetrads_inv(reference_labels, estimated_labels):
     return (correct_root * correct_quality * correct_bass).astype(np.float)
 
 
+@validate
+def compare_mirex(reference_labels, estimated_labels):
+    '''Compare chords along MIREX rules.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in {0.0, 1.0}
+    '''
+    MIN_INTERSECTION = 3
+    ref_data = encode_many(reference_labels, True)
+    ref_notes = rotate_bitmaps_to_roots(ref_data[1], ref_data[0])
+    est_data = encode_many(estimated_labels, True)
+    est_notes = rotate_bitmaps_to_roots(est_data[1], est_data[0])
+
+    correct_notes = (ref_notes * est_notes).sum(axis=-1)
+    return (correct_notes >= MIN_INTERSECTION).astype(np.float)
+
+
 COMPARATORS = {
+    'mirex': compare_mirex,
     'dyads': compare_dyads,
     'dyads-inv': compare_dyads_inv,
     'triads': compare_triads,

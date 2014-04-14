@@ -5,7 +5,11 @@ Compute chord evaluation metrics
 
 Usage:
 
-./chord_eval.py REFERENCE.TXT ESTIMATION.TXT
+./chord_eval.py ~/audio-chord-estimation/2011/outputs-lab/Ground-truth/ \
+~/mirex-tools/audio-chord-estimation/2011/outputs-lab/CB2/ \
+-v mirex dyads dyads-inv \
+--strict_bass
+
 '''
 
 import argparse

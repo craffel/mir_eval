@@ -3,7 +3,6 @@
 
 import unittest
 from mir_eval import chord
-import numpy as np
 
 
 class ChordTests(unittest.TestCase):
@@ -92,6 +91,19 @@ class ChordTests(unittest.TestCase):
                          'F#:hdim7/b7')
         self.assertEqual(chord.join('F#', 'hdim7', {'*b3', '4'}, 'b7'),
                          'F#:hdim7(*b3,4)/b7')
+
+    def test_rotate_bitmaps_to_roots(self):
+        bitmaps = [
+            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]]
+        roots = [0, 5, 11]
+        expected_bitmaps = [
+            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]]
+        ans = chord.rotate_bitmaps_to_roots(bitmaps, roots).tolist()
+        self.assertEqual(ans, expected_bitmaps)
 
     def test_encode(self):
         root, quality, notes, bass = chord.encode('B:maj(*1,*3)/5')
