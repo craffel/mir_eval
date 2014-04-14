@@ -17,6 +17,8 @@ See also the Beat Evaluation Toolbox:
 # <codecell>
 
 import numpy as np
+import functools
+import collections
 from . import util
 
 # <codecell>
@@ -29,6 +31,7 @@ def trim_beats(beats, min_beat_time=5.):
             Array of beat times in seconds.
         - min_beat_time : float
             Minimum beat time to allow, default 5
+    
     :returns:
         - beats_trimmed : ndarray
             Trimmed beat array.
@@ -51,6 +54,8 @@ def validate(metric):
         - metric_validated : function
             The function with the beat times validated
     '''
+    # Retain docstring, etc
+    @functools.wraps(metric)
     def metric_validated(reference_beats, estimated_beats, *args, **kwargs):
         '''
         Metric with input beat annotations validated
@@ -78,14 +83,21 @@ def _get_reference_beat_variations(reference_beats):
     '''
     Return metric variations of the reference beats
 
-    Input:
-        reference_beats - np.ndarry of beat locations in seconds
-    Output:
-        reference_beats - Original beat locations
-        off_beat - 180 degrees out of phase from the original beat locations
-        double - Beats at 1/2 the original tempo
-        half_odd - Half tempo, odd beats
-        half_even - Half tempo, even beats
+    :parameters:
+        - reference_beats : np.ndarray
+            beat locations in seconds
+
+    :returns:
+        - reference_beats : np.ndarray
+            Original beat locations
+        - off_beat : np.ndarray
+            180 degrees out of phase from the original beat locations
+        - double : np.ndarray
+            Beats at 1/2 the original tempo
+        - half_odd : np.ndarray
+            Half tempo, odd beats
+        - half_even : np.ndarray
+            Half tempo, even beats
     '''
 
     # Create annotations at twice the metric level
@@ -111,13 +123,23 @@ def f_measure(reference_beats,
     '''
     Compute the F-measure of correct vs incorrectly predicted beats.
     "Corectness" is determined over a small window.
+    
+    :usage:
+        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
+        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
+        >>> f_measure = mir_eval.beat.f_measure(reference_beats, estimated_beats)
 
-    Input:
-        reference_beats - np.ndarray of reference beat times, in seconds
-        estimated_beats - np.ndarray of query beat times, in seconds
-        f_measure_threshold - Window size, in seconds
-    Output:
-        f_score - The computed F-measure score
+    :parameters:
+        - reference_beats : np.ndarray
+            reference beat times, in seconds
+        - estimated_beats : np.ndarray 
+            estimated beat times, in seconds
+        - f_measure_threshold : float
+            Window size, in seconds, default 0.07
+    
+    :returns:
+        - f_score : float
+            The computed F-measure score
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0:
@@ -160,14 +182,26 @@ def cemgil(reference_beats,
            cemgil_sigma=0.04):
     '''
     Cemgil's score, computes a gaussian error of each estimated beat.
+    Compares against the original beat times and all metrical variations.
 
-    Input:
-        reference_beats - np.ndarray of reference beat times, in seconds
-        estimated_beats - np.ndarray of query beat times, in seconds
-        cemgil_sigma - Sigma parameter of gaussian error windows
-    Output:
-        cemgil_score - Cemgil's score for the original reference beats
-        cemgil_max - The best Cemgil score for all metrical variations
+    :usage:
+        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
+        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
+        >>> cemgil_score, cemgil_max = mir_eval.beat.cemgil(reference_beats, estimated_beats)
+
+    :parameters:
+        - reference_beats : np.ndarray 
+            reference beat times, in seconds
+        - estimated_beats : np.ndarray
+            query beat times, in seconds
+        - cemgil_sigma : float
+            Sigma parameter of gaussian error windows, default 0.04
+    
+    :returns:
+        - cemgil_score : float
+            Cemgil's score for the original reference beats
+        - cemgil_max :
+            The best Cemgil score for all metrical variations
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0:
@@ -201,17 +235,29 @@ def goto(reference_beats,
     '''
     Calculate Goto's score, a binary 1 or 0 depending on some specific
     heuristic criteria
+    
+    :usage:
+        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
+        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
+        >>> goto_score = mir_eval.beat.goto(reference_beats, estimated_beats)
 
-    Input:
-        reference_beats - np.ndarray of reference beat times, in seconds
-        estimated_beats - np.ndarray of query beat times, in seconds
-        goto_threshold - Threshold of beat error for a beat to be "correct"
-        goto_mu - The mean of the beat errors in the continuously correct
-            track must be less than this
-        goto_sigma - The std of the beat errors in the continuously
-            correct track must be less than this
-    Output:
-        goto_score - Binary 1 or 0 if some specific criteria are met
+    :parameters:
+        - reference_beats : np.ndarray
+            reference beat times, in seconds
+        - estimated_beats : np.ndarray
+            query beat times, in seconds
+        - goto_threshold : float
+            Threshold of beat error for a beat to be "correct", default 0.2
+        - goto_mu : float
+            The mean of the beat errors in the continuously correct
+            track must be less than this, default 0.2
+        - goto_sigma : float
+            The std of the beat errors in the continuously
+            correct track must be less than this, default 0.2
+    
+    :returns:
+        - goto_score : float
+            Either 1.0 or 0.0 if some specific criteria are met
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0:
@@ -282,14 +328,23 @@ def p_score(reference_beats,
     '''
     Get McKinney's P-score.
     Based on the autocorrelation of the reference and estimated beats
+    
+    :usage:
+        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
+        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
+        >>> p_score = mir_eval.beat.p_score(reference_beats, estimated_beats)
 
-    Input:
-        reference_beats - np.ndarray of reference beat times, in seconds
-        estimated_beats - np.ndarray of query beat times, in seconds
-        p_score_threshold - Window size will be
-            p_score_threshold*median(inter_annotation_intervals)
-    Output:
-        correlation - McKinney's P-score
+    :parameters:
+        - reference_beats : np.ndarray 
+            reference beat times, in seconds
+        - estimated_beats : np.ndarray
+            query beat times, in seconds
+        - p_score_threshold : float
+            Window size will be p_score_threshold*median(inter_annotation_intervals), default 0.2
+            
+    :returns:
+        - correlation : float
+            McKinney's P-score
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0:
@@ -332,19 +387,33 @@ def continuity(reference_beats,
     '''
     Get metrics based on how much of the estimated beat sequence is
     continually correct.
+    
+    :usage:
+        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
+        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
+        >>> CMLc, CMLt, AMLc, AMLt = mir_eval.beat.continuity(reference_beats, estimated_beats)
 
-    Input:
-        reference_beats - np.ndarray of reference beat times, in seconds
-        estimated_beats - np.ndarray of query beat times, in seconds
-        continuity_phase_threshold - Allowable ratio of how far is the
-            estimated beat can be from the reference beat
-        continuity_period_threshold - Allowable distance between the
-            inter-beat-interval and the inter-annotation-interval
-    Output:
-        CMLc - Correct metric level, continuous accuracy
-        CMLt - Correct metric level, total accuracy (continuity not required)
-        AMLc - Any metric level, continuous accuracy
-        AMLt - Any metric level, total accuracy (continuity not required)
+    :parameters:
+        - reference_beats : np.ndarray
+            reference beat times, in seconds
+        - estimated_beats : np.ndarray
+            query beat times, in seconds
+        - continuity_phase_threshold : float
+            Allowable ratio of how far is the estimated beat 
+            can be from the reference beat, default 0.175
+        - continuity_period_threshold : float
+            Allowable distance between the inter-beat-interval
+            and the inter-annotation-interval, default 0.175
+    
+    :returns:
+        - CMLc : float
+            Correct metric level, continuous accuracy
+        - CMLt : float
+            Correct metric level, total accuracy (continuity not required)
+        - AMLc : float
+            Any metric level, continuous accuracy
+        - AMLt : float
+            Any metric level, total accuracy (continuity not required)
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0:
@@ -442,13 +511,23 @@ def information_gain(reference_beats,
     '''
     Get the information gain - K-L divergence of the beat error histogram
     to a uniform histogram
-
-    Input:
-        reference_beats - np.ndarray of reference beat times, in seconds
-        estimated_beats - np.ndarray of query beat times, in seconds
-        bins - Number of bins in the beat error histogram
-    Output:
-        information_gain_score - Entropy of beat error histogram
+    
+    :usage:
+        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
+        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
+        >>> information_gain = mir_eval.beat.information_gain(reference_beats, estimated_beats)
+    
+    :parameters:
+        - reference_beats : np.ndarray
+            reference beat times, in seconds
+        - estimated_beats : np.ndarray
+            query beat times, in seconds
+        - bins : int
+            Number of bins in the beat error histogram, default 41
+    
+    :returns:
+        - information_gain_score : float
+            Entropy of beat error histogram
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0:
@@ -473,12 +552,17 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     Helper function for information gain
     (needs to be run twice - once backwards, once forwards)
 
-    Input:
-        reference_beats - np.ndarray of reference beat times, in seconds
-        estimated_beats - np.ndarray of query beat times, in seconds
-        bins - Number of bins in the beat error histogram
-    Output:
-        entropy - Entropy of beat error histogram
+    :parameters:
+        - reference_beats : np.ndarray
+            reference beat times, in seconds
+        - estimated_beats : np.ndarray
+            query beat times, in seconds
+        - bins : int
+            Number of bins in the beat error histogram
+    
+    :returns:
+        - entropy : float
+            Entropy of beat error histogram
     '''
     beat_error = np.zeros(estimated_beats.shape[0])
     for n in xrange(estimated_beats.shape[0]):
@@ -530,4 +614,15 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     raw_bin_values[raw_bin_values == 0] = 1
     # Calculate entropy
     return -np.sum(raw_bin_values * np.log2(raw_bin_values))
+
+# <codecell>
+
+# Create a dictionary which maps the name of each metric 
+# to the function used to compute it
+metrics = collections.OrderedDict()
+metrics['F-measure'] = f_measure
+metrics['Cemgil'] = cemgil
+metrics['P-score'] = p_score
+metrics['Continuity'] = continuity
+metrics['Information Gain'] = information_gain
 
