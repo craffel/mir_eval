@@ -14,10 +14,11 @@ import os
 import sys
 
 from collections import OrderedDict
+import numpy as np
 
-import mir_eval.chord as chord
 from mir_eval import io
-import mir_eval.util
+import mir_eval.chord as chord
+import mir_eval.util as util
 
 
 def collect_fileset(reference_dir, estimation_dir, fext='lab'):
@@ -33,13 +34,8 @@ def collect_fileset(reference_dir, estimation_dir, fext='lab'):
     '''
     ref_files = glob.glob(os.path.join(reference_dir, "*.%s" % fext))
     est_files = glob.glob(os.path.join(estimation_dir, "*.%s" % fext))
-    ref_files, est_files = mir_eval.util.intersect_files(ref_files, est_files)
+    ref_files, est_files = util.intersect_files(ref_files, est_files)
     return ref_files, est_files
-    # results = []
-    # for ref_file, est_file in zip(ref_files, est_files):
-    #     results.append(evaluate_pair(ref_file, est_file))
-
-    # return results
 
 
 def evaluate_pair(reference_file, estimation_file, scores=['dyads']):
@@ -49,19 +45,24 @@ def evaluate_pair(reference_file, estimation_file, scores=['dyads']):
     ref_intervals, ref_labels = io.load_annotation(reference_file)
     est_intervals, est_labels = io.load_annotation(estimation_file)
 
-    # Discretize the reference annotation
-    time_grid, ref_labels = mir_eval.util.intervals_to_samples(
-        ref_intervals, ref_labels, offset=0.05, sample_size=0.1,
-        fill_value='N')
+    # Adjust the estimated intervals to the reference
+    est_intervals, est_labels = util.adjust_intervals(
+        est_intervals,
+        est_labels,
+        ref_intervals.min(),
+        ref_intervals.max(),
+        chord.NO_CHORD)
 
-    est_labels = mir_eval.util.interpolate_intervals(
-        est_intervals, est_labels, time_grid, fill_value='N')
+    # Merge the time-intervals
+    intervals, ref_labels, est_labels = util.merge_labeled_intervals(
+        ref_intervals, ref_labels, est_intervals, est_labels)
 
     # Now compute all the metrics
-    result = OrderedDict()
+    result = OrderedDict(weight=intervals.max())
     try:
-        for name in scores:
-            result[name] = chord.scorers[name](ref_labels, est_labels)
+        for vocab in scores:
+            result[vocab] = chord.score(
+                ref_labels, est_labels, intervals, vocab)
     except chord.InvalidChordException as err:
         basename = os.path.basename(reference_file)
         print "[%s]: Skipping %s\n\t%s" % (err.name, basename, err.message)
@@ -69,7 +70,7 @@ def evaluate_pair(reference_file, estimation_file, scores=['dyads']):
             offending_file = reference_file
         else:
             offending_file = estimation_file
-        result['error'] = (err.chord_label, offending_file)
+        result['_error'] = (err.chord_label, offending_file)
     return result
 
 
@@ -77,9 +78,8 @@ def print_evaluation(prediction_file, result):
     # And print them
     print os.path.basename(prediction_file)
     for key, value in result.iteritems():
-        if key not in chord.scorers:
-            continue
-        print '\t%12s:\t%0.3f' % (key, value.mean())
+        if not key.startswith("_"):
+            print '\t%12s:\t%0.3f' % (key, value)
 
 
 def print_summary(results):
@@ -88,7 +88,7 @@ def print_summary(results):
     print "'%s'\n%s" % (chord.InvalidChordException().name,
                         '-'*len(chord.InvalidChordException().name))
     for item in results:
-        err_pair = item.get("error", None)
+        err_pair = item.get("_error", None)
         if err_pair:
             print "Chord: %10s\tFile: %s" % err_pair
             chord_errors.add(err_pair[0])

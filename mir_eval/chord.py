@@ -726,8 +726,8 @@ def score(reference_labels, estimated_labels, intervals, vocabulary):
     compare_fx = COMPARATORS.get(vocabulary, None)
     if compare_fx is None:
         raise ValueError("Unknown vocabulary: %s" % vocabulary)
-    comparison_scores = (reference_labels, estimated_labels)
-    durations = np.abs(np.diff(intervals, axis=-1))
+    comparison_scores = compare_fx(reference_labels, estimated_labels)
+    durations = np.abs(np.diff(intervals, axis=-1)).squeeze()
     total_time = float(np.sum(durations))
     duration_weights = np.asarray(durations, dtype=float) / total_time
-    return np.sum(comparison_scores * duration_weights), total_time
+    return np.sum(comparison_scores * duration_weights)
