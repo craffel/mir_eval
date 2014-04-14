@@ -230,7 +230,6 @@ def establishment_FPR(reference_patterns, estimated_patterns,
         - recall : float
             The establishment Recall
     """
-
     nP = len(reference_patterns)    # Number of elements in reference
     nQ = len(estimated_patterns)    # Number of elements in estimation
     S = np.zeros((nP, nQ))          # Establishment matrix
@@ -378,3 +377,61 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
     recall_3 = np.mean(np.max(F_2, axis=1))
     f_measure_3 = util.f_measure(precision_3, recall_3)
     return f_measure_3, precision_3, recall_3
+
+
+@validate
+def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
+    """First n three-layer precision.
+
+    This metric is basically the same as the three-layer FPR but it is only
+    applied to the first n estimated patterns, and it only returns the
+    precision. In MIREX and typically, n = 5.
+
+    :param reference_patterns: The reference patterns using the same format as
+        the one load_patterns in the input_output module returns.
+    :type reference_patterns: list
+    :param estimated_patterns: The estimated patterns using the same format as
+        the one load_patterns in the input_output module returns.
+    :type estimated_patterns: list
+    :param n: Number of patterns to consider from the estimated results, in
+        the order they appear in the matrix.
+    :type n: int
+    :returns:
+        - precision : float
+            The first n three-layer Precision
+    """
+    # Get only the first n patterns from the estimated results
+    fn_est_patterns = estimated_patterns[:min(len(estimated_patterns), n)]
+
+    # Compute the three-layer scores for the first n estimated patterns
+    F, P, R = three_layer_FPR(reference_patterns, fn_est_patterns)
+
+    return P    # Return the precision only
+
+
+@validate
+def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
+    """Firt n target proportion establishment recall metric.
+
+    This metric is similar is similar to the establishment FPR score, but it
+    only takes into account the first n estimated patterns and it only
+    outputs the Recall value of it.
+
+    :param reference_patterns: The reference patterns using the same format as
+        the one load_patterns in the input_output module returns.
+    :type reference_patterns: list
+    :param estimated_patterns: The estimated patterns using the same format as
+        the one load_patterns in the input_output module returns.
+    :type estimated_patterns: list
+    :param n: Number of patterns to consider from the estimated results, in
+        the order they appear in the matrix.
+    :type n: int
+    :returns:
+        - precision : float
+            The first n target proportion Recall.
+    """
+    # Get only the first n patterns from the estimated results
+    fn_est_patterns = estimated_patterns[:min(len(estimated_patterns), n)]
+
+    F, P, R = establishment_FPR(reference_patterns, fn_est_patterns)
+    return R
