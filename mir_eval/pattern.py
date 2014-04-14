@@ -246,8 +246,10 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
     nQ = len(estimated_patterns)    # Number of elements in estimation
     O_PR = np.zeros((nP, nQ, 2))    # Occurrence matrix with Precision and
                                     #   Recall in its last dimension
-    rel_idx = np.empty((0, 2))      # Index of the values that are greater
-                                    # than the specified threshold
+
+    # Index of the values that are greater than the specified threshold
+    rel_idx = np.empty((0, 2), dtype=int)
+
     for iP, ref_pattern in enumerate(reference_patterns):
         for iQ, est_pattern in enumerate(estimated_patterns):
             s = _compute_score_matrix(ref_pattern, est_pattern,
@@ -262,9 +264,11 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
         precision = 0
         recall = 0
     else:
-        precision = np.mean(np.max(O_PR[rel_idx[:, 0], rel_idx[:, 1], 0],
+        P = O_PR[:, :, 0]
+        precision = np.mean(np.max(P[np.ix_(rel_idx[:, 0], rel_idx[:, 1])],
                                    axis=0))
-        recall = np.mean(np.max(O_PR[rel_idx[:, 0], rel_idx[:, 1], 1],
+        R = O_PR[:, :, 1]
+        recall = np.mean(np.max(R[np.ix_(rel_idx[:, 0], rel_idx[:, 1])],
                                 axis=1))
     f_measure = util.f_measure(precision, recall)
     return f_measure, precision, recall

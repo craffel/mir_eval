@@ -15,6 +15,10 @@ class PatternTests(unittest.TestCase):
             "data/pattern/reference-poly.txt")
         self.est_P = input_output.load_patterns(
             "data/pattern/estimate-poly.txt")
+        self.ref2_P = input_output.load_patterns(
+            "data/pattern/reference2-poly.txt")
+        self.est2_P = input_output.load_patterns(
+            "data/pattern/estimate2-poly.txt")
         self.delta = 1e-3
 
     def tearDown(self):
@@ -43,12 +47,10 @@ class PatternTests(unittest.TestCase):
         self.assertAlmostEqual(R, 0.24606, delta=self.delta)
 
     def test_occurrence_FPR(self):
-        F, P, R = pattern.occurrence_FPR(self.ref_P, self.est_P, thres=.5)
-        print F, P, R
-        pass
-        #self.assertAlmostEqual(F, 0.25249, delta=self.delta)
-        #self.assertAlmostEqual(P, 0.25927, delta=self.delta)
-        #self.assertAlmostEqual(R, 0.24606, delta=self.delta)
+        F, P, R = pattern.occurrence_FPR(self.ref2_P, self.est2_P, thres=.5)
+        self.assertAlmostEqual(F, 0.44120, delta=self.delta)
+        self.assertAlmostEqual(P, 0.51023, delta=self.delta)
+        self.assertAlmostEqual(R, 0.38863, delta=self.delta)
 
     def test_three_layer_FPR(self):
         F, P, R = pattern.three_layer_FPR(self.ref_P, self.est_P)
