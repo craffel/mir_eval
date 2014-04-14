@@ -1,4 +1,4 @@
-'''Functions and other supporting code for wrangling and comparing chords for
+r'''Functions and other supporting code for wrangling and comparing chords for
 evaluation purposes.
 
 
@@ -96,7 +96,7 @@ NO_CHORD_ENCODED = -1, np.array([0]*12), np.array([0]*12), -1
 
 
 class InvalidChordException(BaseException):
-    '''Exception class for suspect / invalid chord labels.'''
+    r'''Exception class for suspect / invalid chord labels.'''
 
     def __init__(self, message='', chord_label=None):
         self.message = message
@@ -106,14 +106,14 @@ class InvalidChordException(BaseException):
 
 # --- Chord Primitives ---
 def _pitch_classes():
-    '''Map from pitch class (str) to semitone (int).'''
+    r'''Map from pitch class (str) to semitone (int).'''
     pitch_classes = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
     semitones = [0, 2, 4, 5, 7, 9, 11]
     return dict([(c, s) for c, s in zip(pitch_classes, semitones)])
 
 
 def _scale_degrees():
-    '''Mapping from scale degrees (str) to semitones (int).'''
+    r'''Mapping from scale degrees (str) to semitones (int).'''
     degrees = ['1', '2', '3', '4', '5', '6', '7', '9', '10', '11', '12', '13']
     semitones = [0, 2, 4, 5, 7, 9, 11, 2, 4, 5, 7, 9]
     return dict([(d, s) for d, s in zip(degrees, semitones)])
@@ -124,7 +124,7 @@ PITCH_CLASSES = _pitch_classes()
 
 
 def pitch_class_to_semitone(pitch_class):
-    '''Convert a pitch class to semitone.
+    r'''Convert a pitch class to semitone.
 
     :parameters:
     - pitch_class: str
@@ -156,7 +156,7 @@ SCALE_DEGREES = _scale_degrees()
 
 
 def scale_degree_to_semitone(scale_degree):
-    '''Convert a scale degree to semitone.
+    r'''Convert a scale degree to semitone.
 
     :parameters:
     - scale degree: str
@@ -482,9 +482,13 @@ def encode_many(chord_labels, reduce_extended_chords=False):
     num_items = len(chord_labels)
     roots, basses = np.zeros([2, num_items], dtype=np.int)
     qualities, notes = np.zeros([2, num_items, 12], dtype=np.int)
-    for i, c in enumerate(chord_labels):
-        roots[i], qualities[i], notes[i], basses[i] = encode(
-            c, reduce_extended_chords)
+    local_cache = dict()
+    for i, label in enumerate(chord_labels):
+        result = local_cache.get(label, None)
+        if result is None:
+            result = encode(label, reduce_extended_chords)
+            local_cache[label] = result
+        roots[i], qualities[i], notes[i], basses[i] = result
     return roots, qualities, notes, basses
 
 
@@ -534,25 +538,22 @@ def rotate_bass_to_root(bass, root):
     return (bass + root) % 12
 
 
-# --- Evaluation Routines ---
+# --- Comparison Routines ---
 def validate(comparison):
     '''Decorator which checks that the input annotations to a comparison
     function look like valid chord labels.
 
     :parameters:
         - comparison : function
-            Evaluation comparison function.  First two arguments must be
+            Chord label comparison function.  The two arguments must be
             reference_labels and estimated_labels.
 
     :returns:
         - comparison_validated : function
             The function with the labels validated.
     '''
-    def comparison_validated(reference_labels, estimated_labels, *args,
-                             **kwargs):
-        '''
-        Comparison with labels validated.
-        '''
+    def comparison_validated(reference_labels, estimated_labels):
+        '''Comparison with labels validated.'''
         N = len(reference_labels)
         M = len(estimated_labels)
         if N != M:
@@ -563,13 +564,13 @@ def validate(comparison):
             for chord_label in labels:
                 validate_chord_label(chord_label)
 
-        return comparison(reference_labels, estimated_labels, *args, **kwargs)
+        return comparison(reference_labels, estimated_labels)
     return comparison_validated
 
 
 @validate
-def score_dyads(reference_labels, estimated_labels):
-    '''Score chords along dyadic (root & third) relationships.
+def compare_dyads(reference_labels, estimated_labels):
+    '''Compare chords along dyadic (root & third) relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -578,8 +579,8 @@ def score_dyads(reference_labels, estimated_labels):
             Estimated chord labels to score against.
 
     :returns:
-        - scores : np.ndarray, shape=(n,), dtype=np.float
-            Comparison scores, in {0.0, 1.0}
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0]
     '''
     ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
     est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
@@ -590,7 +591,7 @@ def score_dyads(reference_labels, estimated_labels):
 
 
 @validate
-def score_dyads_inv(reference_labels, estimated_labels):
+def compare_dyads_inv(reference_labels, estimated_labels):
     '''Score chords along dyadic (root, third, & bass) relationships.
 
     :parameters:
@@ -601,7 +602,7 @@ def score_dyads_inv(reference_labels, estimated_labels):
 
     :returns:
         - scores : np.ndarray, shape=(n,), dtype=np.float
-            Comparison scores, in {0.0, 1.0}
+            Comparison scores, in [0.0, 1.0]
     '''
     ref_data = encode_many(reference_labels, True)
     ref_roots, ref_qualities, ref_bass = ref_data[0], ref_data[1], ref_data[3]
@@ -615,8 +616,8 @@ def score_dyads_inv(reference_labels, estimated_labels):
 
 
 @validate
-def score_triads(reference_labels, estimated_labels):
-    '''Score chords along triad (root & quality to #5) relationships.
+def compare_triads(reference_labels, estimated_labels):
+    '''Compare chords along triad (root & quality to #5) relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -625,7 +626,7 @@ def score_triads(reference_labels, estimated_labels):
             Estimated chord labels to score against.
 
     :returns:
-        - scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
     ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
@@ -638,7 +639,7 @@ def score_triads(reference_labels, estimated_labels):
 
 
 @validate
-def score_triads_inv(reference_labels, estimated_labels):
+def compare_triads_inv(reference_labels, estimated_labels):
     '''Score chords along triad (root, quality to #5, & bass) relationships.
 
     :parameters:
@@ -664,8 +665,8 @@ def score_triads_inv(reference_labels, estimated_labels):
 
 
 @validate
-def score_tetrads(reference_labels, estimated_labels):
-    '''Score chords along tetrad (root & full quality) relationships.
+def compare_tetrads(reference_labels, estimated_labels):
+    '''Compare chords along tetrad (root & full quality) relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -674,7 +675,7 @@ def score_tetrads(reference_labels, estimated_labels):
             Estimated chord labels to score against.
 
     :returns:
-        - scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
     ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
@@ -686,8 +687,8 @@ def score_tetrads(reference_labels, estimated_labels):
 
 
 @validate
-def score_tetrads_inv(reference_labels, estimated_labels):
-    '''Score chords along seventh (root, quality) relationships.
+def compare_tetrads_inv(reference_labels, estimated_labels):
+    '''Compare chords along seventh (root, quality) relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -696,7 +697,7 @@ def score_tetrads_inv(reference_labels, estimated_labels):
             Estimated chord labels to score against.
 
     :returns:
-        - scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
     ref_data = encode_many(reference_labels, True)
@@ -710,9 +711,23 @@ def score_tetrads_inv(reference_labels, estimated_labels):
     return (correct_root * correct_quality * correct_bass).astype(np.float)
 
 
-scorers = {'dyads': score_dyads,
-           'dyads-inv': score_dyads_inv,
-           'triads': score_triads,
-           'triads-inv': score_triads_inv,
-           'tetrads': score_tetrads,
-           'tetrads-inv': score_tetrads_inv}
+COMPARATORS = {
+    'dyads': compare_dyads,
+    'dyads-inv': compare_dyads_inv,
+    'triads': compare_triads,
+    'triads-inv': compare_triads_inv,
+    'tetrads': compare_tetrads,
+    'tetrads-inv': compare_tetrads_inv}
+
+
+def score(reference_labels, estimated_labels, intervals, vocabulary):
+    '''
+    '''
+    compare_fx = COMPARATORS.get(vocabulary, None)
+    if compare_fx is None:
+        raise ValueError("Unknown vocabulary: %s" % vocabulary)
+    comparison_scores = (reference_labels, estimated_labels)
+    durations = np.abs(np.diff(intervals, axis=-1))
+    total_time = float(np.sum(durations))
+    duration_weights = np.asarray(durations, dtype=float) / total_time
+    return np.sum(comparison_scores * duration_weights), total_time

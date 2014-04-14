@@ -3,6 +3,7 @@
 
 import unittest
 from mir_eval import chord
+import numpy as np
 
 
 class ChordTests(unittest.TestCase):
@@ -113,59 +114,89 @@ class ChordTests(unittest.TestCase):
         self.assertRaises(
             chord.InvalidChordException, chord.encode, 'G:dim(4)/6')
 
-    def test_score_dyads(self):
+    def test_encode_many(self):
+        input_list = ['B:maj(*1,*3)/5',
+                      'B:maj(*1,*3)/5',
+                      'N',
+                      'C:min',
+                      'C:min']
+        expected_roots = [11, 11, -1, 0, 0]
+        expected_qualities = [
+            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+            [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]
+        ]
+        expected_notes = [
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+            [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+        ]
+        expected_basses = [7, 7, -1, 0, 0]
+        roots, qualities, notes, basses = chord.encode_many(input_list)
+        self.assertEqual(roots.tolist(), expected_roots)
+        self.assertEqual(qualities.tolist(), expected_qualities)
+        self.assertEqual(notes.tolist(), expected_notes)
+        self.assertEqual(basses.tolist(), expected_basses)
+
+    def test_compare_dyads(self):
         ref = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min']
         est = ['N', 'N',     'C:aug', 'C:dim', 'C:dim']
         ans = [1.0,  0.0,     1.0,     0.0,     1.0]
-        self.assertEqual(chord.score_dyads(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_dyads(ref, est).tolist(), ans)
+
         ref = ['C:maj',  'G:min',  'C:maj', 'C:min',   'C:min']
         est = ['C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:min7']
         ans = [1.0,       0.0,      0.0,     1.0,       1.0]
-        self.assertEqual(chord.score_dyads(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_dyads(ref, est).tolist(), ans)
+
         ref = ['C:maj',  'F:maj',  'C:maj',     'A:maj', 'A:maj']
         est = ['C:maj6', 'F:min6', 'C:minmaj7', 'A:7',   'A:9']
         ans = [1.0,       0.0,      0.0,         1.0,     1.0]
-        self.assertEqual(chord.score_dyads(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_dyads(ref, est).tolist(), ans)
 
-    def test_score_dyads_inv(self):
+    def test_compare_dyads_inv(self):
         ref = ['C:maj/5',  'G:min',    'C:maj',   'C:min/b3',   'C:min']
         est = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:hdim7/b3', 'C:dim']
         ans = [1.0,         0.0,        0.0,       1.0,          1.0]
-        self.assertEqual(chord.score_dyads_inv(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_dyads_inv(ref, est).tolist(), ans)
 
-    def test_score_triads(self):
+    def test_compare_triads(self):
         ref = ['C:min',  'C:maj', 'C:maj', 'C:min', 'C:maj']
         est = ['C:min7', 'C:7',   'C:aug', 'C:dim', 'C:sus2']
         ans = [1.0,       1.0,     0.0,     0.0,     0.0]
-        self.assertEqual(chord.score_triads(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_triads(ref, est).tolist(), ans)
         ref = ['C:maj',  'G:min',     'C:maj', 'C:min',   'C:min']
         est = ['C:sus4', 'G:minmaj7', 'G:maj', 'C:hdim7', 'C:min6']
         ans = [0.0,       1.0,         0.0,     0.0,       1.0]
-        self.assertEqual(chord.score_triads(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_triads(ref, est).tolist(), ans)
 
-    def test_score_triads_inv(self):
+    def test_compare_triads_inv(self):
         ref = ['C:maj/5',  'G:min',    'C:maj', 'C:min/b3',  'C:min/b3']
         est = ['C:maj7/5', 'G:min7/5', 'C:7/5', 'C:min6/b3', 'C:dim/b3']
         ans = [1.0,         0.0,        0.0,     1.0,         0.0]
-        self.assertEqual(chord.score_triads_inv(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_triads_inv(ref, est).tolist(), ans)
 
-    def test_score_tetrads(self):
+    def test_compare_tetrads(self):
         ref = ['C:min',  'C:maj',  'C:7', 'C:maj7',   'C:sus2']
         est = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2']
         ans = [0.0,       0.0,      1.0,   1.0,        1.0]
-        self.assertEqual(chord.score_tetrads(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_tetrads(ref, est).tolist(), ans)
 
         # TODO(ejhumphrey): Revisit how minmaj7's are mapped.
         ref = ['C:7/3',   'G:min',  'C:maj', 'C:min',   'C:min']
         est = ['C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7']  # um..?
         ans = [1.0,        0.0,      0.0,     0.0,       1.0]
-        self.assertEqual(chord.score_tetrads(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_tetrads(ref, est).tolist(), ans)
 
-    def test_score_tetrads_inv(self):
+    def test_compare_tetrads_inv(self):
         ref = ['C:maj7/5', 'G:min',    'C:7/5',  'C:min/b3',   'C:min']
         est = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:minmaj7/7']
         ans = [0.0,         0.0,        1.0,      0.0,          0.0]
-        self.assertEqual(chord.score_tetrads_inv(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_tetrads_inv(ref, est).tolist(), ans)
 
 
 if __name__ == "__main__":
