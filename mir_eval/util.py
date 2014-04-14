@@ -339,7 +339,6 @@ def intersect_files(flist1, flist2):
         return os.path.splitext(os.path.split(f)[-1])[0]
 
     fmap = dict([(fname(f), f) for f in flist1])
-    print fmap
     pairs = [list(), list()]
     for f in flist2:
         if fname(f) in fmap:
