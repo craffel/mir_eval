@@ -35,6 +35,12 @@ Veltkamp (Eds), Proc ISMIR, pp. 3-8, Utrecht, 2010.
 Establishment Precision, Recall and F1 Score
 --------------------------------------------
 
+TODO
+
+Occurrence Precision, Recall and F1 Score
+-----------------------------------------
+
+TODO
 
 Three-layer Precision, Recall and F1 Score
 ------------------------------------------
