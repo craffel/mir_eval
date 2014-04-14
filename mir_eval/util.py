@@ -96,7 +96,6 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
             Points in time to assign labels.
 
     :returns:
-    -------
         - aligned_labels : list
             Labels corresponding to the given time points.
     '''
@@ -346,3 +345,55 @@ def intersect_files(flist1, flist2):
             pairs[1].append(f)
 
     return pairs
+
+
+def merge_labeled_intervals(x_intervals, x_labels, y_intervals, y_labels):
+    r'''Merge the time intervals of two sequences 'x' and 'y'.
+
+    :parameters:
+        - x_intervals : np.array
+            Array of interval times (seconds)
+
+        - x_labels : list or None
+            List of labels
+
+        - y_intervals : np.array
+            Array of interval times (seconds)
+
+        - y_labels : list or None
+            List of labels
+
+    :returns:
+        - new_intervals : np.array
+            New interval times of the merged sequences.
+        - new_x_labels : list
+            New labels for the sequence 'x'
+        - new_y_labels : list
+            New labels for the sequence 'y'
+
+    :raises:
+        - ValueError
+
+    ..note:: The intervals of x and y must be aligned, or previously adjusted
+    via 'adjust_intervals'.
+    '''
+    align_check = [x_intervals[0, 0] == y_intervals[0, 0],
+                   x_intervals[-1, 1] == y_intervals[-1, 1]]
+    if False in align_check:
+        raise ValueError(
+            "Time intervals do not align; did you mean to call "
+            "'adjust_intervals()' first?")
+    time_boundaries = np.unique(
+        np.concatenate([x_intervals, y_intervals], axis=0))
+    output_intervals = np.array(
+        [time_boundaries[:-1], time_boundaries[1:]]).T
+
+    x_labels_out, y_labels_out = [], []
+    x_label_range = np.arange(len(x_labels))
+    y_label_range = np.arange(len(y_labels))
+    for t0, t1 in output_intervals:
+        x_idx = x_label_range[(t0 >= x_intervals[:, 0])]
+        x_labels_out.append(x_labels[x_idx[-1]])
+        y_idx = y_label_range[(t0 >= y_intervals[:, 0])]
+        y_labels_out.append(y_labels[y_idx[-1]])
+    return output_intervals, x_labels_out, y_labels_out
