@@ -96,8 +96,12 @@ NO_CHORD_ENCODED = -1, np.array([0]*12), np.array([0]*12), -1
 
 
 class InvalidChordException(BaseException):
-    '''Hollow class for invalid formatting.'''
-    pass
+    '''Exception class for suspect / invalid chord labels.'''
+
+    def __init__(self, message='', chord_label=None):
+        self.message = message
+        self.chord_label = chord_label
+        self.name = self.__class__.__name__
 
 
 # --- Chord Primitives ---
@@ -217,7 +221,7 @@ QUALITIES = {
     'maj7':  [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
     'min7':  [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
     'maj6':  [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
-    'min6':  [1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0],
+    'min6':  [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
     'dim7':  [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
     'hdim7': [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0]}
 
@@ -437,9 +441,11 @@ def encode(chord_label, reduce_extended_chords=False):
 
     note_bitmap = (note_bitmap > 0).astype(np.int)
     if not note_bitmap[bass_number]:
+        # TODO(ejhumphrey): Return to this.
+        # note_bitmap[bass_number] = 1.0
         raise InvalidChordException(
             "Given bass scale degree is absent from this chord: "
-            "%s" % chord_label)
+            "%s" % chord_label, chord_label)
     return root_number, quality_bitmap, note_bitmap, bass_number
 
 
@@ -702,3 +708,11 @@ def score_tetrads_inv(reference_labels, estimated_labels):
     correct_bass = ref_bass == est_bass
     correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
     return (correct_root * correct_quality * correct_bass).astype(np.float)
+
+
+scorers = {'dyads': score_dyads,
+           'dyads-inv': score_dyads_inv,
+           'triads': score_triads,
+           'triads-inv': score_triads_inv,
+           'tetrads': score_tetrads,
+           'tetrads-inv': score_tetrads_inv}
