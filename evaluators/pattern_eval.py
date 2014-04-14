@@ -69,9 +69,9 @@ def evaluate(ref_file, est_file):
 
 def print_evaluation(estimation_file, M):
     # And print them
-    print os.path.basename(estimation_file)
+    logging.info(os.path.basename(estimation_file))
     for key, value in M.iteritems():
-        print '\t%12s:\t%0.3f' % (key, value)
+        logging.info('\t%12s:\t%0.3f' % (key, value))
 
 
 def main():
