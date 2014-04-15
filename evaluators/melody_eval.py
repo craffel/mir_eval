@@ -23,6 +23,7 @@ import sys
 import os
 from collections import OrderedDict
 import mir_eval
+from pylab import *
 
 def evaluate(truth_file=None, prediction_file=None, hop=0.010):
     '''
@@ -66,10 +67,20 @@ def evaluate(truth_file=None, prediction_file=None, hop=0.010):
     ref_time, ref_freq = mir_eval.io.load_time_series(truth_file)
     est_time, est_freq = mir_eval.io.load_time_series(prediction_file)
 
+    # plot(ref_time,ref_freq,'b')
+    # plot(est_time,est_freq,'r')
+    # title('original sequences')
+    # show()
+
     # STEP 2
     # convert both sequences to cents
     ref_cent = hz2cents(ref_freq)
     est_cent = hz2cents(est_freq)
+
+    # plot(ref_time,ref_cent,'b')
+    # plot(est_time,est_cent,'r')
+    # title('mapped to cents')
+    # show()
 
     # STEP 3
     # Check if missing sample at time 0 and if so add one
@@ -80,10 +91,20 @@ def evaluate(truth_file=None, prediction_file=None, hop=0.010):
         est_time = np.insert(est_time, 0, 0)
         est_cent = np.insert(est_cent, 0, est_cent[0])
 
+    # plot(ref_time,'b')
+    # plot(est_time,'r')
+    # title('times')
+    # show()
+
     # STEP 4
     # resample to common hop size using linear interpolation
     ref_time_grid, ref_cent_interp = resample_time_series(ref_time, ref_cent, hop)
     est_time_grid, est_cent_interp = resample_time_series(est_time, est_cent, hop)
+
+    # plot(ref_time_grid,'b')
+    # plot(est_time_grid,'r')
+    # title('time grids')
+    # show()
 
     # STEP 5
     # fix interpolated values between non-zero/zero transitions:
@@ -96,6 +117,11 @@ def evaluate(truth_file=None, prediction_file=None, hop=0.010):
     restore_sign_to_resampled(ref_time, ref_freq, ref_time_grid, ref_cent_interp)
     restore_sign_to_resampled(est_time, est_freq, est_time_grid, est_cent_interp)
 
+    # plot(ref_time_grid,ref_cent_interp,'b')
+    # plot(est_time_grid,est_cent_interp,'r')
+    # title('Interpolated with restored sign')
+    # show()
+
     # STEP 7
     # ensure the estimated sequence is the same length as the reference
     est_time_grid = ref_time_grid
@@ -104,6 +130,11 @@ def evaluate(truth_file=None, prediction_file=None, hop=0.010):
         est_cent_interp = np.append(est_cent_interp, np.zeros(len_diff))
     else:
         est_cent_interp = np.resize(est_cent_interp, len(ref_cent_interp))
+
+    # plot(ref_time_grid,ref_cent_interp,'b')
+    # plot(est_time_grid,est_cent_interp,'r')
+    # title('Interpolated with restored sign and same length')
+    # show()
 
     # STEP 8
     # separate into pitch sequence and voicing indicator sequence
@@ -175,8 +206,16 @@ def resample_time_series(times, values, hop):
     NB: the series is assumed to start at time 0 (time[0] = 0)
     NB: values are interpolated using linear interpolation
     '''
+    # round to 5 decimal points
+    times = np.asarray(times)
+    times = np.round(times*1e5) * 1e-5
+
     interp_func = sp.interpolate.interp1d(times, values)
-    time_grid = np.linspace(0, hop * int(np.floor(times[-1]) / hop), int(np.floor(times[-1] / hop)) + 1)
+    time_grid = np.linspace(0, hop * int(np.floor(times[-1] / hop)), int(np.floor(times[-1] / hop)) + 1)
+
+    # round to 5 decimal points
+    time_grid = np.round(time_grid*1e5) * 1e-5
+
     values_resampled = interp_func(time_grid)
 
     return time_grid, values_resampled
