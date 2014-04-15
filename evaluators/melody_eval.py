@@ -176,7 +176,7 @@ def resample_time_series(times, values, hop):
     NB: values are interpolated using linear interpolation
     '''
     interp_func = sp.interpolate.interp1d(times, values)
-    time_grid = np.linspace(0, hop * np.floor(times[-1] / hop), np.floor(times[-1] / hop) + 1)
+    time_grid = np.linspace(0, hop * int(np.floor(times[-1]) / hop), int(np.floor(times[-1] / hop)) + 1)
     values_resampled = interp_func(time_grid)
 
     return time_grid, values_resampled
