@@ -213,19 +213,20 @@ def scale_degree_to_bitmap(scale_degree):
 # Maps quality strings to bitmaps, corresponding to relative pitch class
 # semitones, i.e. vector[0] is the tonic.
 QUALITIES = {
-    'maj':   [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-    'min':   [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-    'aug':   [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-    'dim':   [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-    'sus4':  [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-    'sus2':  [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    '7':     [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
-    'maj7':  [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
-    'min7':  [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
-    'maj6':  [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
-    'min6':  [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
-    'dim7':  [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
-    'hdim7': [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0]}
+    'maj':    [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+    'min':    [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+    'aug':    [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+    'dim':    [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+    'sus4':   [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+    'sus2':   [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    '7':      [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    'maj7':   [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
+    'min7':   [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
+    'maj6':   [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
+    'min6':   [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+    'dim7':   [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+    'hdim7':  [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
+    NO_CHORD: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
 
 def quality_to_bitmap(quality):
@@ -817,7 +818,8 @@ def compare_majmin(reference_labels, estimated_labels):
 @validate
 def compare_majmin_inv(reference_labels, estimated_labels):
     '''Compare chords along major-minor rules, with inversions. Chords with
-    qualities outside Major/minor/no-chord are ignored.
+    qualities outside Major/minor/no-chord are ignored, and the bass note must
+    exist in the triad (bass in [1, 3, 5]).
 
     :parameters:
         - reference_labels : list, len=n
@@ -841,11 +843,50 @@ def compare_majmin_inv(reference_labels, estimated_labels):
     correct_quality = np.all(
         np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
     comparison_scores = (correct_root_bass * correct_quality).astype(np.float)
+
     # Test for Major / Minor / No-chord
     is_maj = np.all(np.equal(ref_qualities[:, :8], maj_quality), axis=1)
     is_min = np.all(np.equal(ref_qualities[:, :8], min_quality), axis=1)
     is_none = np.all(np.equal(ref_qualities, np.zeros(12)), axis=1)
     comparison_scores[(is_maj + is_min + is_none) == 0] = -1
+
+    # Disable inversions that are not part of the quality
+    valid_inversion = np.ones(ref_bass.shape, dtype=bool)
+    bass_idx = ref_bass >= 0
+    valid_inversion[bass_idx] = ref_qualities[bass_idx, ref_bass[bass_idx]]
+    comparison_scores[valid_inversion == 0] = -1
+    return comparison_scores
+
+
+@validate
+def compare_sevenths(reference_labels, estimated_labels):
+    '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
+    outside [maj, maj7, 7, min, min7, N] are ignored.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+            gamut.
+    '''
+    valid_qualities = ['maj', 'min', 'maj7', '7', 'min7', 'N']
+    valid_qualities = np.array([QUALITIES[name] for name in valid_qualities])
+
+    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
+    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+
+    correct_root = ref_roots == est_roots
+    correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
+    comparison_scores = (correct_root * correct_quality).astype(np.float)
+    # Test for Major / Minor / No-chord
+    is_valid = np.array([np.all(np.equal(ref_qualities, quality), axis=1)
+                         for quality in valid_qualities])
+    comparison_scores[np.sum(is_valid, axis=0) == 0] = -1
     return comparison_scores
 
 
@@ -854,6 +895,7 @@ COMPARATORS = {
     'mirex09': compare_mirex,
     'majmin': compare_majmin,
     'majmin-inv': compare_majmin_inv,
+    'sevenths': compare_sevenths,
     'thirds': compare_thirds,
     'thirds-inv': compare_thirds_inv,
     'triads': compare_triads,

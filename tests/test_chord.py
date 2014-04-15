@@ -230,6 +230,22 @@ class ChordTests(unittest.TestCase):
         ans = [0.0,         0.0,        1.0,       -1.0,         1.0]
         self.assertEqual(chord.compare_majmin_inv(ref, est).tolist(), ans)
 
+        ref = ['C:maj/4', 'G:min/b3', 'C:maj7/5', 'C:maj/2',  'C:7']
+        est = ['C:maj/4', 'G:min/b3', 'C:maj/5',  'C:sus2/2', 'C:maj']
+        ans = [-1.0,       1.0,        1.0,        -1.0,       1.0]
+        self.assertEqual(chord.compare_majmin_inv(ref, est).tolist(), ans)
+
+    def test_compare_sevenths(self):
+        ref = ['C:min',  'C:maj',  'C:7', 'C:maj7',   'C:sus2']
+        est = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2']
+        ans = [0.0,       0.0,      1.0,   1.0,        -1.0]
+        self.assertEqual(chord.compare_sevenths(ref, est).tolist(), ans)
+
+        # TODO(ejhumphrey): Revisit how minmaj7's are mapped.
+        ref = ['C:7/3',   'G:min',  'C:maj', 'C:hdim7', 'C:7']
+        est = ['C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:maj7']
+        ans = [1.0,        0.0,      0.0,     -1.0,      0.0]
+        self.assertEqual(chord.compare_sevenths(ref, est).tolist(), ans)
 
 if __name__ == "__main__":
     unittest.main()
