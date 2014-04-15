@@ -10,11 +10,11 @@ from evaluators import melody_eval # requires __init__.py inside ../evaluators
 def test_melody_functions():
 
     songs = ['daisy1','daisy2','daisy3','daisy4','jazz1','jazz2','jazz3','jazz4','midi1','midi2','midi3','midi4','opera_fem2','opera_fem4','opera_male3','opera_male5','pop1','pop2','pop3','pop4']
-    refpath = 'data/melody/mirex2011/adc2004_ref/original/'
-    # refpath = 'data/melody/mirex2011/adc2004_ref/resampled10ms/'
+    refpath = 'data/melody/mirex2011/adc2004_ref/original/' # Original/official REF files
+    # refpath = 'data/melody/mirex2011/adc2004_ref/resampled10ms/' # REF files resampled to 10ms hop size (not sure how though)
     estpath = 'data/melody/mirex2011/adc2004_SG2/'
-    resultspath = 'data/melody/mirex2011/adc2004_results/SG2_per_track_results_mapped.csv'
-    # resultspath = 'data/melody/mirex2011/adc2004_results/SG2_per_track_results_mapped_JS.csv'
+    resultspath = 'data/melody/mirex2011/adc2004_results/SG2_per_track_results_mapped.csv' # MIREX 2011 official results
+    # resultspath = 'data/melody/mirex2011/adc2004_results/SG2_per_track_results_mapped_JS.csv' # Justin's results based on old home-made code
 
     # create results dictionary
     results = np.loadtxt(resultspath, dtype='string', delimiter=',')
