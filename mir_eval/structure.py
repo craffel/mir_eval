@@ -7,6 +7,7 @@
         - normalized conditional entropy
 '''
 
+import functools
 import numpy as np
 import scipy.stats
 import sklearn.metrics.cluster as metrics
@@ -37,6 +38,7 @@ def validate(metric):
         - metric_validated : function
             The function with the segment intervals are validated
     '''
+    @functools.wraps(metric)
     def metric_validated(   reference_intervals, reference_labels,
                             estimated_intervals, estimated_labels,
                             *args, **kwargs):

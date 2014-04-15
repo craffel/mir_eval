@@ -6,6 +6,7 @@
 '''
 
 import numpy as np
+import functools
 
 from . import util
 
@@ -32,6 +33,7 @@ def validate(metric):
         - metric_validated : function
             The function with the segment intervals are validated
     '''
+    @functools.wraps(metric)
     def metric_validated(reference_intervals, estimated_intervals, *args, **kwargs):
         for intervals in [reference_intervals, estimated_intervals]:
             __validate_intervals(intervals)
