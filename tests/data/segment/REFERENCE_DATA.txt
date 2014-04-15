@@ -1,0 +1,53 @@
+Test data comes from MIREX 2013, submission CF6, data set MIREX-09.
+http://nema.lis.illinois.edu/nema_out/mirex2013/results/struct/mrx09/cf6results.html#cf6results
+
+We'll take the first example track
+
+Results struct_mrx_09_000000
+----------------------------
+S_over:     0.6292
+S_under:    0.5945
+Pair_F:     0.5450
+Pair_P:     0.5033
+Pair_R:     0.5943
+"RCI":      0.6660
+F@0.5:      0.2105
+P@0.5:      0.2857
+R@0.4:      0.1667
+F@3.0:      0.7368
+P@3.0:      1.0000
+R@3.0:      0.5833
+P_to_T:     0.9724
+T_to_P:     0.9639
+
+
+Data
+----
+var cf6segmentsstructmrx09000000_data = [
+    [   {o: 0.441, f: 16.701, l: "Verse", a: 0},
+        {o: 16.701, f: 32.444, l: "Verse", a: 1},
+        {o: 32.444, f: 48.233, l: "Bridge", a: 0},
+        {o: 48.233, f: 64.041, l: "Verse (Guitar Solo)", a: 1},
+        {o: 64.041, f: 79.829, l: "Verse", a: 0},
+        {o: 79.829, f: 95.722, l: "Bridge", a: 1},
+        {o: 95.722, f: 111.514, l: "Verse", a: 0},
+        {o: 111.514, f: 127.373, l: "Bridge", a: 1},
+        {o: 127.373, f: 143.122, l: "Verse", a: 0},
+        {o: 143.122, f: 161.037, l: "11.3", a: 1},
+        {o: 161.037, f: 164.31, l: "11.4", a: 0}],
+
+    [   {o: 0, f: 17.67, l: "N1", a: 0},
+        {o: 17.67, f: 49.18, l: "A", a: 1},
+        {o: 49.18, f: 65.016, l: "N2", a: 0},
+        {o: 65.016, f: 96.688, l: "A", a: 1},
+        {o: 96.688, f: 128.337, l: "A", a: 0},
+        {o: 128.337, f: 163.898, l: "N3", a: 1}]
+];
+
+var cf6segmentsstructmrx09000000_seriesNames = ["Ground-truth","Prediction"];
+
+LEGEND:
+    o: segment begin
+    f: segment end
+    l: segment label
+    a: ??? looks like a shading directive for the nema UI
