@@ -247,5 +247,11 @@ class ChordTests(unittest.TestCase):
         ans = [1.0,        0.0,      0.0,     -1.0,      0.0]
         self.assertEqual(chord.compare_sevenths(ref, est).tolist(), ans)
 
+    def test_compare_sevents_inv(self):
+        ref = ['C:maj7/5', 'G:min',    'C:7/5',  'C:dim7/b3', 'C:min7/b7']
+        est = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:dim7/b3', 'C:min7/b7']
+        ans = [0.0,         0.0,        1.0,      -1.0,        1.0]
+        self.assertEqual(chord.compare_sevenths_inv(ref, est).tolist(), ans)
+
 if __name__ == "__main__":
     unittest.main()

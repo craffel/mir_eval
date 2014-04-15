@@ -890,12 +890,55 @@ def compare_sevenths(reference_labels, estimated_labels):
     return comparison_scores
 
 
+@validate
+def compare_sevenths_inv(reference_labels, estimated_labels):
+    '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
+    outside [maj, maj7, 7, min, min7, N] are ignored.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+            gamut.
+    '''
+    valid_qualities = ['maj', 'min', 'maj7', '7', 'min7', 'N']
+    valid_qualities = np.array([QUALITIES[name] for name in valid_qualities])
+
+    ref_codes = encode_many(reference_labels, True)
+    ref_roots, ref_qualities, ref_bass = [ref_codes[n] for n in (0, 1, 3)]
+    est_codes = encode_many(estimated_labels, True)
+    est_roots, est_qualities, est_bass = [est_codes[n] for n in (0, 1, 3)]
+
+    correct_root_bass = (ref_roots == est_roots) * (ref_bass == est_bass)
+    correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
+    comparison_scores = (correct_root_bass * correct_quality).astype(np.float)
+    # Test for Major / Minor / No-chord
+    is_valid = np.array([np.all(np.equal(ref_qualities, quality), axis=1)
+                         for quality in valid_qualities])
+    comparison_scores[np.sum(is_valid, axis=0) == 0] = -1
+
+    # Disable inversions that are not part of the quality
+    valid_inversion = np.ones(ref_bass.shape, dtype=bool)
+    bass_idx = ref_bass >= 0
+    valid_inversion[bass_idx] = ref_qualities[bass_idx, ref_bass[bass_idx]]
+    comparison_scores[valid_inversion == 0] = -1
+    return comparison_scores
+
+
 COMPARATORS = {
+    # MIREX2013 Methods
     'root': compare_root,
-    'mirex09': compare_mirex,
     'majmin': compare_majmin,
     'majmin-inv': compare_majmin_inv,
     'sevenths': compare_sevenths,
+    'sevenths-inv': compare_sevenths_inv,
+    # Older / Other methods
+    'mirex09': compare_mirex,
     'thirds': compare_thirds,
     'thirds-inv': compare_thirds_inv,
     'triads': compare_triads,
