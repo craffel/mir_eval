@@ -47,7 +47,7 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     '''Boundary detection hit-rate.
 
     A hit is counted whenever an reference boundary is within ``window`` of a estimated
-    boundary.
+    boundary.  Note that each boundary is matched at most once.
 
     :usage:
         >>> # With 0.5s windowing
@@ -101,7 +101,6 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
 
     n_ref, n_est = len(reference_boundaries), len(estimated_boundaries)
     
-    skew_adjacency  = np.zeros((n_ref + n_est, n_ref + n_est), dtype=np.int32)
     window_match    = np.abs(np.subtract.outer(reference_boundaries, estimated_boundaries)) <= window
     window_match    = window_match.astype(int)
     
@@ -114,13 +113,13 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     #
     # then rank(D) = 2 * maximum matching
     #
+    # This way, we find the optimal assignment of reference and annotation boundaries.
+    #
+    skew_adjacency  = np.zeros((n_ref + n_est, n_ref + n_est), dtype=np.int32)
     skew_adjacency[:n_ref, n_ref:] = window_match
     skew_adjacency[n_ref:, :n_ref] = -window_match.T
     
     matching_size = np.linalg.matrix_rank(skew_adjacency) / 2.0
-    
-    # Precision = |matching| / |# predictions|
-    # Recall    = |matching| / |# annotations|
     
     precision   = matching_size / len(estimated_boundaries)
     recall      = matching_size / len(reference_boundaries)
@@ -128,6 +127,7 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     f_measure   = util.f_measure(precision, recall)
     
     return precision, recall, f_measure
+
 @validate
 def deviation(reference_intervals, estimated_intervals, trim=True):
     '''Compute the median deviations between reference and estimated boundary times.
