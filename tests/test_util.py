@@ -61,6 +61,45 @@ class UtilTests(unittest.TestCase):
         self.assertEqual(sublist1, [])
         self.assertEqual(sublist2, [])
 
+    def test_merge_labeled_intervals(self):
+        """Check that two labeled interval sequences merge correctly.
+        """
+        x_intvs = np.array([
+            [0.0,    0.44],
+            [0.44,  2.537],
+            [2.537, 4.511],
+            [4.511, 6.409]])
+        x_labels = ['A', 'B', 'C', 'D']
+        y_intvs = np.array([
+            [0.0,   0.464],
+            [0.464, 2.415],
+            [2.415, 4.737],
+            [4.737, 6.409]])
+        y_labels = [0, 1, 2, 3]
+        expected_intvs = [
+            [0.0,    0.44],
+            [0.44,  0.464],
+            [0.464, 2.415],
+            [2.415, 2.537],
+            [2.537, 4.511],
+            [4.511, 4.737],
+            [4.737, 6.409]]
+        expected_x_labels = ['A', 'B', 'B', 'B', 'C', 'D', 'D']
+        expected_y_labels = [0,     0,   1,   2,   2,   2,   3]
+        new_intvs, new_x_labels, new_y_labels = util.merge_labeled_intervals(
+            x_intvs, x_labels, y_intvs, y_labels)
+
+        self.assertEqual(new_x_labels, expected_x_labels)
+        self.assertEqual(new_y_labels, expected_y_labels)
+        self.assertEqual(new_intvs.tolist(), expected_intvs)
+
+        # Check that invalid inputs raise a ValueError
+        y_intvs[-1, -1] = 10.0
+        self.assertRaises(
+            ValueError,
+            util.merge_labeled_intervals,
+            x_intvs, x_labels, y_intvs, y_labels)
+
 
 if __name__ == "__main__":
     unittest.main()

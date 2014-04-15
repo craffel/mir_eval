@@ -1,4 +1,4 @@
-'''Functions and other supporting code for wrangling and comparing chords for
+r'''Functions and other supporting code for wrangling and comparing chords for
 evaluation purposes.
 
 
@@ -27,7 +27,7 @@ rules are provided in the hope that this may allow for more nuanced insight
 into the performance and, ultimately, the behaviour of a computational system.
 
 - 'mirex'*
-    A estimated chord is considered correct if it shares at least three pitch
+    A estimated chord is considered correct if it shares *at least* three pitch
     classes in common.
 
 - 'mirex-augdim'*
@@ -45,12 +45,12 @@ into the performance and, ultimately, the behaviour of a computational system.
     enharmonics and inversions are considered equal, e.g. score('F#:maj',
     'Gb:maj') = 1.0 and score('C:maj6'=[C,E,G,A], 'A:min7'=[A,C,E,G]) = 1.0.
 
-- 'dyads'
-    Chords are compared at the level of major or minor dyads (root and third),
+- 'thirds'
+    Chords are compared at the level of major or minor thirds (root and third),
     For example, both score('A:7', 'A:maj') and score('A:min', 'A:dim') equal
     1.0, as the third is major and minor in quality, respectively.
 
-- 'dyads-inv'
+- 'thirds-inv'
     Same as above, but sensitive to inversions.
 
 - 'triads'
@@ -93,23 +93,29 @@ import numpy as np
 
 NO_CHORD = "N"
 NO_CHORD_ENCODED = -1, np.array([0]*12), np.array([0]*12), -1
+# See Line 445
+STRICT_BASS_INTERVALS = False
 
 
 class InvalidChordException(BaseException):
-    '''Hollow class for invalid formatting.'''
-    pass
+    r'''Exception class for suspect / invalid chord labels.'''
+
+    def __init__(self, message='', chord_label=None):
+        self.message = message
+        self.chord_label = chord_label
+        self.name = self.__class__.__name__
 
 
 # --- Chord Primitives ---
 def _pitch_classes():
-    '''Map from pitch class (str) to semitone (int).'''
+    r'''Map from pitch class (str) to semitone (int).'''
     pitch_classes = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
     semitones = [0, 2, 4, 5, 7, 9, 11]
     return dict([(c, s) for c, s in zip(pitch_classes, semitones)])
 
 
 def _scale_degrees():
-    '''Mapping from scale degrees (str) to semitones (int).'''
+    r'''Mapping from scale degrees (str) to semitones (int).'''
     degrees = ['1', '2', '3', '4', '5', '6', '7', '9', '10', '11', '12', '13']
     semitones = [0, 2, 4, 5, 7, 9, 11, 2, 4, 5, 7, 9]
     return dict([(d, s) for d, s in zip(degrees, semitones)])
@@ -120,7 +126,7 @@ PITCH_CLASSES = _pitch_classes()
 
 
 def pitch_class_to_semitone(pitch_class):
-    '''Convert a pitch class to semitone.
+    r'''Convert a pitch class to semitone.
 
     :parameters:
     - pitch_class: str
@@ -152,7 +158,7 @@ SCALE_DEGREES = _scale_degrees()
 
 
 def scale_degree_to_semitone(scale_degree):
-    '''Convert a scale degree to semitone.
+    r'''Convert a scale degree to semitone.
 
     :parameters:
     - scale degree: str
@@ -207,19 +213,20 @@ def scale_degree_to_bitmap(scale_degree):
 # Maps quality strings to bitmaps, corresponding to relative pitch class
 # semitones, i.e. vector[0] is the tonic.
 QUALITIES = {
-    'maj':   [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-    'min':   [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-    'aug':   [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-    'dim':   [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-    'sus4':  [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-    'sus2':  [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    '7':     [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
-    'maj7':  [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
-    'min7':  [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
-    'maj6':  [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
-    'min6':  [1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0],
-    'dim7':  [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
-    'hdim7': [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0]}
+    'maj':    [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+    'min':    [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+    'aug':    [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+    'dim':    [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+    'sus4':   [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+    'sus2':   [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    '7':      [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    'maj7':   [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
+    'min7':   [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
+    'maj6':   [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
+    'min6':   [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+    'dim7':   [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+    'hdim7':  [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
+    NO_CHORD: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
 
 def quality_to_bitmap(quality):
@@ -436,10 +443,12 @@ def encode(chord_label, reduce_extended_chords=False):
         note_bitmap += scale_degree_to_bitmap(sd)
 
     note_bitmap = (note_bitmap > 0).astype(np.int)
-    if not note_bitmap[bass_number]:
+    if not note_bitmap[bass_number] and STRICT_BASS_INTERVALS:
         raise InvalidChordException(
             "Given bass scale degree is absent from this chord: "
-            "%s" % chord_label)
+            "%s" % chord_label, chord_label)
+    else:
+        note_bitmap[bass_number] = 1.0
     return root_number, quality_bitmap, note_bitmap, bass_number
 
 
@@ -476,9 +485,13 @@ def encode_many(chord_labels, reduce_extended_chords=False):
     num_items = len(chord_labels)
     roots, basses = np.zeros([2, num_items], dtype=np.int)
     qualities, notes = np.zeros([2, num_items, 12], dtype=np.int)
-    for i, c in enumerate(chord_labels):
-        roots[i], qualities[i], notes[i], basses[i] = encode(
-            c, reduce_extended_chords)
+    local_cache = dict()
+    for i, label in enumerate(chord_labels):
+        result = local_cache.get(label, None)
+        if result is None:
+            result = encode(label, reduce_extended_chords)
+            local_cache[label] = result
+        roots[i], qualities[i], notes[i], basses[i] = result
     return roots, qualities, notes, basses
 
 
@@ -504,12 +517,35 @@ def rotate_bitmap_to_root(bitmap, root):
         - bitmap: np.ndarray, shape=(12,)
             Absolute bitmap of active pitch classes.
     '''
+    bitmap = np.asarray(bitmap)
     assert bitmap.ndim == 1, "Currently only 1D bitmaps are supported."
     idxs = list(np.nonzero(bitmap))
     idxs[-1] = (idxs[-1] + root) % 12
     abs_bitmap = np.zeros_like(bitmap)
     abs_bitmap[idxs] = 1
     return abs_bitmap
+
+
+def rotate_bitmaps_to_roots(bitmaps, roots):
+    '''Circularly shift a relative bitmaps to asbolute pitch classes.
+
+    See rotate_bitmap_to_root for more information.
+
+    :parameters:
+        - bitmap: np.ndarray, shape=(N, 12)
+            Bitmap of active notes, relative to the given root.
+
+        - root: np.ndarray, shape=(N,)
+            Absolute pitch class number.
+
+    :returns:
+        - bitmap: np.ndarray, shape=(N, 12)
+            Absolute bitmaps of active pitch classes.
+    '''
+    abs_bitmaps = []
+    for bitmap, root in zip(bitmaps, roots):
+        abs_bitmaps.append(rotate_bitmap_to_root(bitmap, root))
+    return np.asarray(abs_bitmaps)
 
 
 def rotate_bass_to_root(bass, root):
@@ -528,25 +564,22 @@ def rotate_bass_to_root(bass, root):
     return (bass + root) % 12
 
 
-# --- Evaluation Routines ---
+# --- Comparison Routines ---
 def validate(comparison):
     '''Decorator which checks that the input annotations to a comparison
     function look like valid chord labels.
 
     :parameters:
         - comparison : function
-            Evaluation comparison function.  First two arguments must be
+            Chord label comparison function.  The two arguments must be
             reference_labels and estimated_labels.
 
     :returns:
         - comparison_validated : function
             The function with the labels validated.
     '''
-    def comparison_validated(reference_labels, estimated_labels, *args,
-                             **kwargs):
-        '''
-        Comparison with labels validated.
-        '''
+    def comparison_validated(reference_labels, estimated_labels):
+        '''Comparison with labels validated.'''
         N = len(reference_labels)
         M = len(estimated_labels)
         if N != M:
@@ -557,13 +590,13 @@ def validate(comparison):
             for chord_label in labels:
                 validate_chord_label(chord_label)
 
-        return comparison(reference_labels, estimated_labels, *args, **kwargs)
+        return comparison(reference_labels, estimated_labels)
     return comparison_validated
 
 
 @validate
-def score_dyads(reference_labels, estimated_labels):
-    '''Score chords along dyadic (root & third) relationships.
+def compare_thirds(reference_labels, estimated_labels):
+    '''Compare chords along root & third relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -572,8 +605,8 @@ def score_dyads(reference_labels, estimated_labels):
             Estimated chord labels to score against.
 
     :returns:
-        - scores : np.ndarray, shape=(n,), dtype=np.float
-            Comparison scores, in {0.0, 1.0}
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0]
     '''
     ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
     est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
@@ -584,8 +617,8 @@ def score_dyads(reference_labels, estimated_labels):
 
 
 @validate
-def score_dyads_inv(reference_labels, estimated_labels):
-    '''Score chords along dyadic (root, third, & bass) relationships.
+def compare_thirds_inv(reference_labels, estimated_labels):
+    '''Score chords along root, third, & bass relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -595,7 +628,7 @@ def score_dyads_inv(reference_labels, estimated_labels):
 
     :returns:
         - scores : np.ndarray, shape=(n,), dtype=np.float
-            Comparison scores, in {0.0, 1.0}
+            Comparison scores, in [0.0, 1.0]
     '''
     ref_data = encode_many(reference_labels, True)
     ref_roots, ref_qualities, ref_bass = ref_data[0], ref_data[1], ref_data[3]
@@ -609,8 +642,8 @@ def score_dyads_inv(reference_labels, estimated_labels):
 
 
 @validate
-def score_triads(reference_labels, estimated_labels):
-    '''Score chords along triad (root & quality to #5) relationships.
+def compare_triads(reference_labels, estimated_labels):
+    '''Compare chords along triad (root & quality to #5) relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -619,7 +652,7 @@ def score_triads(reference_labels, estimated_labels):
             Estimated chord labels to score against.
 
     :returns:
-        - scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
     ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
@@ -632,7 +665,7 @@ def score_triads(reference_labels, estimated_labels):
 
 
 @validate
-def score_triads_inv(reference_labels, estimated_labels):
+def compare_triads_inv(reference_labels, estimated_labels):
     '''Score chords along triad (root, quality to #5, & bass) relationships.
 
     :parameters:
@@ -658,8 +691,8 @@ def score_triads_inv(reference_labels, estimated_labels):
 
 
 @validate
-def score_tetrads(reference_labels, estimated_labels):
-    '''Score chords along tetrad (root & full quality) relationships.
+def compare_tetrads(reference_labels, estimated_labels):
+    '''Compare chords along tetrad (root & full quality) relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -668,7 +701,7 @@ def score_tetrads(reference_labels, estimated_labels):
             Estimated chord labels to score against.
 
     :returns:
-        - scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
     ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
@@ -680,8 +713,8 @@ def score_tetrads(reference_labels, estimated_labels):
 
 
 @validate
-def score_tetrads_inv(reference_labels, estimated_labels):
-    '''Score chords along seventh (root, quality) relationships.
+def compare_tetrads_inv(reference_labels, estimated_labels):
+    '''Compare chords along seventh (root, quality) relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -690,7 +723,7 @@ def score_tetrads_inv(reference_labels, estimated_labels):
             Estimated chord labels to score against.
 
     :returns:
-        - scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
     ref_data = encode_many(reference_labels, True)
@@ -702,3 +735,231 @@ def score_tetrads_inv(reference_labels, estimated_labels):
     correct_bass = ref_bass == est_bass
     correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
     return (correct_root * correct_quality * correct_bass).astype(np.float)
+
+
+@validate
+def compare_root(reference_labels, estimated_labels):
+    '''Compare chords according to roots.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+            gamut.
+    '''
+
+    ref_roots = encode_many(reference_labels, True)[0]
+    est_roots = encode_many(estimated_labels, True)[0]
+    return (ref_roots == est_roots).astype(np.float)
+
+
+@validate
+def compare_mirex(reference_labels, estimated_labels):
+    '''Compare chords along MIREX rules.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in {0.0, 1.0}
+    '''
+    MIN_INTERSECTION = 3
+    ref_data = encode_many(reference_labels, True)
+    ref_notes = rotate_bitmaps_to_roots(ref_data[2], ref_data[0])
+    est_data = encode_many(estimated_labels, True)
+    est_notes = rotate_bitmaps_to_roots(est_data[2], est_data[0])
+
+    correct_notes = (ref_notes * est_notes).sum(axis=-1)
+    return (correct_notes >= MIN_INTERSECTION).astype(np.float)
+
+
+@validate
+def compare_majmin(reference_labels, estimated_labels):
+    '''Compare chords along major-minor rules. Chords with qualities outside
+    Major/minor/no-chord are ignored.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+            gamut.
+    '''
+    maj_quality = np.array(QUALITIES['maj'][:8])
+    min_quality = np.array(QUALITIES['min'][:8])
+    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
+    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+
+    correct_root = ref_roots == est_roots
+    correct_quality = np.all(
+        np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
+    comparison_scores = (correct_root * correct_quality).astype(np.float)
+    # Test for Major / Minor / No-chord
+    is_maj = np.all(np.equal(ref_qualities[:, :8], maj_quality), axis=1)
+    is_min = np.all(np.equal(ref_qualities[:, :8], min_quality), axis=1)
+    is_none = np.all(np.equal(ref_qualities, np.zeros(12)), axis=1)
+    comparison_scores[(is_maj + is_min + is_none) == 0] = -1
+    return comparison_scores
+
+
+@validate
+def compare_majmin_inv(reference_labels, estimated_labels):
+    '''Compare chords along major-minor rules, with inversions. Chords with
+    qualities outside Major/minor/no-chord are ignored, and the bass note must
+    exist in the triad (bass in [1, 3, 5]).
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+            gamut.
+    '''
+    maj_quality = np.array(QUALITIES['maj'][:8])
+    min_quality = np.array(QUALITIES['min'][:8])
+    ref_codes = encode_many(reference_labels, True)
+    ref_roots, ref_qualities, ref_bass = [ref_codes[n] for n in (0, 1, 3)]
+    est_codes = encode_many(estimated_labels, True)
+    est_roots, est_qualities, est_bass = [est_codes[n] for n in (0, 1, 3)]
+
+    correct_root_bass = (ref_roots == est_roots) * (ref_bass == est_bass)
+    correct_quality = np.all(
+        np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
+    comparison_scores = (correct_root_bass * correct_quality).astype(np.float)
+
+    # Test for Major / Minor / No-chord
+    is_maj = np.all(np.equal(ref_qualities[:, :8], maj_quality), axis=1)
+    is_min = np.all(np.equal(ref_qualities[:, :8], min_quality), axis=1)
+    is_none = np.all(np.equal(ref_qualities, np.zeros(12)), axis=1)
+    comparison_scores[(is_maj + is_min + is_none) == 0] = -1
+
+    # Disable inversions that are not part of the quality
+    valid_inversion = np.ones(ref_bass.shape, dtype=bool)
+    bass_idx = ref_bass >= 0
+    valid_inversion[bass_idx] = ref_qualities[bass_idx, ref_bass[bass_idx]]
+    comparison_scores[valid_inversion == 0] = -1
+    return comparison_scores
+
+
+@validate
+def compare_sevenths(reference_labels, estimated_labels):
+    '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
+    outside [maj, maj7, 7, min, min7, N] are ignored.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+            gamut.
+    '''
+    valid_qualities = ['maj', 'min', 'maj7', '7', 'min7', 'N']
+    valid_qualities = np.array([QUALITIES[name] for name in valid_qualities])
+
+    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
+    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+
+    correct_root = ref_roots == est_roots
+    correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
+    comparison_scores = (correct_root * correct_quality).astype(np.float)
+    # Test for Major / Minor / No-chord
+    is_valid = np.array([np.all(np.equal(ref_qualities, quality), axis=1)
+                         for quality in valid_qualities])
+    comparison_scores[np.sum(is_valid, axis=0) == 0] = -1
+    return comparison_scores
+
+
+@validate
+def compare_sevenths_inv(reference_labels, estimated_labels):
+    '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
+    outside [maj, maj7, 7, min, min7, N] are ignored.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+            gamut.
+    '''
+    valid_qualities = ['maj', 'min', 'maj7', '7', 'min7', 'N']
+    valid_qualities = np.array([QUALITIES[name] for name in valid_qualities])
+
+    ref_codes = encode_many(reference_labels, True)
+    ref_roots, ref_qualities, ref_bass = [ref_codes[n] for n in (0, 1, 3)]
+    est_codes = encode_many(estimated_labels, True)
+    est_roots, est_qualities, est_bass = [est_codes[n] for n in (0, 1, 3)]
+
+    correct_root_bass = (ref_roots == est_roots) * (ref_bass == est_bass)
+    correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
+    comparison_scores = (correct_root_bass * correct_quality).astype(np.float)
+    # Test for Major / Minor / No-chord
+    is_valid = np.array([np.all(np.equal(ref_qualities, quality), axis=1)
+                         for quality in valid_qualities])
+    comparison_scores[np.sum(is_valid, axis=0) == 0] = -1
+
+    # Disable inversions that are not part of the quality
+    valid_inversion = np.ones(ref_bass.shape, dtype=bool)
+    bass_idx = ref_bass >= 0
+    valid_inversion[bass_idx] = ref_qualities[bass_idx, ref_bass[bass_idx]]
+    comparison_scores[valid_inversion == 0] = -1
+    return comparison_scores
+
+
+COMPARATORS = {
+    # MIREX2013 Methods
+    'root': compare_root,
+    'majmin': compare_majmin,
+    'majmin-inv': compare_majmin_inv,
+    'sevenths': compare_sevenths,
+    'sevenths-inv': compare_sevenths_inv,
+    # Older / Other methods
+    'mirex09': compare_mirex,
+    'thirds': compare_thirds,
+    'thirds-inv': compare_thirds_inv,
+    'triads': compare_triads,
+    'triads-inv': compare_triads_inv,
+    'tetrads': compare_tetrads,
+    'tetrads-inv': compare_tetrads_inv}
+
+
+def score(reference_labels, estimated_labels, intervals, vocabulary):
+    '''
+    '''
+    compare_fx = COMPARATORS.get(vocabulary, None)
+    if compare_fx is None:
+        raise ValueError("Unknown vocabulary: %s" % vocabulary)
+    comparison_scores = compare_fx(reference_labels, estimated_labels)
+    valid_idx = (comparison_scores >= 0)
+    if valid_idx.sum() == 0:
+        return -1
+    durations = np.abs(np.diff(intervals, axis=-1)).squeeze()
+    comparison_scores = comparison_scores[valid_idx]
+    durations = durations[valid_idx]
+    total_time = float(np.sum(durations))
+    duration_weights = np.asarray(durations, dtype=float) / total_time
+    return np.sum(comparison_scores * duration_weights)

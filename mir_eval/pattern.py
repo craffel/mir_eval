@@ -64,6 +64,15 @@ and formally described in:
 
 Tom Collins 2014 (TODO).
 
+First N patterns metrics
+------------------------
+
+This includes the first N patterns target proportion establishment recall,
+and the first N patterns three-layer precision. By analyzing the first N
+patterns only, we evaluate the ability of the algorithm of sorting the
+identified patterns based on their relevance. Both metrics are used in the
+MIREX evaluation.
+
 
 Written by Oriol Nieto (oriol@nyu.edu), 2014
 """
@@ -117,7 +126,8 @@ def _occurrence_intersection(occ_P, occ_Q):
         the estimated occurrence.
     :type occ_Q: list
     :returns:
-        - Set of the intersection between occ_P and occ_Q
+        - S : set
+            Set of the intersection between occ_P and occ_Q.
     """
     set_P = set([tuple(onset_midi) for onset_midi in occ_P])
     set_Q = set([tuple(onset_midi) for onset_midi in occ_Q])
@@ -137,7 +147,8 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
                 occurrences.
     :type similarity_metric: str
     :returns:
-        - The score matrix between P and Q using the similarity_metric.
+        - sm: np.array
+            The score matrix between P and Q using the similarity_metric.
     """
     sm = np.zeros((len(P), len(Q)))     # The score matrix
     for iP, occ_P in enumerate(P):
@@ -162,6 +173,11 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     possible translated patterns in the prototype patterns of the estimations.
     Since the sizes of these prototypes must be equal, this metric is quite
     restictive and it tends to be 0 in most of 2013 MIREX results.
+
+    :usage:
+        >>> ref_patterns = mir_eval.pattern.load_patterns("ref_pattern.txt")
+        >>> est_patterns = mir_eval.pattern.load_patterns("est_pattern.txt")
+        >>> F, P, R = mir_eval.pattern.standard_FPR(ref_patterns, est_patterns)
 
     :param reference_patterns: The reference patterns using the same format as
         the one load_patterns in the input_output module returns.
@@ -211,6 +227,12 @@ def establishment_FPR(reference_patterns, estimated_patterns,
                       similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
 
+    :usage:
+        >>> ref_patterns = mir_eval.pattern.load_patterns("ref_pattern.txt")
+        >>> est_patterns = mir_eval.pattern.load_patterns("est_pattern.txt")
+        >>> F, P, R = mir_eval.pattern.establishment_FPR(ref_patterns,
+                                                         est_patterns)
+
     :param reference_patterns: The reference patterns using the same format as
         the one load_patterns in the input_output module returns.
     :type reference_patterns: list
@@ -250,6 +272,12 @@ def establishment_FPR(reference_patterns, estimated_patterns,
 def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
                    similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
+
+    :usage:
+        >>> ref_patterns = mir_eval.pattern.load_patterns("ref_pattern.txt")
+        >>> est_patterns = mir_eval.pattern.load_patterns("est_pattern.txt")
+        >>> F, P, R = mir_eval.pattern.occurrence_FPR(ref_patterns,
+                                                      est_patterns)
 
     :param reference_patterns: The reference patterns using the same format as
         the one load_patterns in the input_output module returns.
@@ -303,6 +331,12 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
     """Three Layer F1 Score, Precision and Recall. As described by Meridith.
 
     TODO: Add publication. Collins 2014?
+
+    :usage:
+        >>> ref_patterns = mir_eval.pattern.load_patterns("ref_pattern.txt")
+        >>> est_patterns = mir_eval.pattern.load_patterns("est_pattern.txt")
+        >>> F, P, R = mir_eval.pattern.three_layer_FPR(ref_patterns,
+                                                       est_patterns)
 
     :param reference_patterns: The reference patterns using the same format as
         the one load_patterns in the input_output module returns.
@@ -387,6 +421,12 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
     applied to the first n estimated patterns, and it only returns the
     precision. In MIREX and typically, n = 5.
 
+    :usage:
+        >>> ref_patterns = mir_eval.pattern.load_patterns("ref_pattern.txt")
+        >>> est_patterns = mir_eval.pattern.load_patterns("est_pattern.txt")
+        >>> F, P, R = mir_eval.pattern.first_n_three_layer_P(ref_patterns,
+                                                       est_patterns, n=5)
+
     :param reference_patterns: The reference patterns using the same format as
         the one load_patterns in the input_output module returns.
     :type reference_patterns: list
@@ -416,6 +456,12 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
     This metric is similar is similar to the establishment FPR score, but it
     only takes into account the first n estimated patterns and it only
     outputs the Recall value of it.
+
+    :usage:
+        >>> ref_patterns = mir_eval.pattern.load_patterns("ref_pattern.txt")
+        >>> est_patterns = mir_eval.pattern.load_patterns("est_pattern.txt")
+        >>> F, P, R = mir_eval.pattern.first_n_target_proportion_R(
+                                            ref_patterns, est_patterns, n=5)
 
     :param reference_patterns: The reference patterns using the same format as
         the one load_patterns in the input_output module returns.
