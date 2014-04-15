@@ -4,37 +4,42 @@ Unit tests for mir_eval.melody
 '''
 
 import numpy as np
-import mir_eval
+import os, sys
+sys.path.append('../evaluators')
+import melody_eval
 
 def test_melody_functions():
 
     songs = ['daisy1','daisy2','daisy3','daisy4','jazz1','jazz2','jazz3','jazz4','midi1','midi2','midi3','midi4','opera_fem2','opera_fem4','opera_male3','opera_male5','pop1','pop2','pop3','pop4']
     refpath = 'data/melody/mirex2011/adc2004_ref/'
     estpath = 'data/melody/mirex2011/adc2004_SG2/'
-    resultspath = 'data/mirex2011/adc2004_results/SG2_per_track_results_mapped.csv'
+    resultspath = 'data/melody/mirex2011/adc2004_results/SG2_per_track_results_mapped.csv'
+
+    # create results dictionary
+    results = np.loadtxt(resultspath, dtype='string', delimiter=',')
+    keys = results[0]
+    results_dict = {}
+    for i in range(1,len(results)):
+        value_dict = {}
+        for k in range(1,len(keys)):
+            value_dict[keys[k]] = results[i][k]
+        results_dict[results[i][0]] = value_dict
+
+    hop = 0.01
 
     for song in songs:
+        print song
 
+        reffile = os.path.join(refpath, song + "REF.txt")
+        estfile = os.path.join(estpath, song + "_mel.txt")
 
+        M = melody_eval.evaluate(reffile, estfile, hop)
 
-    # Load in an example beat annotation
-    reference_beats = np.genfromtxt('data/beat/reference.beats')
-    # Load in an example beat tracker output
-    estimated_beats = np.genfromtxt('data/beat/estimated.beats')
-    # Trim the first 5 seconds off
-    reference_beats = mir_eval.beat.trim_beats(reference_beats)
-    estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
-    # Load in reference scores computed with the beat eval toolbox
-    bet_scores = pickle.load(open('data/beat/bet_scores.pickle'))
-    # List of functions in mir_eval.beat
-    functions = {'f_measure':mir_eval.beat.f_measure,
-                 'cemgil':mir_eval.beat.cemgil,
-                 'goto':mir_eval.beat.goto,
-                 'p_score':mir_eval.beat.p_score,
-                 'continuity':mir_eval.beat.continuity,
-                 'information_gain':mir_eval.beat.information_gain}
-    # Check each function output against beat evaluation toolbox
-    for name, function in functions.items():
-        my_score = function(reference_beats, estimated_beats)
-        their_score = bet_scores[name]
-        assert np.allclose(my_score, their_score)
+        # compare results
+        for metric in M.keys():
+            mirex_result = float(results_dict[song + '.wav'][metric])
+            mireval_result = M[metric]
+            diff = np.abs(mirex_result - mireval_result)
+            if diff > 0.01:
+                print "\t%s: %.3f [mx:%.3f me:%.3f]" % (metric, diff, mirex_result, mireval_result)
+
