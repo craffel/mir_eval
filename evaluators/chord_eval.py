@@ -1,15 +1,12 @@
 #!/usr/bin/env python
-'''
-Compute chord evaluation metrics
+'''Compute chord evaluation metrics
 
 
-Usage:
+Usage: To run an evaluation consistent with MIREX2013, run the following:
 
-./chord_eval.py ~/audio-chord-estimation/2011/outputs-lab/Ground-truth/ \
-~/mirex-tools/audio-chord-estimation/2011/outputs-lab/CB2/ \
--v mirex dyads dyads-inv \
---strict_bass
-
+./chord_eval.py reference_file.lab \
+estimation_file.txt \
+-v root majmin majmin-inv sevenths sevenths-inv
 '''
 
 import argparse
