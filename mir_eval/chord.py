@@ -737,6 +737,27 @@ def compare_tetrads_inv(reference_labels, estimated_labels):
 
 
 @validate
+def compare_root(reference_labels, estimated_labels):
+    '''Compare chords according to roots.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+            gamut.
+    '''
+
+    ref_roots = encode_many(reference_labels, True)[0]
+    est_roots = encode_many(estimated_labels, True)[0]
+    return (ref_roots == est_roots).astype(np.float)
+
+
+@validate
 def compare_mirex(reference_labels, estimated_labels):
     '''Compare chords along MIREX rules.
 
@@ -760,8 +781,78 @@ def compare_mirex(reference_labels, estimated_labels):
     return (correct_notes >= MIN_INTERSECTION).astype(np.float)
 
 
+@validate
+def compare_majmin(reference_labels, estimated_labels):
+    '''Compare chords along major-minor rules. Chords with qualities outside
+    Major/minor/no-chord are ignored.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+            gamut.
+    '''
+    maj_quality = np.array(QUALITIES['maj'][:8])
+    min_quality = np.array(QUALITIES['min'][:8])
+    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
+    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+
+    correct_root = ref_roots == est_roots
+    correct_quality = np.all(
+        np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
+    comparison_scores = (correct_root * correct_quality).astype(np.float)
+    # Test for Major / Minor / No-chord
+    is_maj = np.all(np.equal(ref_qualities[:, :8], maj_quality), axis=1)
+    is_min = np.all(np.equal(ref_qualities[:, :8], min_quality), axis=1)
+    is_none = np.all(np.equal(ref_qualities, np.zeros(12)), axis=1)
+    comparison_scores[(is_maj + is_min + is_none) == 0] = -1
+    return comparison_scores
+
+
+@validate
+def compare_majmin_inv(reference_labels, estimated_labels):
+    '''Compare chords along major-minor rules, with inversions. Chords with
+    qualities outside Major/minor/no-chord are ignored.
+
+    :parameters:
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
+
+    :returns:
+        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+            gamut.
+    '''
+    maj_quality = np.array(QUALITIES['maj'][:8])
+    min_quality = np.array(QUALITIES['min'][:8])
+    ref_codes = encode_many(reference_labels, True)
+    ref_roots, ref_qualities, ref_bass = [ref_codes[n] for n in (0, 1, 3)]
+    est_codes = encode_many(estimated_labels, True)
+    est_roots, est_qualities, est_bass = [est_codes[n] for n in (0, 1, 3)]
+
+    correct_root_bass = (ref_roots == est_roots) * (ref_bass == est_bass)
+    correct_quality = np.all(
+        np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
+    comparison_scores = (correct_root_bass * correct_quality).astype(np.float)
+    # Test for Major / Minor / No-chord
+    is_maj = np.all(np.equal(ref_qualities[:, :8], maj_quality), axis=1)
+    is_min = np.all(np.equal(ref_qualities[:, :8], min_quality), axis=1)
+    is_none = np.all(np.equal(ref_qualities, np.zeros(12)), axis=1)
+    comparison_scores[(is_maj + is_min + is_none) == 0] = -1
+    return comparison_scores
+
+
 COMPARATORS = {
-    'mirex': compare_mirex,
+    'root': compare_root,
+    'mirex09': compare_mirex,
+    'majmin': compare_majmin,
     'dyads': compare_dyads,
     'dyads-inv': compare_dyads_inv,
     'triads': compare_triads,
@@ -777,7 +868,12 @@ def score(reference_labels, estimated_labels, intervals, vocabulary):
     if compare_fx is None:
         raise ValueError("Unknown vocabulary: %s" % vocabulary)
     comparison_scores = compare_fx(reference_labels, estimated_labels)
+    valid_idx = (comparison_scores >= 0)
+    if valid_idx.sum() == 0:
+        return -1
     durations = np.abs(np.diff(intervals, axis=-1)).squeeze()
+    comparison_scores = comparison_scores[valid_idx]
+    durations = durations[valid_idx]
     total_time = float(np.sum(durations))
     duration_weights = np.asarray(durations, dtype=float) / total_time
     return np.sum(comparison_scores * duration_weights)

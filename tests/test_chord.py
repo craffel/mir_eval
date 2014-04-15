@@ -218,6 +218,18 @@ class ChordTests(unittest.TestCase):
         ans = [0.0,         0.0,        1.0,      0.0,          0.0]
         self.assertEqual(chord.compare_tetrads_inv(ref, est).tolist(), ans)
 
+    def test_compare_majmin(self):
+        ref = ['N', 'C:maj', 'C:maj', 'C:aug', 'C:min', 'G:maj7']
+        est = ['N', 'N',     'C:aug', 'C:maj', 'C:dim', 'G']
+        ans = [1.0,  0.0,     0.0,     -1.0,     0.0,    1.0]
+        self.assertEqual(chord.compare_majmin(ref, est).tolist(), ans)
+
+    def test_compare_majmin_inv(self):
+        ref = ['C:maj/5',  'G:min',    'C:maj/5', 'C:hdim7/b3', 'C:min7']
+        est = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:min/b3',   'C:min']
+        ans = [0.0,         0.0,        1.0,       -1.0,         1.0]
+        self.assertEqual(chord.compare_majmin_inv(ref, est).tolist(), ans)
+
 
 if __name__ == "__main__":
     unittest.main()
