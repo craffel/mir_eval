@@ -40,7 +40,8 @@ def collect_fileset(reference_dir, estimation_dir, fext='lab'):
     return ref_files, est_files
 
 
-def evaluate_pair(reference_file, estimation_file, vocabularies=['dyads']):
+def evaluate_pair(reference_file, estimation_file, vocabularies=['dyads'],
+                  boundary_mode='intersect'):
     '''Load data and perform the evaluation between a pair of annotations.
 
     :parameters:
@@ -53,6 +54,16 @@ def evaluate_pair(reference_file, estimation_file, vocabularies=['dyads']):
     - vocabularies: list of strings
         Comparisons to make between the reference and estimated sequences.
 
+    -boundary_mode: str
+        Method for resolving sequences of different lengths, one of
+        ['intersect', 'fit-to-ref', 'fit-to-est'].
+            intersect: Truncate both to the time range on with both sequences
+                are defined.
+            fit-to-ref: Pad the estimation to match the reference, filling
+                missing labels with 'no-chord'.
+            fit-to-est: Pad the reference to match the estimation, filling
+                missing labels with 'no-chord'.
+
     :returns:
     -result: dict
         Dictionary containing the averaged scores for each vocabulary, along
@@ -64,13 +75,25 @@ def evaluate_pair(reference_file, estimation_file, vocabularies=['dyads']):
     ref_intervals, ref_labels = io.load_annotation(reference_file)
     est_intervals, est_labels = io.load_annotation(estimation_file)
 
-    # Adjust the estimated intervals to the reference
+    if boundary_mode == 'intersect':
+        t_min = max([ref_intervals.min(), est_intervals.min()])
+        t_max = min([ref_intervals.max(), est_intervals.max()])
+    elif boundary_mode == 'fit-to-ref':
+        t_min = ref_intervals.min()
+        t_max = ref_intervals.max()
+    elif boundary_mode == 'fit-to-est':
+        t_min = est_intervals.min()
+        t_max = est_intervals.max()
+    else:
+        raise ValueError("Unsupported boundary mode: %s" % boundary_mode)
+
+    # Reduce the two annotations to the time intersection of both interval
+    #  sequences.
+    ref_intervals, ref_labels = util.adjust_intervals(
+        ref_intervals, ref_labels, t_min, t_max, chord.NO_CHORD)
+
     est_intervals, est_labels = util.adjust_intervals(
-        est_intervals,
-        est_labels,
-        ref_intervals.min(),
-        ref_intervals.max(),
-        chord.NO_CHORD)
+        est_intervals, est_labels, t_min, t_max, chord.NO_CHORD)
 
     # Merge the time-intervals
     intervals, ref_labels, est_labels = util.merge_labeled_intervals(
@@ -98,7 +121,7 @@ def print_evaluation(prediction_file, result):
     print os.path.basename(prediction_file)
     for key, value in result.iteritems():
         if not key.startswith("_"):
-            print '\t%12s:\t%0.3f' % (key, value)
+            print '\t%12s:\t%0.6f' % (key, value)
 
 
 def print_summary(results):
@@ -106,8 +129,8 @@ def print_summary(results):
     '''
     file_errors = []
     chord_errors = set()
-    print "\n'%s'\n%s" % (chord.InvalidChordException().name,
-                          '-'*len(chord.InvalidChordException().name))
+    print "\n%s\n%s" % (chord.InvalidChordException().name,
+                        '-'*len(chord.InvalidChordException().name))
     for item in results:
         err_pair = item.get("_error", None)
         if err_pair:
