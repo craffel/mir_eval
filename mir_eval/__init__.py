@@ -6,7 +6,8 @@ from . import beat
 from . import chord
 from . import input_output as io
 from . import onset
-from . import segment
+from . import boundary
+from . import structure
 from . import separation
 from . import util
 from . import sonify

@@ -37,31 +37,31 @@ def evaluate(ref_file=None, prediction_file=None):
     
     M = OrderedDict()
     # Boundary detection
-    M['P@0.5'], M['R@0.5'], M['F@0.5']  = mir_eval.segment.boundary_detection(ref_intervals,
+    M['P@0.5'], M['R@0.5'], M['F@0.5']  = mir_eval.boundary.detection(ref_intervals,
                                                                   est_intervals,
                                                                   window=0.5)
 
-    M['P@3.0'], M['R@3.0'], M['F@3.0']  = mir_eval.segment.boundary_detection(ref_intervals,
+    M['P@3.0'], M['R@3.0'], M['F@3.0']  = mir_eval.boundary.detection(ref_intervals,
                                                                  est_intervals,
                                                                  window=3.0)
     # Boundary deviation
-    M['True-to-Pred'], M['Pred-to-True'] = mir_eval.segment.boundary_deviation(ref_intervals,
+    M['True-to-Pred'], M['Pred-to-True'] = mir_eval.boundary.deviation(ref_intervals,
                                                                   est_intervals)
 
     # Pairwise clustering
-    M['Pair-P'], M['Pair-R'], M['Pair-F'] = mir_eval.segment.frame_clustering_pairwise(ref_intervals, ref_labels,
+    M['Pair-P'], M['Pair-R'], M['Pair-F'] = mir_eval.structure.pairwise(ref_intervals, ref_labels,
                                                                                        est_intervals, est_labels)
 
     # Adjusted rand index
-    M['ARI']                     = mir_eval.segment.frame_clustering_ari(ref_intervals, ref_labels,
+    M['ARI']                     = mir_eval.structure.ari(ref_intervals, ref_labels,
                                                                     est_intervals, est_labels)
 
     # Mutual information metrics
-    M['MI'], M['AMI'], M['NMI']            = mir_eval.segment.frame_clustering_mi(ref_intervals, ref_labels,
+    M['MI'], M['AMI'], M['NMI']            = mir_eval.structure.mutual_information(ref_intervals, ref_labels,
                                                                    est_intervals, est_labels)
 
     # Conditional entropy metrics
-    M['S_Over'], M['S_Under'], M['S_F'] = mir_eval.segment.frame_clustering_nce(ref_intervals, ref_labels,
+    M['S_Over'], M['S_Under'], M['S_F'] = mir_eval.structure.nce(ref_intervals, ref_labels,
                                                                     est_intervals, est_labels)
 
     return M
