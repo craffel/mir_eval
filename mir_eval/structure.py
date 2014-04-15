@@ -1,9 +1,10 @@
 # CREATED:2013-08-13 12:02:42 by Brian McFee <brm2132@columbia.edu>
 '''Structural segmentation evaluation, following the protocols of MIREX2012.
-    - Boundary detection
-        - (precision, recall, f-measure)
-        - median distance to nearest boundary
-    - Frame clustering
+    Frame clustering metrics:
+        - pairwise classification
+        - adjusted rand index
+        - mutual information
+        - normalized conditional entropy
 '''
 
 import numpy as np
@@ -22,29 +23,7 @@ def __validate_intervals(intervals):
     if (intervals < 0).any():
         raise ValueError('Negative interval times found')
 
-
-def validate_boundaries(metric):
-    '''Decorator which checks that the input annotations to a metric
-    look like valid segment times, and throws helpful errors if not.
-
-    :parameters:
-        - metric : function
-            Evaluation metric function.  First two arguments must be
-            reference_intervals and estimated_intervals.
-
-    :returns:
-        - metric_validated : function
-            The function with the segment intervals are validated
-    '''
-    def metric_validated(reference_intervals, estimated_intervals, *args, **kwargs):
-        for intervals in [reference_intervals, estimated_intervals]:
-            __validate_intervals(intervals)
-
-        return metric(reference_intervals, estimated_intervals, *args, **kwargs)
-
-    return metric_validated
-
-def validate_labels(metric):
+def validate(metric):
     '''Decorator which checks that the input annotations to a metric
     look like valid segment times, and throws helpful errors if not.
 
@@ -81,127 +60,8 @@ def validate_labels(metric):
 
     return metric_validated
 
-@validate_boundaries
-def boundary_detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, trim=True):
-    '''Boundary detection hit-rate.
-
-    A hit is counted whenever an reference boundary is within ``window`` of a estimated
-    boundary.
-
-    :usage:
-        >>> # With 0.5s windowing
-        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
-        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> P05, R05, F05 = mir_eval.segment.boundary_detection(reference, estimated, window=0.5)
-        >>> # With 3s windowing
-        >>> P3, R3, F3 = mir_eval.segment.boundary_detection(reference, estimated, window=3)
-
-
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, as returned by `mir_eval.io.load_annotation`
-
-        - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, as returned by `mir_eval.io.load_annotation`
-
-        - window : float > 0
-            size of the window of 'correctness' around ground-truth beats (in seconds)
-
-        - beta : float > 0
-            weighting constant for F-measure.
-
-        - trim : boolean
-            if ``True``, the first and last boundary times are ignored.
-            Typically, these denote start (0) and end-markers.
-
-    :returns:
-        - precision : float
-            precision of predictions
-
-        - recall : float
-            recall of ground-truth beats
-
-        - f_measure : float
-            F-measure (weighted harmonic mean of ``precision`` and ``recall``)
-    '''
-
-    # Convert intervals to boundaries
-    reference_boundaries = util.intervals_to_boundaries(reference_intervals)
-    estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)
-
-    # Suppress the first and last intervals
-    if trim:
-        reference_boundaries = reference_boundaries[1:-1]
-        estimated_boundaries = estimated_boundaries[1:-1]
-
-    # If we have no boundaries, we get no score.
-    if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
-        return 0.0, 0.0, 0.0
-
-    # Compute the hits
-    dist        = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries)) <= window
-
-    # Precision: how many estimated intervals were hits?
-    precision   = np.mean(dist.max(axis=0))
-
-    # Recall: how many of the intervals did we catch?
-    recall      = np.mean(dist.max(axis=1))
-
-    # And the f-measure
-    f_measure   = util.f_measure(precision, recall, beta=beta)
-
-    return precision, recall, f_measure
-
-@validate_boundaries
-def boundary_deviation(reference_intervals, estimated_intervals, trim=True):
-    '''Compute the median deviations between reference and estimated boundary times.
-
-    :usage:
-        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
-        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> t_to_p, p_to_t = mir_eval.segment.boundary_deviation(reference, estimated)
-
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, as returned by `mir_eval.io.load_annotation`
-
-        - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, as returned by `mir_eval.io.load_annotation`
-
-        - trim : boolean
-            if ``True``, the first and last intervals are ignored.
-            Typically, these denote start (0) and end-markers.
-
-    :returns:
-        - true_to_estimated : float
-            median time from each true boundary to the closest estimated boundary
-
-        - estimated_to_true : float
-            median time from each estimated boundary to the closest true boundary
-    '''
-
-    # Convert intervals to boundaries
-    reference_boundaries = util.intervals_to_boundaries(reference_intervals)
-    estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)
-
-    # Suppress the first and last intervals
-    if trim:
-        reference_boundaries = reference_boundaries[1:-1]
-        estimated_boundaries = estimated_boundaries[1:-1]
-
-    # If we have no boundaries, we get no score.
-    if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
-        return 0.0, 0.0, 0.0
-
-    dist = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries) )
-
-    true_to_estimated = np.median(np.sort(dist, axis=1)[:, 0])
-    estimated_to_true = np.median(np.sort(dist, axis=0)[0, :])
-
-    return true_to_estimated, estimated_to_true
-
-@validate_labels
-def frame_clustering_pairwise(reference_intervals, reference_labels,
+@validate
+def pairwise(reference_intervals, reference_labels,
                               estimated_intervals, estimated_labels,
                               frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation evaluation by pair-wise agreement.
@@ -209,7 +69,7 @@ def frame_clustering_pairwise(reference_intervals, reference_labels,
     :usage:
         >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
         >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> precision, recall, f   = mir_eval.segment.frame_clustering_pairwise(reference, true_labels,
+        >>> precision, recall, f   = mir_eval.segment.pairwise(reference, true_labels,
                                                                                 estimated, pred_labels)
 
     :parameters:
@@ -273,8 +133,8 @@ def frame_clustering_pairwise(reference_intervals, reference_labels,
 
     return precision, recall, f_measure
 
-@validate_labels
-def frame_clustering_ari(reference_intervals, reference_labels,
+@validate
+def ari(reference_intervals, reference_labels,
                          estimated_intervals, estimated_labels,
                          frame_size=0.1):
     '''Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
@@ -282,7 +142,7 @@ def frame_clustering_ari(reference_intervals, reference_labels,
     :usage:
         >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
         >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> ari_score              = mir_eval.segment.frame_clustering_ari(reference, true_labels,
+        >>> ari_score              = mir_eval.segment.ari(reference, true_labels,
                                                                            estimated, pred_labels)
 
     :parameters:
@@ -324,8 +184,8 @@ def frame_clustering_ari(reference_intervals, reference_labels,
 
     return metrics.adjusted_rand_score(y_true, y_pred)
 
-@validate_labels
-def frame_clustering_mi(reference_intervals, reference_labels,
+@validate
+def mutual_information(reference_intervals, reference_labels,
                         estimated_intervals, estimated_labels,
                         frame_size=0.1):
     '''Frame-clustering segmentation: mutual information metrics.
@@ -333,7 +193,7 @@ def frame_clustering_mi(reference_intervals, reference_labels,
     :usage:
         >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
         >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> mi, ami, nmi           = mir_eval.segment.frame_clustering_mi(reference, true_labels,
+        >>> mi, ami, nmi           = mir_eval.segment.mi(reference, true_labels,
                                                                           estimated, pred_labels)
 
     :parameters:
@@ -388,8 +248,8 @@ def frame_clustering_mi(reference_intervals, reference_labels,
 
     return mutual_info, adj_mutual_info, norm_mutual_info
 
-@validate_labels
-def frame_clustering_nce(reference_intervals, reference_labels,
+@validate
+def nce(reference_intervals, reference_labels,
                          estimated_intervals, estimated_labels,
                          frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation: normalized conditional entropy
@@ -399,7 +259,7 @@ def frame_clustering_nce(reference_intervals, reference_labels,
     :usage:
         >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
         >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> S_over, S_under, F     = mir_eval.segment.frame_clustering_nce(reference, true_labels,
+        >>> S_over, S_under, F     = mir_eval.segment.nce(reference, true_labels,
                                                                            estimated, pred_labels)
 
 
