@@ -162,27 +162,27 @@ class ChordTests(unittest.TestCase):
         self.assertEqual(notes.tolist(), expected_notes)
         self.assertEqual(basses.tolist(), expected_basses)
 
-    def test_compare_dyads(self):
+    def test_compare_thirds(self):
         ref = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min']
         est = ['N', 'N',     'C:aug', 'C:dim', 'C:dim']
         ans = [1.0,  0.0,     1.0,     0.0,     1.0]
-        self.assertEqual(chord.compare_dyads(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_thirds(ref, est).tolist(), ans)
 
         ref = ['C:maj',  'G:min',  'C:maj', 'C:min',   'C:min']
         est = ['C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:min7']
         ans = [1.0,       0.0,      0.0,     1.0,       1.0]
-        self.assertEqual(chord.compare_dyads(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_thirds(ref, est).tolist(), ans)
 
         ref = ['C:maj',  'F:maj',  'C:maj',     'A:maj', 'A:maj']
         est = ['C:maj6', 'F:min6', 'C:minmaj7', 'A:7',   'A:9']
         ans = [1.0,       0.0,      0.0,         1.0,     1.0]
-        self.assertEqual(chord.compare_dyads(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_thirds(ref, est).tolist(), ans)
 
-    def test_compare_dyads_inv(self):
+    def test_compare_thirds_inv(self):
         ref = ['C:maj/5',  'G:min',    'C:maj',   'C:min/b3',   'C:min']
         est = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:hdim7/b3', 'C:dim']
         ans = [1.0,         0.0,        0.0,       1.0,          1.0]
-        self.assertEqual(chord.compare_dyads_inv(ref, est).tolist(), ans)
+        self.assertEqual(chord.compare_thirds_inv(ref, est).tolist(), ans)
 
     def test_compare_triads(self):
         ref = ['C:min',  'C:maj', 'C:maj', 'C:min', 'C:maj']

@@ -45,12 +45,12 @@ into the performance and, ultimately, the behaviour of a computational system.
     enharmonics and inversions are considered equal, e.g. score('F#:maj',
     'Gb:maj') = 1.0 and score('C:maj6'=[C,E,G,A], 'A:min7'=[A,C,E,G]) = 1.0.
 
-- 'dyads'
-    Chords are compared at the level of major or minor dyads (root and third),
+- 'thirds'
+    Chords are compared at the level of major or minor thirds (root and third),
     For example, both score('A:7', 'A:maj') and score('A:min', 'A:dim') equal
     1.0, as the third is major and minor in quality, respectively.
 
-- 'dyads-inv'
+- 'thirds-inv'
     Same as above, but sensitive to inversions.
 
 - 'triads'
@@ -594,8 +594,8 @@ def validate(comparison):
 
 
 @validate
-def compare_dyads(reference_labels, estimated_labels):
-    '''Compare chords along dyadic (root & third) relationships.
+def compare_thirds(reference_labels, estimated_labels):
+    '''Compare chords along root & third relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -616,8 +616,8 @@ def compare_dyads(reference_labels, estimated_labels):
 
 
 @validate
-def compare_dyads_inv(reference_labels, estimated_labels):
-    '''Score chords along dyadic (root, third, & bass) relationships.
+def compare_thirds_inv(reference_labels, estimated_labels):
+    '''Score chords along root, third, & bass relationships.
 
     :parameters:
         - reference_labels : list, len=n
@@ -853,8 +853,9 @@ COMPARATORS = {
     'root': compare_root,
     'mirex09': compare_mirex,
     'majmin': compare_majmin,
-    'dyads': compare_dyads,
-    'dyads-inv': compare_dyads_inv,
+    'majmin-inv': compare_majmin_inv,
+    'thirds': compare_thirds,
+    'thirds-inv': compare_thirds_inv,
     'triads': compare_triads,
     'triads-inv': compare_triads_inv,
     'tetrads': compare_tetrads,
