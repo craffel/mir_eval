@@ -1,9 +1,8 @@
 '''
-Unit tests for mir_eval.beat
+Unit tests for mir_eval.segment
 '''
 
 import numpy as np
-import mir_eval
 import pickle
 import sys
 sys.path.append('../evaluators')
