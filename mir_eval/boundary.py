@@ -99,20 +99,35 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
         return 0.0, 0.0, 0.0
 
-    # Compute the hits
-    dist        = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries)) <= window
-
-    # Precision: how many estimated intervals were hits?
-    precision   = np.mean(dist.max(axis=0))
-
-    # Recall: how many of the intervals did we catch?
-    recall      = np.mean(dist.max(axis=1))
-
-    # And the f-measure
-    f_measure   = util.f_measure(precision, recall, beta=beta)
-
+    n_ref, n_est = len(reference_boundaries), len(estimated_boundaries)
+    
+    skew_adjacency  = np.zeros((n_ref + n_est, n_ref + n_est), dtype=np.int32)
+    window_match    = np.abs(np.subtract.outer(reference_boundaries, estimated_boundaries)) <= window
+    window_match    = window_match.astype(int)
+    
+    # L. Lovasz On determinants, matchings and random algorithms. 
+    # In L. Budach, editor, Fundamentals of Computation Theory, pages 565-574. Akademie-Verlag, 1979.
+    #
+    # If we build the skew-symmetric adjacency matrix 
+    # D[i, n_ref+j] = 1 <=> ref[i] within window of est[j]
+    # D[n_ref + j, i] = -1 <=> same
+    #
+    # then rank(D) = 2 * maximum matching
+    #
+    skew_adjacency[:n_ref, n_ref:] = window_match
+    skew_adjacency[n_ref:, :n_ref] = -window_match.T
+    
+    matching_size = np.linalg.matrix_rank(skew_adjacency) / 2.0
+    
+    # Precision = |matching| / |# predictions|
+    # Recall    = |matching| / |# annotations|
+    
+    precision   = matching_size / len(estimated_boundaries)
+    recall      = matching_size / len(reference_boundaries)
+    
+    f_measure   = util.f_measure(precision, recall)
+    
     return precision, recall, f_measure
-
 @validate
 def deviation(reference_intervals, estimated_intervals, trim=True):
     '''Compute the median deviations between reference and estimated boundary times.
