@@ -314,7 +314,7 @@ def nce(reference_intervals, reference_labels,
     contingency = metrics.contingency_matrix(y_true, y_pred).astype(float)
 
     # Compute the marginals
-    p_pred = contingency.sum(axis=0) / len(y_true)
+    p_pred = contingency.sum(axis=0) / len(y_pred)
     p_true = contingency.sum(axis=1) / len(y_true)
 
     true_given_pred = p_pred.dot(scipy.stats.entropy(contingency,   base=2))

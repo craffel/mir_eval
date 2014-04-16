@@ -167,11 +167,11 @@ def deviation(reference_intervals, estimated_intervals, trim=True):
 
     # If we have no boundaries, we get no score.
     if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
-        return 0.0, 0.0, 0.0
+        return np.nan, np.nan
 
     dist = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries) )
 
-    true_to_estimated = np.median(np.sort(dist, axis=1)[:, 0])
-    estimated_to_true = np.median(np.sort(dist, axis=0)[0, :])
+    true_to_estimated = np.median(dist.min(axis=0))
+    estimated_to_true = np.median(dist.min(axis=1))
 
     return true_to_estimated, estimated_to_true
