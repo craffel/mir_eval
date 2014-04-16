@@ -11,6 +11,7 @@ import functools
 from . import util
 
 def __validate_intervals(intervals):
+    '''Internal validation function for interval arrays'''
 
     # Validate interval shape
     if intervals.ndim != 2 or intervals.shape[1] != 2:
@@ -35,6 +36,7 @@ def validate(metric):
     '''
     @functools.wraps(metric)
     def metric_validated(reference_intervals, estimated_intervals, *args, **kwargs):
+        '''Validate both reference and estimated intervals'''
         for intervals in [reference_intervals, estimated_intervals]:
             __validate_intervals(intervals)
 
@@ -128,7 +130,7 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     precision   = matching_size / len(estimated_boundaries)
     recall      = matching_size / len(reference_boundaries)
     
-    f_measure   = util.f_measure(precision, recall)
+    f_measure   = util.f_measure(precision, recall, beta=beta)
     
     return precision, recall, f_measure
 
