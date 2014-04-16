@@ -64,15 +64,22 @@ def validate(metric):
 
 @validate
 def pairwise(reference_intervals, reference_labels,
-                              estimated_intervals, estimated_labels,
-                              frame_size=0.1, beta=1.0):
+             estimated_intervals, estimated_labels,
+             frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation evaluation by pair-wise agreement.
 
     :usage:
-        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
-        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> precision, recall, f   = mir_eval.segment.pairwise(reference, true_labels,
-                                                                                estimated, pred_labels)
+        >>> ref_intervals, ref_labels = mir_eval.io.load_annotation('reference.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_annotation('estimate.lab')
+        >>> # Trim or pad the estimate to match reference timing
+        >>> est_intervals, est_labels = mir_eval.io.adjust_intervals(est_intervals, 
+                                                                     est_labels, 
+                                                                     t_min=ref_intervals.min(), 
+                                                                     t_max=ref_intervals.max())
+        >>> precision, recall, f   = mir_eval.segment.pairwise(ref_intervals, 
+                                                               ref_labels, 
+                                                               est_intervals, 
+                                                               est_labels)
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
@@ -109,28 +116,26 @@ def pairwise(reference_intervals, reference_labels,
     '''
 
     # Generate the cluster labels
-    y_true = util.intervals_to_samples(
-        reference_intervals, reference_labels, sample_size=frame_size)[-1]
-    y_true, true_id_to_label = util.index_labels(y_true)
+    y_ref = util.intervals_to_samples(reference_intervals, 
+                                      reference_labels, 
+                                      sample_size=frame_size)[-1]
+
+    y_ref, ref_id_to_label = util.index_labels(y_ref)
 
     # Map to index space
-    y_pred = util.intervals_to_samples(
-        estimated_intervals, estimated_labels, sample_size=frame_size)[-1]
-    y_pred, pred_id_to_label = util.index_labels(y_pred)
+    y_est = util.intervals_to_samples(estimated_intervals, 
+                                      estimated_labels, 
+                                      sample_size=frame_size)[-1]
 
-    # Make sure we have the same number of frames
-    if len(y_true) != len(y_pred):
-        raise ValueError(
-            'Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1],
-                                               estimated_intervals[-1]))
+    y_est, est_id_to_label = util.index_labels(y_est)
 
     # Construct the label-agreement matrices
-    agree_true  = np.triu(np.equal.outer(y_true, y_true))
-    agree_pred  = np.triu(np.equal.outer(y_pred, y_pred))
+    agree_ref  = np.triu(np.equal.outer(y_ref, y_ref))
+    agree_est  = np.triu(np.equal.outer(y_est, y_est))
 
-    matches     = float((agree_true & agree_pred).sum())
-    precision   = matches / agree_pred.sum()
-    recall      = matches / agree_true.sum()
+    matches     = float((agree_ref & agree_est).sum())
+    precision   = matches / agree_est.sum()
+    recall      = matches / agree_ref.sum()
     f_measure   = util.f_measure(precision, recall, beta=beta)
 
     return precision, recall, f_measure
@@ -169,22 +174,22 @@ def ari(reference_intervals, reference_labels,
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = util.intervals_to_samples(
+    y_ref = util.intervals_to_samples(
         reference_intervals, reference_labels, sample_size=frame_size)[-1]
-    y_true, true_id_to_label = util.index_labels(y_true)
+    y_ref, true_id_to_label = util.index_labels(y_ref)
 
     # Map to index space
-    y_pred = util.intervals_to_samples(
+    y_est = util.intervals_to_samples(
         estimated_intervals, estimated_labels, sample_size=frame_size)[-1]
-    y_pred, pred_id_to_label = util.index_labels(y_pred)
+    y_est, pred_id_to_label = util.index_labels(y_est)
 
     # Make sure we have the same number of frames
-    if len(y_true) != len(y_pred):
+    if len(y_ref) != len(y_est):
         raise ValueError(
             'Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1],
                                                estimated_intervals[-1]))
 
-    return metrics.adjusted_rand_score(y_true, y_pred)
+    return metrics.adjusted_rand_score(y_ref, y_est)
 
 @validate
 def mutual_information(reference_intervals, reference_labels,
@@ -224,29 +229,29 @@ def mutual_information(reference_intervals, reference_labels,
         of frame_size.
     '''
     # Generate the cluster labels
-    y_true = util.intervals_to_samples(
+    y_ref = util.intervals_to_samples(
         reference_intervals, reference_labels, sample_size=frame_size)[-1]
-    y_true, true_id_to_label = util.index_labels(y_true)
+    y_ref, true_id_to_label = util.index_labels(y_ref)
 
     # Map to index space
-    y_pred = util.intervals_to_samples(
+    y_est = util.intervals_to_samples(
         estimated_intervals, estimated_labels, sample_size=frame_size)[-1]
-    y_pred, pred_id_to_label = util.index_labels(y_pred)
+    y_est, pred_id_to_label = util.index_labels(y_est)
 
     # Make sure we have the same number of frames
-    if len(y_true) != len(y_pred):
+    if len(y_ref) != len(y_est):
         raise ValueError(
             'Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1],
                                                estimated_intervals[-1]))
 
     # Mutual information
-    mutual_info         = metrics.mutual_info_score(y_true, y_pred)
+    mutual_info         = metrics.mutual_info_score(y_ref, y_est)
 
     # Adjusted mutual information
-    adj_mutual_info     = metrics.adjusted_mutual_info_score(y_true, y_pred)
+    adj_mutual_info     = metrics.adjusted_mutual_info_score(y_ref, y_est)
 
     # Normalized mutual information
-    norm_mutual_info    = metrics.normalized_mutual_info_score(y_true, y_pred)
+    norm_mutual_info    = metrics.normalized_mutual_info_score(y_ref, y_est)
 
     return mutual_info, adj_mutual_info, norm_mutual_info
 
@@ -279,11 +284,11 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
     :returns:
         - S_over
             Over-clustering score:
-            ``1 - H(y_pred | y_true) / log(|y_pred|)``
+            ``1 - H(y_est | y_ref) / log(|y_est|)``
 
         - S_under
             Under-clustering score:
-            ``1 - H(y_true | y_pred) / log(|y_true|)``
+            ``1 - H(y_ref | y_est) / log(|y_ref|)``
 
         - F
             F-measure for (S_over, S_under)
@@ -293,26 +298,26 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
     '''
 
     # Generate the cluster labels
-    y_true = util.intervals_to_samples(
+    y_ref = util.intervals_to_samples(
         reference_intervals, reference_labels, sample_size=frame_size)[-1]
-    y_true, true_id_to_label = util.index_labels(y_true)
+    y_ref, true_id_to_label = util.index_labels(y_ref)
 
     # Map to index space
-    y_pred = util.intervals_to_samples(
+    y_est = util.intervals_to_samples(
         estimated_intervals, estimated_labels, sample_size=frame_size)[-1]
-    y_pred, pred_id_to_label = util.index_labels(y_pred)
+    y_est, pred_id_to_label = util.index_labels(y_est)
 
     # Make sure we have the same number of frames
-    if len(y_true) != len(y_pred):
+    if len(y_ref) != len(y_est):
         raise ValueError(
             'Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1],
                                                estimated_intervals[-1]))
 
     # Make the contingency table: shape = (n_true, n_pred)
-    contingency = metrics.contingency_matrix(y_true, y_pred).astype(float)
+    contingency = metrics.contingency_matrix(y_ref, y_est).astype(float)
 
     # Normalize by the number of frames
-    contingency = contingency / len(y_true)
+    contingency = contingency / len(y_ref)
 
     n_true, n_pred = contingency.shape
 
