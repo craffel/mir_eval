@@ -47,15 +47,19 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     '''Boundary detection hit-rate.
 
     A hit is counted whenever an reference boundary is within ``window`` of a estimated
-    boundary.  Note that each boundary is matched at most once.
+    boundary.  Note that each boundary is matched at most once: this is achieved by computing
+    the size of a maximal matching between reference and estimated boundary points, subject
+    to the window constraint.
 
     :usage:
+        >>> ref_intervals, ref_labels = mir_eval.io.load_annotation('reference.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_annotation('estimate.lab')
         >>> # With 0.5s windowing
-        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
-        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> P05, R05, F05 = mir_eval.segment.boundary_detection(reference, estimated, window=0.5)
+        >>> P05, R05, F05 = mir_eval.boundary.detection(ref_intervals, est_intervals, window=0.5)
         >>> # With 3s windowing
-        >>> P3, R3, F3 = mir_eval.segment.boundary_detection(reference, estimated, window=3)
+        >>> P3, R3, F3 = mir_eval.boundary.detection(ref_intervals, est_intervals, window=3)
+        >>> # Ignoring hits for the beginning and end of track
+        >>> P, R, F = mir_eval.boundary.detection(ref_intervals, est_intervals, window=0.5, trim=True)
 
 
     :parameters:
@@ -77,10 +81,10 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
 
     :returns:
         - precision : float
-            precision of predictions
+            precision of estimated predictions
 
         - recall : float
-            recall of ground-truth beats
+            recall of reference reference boundaries
 
         - f_measure : float
             F-measure (weighted harmonic mean of ``precision`` and ``recall``)
