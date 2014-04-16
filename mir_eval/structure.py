@@ -298,10 +298,12 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
         - S_over
             Over-clustering score:
             ``1 - H(y_est | y_ref) / log(|y_est|)``
+            If `|y_est|==1`, then `S_over` will be 0.
 
         - S_under
             Under-clustering score:
             ``1 - H(y_ref | y_est) / log(|y_ref|)``
+            If `|y_ref|==1`, then `S_under` will be 0.
 
         - S_F
             F-measure for (S_over, S_under)
@@ -339,11 +341,11 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
     true_given_est = p_est.dot(scipy.stats.entropy(contingency,   base=2))
     pred_given_ref = p_ref.dot(scipy.stats.entropy(contingency.T, base=2))
 
-    score_under = np.nan
+    score_under = 0.0
     if contingency.shape[0] > 1:
         score_under = 1. - true_given_est / np.log2(contingency.shape[0])
 
-    score_over = np.nan
+    score_over = 0.0
     if contingency.shape[1] > 1:
         score_over  = 1. - pred_given_ref / np.log2(contingency.shape[1])
 
