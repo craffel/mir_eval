@@ -251,9 +251,7 @@ def mutual_information(reference_intervals, reference_labels,
     return mutual_info, adj_mutual_info, norm_mutual_info
 
 @validate
-def nce(reference_intervals, reference_labels,
-                         estimated_intervals, estimated_labels,
-                         frame_size=0.1, beta=1.0):
+def nce(reference_intervals, reference_labels, estimated_intervals, estimated_labels, frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation: normalized conditional entropy
 
     Computes cross-entropy of cluster assignment, normalized by the max-entropy.
@@ -313,20 +311,27 @@ def nce(reference_intervals, reference_labels,
     # Make the contingency table: shape = (n_true, n_pred)
     contingency = metrics.contingency_matrix(y_true, y_pred).astype(float)
 
-    # Compute the marginals
-    p_pred = contingency.sum(axis=0) / len(y_pred)
-    p_true = contingency.sum(axis=1) / len(y_true)
+    # Normalize by the number of frames
+    contingency = contingency / len(y_true)
 
+    n_true, n_pred = contingency.shape
+
+    # Compute the marginals
+    p_pred = contingency.sum(axis=0)
+    p_true = contingency.sum(axis=1)
+
+    # H(true | prediction) = sum_j P[estimated = j] * sum_i P[true = i | estimated = j] log P[true = i | estimated = j]
+    # entropy sums over axis=0, which is true labels
     true_given_pred = p_pred.dot(scipy.stats.entropy(contingency,   base=2))
     pred_given_true = p_true.dot(scipy.stats.entropy(contingency.T, base=2))
 
-    score_over = 0.0
-    if contingency.shape[1] > 1:
-        score_over  = 1. - pred_given_true / np.log2(contingency.shape[1])
+    score_under = np.nan
+    if n_true > 1:
+        score_under = 1. - true_given_pred / np.log2(n_true)
 
-    score_under = 0.0
-    if contingency.shape[0] > 1:
-        score_under = 1. - true_given_pred / np.log2(contingency.shape[0])
+    score_over = np.nan
+    if n_pred > 1:
+        score_over  = 1. - pred_given_true / np.log2(n_pred)
 
     f_measure = util.f_measure(score_over, score_under, beta=beta)
 
