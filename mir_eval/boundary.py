@@ -137,9 +137,9 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
     '''Compute the median deviations between reference and estimated boundary times.
 
     :usage:
-        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
-        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> t_to_p, p_to_t = mir_eval.segment.boundary_deviation(reference, estimated)
+        >>> ref_intervals, ref_labels = mir_eval.io.load_annotation('reference.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_annotation('estimate.lab')
+        >>> r_to_e, e_to_r = mir_eval.boundary.deviation(ref_intervals, est_intervals)
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
@@ -150,14 +150,14 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
 
         - trim : boolean
             if ``True``, the first and last intervals are ignored.
-            Typically, these denote start (0) and end-markers.
+            Typically, these denote start (0.0) and end-of-track markers.
 
     :returns:
-        - true_to_estimated : float
-            median time from each true boundary to the closest estimated boundary
+        - reference_to_estimated : float
+            median time from each reference boundary to the closest estimated boundary
 
-        - estimated_to_true : float
-            median time from each estimated boundary to the closest true boundary
+        - estimated_to_reference : float
+            median time from each estimated boundary to the closest reference boundary
     '''
 
     # Convert intervals to boundaries
@@ -175,7 +175,7 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
 
     dist = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries) )
 
-    true_to_estimated = np.median(dist.min(axis=0))
-    estimated_to_true = np.median(dist.min(axis=1))
+    reference_to_estimated = np.median(dist.min(axis=0))
+    estimated_to_reference = np.median(dist.min(axis=1))
 
-    return true_to_estimated, estimated_to_true
+    return reference_to_estimated, estimated_to_reference
