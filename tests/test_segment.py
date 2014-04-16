@@ -26,7 +26,7 @@ def load_data():
 
 def test_boundaries():
 
-    def __test_detection(_ref_t, _est_t, _window):
+    def __test_detection(_window, _ref_t, _est_t):
         precision, recall, fmeasure = mir_eval.boundary.detection(_ref_t, _est_t, window=_window)
 
         assert np.allclose(precision,   scores['P@%.1f'%_window], atol=A_TOL)
@@ -44,7 +44,7 @@ def test_boundaries():
 
     # Test boundary detection at each window size
     for window in [0.5, 3.0]:
-        yield (__test_detection, ref_t, est_t, window)
+        yield (__test_detection, window, ref_t, est_t)
 
     # Test boundary deviation
     yield (__test_deviation, ref_t, est_t)
