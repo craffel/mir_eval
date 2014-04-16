@@ -15,6 +15,7 @@ import sklearn.metrics.cluster as metrics
 from . import util
 
 def __validate_intervals(intervals):
+    '''Internal validation function for interval arrays'''
 
     # Validate interval shape
     if intervals.ndim != 2 or intervals.shape[1] != 2:
@@ -42,6 +43,7 @@ def validate(metric):
     def metric_validated(   reference_intervals, reference_labels,
                             estimated_intervals, estimated_labels,
                             *args, **kwargs):
+        '''Validate both reference and estimated intervals'''
 
         for (intervals, labels) in [(reference_intervals, reference_labels),
                                     (estimated_intervals, estimated_labels)]:
@@ -120,14 +122,14 @@ def pairwise(reference_intervals, reference_labels,
                                       reference_labels, 
                                       sample_size=frame_size)[-1]
 
-    y_ref, ref_id_to_label = util.index_labels(y_ref)
+    y_ref = util.index_labels(y_ref)[0]
 
     # Map to index space
     y_est = util.intervals_to_samples(estimated_intervals, 
                                       estimated_labels, 
                                       sample_size=frame_size)[-1]
 
-    y_est, est_id_to_label = util.index_labels(y_est)
+    y_est = util.index_labels(y_est)[0]
 
     # Construct the label-agreement matrices
     agree_ref  = np.triu(np.equal.outer(y_ref, y_ref))
@@ -183,14 +185,14 @@ def ari(reference_intervals, reference_labels,
                                         reference_labels, 
                                         sample_size=frame_size)[-1]
 
-    y_ref, ref_id_to_label = util.index_labels(y_ref)
+    y_ref = util.index_labels(y_ref)[0]
 
     # Map to index space
     y_est = util.intervals_to_samples(  estimated_intervals, 
                                         estimated_labels, 
                                         sample_size=frame_size)[-1]
 
-    y_est, est_id_to_label = util.index_labels(y_est)
+    y_est = util.index_labels(y_est)[0]
 
     return metrics.adjusted_rand_score(y_ref, y_est)
 
@@ -241,14 +243,14 @@ def mutual_information(reference_intervals, reference_labels,
                                         reference_labels, 
                                         sample_size=frame_size)[-1]
 
-    y_ref, ref_id_to_label = util.index_labels(y_ref)
+    y_ref = util.index_labels(y_ref)[0]
 
     # Map to index space
     y_est = util.intervals_to_samples(  estimated_intervals, 
                                         estimated_labels, 
                                         sample_size=frame_size)[-1]
 
-    y_est, est_id_to_label = util.index_labels(y_est)
+    y_est = util.index_labels(y_est)[0]
 
     # Mutual information
     mutual_info         = metrics.mutual_info_score(y_ref, y_est)
@@ -313,22 +315,20 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
                                         reference_labels, 
                                         sample_size=frame_size)[-1]
 
-    y_ref, ref_id_to_label = util.index_labels(y_ref)
+    y_ref = util.index_labels(y_ref)[0]
 
     # Map to index space
     y_est = util.intervals_to_samples(  estimated_intervals, 
                                         estimated_labels, 
                                         sample_size=frame_size)[-1]
 
-    y_est, est_id_to_label = util.index_labels(y_est)
+    y_est = util.index_labels(y_est)[0]
 
     # Make the contingency table: shape = (n_ref, n_est)
     contingency = metrics.contingency_matrix(y_ref, y_est).astype(float)
 
     # Normalize by the number of frames
     contingency = contingency / len(y_ref)
-
-    n_ref, n_est = contingency.shape
 
     # Compute the marginals
     p_est = contingency.sum(axis=0)
@@ -340,12 +340,12 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
     pred_given_ref = p_ref.dot(scipy.stats.entropy(contingency.T, base=2))
 
     score_under = np.nan
-    if n_ref > 1:
-        score_under = 1. - true_given_est / np.log2(n_ref)
+    if contingency.shape[0] > 1:
+        score_under = 1. - true_given_est / np.log2(contingency.shape[0])
 
     score_over = np.nan
-    if n_est > 1:
-        score_over  = 1. - pred_given_ref / np.log2(n_est)
+    if contingency.shape[1] > 1:
+        score_over  = 1. - pred_given_ref / np.log2(contingency.shape[1])
 
     f_measure = util.f_measure(score_over, score_under, beta=beta)
 
