@@ -142,15 +142,20 @@ def pairwise(reference_intervals, reference_labels,
 
 @validate
 def ari(reference_intervals, reference_labels,
-                         estimated_intervals, estimated_labels,
-                         frame_size=0.1):
+        estimated_intervals, estimated_labels,
+        frame_size=0.1):
     '''Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
 
     :usage:
-        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
-        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> ari_score              = mir_eval.segment.ari(reference, true_labels,
-                                                                           estimated, pred_labels)
+        >>> ref_intervals, ref_labels = mir_eval.io.load_annotation('reference.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_annotation('estimate.lab')
+        >>> # Trim or pad the estimate to match reference timing
+        >>> est_intervals, est_labels = mir_eval.io.adjust_intervals(est_intervals, 
+                                                                     est_labels, 
+                                                                     t_min=ref_intervals.min(), 
+                                                                     t_max=ref_intervals.max())
+        >>> ari_score              = mir_eval.segment.ari(ref_intervals, ref_labels,
+                                                          est_intervals, est_labels)
 
     :parameters:
         - reference_intervals : list-like, float
@@ -174,20 +179,18 @@ def ari(reference_intervals, reference_labels,
         of frame_size.
     '''
     # Generate the cluster labels
-    y_ref = util.intervals_to_samples(
-        reference_intervals, reference_labels, sample_size=frame_size)[-1]
-    y_ref, true_id_to_label = util.index_labels(y_ref)
+    y_ref = util.intervals_to_samples(  reference_intervals, 
+                                        reference_labels, 
+                                        sample_size=frame_size)[-1]
+
+    y_ref, ref_id_to_label = util.index_labels(y_ref)
 
     # Map to index space
-    y_est = util.intervals_to_samples(
-        estimated_intervals, estimated_labels, sample_size=frame_size)[-1]
-    y_est, pred_id_to_label = util.index_labels(y_est)
+    y_est = util.intervals_to_samples(  estimated_intervals, 
+                                        estimated_labels, 
+                                        sample_size=frame_size)[-1]
 
-    # Make sure we have the same number of frames
-    if len(y_ref) != len(y_est):
-        raise ValueError(
-            'Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1],
-                                               estimated_intervals[-1]))
+    y_est, est_id_to_label = util.index_labels(y_est)
 
     return metrics.adjusted_rand_score(y_ref, y_est)
 
@@ -198,10 +201,15 @@ def mutual_information(reference_intervals, reference_labels,
     '''Frame-clustering segmentation: mutual information metrics.
 
     :usage:
-        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
-        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> mi, ami, nmi           = mir_eval.segment.mi(reference, true_labels,
-                                                                          estimated, pred_labels)
+        >>> ref_intervals, ref_labels = mir_eval.io.load_annotation('reference.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_annotation('estimate.lab')
+        >>> # Trim or pad the estimate to match reference timing
+        >>> est_intervals, est_labels = mir_eval.io.adjust_intervals(est_intervals, 
+                                                                     est_labels, 
+                                                                     t_min=ref_intervals.min(), 
+                                                                     t_max=ref_intervals.max())
+        >>> mi, ami, nmi           = mir_eval.segment.mi(ref_intervals, ref_labels,
+                                                         est_intervals, est_labels)
 
     :parameters:
     - reference_intervals : list-like, float
@@ -229,20 +237,18 @@ def mutual_information(reference_intervals, reference_labels,
         of frame_size.
     '''
     # Generate the cluster labels
-    y_ref = util.intervals_to_samples(
-        reference_intervals, reference_labels, sample_size=frame_size)[-1]
-    y_ref, true_id_to_label = util.index_labels(y_ref)
+    y_ref = util.intervals_to_samples(  reference_intervals, 
+                                        reference_labels, 
+                                        sample_size=frame_size)[-1]
+
+    y_ref, ref_id_to_label = util.index_labels(y_ref)
 
     # Map to index space
-    y_est = util.intervals_to_samples(
-        estimated_intervals, estimated_labels, sample_size=frame_size)[-1]
-    y_est, pred_id_to_label = util.index_labels(y_est)
+    y_est = util.intervals_to_samples(  estimated_intervals, 
+                                        estimated_labels, 
+                                        sample_size=frame_size)[-1]
 
-    # Make sure we have the same number of frames
-    if len(y_ref) != len(y_est):
-        raise ValueError(
-            'Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1],
-                                               estimated_intervals[-1]))
+    y_est, est_id_to_label = util.index_labels(y_est)
 
     # Mutual information
     mutual_info         = metrics.mutual_info_score(y_ref, y_est)
@@ -262,9 +268,14 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
     Computes cross-entropy of cluster assignment, normalized by the max-entropy.
 
     :usage:
-        >>> reference, true_labels = mir_eval.io.load_annotation('truth.lab')
-        >>> estimated, pred_labels = mir_eval.io.load_annotation('prediction.lab')
-        >>> S_over, S_under, F     = mir_eval.segment.nce(reference, true_labels,
+        >>> ref_intervals, ref_labels = mir_eval.io.load_annotation('reference.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_annotation('estimate.lab')
+        >>> # Trim or pad the estimate to match reference timing
+        >>> est_intervals, est_labels = mir_eval.io.adjust_intervals(est_intervals, 
+                                                                     est_labels, 
+                                                                     t_min=ref_intervals.min(), 
+                                                                     t_max=ref_intervals.max())
+        >>> S_over, S_under, S_F     = mir_eval.segment.nce(reference, true_labels,
                                                                            estimated, pred_labels)
 
 
