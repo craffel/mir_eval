@@ -129,8 +129,8 @@ def pairwise(reference_intervals, reference_labels,
     agree_pred  = np.triu(np.equal.outer(y_pred, y_pred))
 
     matches     = float((agree_true & agree_pred).sum())
-    precision   = matches / agree_true.sum()
-    recall      = matches / agree_pred.sum()
+    precision   = matches / agree_pred.sum()
+    recall      = matches / agree_true.sum()
     f_measure   = util.f_measure(precision, recall, beta=beta)
 
     return precision, recall, f_measure
