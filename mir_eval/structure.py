@@ -275,8 +275,8 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
                                                                      est_labels, 
                                                                      t_min=ref_intervals.min(), 
                                                                      t_max=ref_intervals.max())
-        >>> S_over, S_under, S_F     = mir_eval.segment.nce(reference, true_labels,
-                                                                           estimated, pred_labels)
+        >>> S_over, S_under, S_F     = mir_eval.segment.nce(ref_intervals, ref_labels,
+                                                            est_intervals, est_labels)
 
 
     :parameters:
@@ -301,7 +301,7 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
             Under-clustering score:
             ``1 - H(y_ref | y_est) / log(|y_ref|)``
 
-        - F
+        - S_F
             F-measure for (S_over, S_under)
 
     ..note:: Towards quantitative measures of evaluating song segmentation.
@@ -309,45 +309,43 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
     '''
 
     # Generate the cluster labels
-    y_ref = util.intervals_to_samples(
-        reference_intervals, reference_labels, sample_size=frame_size)[-1]
-    y_ref, true_id_to_label = util.index_labels(y_ref)
+    y_ref = util.intervals_to_samples(  reference_intervals, 
+                                        reference_labels, 
+                                        sample_size=frame_size)[-1]
+
+    y_ref, ref_id_to_label = util.index_labels(y_ref)
 
     # Map to index space
-    y_est = util.intervals_to_samples(
-        estimated_intervals, estimated_labels, sample_size=frame_size)[-1]
-    y_est, pred_id_to_label = util.index_labels(y_est)
+    y_est = util.intervals_to_samples(  estimated_intervals, 
+                                        estimated_labels, 
+                                        sample_size=frame_size)[-1]
 
-    # Make sure we have the same number of frames
-    if len(y_ref) != len(y_est):
-        raise ValueError(
-            'Timing mismatch: %.3f vs %.3f' % (reference_intervals[-1],
-                                               estimated_intervals[-1]))
+    y_est, est_id_to_label = util.index_labels(y_est)
 
-    # Make the contingency table: shape = (n_true, n_pred)
+    # Make the contingency table: shape = (n_ref, n_est)
     contingency = metrics.contingency_matrix(y_ref, y_est).astype(float)
 
     # Normalize by the number of frames
     contingency = contingency / len(y_ref)
 
-    n_true, n_pred = contingency.shape
+    n_ref, n_est = contingency.shape
 
     # Compute the marginals
-    p_pred = contingency.sum(axis=0)
-    p_true = contingency.sum(axis=1)
+    p_est = contingency.sum(axis=0)
+    p_ref = contingency.sum(axis=1)
 
     # H(true | prediction) = sum_j P[estimated = j] * sum_i P[true = i | estimated = j] log P[true = i | estimated = j]
     # entropy sums over axis=0, which is true labels
-    true_given_pred = p_pred.dot(scipy.stats.entropy(contingency,   base=2))
-    pred_given_true = p_true.dot(scipy.stats.entropy(contingency.T, base=2))
+    true_given_est = p_est.dot(scipy.stats.entropy(contingency,   base=2))
+    pred_given_ref = p_ref.dot(scipy.stats.entropy(contingency.T, base=2))
 
     score_under = np.nan
-    if n_true > 1:
-        score_under = 1. - true_given_pred / np.log2(n_true)
+    if n_ref > 1:
+        score_under = 1. - true_given_est / np.log2(n_ref)
 
     score_over = np.nan
-    if n_pred > 1:
-        score_over  = 1. - pred_given_true / np.log2(n_pred)
+    if n_est > 1:
+        score_over  = 1. - pred_given_ref / np.log2(n_est)
 
     f_measure = util.f_measure(score_over, score_under, beta=beta)
 
