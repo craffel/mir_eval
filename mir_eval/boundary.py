@@ -43,7 +43,7 @@ def validate(metric):
     return metric_validated
 
 @validate
-def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, trim=True):
+def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, trim=False):
     '''Boundary detection hit-rate.
 
     A hit is counted whenever an reference boundary is within ``window`` of a estimated
@@ -129,7 +129,7 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     return precision, recall, f_measure
 
 @validate
-def deviation(reference_intervals, estimated_intervals, trim=True):
+def deviation(reference_intervals, estimated_intervals, trim=False):
     '''Compute the median deviations between reference and estimated boundary times.
 
     :usage:
