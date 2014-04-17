@@ -60,6 +60,9 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
             Object to use for the label with out-of-range time points.
 
     :returns:
+        - sample_times : list
+            list of sample times
+
         - sample_labels : list
             array of segment labels for each generated sample
 
@@ -70,11 +73,11 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
 
     # Round intervals to the sample size
     num_samples = int(np.floor(intervals.max() / sample_size))
-    time_points = (np.arange(num_samples) * sample_size + offset).tolist()
+    sample_times = (np.arange(num_samples, dtype=np.float32) * sample_size + offset).tolist()
     sampled_labels = interpolate_intervals(
-        intervals, labels, time_points, fill_value)
+        intervals, labels, sample_times, fill_value)
 
-    return time_points, sampled_labels
+    return sample_times, sampled_labels
 
 
 def interpolate_intervals(intervals, labels, time_points, fill_value=None):

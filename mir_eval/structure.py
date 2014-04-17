@@ -133,8 +133,8 @@ def pairwise(reference_intervals, reference_labels,
     y_est = util.index_labels(y_est)[0]
 
     # Construct the label-agreement matrices
-    agree_ref  = np.triu(np.equal.outer(y_ref, y_ref))
-    agree_est  = np.triu(np.equal.outer(y_est, y_est))
+    agree_ref  = np.triu(np.equal.outer(y_ref, y_ref), 1)
+    agree_est  = np.triu(np.equal.outer(y_est, y_est), 1)
 
     matches     = float((agree_ref & agree_est).sum())
     precision   = matches / agree_est.sum()
