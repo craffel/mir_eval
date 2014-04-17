@@ -7,6 +7,7 @@
 
 import numpy as np
 import functools
+import collections
 
 from . import util
 
@@ -181,3 +182,12 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
     estimated_to_reference = np.median(dist.min(axis=1))
 
     return reference_to_estimated, estimated_to_reference
+
+
+metrics = collections.OrderedDict()
+
+# Create an ordered dict mapping metric names to functions
+metrics = collections.OrderedDict()
+metrics['detection'] = detection
+metrics['deviation'] = deviation
+
