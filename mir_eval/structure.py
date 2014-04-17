@@ -132,24 +132,21 @@ def pairwise(reference_intervals, reference_labels,
 
     y_est = util.index_labels(y_est)[0]
 
-    matches     = 0.0
-    n_agree_ref = 0.0
-    n_agree_est = 0.0
-    for i in xrange(len(y_ref)):
-        for j in xrange(i + 1, len(y_ref)):
-            # Do i and j match in reference?
-            ref_match = (y_ref[i] == y_ref[j])
-            n_agree_ref += ref_match
+    # Build the reference label agreement matrix
+    agree_ref   = np.equal.outer(y_ref, y_ref)
+    # Count the unique pairs
+    n_agree_ref = (agree_ref.sum() - len(y_ref)) / 2.0
 
-            # Or in estimate?
-            est_match = (y_est[i] == y_est[j])
-            n_agree_est += est_match
+    # Repeat for estimate
+    agree_est   = np.equal.outer(y_est, y_est)
+    n_agree_est = (agree_est.sum() - len(y_est)) / 2.0
 
-            # If both, we have agreement
-            matches += (ref_match & est_match)
-            
-    precision   = matches / n_agree_est
-    recall      = matches / n_agree_ref
+    # Find where they agree
+    matches     = np.logical_and(agree_ref, agree_est)
+    n_matches   = (matches.sum() - len(y_ref)) / 2.0
+
+    precision   = n_matches / n_agree_est
+    recall      = n_matches / n_agree_ref
     f_measure   = util.f_measure(precision, recall, beta=beta)
 
     return precision, recall, f_measure
