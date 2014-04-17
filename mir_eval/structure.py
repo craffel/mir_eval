@@ -133,22 +133,41 @@ def pairwise(reference_intervals, reference_labels,
     y_est = util.index_labels(y_est)[0]
 
     # Construct the frame label-agreement matrix (reference)
-    agree_ref   = np.equal.outer(y_ref, y_ref)
+#     agree_ref   = np.equal.outer(y_ref, y_ref)
 
     # Index just the triangle above the main diagonal
-    idx         = np.triu_indices_from(agree_ref, k=1)
+#     idx         = np.triu_indices_from(agree_ref, k=1)
 
     # Slice down to just the trignale
-    agree_ref   = agree_ref[idx]
+#     agree_ref   = agree_ref[idx]
 
     # Construct the frame label-agreement matrix (estimated)
-    agree_est   = np.equal.outer(y_est, y_est)
-    agree_est   = agree_est[idx]
+#     agree_est   = np.equal.outer(y_est, y_est)
+#     agree_est   = agree_est[idx]
 
     # Find the pairs in agreement
-    matches     = float((agree_ref & agree_est).sum())
-    precision   = matches / agree_est.sum()
-    recall      = matches / agree_ref.sum()
+#     matches     = float((agree_ref & agree_est).sum())
+#     precision   = matches / agree_est.sum()
+#     recall      = matches / agree_ref.sum()
+
+    matches     = 0.0
+    n_agree_ref = 0.0
+    n_agree_est = 0.0
+    for i in xrange(len(y_ref)):
+        for j in xrange(i + 1, len(y_ref)):
+            # Do i and j match in reference?
+            ref_match = (y_ref[i] == y_ref[j])
+            n_agree_ref += ref_match
+
+            # Or in estimate?
+            est_match = (y_est[i] == y_est[j])
+            n_agree_est += est_match
+
+            # If both, we have agreement
+            matches += (ref_match & est_match)
+            
+    precision   = matches / n_agree_est
+    recall      = matches / n_agree_ref
     f_measure   = util.f_measure(precision, recall, beta=beta)
 
     return precision, recall, f_measure
