@@ -132,24 +132,6 @@ def pairwise(reference_intervals, reference_labels,
 
     y_est = util.index_labels(y_est)[0]
 
-    # Construct the frame label-agreement matrix (reference)
-#     agree_ref   = np.equal.outer(y_ref, y_ref)
-
-    # Index just the triangle above the main diagonal
-#     idx         = np.triu_indices_from(agree_ref, k=1)
-
-    # Slice down to just the trignale
-#     agree_ref   = agree_ref[idx]
-
-    # Construct the frame label-agreement matrix (estimated)
-#     agree_est   = np.equal.outer(y_est, y_est)
-#     agree_est   = agree_est[idx]
-
-    # Find the pairs in agreement
-#     matches     = float((agree_ref & agree_est).sum())
-#     precision   = matches / agree_est.sum()
-#     recall      = matches / agree_ref.sum()
-
     matches     = 0.0
     n_agree_ref = 0.0
     n_agree_est = 0.0
