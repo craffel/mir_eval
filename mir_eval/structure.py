@@ -10,7 +10,8 @@
 import functools
 import numpy as np
 import scipy.stats
-import sklearn.metrics.cluster as metrics
+import sklearn.metrics.cluster as skmetrics
+import collections
 
 from . import util
 
@@ -194,7 +195,7 @@ def ari(reference_intervals, reference_labels,
 
     y_est = util.index_labels(y_est)[0]
 
-    return metrics.adjusted_rand_score(y_ref, y_est)
+    return skmetrics.adjusted_rand_score(y_ref, y_est)
 
 @validate
 def mutual_information(reference_intervals, reference_labels,
@@ -253,13 +254,13 @@ def mutual_information(reference_intervals, reference_labels,
     y_est = util.index_labels(y_est)[0]
 
     # Mutual information
-    mutual_info         = metrics.mutual_info_score(y_ref, y_est)
+    mutual_info         = skmetrics.mutual_info_score(y_ref, y_est)
 
     # Adjusted mutual information
-    adj_mutual_info     = metrics.adjusted_mutual_info_score(y_ref, y_est)
+    adj_mutual_info     = skmetrics.adjusted_mutual_info_score(y_ref, y_est)
 
     # Normalized mutual information
-    norm_mutual_info    = metrics.normalized_mutual_info_score(y_ref, y_est)
+    norm_mutual_info    = skmetrics.normalized_mutual_info_score(y_ref, y_est)
 
     return mutual_info, adj_mutual_info, norm_mutual_info
 
@@ -327,7 +328,7 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
     y_est = util.index_labels(y_est)[0]
 
     # Make the contingency table: shape = (n_ref, n_est)
-    contingency = metrics.contingency_matrix(y_ref, y_est).astype(float)
+    contingency = skmetrics.contingency_matrix(y_ref, y_est).astype(float)
 
     # Normalize by the number of frames
     contingency = contingency / len(y_ref)
@@ -352,3 +353,13 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
     f_measure = util.f_measure(score_over, score_under, beta=beta)
 
     return score_over, score_under, f_measure
+
+
+
+# Create an ordered dict mapping metric names to functions
+metrics = collections.OrderedDict()
+metrics['pairwise'] = pairwise
+metrics['ARI']      = ari
+metrics['MI']       = mutual_information
+metrics['NCE']      = nce
+
