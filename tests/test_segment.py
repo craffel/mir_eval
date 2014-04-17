@@ -5,24 +5,31 @@ Unit tests for mir_eval.segment
 import numpy as np
 import json
 import mir_eval
+import glob
 
 # We only need 1% absolute tolerance
 A_TOL = 1e-2
 
 # Path to the fixture files
-REF_FILE    = 'data/segment/reference.lab'
-EST_FILE    = 'data/segment/estimate.lab'
-MIREX_FILE  = 'data/segment/mirex_scores.json'
+REF_GLOB    = 'data/segment/ref*.lab'
+EST_GLOB    = 'data/segment/est*.lab'
+MIREX_GLOB  = 'data/segment/score*.json'
 
-def load_data():
-    ref_t, ref_l = mir_eval.io.load_annotation(REF_FILE)
-    est_t, est_l = mir_eval.io.load_annotation(EST_FILE)
-    est_t, est_l = mir_eval.util.adjust_intervals(est_t, labels=est_l, t_min=0.0, t_max=ref_t.max())
+def generate_data():
 
-    with open(MIREX_FILE, 'r') as f:
-        scores = json.load(f)
+    ref_files = sorted(glob.glob(REF_GLOB))
+    est_files = sorted(glob.glob(EST_GLOB))
+    sco_files = sorted(glob.glob(MIREX_GLOB))
 
-    return ref_t, ref_l, est_t, est_l, scores
+    for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
+        ref_t, ref_l = mir_eval.io.load_annotation(ref_f)
+        est_t, est_l = mir_eval.io.load_annotation(est_f)
+        est_t, est_l = mir_eval.util.adjust_intervals(est_t, labels=est_l, t_min=0.0, t_max=ref_t.max())
+
+        with open(sco_f, 'r') as f:
+            scores = json.load(f)
+
+        yield ref_t, ref_l, est_t, est_l, scores
 
 def test_boundaries():
 
@@ -39,15 +46,15 @@ def test_boundaries():
         assert np.allclose(t_to_p,  scores['T_to_P'], atol=A_TOL)
         assert np.allclose(p_to_t,  scores['P_to_T'], atol=A_TOL)
 
-    # Load in the fixture
-    ref_t, ref_l, est_t, est_l, scores = load_data()
+    # Iterate over fixtures
+    for ref_t, ref_l, est_t, est_l, scores in generate_data():
 
-    # Test boundary detection at each window size
-    for window in [0.5, 3.0]:
-        yield (__test_detection, window, ref_t, est_t)
+        # Test boundary detection at each window size
+        for window in [0.5, 3.0]:
+            yield (__test_detection, window, ref_t, est_t)
 
-    # Test boundary deviation
-    yield (__test_deviation, ref_t, est_t)
+        # Test boundary deviation
+        yield (__test_deviation, ref_t, est_t)
 
     # Done
     pass
@@ -67,11 +74,11 @@ def test_structure():
         assert np.allclose(s_over,  scores['S_Over'],   atol=A_TOL)
         assert np.allclose(s_under, scores['S_Under'],  atol=A_TOL)
 
-    # Load in the fixture
-    ref_t, ref_l, est_t, est_l, scores = load_data()
+    # Iterate over fixtures
+    for ref_t, ref_l, est_t, est_l, scores in generate_data():
 
-    yield (__test_pairwise, ref_t, ref_l, est_t, est_l)
-    yield (__test_entropy, ref_t, ref_l, est_t, est_l)
+        yield (__test_pairwise, ref_t, ref_l, est_t, est_l)
+        yield (__test_entropy, ref_t, ref_l, est_t, est_l)
 
     # Done
     pass
