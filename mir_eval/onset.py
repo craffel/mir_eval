@@ -57,7 +57,7 @@ def validate(metric):
 # <codecell>
 
 @validate
-def f_measure(reference_onsets, esimated_onsets, window=.05):
+def f_measure(reference_onsets, estimated_onsets, window=.05):
     '''
     Compute the F-measure of correct vs incorrectly predicted onsets.
     "Corectness" is determined over a small window.
@@ -84,44 +84,44 @@ def f_measure(reference_onsets, esimated_onsets, window=.05):
             (# true positives)/(# true positives + # false negatives)
     '''    
     # If both onset lists are empty, call it perfect accuracy
-    if reference_onsets.size == 0 and esimated_onsets.size == 0:
+    if reference_onsets.size == 0 and estimated_onsets.size == 0:
         return 1., 1., 1.
     # If one list is empty and the other isn't, call it 0 accuracy
-    elif reference_onsets.size == 0 or esimated_onsets.size == 0:
+    elif reference_onsets.size == 0 or estimated_onsets.size == 0:
         return 0., 0., 0.
     # For accessing entries in each list
     reference_index = 0
-    esimated_index = 0
+    estimated_index = 0
     # Keep track of true/false positive/negatives
     true_positives = 0.0
     false_positives = 0.0
     false_negatives = 0.0
     while (reference_index < len(reference_onsets) and
-          esimated_index < len(esimated_onsets)):
+          estimated_index < len(estimated_onsets)):
         # Get the current onsets
         reference_onset = reference_onsets[reference_index]
-        esimated_onset = esimated_onsets[esimated_index]
+        estimated_onset = estimated_onsets[esimated_index]
         # Does the generated onset fall within window around the annotated one?
-        if np.abs(reference_onset - esimated_onset) <= window:
+        if np.abs(reference_onset - estimated_onset) <= window:
             # Found a true positive!
             true_positives += 1
             # Look at the next onset time for both
             reference_index += 1
-            esimated_index += 1
+            estimated_index += 1
         # We're out of the window - are we before?
-        elif esimated_onset < reference_onset:
+        elif estimated_onset < reference_onset:
             # Generated an extra onset - it's a false positive
             false_positives += 1
             # Next time, check if the next generated onset is correct
-            esimated_index += 1
+            estimated_index += 1
         # Or after?
-        elif esimated_onset > reference_onset:
+        elif estimated_onset > reference_onset:
             # Must have missed the annotated onset - false negative
             false_negatives += 1
             # Next time, check this generated onset against the next annotated
             reference_index += 1
     # Any additional generated onsets are false positives
-    false_positives += len(esimated_onsets) - esimated_index
+    false_positives += len(estimated_onsets) - estimated_index
     # Any additional annotated onsets are false negatives
     false_negatives += len(reference_onsets) - reference_index
     # Compute precision and recall

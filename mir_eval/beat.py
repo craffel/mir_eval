@@ -119,7 +119,7 @@ def _get_reference_beat_variations(reference_beats):
 @validate
 def f_measure(reference_beats,
               estimated_beats,
-              f_measure_threshod=0.07):
+              f_measure_threshold=0.07):
     '''
     Compute the F-measure of correct vs incorrectly predicted beats.
     "Corectness" is determined over a small window.
@@ -150,8 +150,8 @@ def f_measure(reference_beats,
     true_positives = 0
     for beat in reference_beats:
         # Calculate window edges
-        window_min = beat - f_measure_threshod
-        window_max = beat + f_measure_threshod
+        window_min = beat - f_measure_threshold
+        window_max = beat + f_measure_threshold
         # Find the (indeces of the) beats in the window
         correct_beats = np.logical_and(estimated_beats >= window_min,
                                        estimated_beats <= window_max)
