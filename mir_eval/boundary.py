@@ -166,10 +166,8 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
     return reference_to_estimated, estimated_to_reference
 
 
-metrics = collections.OrderedDict()
-
 # Create an ordered dict mapping metric names to functions
-metrics = collections.OrderedDict()
-metrics['detection'] = detection
-metrics['deviation'] = deviation
+METRICS = collections.OrderedDict()
+METRICS['detection'] = detection
+METRICS['deviation'] = deviation
 
