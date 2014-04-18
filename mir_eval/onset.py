@@ -8,6 +8,7 @@ import numpy as np
 import functools
 import collections
 from . import util
+import warnings
 
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
@@ -28,6 +29,11 @@ def validate(metric):
         '''
         Metric with input onset annotations validated
         '''
+        # If reference or estimated onsets are empty, warn because metric will be 0
+        if reference_onsets.size == 0:
+            warnings.warn("Reference onsets are empty.")
+        if estimated_onsets.size == 0:
+            warnings.warn("Estimated onsets are empty.")
         for onsets in [reference_onsets, estimated_onsets]:
             # Make sure beat locations are 1-d np ndarrays
             if onsets.ndim != 1:
@@ -72,11 +78,8 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
         - recall : float
             (# true positives)/(# true positives + # false negatives)
     '''
-    # If both onset lists are empty, call it perfect accuracy
-    if reference_onsets.size == 0 and estimated_onsets.size == 0:
-        return 1., 1., 1.
-    # If one list is empty and the other isn't, call it 0 accuracy
-    elif reference_onsets.size == 0 or estimated_onsets.size == 0:
+    # If either list is empty, return 0s
+    if reference_onsets.size == 0 or estimated_onsets.size == 0:
         return 0., 0., 0.
     # For accessing entries in each list
     reference_index = 0
