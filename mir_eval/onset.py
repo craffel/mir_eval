@@ -1,22 +1,13 @@
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <codecell>
-
 '''
 Basic metrics for evaluating onset detection systems.
 Based in part on this script:
     https://github.com/CPJKU/onset_detection/blob/master/onset_evaluation.py
 '''
 
-# <codecell>
-
 import numpy as np
 import functools
 import collections
 from . import util
-
-# <codecell>
 
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
@@ -54,14 +45,12 @@ def validate(metric):
         return metric(reference_onsets, estimated_onsets, *args, **kwargs)
     return metric_validated
 
-# <codecell>
-
 @validate
 def f_measure(reference_onsets, estimated_onsets, window=.05):
     '''
     Compute the F-measure of correct vs incorrectly predicted onsets.
     "Corectness" is determined over a small window.
-    
+
     :usage:
         >>> reference_onsets = mir_eval.io.load_events('reference.txt')
         >>> estimated_onsets = mir_eval.io.load_events('estimated.txt')
@@ -70,11 +59,11 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     :parameters:
         - reference_onsets : np.ndarray
             reference onset locations, in seconds
-        - estimated_onsets : np.ndarray 
+        - estimated_onsets : np.ndarray
             estimated onset locations, in seconds
         - window : float
             Window size, in seconds, default 0.05
-    
+
     :returns:
         - f_measure : float
             2*precision*recall/(precision + recall)
@@ -82,7 +71,7 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
             (# true positives)/(# true positives + # false positives)
         - recall : float
             (# true positives)/(# true positives + # false negatives)
-    '''    
+    '''
     # If both onset lists are empty, call it perfect accuracy
     if reference_onsets.size == 0 and estimated_onsets.size == 0:
         return 1., 1., 1.
@@ -130,10 +119,7 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     # Compute F-measure and return all statistics
     return util.f_measure(precision, recall), precision, recall
 
-# <codecell>
-
-# Create a dictionary which maps the name of each metric 
+# Create a dictionary which maps the name of each metric
 # to the function used to compute it
 metrics = collections.OrderedDict()
 metrics['F-measure'] = f_measure
-

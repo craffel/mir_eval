@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <codecell>
-
 '''
 A variety of evaluation techniques for determining a beat tracker's accuracy
 Based on the methods described in
@@ -14,15 +9,11 @@ See also the Beat Evaluation Toolbox:
     https://code.soundsoftware.ac.uk/projects/beat-evaluation/
 '''
 
-# <codecell>
-
 import numpy as np
 import functools
 import collections
 from . import util
 import warnings
-
-# <codecell>
 
 def trim_beats(beats, min_beat_time=5.):
     '''Removes beats before min_beat_time.  A common preprocessing step.
@@ -39,8 +30,6 @@ def trim_beats(beats, min_beat_time=5.):
     '''
     # Remove beats before min_beat_time
     return beats[beats > min_beat_time]
-
-# <codecell>
 
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
@@ -83,8 +72,6 @@ def validate(metric):
         return metric(reference_beats, estimated_beats, *args, **kwargs)
     return metric_validated
 
-# <codecell>
-
 def _get_reference_beat_variations(reference_beats):
     '''
     Return metric variations of the reference beats
@@ -119,8 +106,6 @@ def _get_reference_beat_variations(reference_beats):
            double_reference_beats,
            reference_beats[::2],
            reference_beats[1::2])
-
-# <codecell>
 
 @validate
 def f_measure(reference_beats,
@@ -180,8 +165,6 @@ def f_measure(reference_beats,
     recall = true_positives/float(true_positives + false_negatives)
     return util.f_measure(precision, recall)
 
-# <codecell>
-
 @validate
 def cemgil(reference_beats,
            estimated_beats,
@@ -229,8 +212,6 @@ def cemgil(reference_beats,
     # Return raw accuracy with non-varied annotations
     # and maximal accuracy across all variations
     return accuracies[0], np.max(accuracies)
-
-# <codecell>
 
 @validate
 def goto(reference_beats,
@@ -325,8 +306,6 @@ def goto(reference_beats,
     # If all criteria are met, score is 100%!
     return 1.0*(goto_criteria == 3)
 
-# <codecell>
-
 @validate
 def p_score(reference_beats,
             estimated_beats,
@@ -382,8 +361,6 @@ def p_score(reference_beats,
     # Compute and return the P-score
     n_beats = np.max([estimated_beats.shape[0], reference_beats.shape[0]])
     return np.sum(train_correlation)/n_beats
-
-# <codecell>
 
 @validate
 def continuity(reference_beats,
@@ -508,8 +485,6 @@ def continuity(reference_beats,
             np.max(continuous_accuracies),
             np.max(total_accuracies))
 
-# <codecell>
-
 @validate
 def information_gain(reference_beats,
                      estimated_beats,
@@ -620,8 +595,6 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     raw_bin_values[raw_bin_values == 0] = 1
     # Calculate entropy
     return -np.sum(raw_bin_values * np.log2(raw_bin_values))
-
-# <codecell>
 
 # Create a dictionary which maps the name of each metric
 # to the function used to compute it

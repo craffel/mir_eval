@@ -1,18 +1,9 @@
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <codecell>
-
 '''
 Methods which sonify annotations for "evaluation by ear".
 All functions return a raw signal at the specified sampling rate.
 '''
 
-# <codecell>
-
 import numpy as np
-
-# <codecell>
 
 def clicks(times, fs, click=None, length=None):
     '''
@@ -52,8 +43,6 @@ def clicks(times, fs, click=None, length=None):
         # Normally, just add a click here
         click_signal[start:end] = click
     return click_signal
-
-# <codecell>
 
 def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     '''
@@ -98,4 +87,3 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     # Normalize
     output /= np.abs(output).max()
     return output
-
