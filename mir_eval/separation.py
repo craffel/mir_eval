@@ -53,6 +53,10 @@ def bss_eval_sources(reference_sources, estimated_sources):
         The decomposition allows a time-invariant filter distortion of length
         512, as described in Section III.B of the reference below.
 
+    :usage:
+        >>> sdr, sir, sar, perm = mir_eval.separation.bss_eval_sources(reference_sources,
+                                                                       estimated_sources)
+
     :parameters:
         - reference_sources: ndarray
             (nsrc, nsampl) matrix containing true sources
