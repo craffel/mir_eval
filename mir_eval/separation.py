@@ -35,6 +35,12 @@ def validate(metric):
         '''
         Metric with input validated
         '''
+        # make sure the input is of shape (nsrc, nsampl)
+        if estimated_sources.ndim == 1:
+            estimated_sources = estimated_sources[np.newaxis, :]
+        if reference_sources.ndim == 1:
+            reference_sources = reference_sources[np.newaxis, :]
+
         if reference_sources.shape != estimated_sources.shape:
             raise ValueError('The shape of estimated sources and the true sources '
                              'should match.  reference_sources.shape = {}, '
@@ -96,12 +102,6 @@ def bss_eval_sources(reference_sources, estimated_sources):
     # If empty matrices were supplied, return empty lists (special case)
     if reference_sources.size == 0 or estimated_sources.size == 0:
         return np.array([]), np.array([]), np.array([]), np.array([])
-
-    # make sure the input is of shape (nsrc, nsampl)
-    if estimated_sources.ndim == 1:
-        estimated_sources = estimated_sources[np.newaxis, :]
-    if reference_sources.ndim == 1:
-        reference_sources = reference_sources[np.newaxis, :]
 
     nsrc = estimated_sources.shape[0]
 
