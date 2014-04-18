@@ -3,10 +3,7 @@
 import numpy as np
 import re
 import os
-try:
-    import jams
-except:
-    print "JAMS format not supported!"
+
 
 def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
     r'''Import time-stamp events from an annotation file.  This is primarily useful for
@@ -132,62 +129,6 @@ def load_annotation(filename, delimiter=r'\s+', converter=None, label_prefix='__
 
             else:
                 raise ValueError('parse error %s:%d:\n%s' % (filename, row, line))
-
-    times = np.asarray(times)
-
-    return times, labels
-
-
-def load_jams_range(filename, feature_name, annotator=0, converter=None,
-    label_prefix='__', context='large_scale'):
-    r'''Import specific data from a JAMS annotation file. It imports range data,
-        i.e., data that spans within two time points and it has a label
-        associated with it.
-
-        :parameters:
-        - filename : str
-        Path to the annotation file.
-
-        - feature_name: str
-        The key to the JAMS range feature to be extracted
-        (e.g. "sections", "chords")
-
-        - annotator: int
-        The id of the annotator from which to extract the annotations.
-
-        - converter : function
-        Function to convert time-stamp data into numerics. Defaults to float().
-
-        - label_prefix : str
-        String to append to any synthetically generated labels.
-
-        - context : str
-        Context of the labels to be extracted (e.g. "large_scale", "function").
-
-        :returns:
-        - event_times : np.ndarray
-        array of event times (float).
-
-        - event_labels : list of str
-        list of corresponding event labels.
-        '''
-
-    if converter is None:
-        converter = float
-
-    try:
-        jam = jams.load(filename)
-    except:
-        print "Error: could not open %s (JAMS module not installed?)" % filename
-        return [], []
-
-    times   = []
-    labels  = []
-    for data in jam[feature_name][annotator].data:
-        if data.label.context == context:
-            times.append([converter(data.start.value),
-                            converter(data.end.value)])
-            labels.append(data.label.value)
 
     times = np.asarray(times)
 
