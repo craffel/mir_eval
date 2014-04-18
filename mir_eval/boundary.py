@@ -106,30 +106,12 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
         return 0.0, 0.0, 0.0
 
-    n_ref, n_est = len(reference_boundaries), len(estimated_boundaries)
+    matching    = util.match_events(reference_boundaries, 
+                                    estimated_boundaries, 
+                                    window)
     
-    window_match    = np.abs(np.subtract.outer(reference_boundaries, estimated_boundaries)) <= window
-    window_match    = window_match.astype(int)
-    
-    # L. Lovasz On determinants, matchings and random algorithms. 
-    # In L. Budach, editor, Fundamentals of Computation Theory, pages 565-574. Akademie-Verlag, 1979.
-    #
-    # If we build the skew-symmetric adjacency matrix 
-    # D[i, n_ref+j] = 1 <=> ref[i] within window of est[j]
-    # D[n_ref + j, i] = -1 <=> same
-    #
-    # then rank(D) = 2 * maximum matching
-    #
-    # This way, we find the optimal assignment of reference and annotation boundaries.
-    #
-    skew_adjacency  = np.zeros((n_ref + n_est, n_ref + n_est), dtype=np.int32)
-    skew_adjacency[:n_ref, n_ref:] = window_match
-    skew_adjacency[n_ref:, :n_ref] = -window_match.T
-    
-    matching_size = np.linalg.matrix_rank(skew_adjacency) / 2.0
-    
-    precision   = matching_size / len(estimated_boundaries)
-    recall      = matching_size / len(reference_boundaries)
+    precision   = float(len(matching)) / len(estimated_boundaries)
+    recall      = float(len(matching)) / len(reference_boundaries)
     
     f_measure   = util.f_measure(precision, recall, beta=beta)
     
