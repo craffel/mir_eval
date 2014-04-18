@@ -35,7 +35,6 @@ def index_labels(labels):
     # Return the converted labels, and the inverse mapping
     return indices, index_to_label
 
-
 def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
                          fill_value=None):
     '''Convert an array of labeled time intervals to annotated samples.
@@ -79,7 +78,6 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
 
     return sample_times, sampled_labels
 
-
 def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     '''Assign labels to a set of points in time given a set of intervals.
 
@@ -110,7 +108,6 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
             index = np.argmax(intervals[:, 0] > tpoint) - 1
             aligned_labels.append(labels[index])
     return aligned_labels
-
 
 def f_measure(precision, recall, beta=1.0):
     '''Compute the f-measure from precision and recall scores.
@@ -313,7 +310,6 @@ def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix='__')
 
     return events, labels
 
-
 def intersect_files(flist1, flist2):
     '''Return the intersection of two sets of filepaths, based on the file name
     (after the final '/') and ignoring the file extension.
@@ -348,7 +344,6 @@ def intersect_files(flist1, flist2):
             pairs[1].append(f)
 
     return pairs
-
 
 def merge_labeled_intervals(x_intervals, x_labels, y_intervals, y_labels):
     r'''Merge the time intervals of two sequences 'x' and 'y'.
@@ -400,3 +395,118 @@ def merge_labeled_intervals(x_intervals, x_labels, y_intervals, y_labels):
         y_idx = y_label_range[(t0 >= y_intervals[:, 0])]
         y_labels_out.append(y_labels[y_idx[-1]])
     return output_intervals, x_labels_out, y_labels_out
+
+def bipartite_match(graph):
+    '''Find maximum cardinality matching of a bipartite graph (U,V,E).
+    The input format is a dictionary mapping members of U to a list
+    of their neighbors in V.  
+    
+    The output is a dict M mapping members of V to their matches in U.
+    '''
+    # Adapted from:
+    #
+    # Hopcroft-Karp bipartite max-cardinality matching and max independent set
+    # David Eppstein, UC Irvine, 27 Apr 2002
+    
+    # initialize greedy matching (redundant, but faster than full search)
+    matching = {}
+    for u in graph:
+        for v in graph[u]:
+            if v not in matching:
+                matching[v] = u
+                break
+    
+    while True:
+        # structure residual graph into layers
+        # pred[u] gives the neighbor in the previous layer for u in U
+        # preds[v] gives a list of neighbors in the previous layer for v in V
+        # unmatched gives a list of unmatched vertices in final layer of V,
+        # and is also used as a flag value for pred[u] when u is in the first layer
+        preds = {}
+        unmatched = []
+        pred = dict([(u,unmatched) for u in graph])
+        for v in matching:
+            del pred[matching[v]]
+        layer = list(pred)
+        
+        # repeatedly extend layering structure by another pair of layers
+        while layer and not unmatched:
+            newLayer = {}
+            for u in layer:
+                for v in graph[u]:
+                    if v not in preds:
+                        newLayer.setdefault(v,[]).append(u)
+            layer = []
+            for v in newLayer:
+                preds[v] = newLayer[v]
+                if v in matching:
+                    layer.append(matching[v])
+                    pred[matching[v]] = v
+                else:
+                    unmatched.append(v)
+        
+        # did we finish layering without finding any alternating paths?
+        if not unmatched:
+            unlayered = {}
+            for u in graph:
+                for v in graph[u]:
+                    if v not in preds:
+                        unlayered[v] = None
+            return matching
+
+        # recursively search backward through layers to find alternating paths
+        # recursion returns true if found path, false otherwise
+        def recurse(v):
+            if v in preds:
+                L = preds[v]
+                del preds[v]
+                for u in L:
+                    if u in pred:
+                        pu = pred[u]
+                        del pred[u]
+                        if pu is unmatched or recurse(pu):
+                            matching[v] = u
+                            return 1
+            return 0
+
+        for v in unmatched: 
+            recurse(v)
+
+def match_events(ref, est, window):
+    '''Compute a maximum matching between reference and estimated event times, subject to a window constraint.
+
+    Given two list of event times `ref` and `est`, we seek the largest set of correspondences `(ref[i], est[j])`
+    such that `|ref[i] - est[j]| <= window`, and each `ref[i]` and `est[j]` is matched at most once.
+
+    This is useful for computing precision/recall metrics in beat tracking, onset detection, and segmentation.
+
+    :parameters:
+        - ref : np.ndarray, shape=(n,)
+          Array of reference event times
+
+        - est : np.ndarray, shape=(m,)
+          Array of estimated event times
+
+        - window : float > 0
+          Size of the window.
+
+    :returns:
+        - matching : list of tuples
+          A list of matched reference and event numbers.
+          `matching[i] == (i, j)` where `ref[i]` matches `est[j]`.
+    '''
+    
+    # Compute the indices of feasible pairings
+    hits = np.where(np.abs(np.subtract.outer(ref, est)) <= window)
+
+    # Construct the graph input
+    G = {}
+    for ref_i, est_i in zip(*hits):
+        if ref_i not in G:
+            G[ref_i] = []
+        G[ref_i].append(est_i)
+
+    # Compute the maximum matching
+    matching = sorted(bipartite_match(G).items())
+
+    return matching
