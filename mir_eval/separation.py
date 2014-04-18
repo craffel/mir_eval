@@ -54,6 +54,8 @@ def bss_eval_sources(reference_sources, estimated_sources):
         512, as described in Section III.B of the reference below.
 
     :usage:
+        >>> # reference_sources[n] should be an ndarray of samples of the n'th reference source
+        >>> # estimated_sources[n] should be the same for the n'th estimated source
         >>> sdr, sir, sar, perm = mir_eval.separation.bss_eval_sources(reference_sources,
                                                                        estimated_sources)
 
