@@ -90,6 +90,7 @@ into the performance and, ultimately, the behaviour of a computational system.
 '''
 
 import numpy as np
+import functools
 
 NO_CHORD = "N"
 NO_CHORD_ENCODED = -1, np.array([0]*12), np.array([0]*12), -1
@@ -578,6 +579,7 @@ def validate(comparison):
         - comparison_validated : function
             The function with the labels validated.
     '''
+    @functools.wraps(comparison)
     def comparison_validated(reference_labels, estimated_labels):
         '''Comparison with labels validated.'''
         N = len(reference_labels)
@@ -594,6 +596,26 @@ def validate(comparison):
     return comparison_validated
 
 
+def score(comparator):
+    '''
+    Decorator to convert a comparator into a metric function.
+    '''
+    @functools.wraps(comparator)
+    def metric(reference_labels, estimated_labels, intervals):
+        comparison_scores = comparator(reference_labels, estimated_labels)
+        valid_idx = (comparison_scores >= 0)
+        if valid_idx.sum() == 0:
+            return -1
+        durations = np.abs(np.diff(intervals, axis=-1)).squeeze()
+        comparison_scores = comparison_scores[valid_idx]
+        durations = durations[valid_idx]
+        total_time = float(np.sum(durations))
+        duration_weights = np.asarray(durations, dtype=float) / total_time
+        return np.sum(comparison_scores * duration_weights)
+    return metric
+
+
+@score
 @validate
 def compare_thirds(reference_labels, estimated_labels):
     '''Compare chords along root & third relationships.
@@ -616,6 +638,7 @@ def compare_thirds(reference_labels, estimated_labels):
     return (correct_root * correct_third).astype(np.float)
 
 
+@score
 @validate
 def compare_thirds_inv(reference_labels, estimated_labels):
     '''Score chords along root, third, & bass relationships.
@@ -641,6 +664,7 @@ def compare_thirds_inv(reference_labels, estimated_labels):
     return (correct_root * correct_third * correct_bass).astype(np.float)
 
 
+@score
 @validate
 def compare_triads(reference_labels, estimated_labels):
     '''Compare chords along triad (root & quality to #5) relationships.
@@ -664,6 +688,7 @@ def compare_triads(reference_labels, estimated_labels):
     return (correct_root * correct_quality).astype(np.float)
 
 
+@score
 @validate
 def compare_triads_inv(reference_labels, estimated_labels):
     '''Score chords along triad (root, quality to #5, & bass) relationships.
@@ -690,6 +715,7 @@ def compare_triads_inv(reference_labels, estimated_labels):
     return (correct_root * correct_quality * correct_bass).astype(np.float)
 
 
+@score
 @validate
 def compare_tetrads(reference_labels, estimated_labels):
     '''Compare chords along tetrad (root & full quality) relationships.
@@ -712,6 +738,7 @@ def compare_tetrads(reference_labels, estimated_labels):
     return (correct_root * correct_quality).astype(np.float)
 
 
+@score
 @validate
 def compare_tetrads_inv(reference_labels, estimated_labels):
     '''Compare chords along seventh (root, quality) relationships.
@@ -737,6 +764,7 @@ def compare_tetrads_inv(reference_labels, estimated_labels):
     return (correct_root * correct_quality * correct_bass).astype(np.float)
 
 
+@score
 @validate
 def compare_root(reference_labels, estimated_labels):
     '''Compare chords according to roots.
@@ -758,6 +786,7 @@ def compare_root(reference_labels, estimated_labels):
     return (ref_roots == est_roots).astype(np.float)
 
 
+@score
 @validate
 def compare_mirex(reference_labels, estimated_labels):
     '''Compare chords along MIREX rules.
@@ -782,6 +811,7 @@ def compare_mirex(reference_labels, estimated_labels):
     return (correct_notes >= MIN_INTERSECTION).astype(np.float)
 
 
+@score
 @validate
 def compare_majmin(reference_labels, estimated_labels):
     '''Compare chords along major-minor rules. Chords with qualities outside
@@ -815,6 +845,7 @@ def compare_majmin(reference_labels, estimated_labels):
     return comparison_scores
 
 
+@score
 @validate
 def compare_majmin_inv(reference_labels, estimated_labels):
     '''Compare chords along major-minor rules, with inversions. Chords with
@@ -858,6 +889,7 @@ def compare_majmin_inv(reference_labels, estimated_labels):
     return comparison_scores
 
 
+@score
 @validate
 def compare_sevenths(reference_labels, estimated_labels):
     '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
@@ -890,6 +922,7 @@ def compare_sevenths(reference_labels, estimated_labels):
     return comparison_scores
 
 
+@score
 @validate
 def compare_sevenths_inv(reference_labels, estimated_labels):
     '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
@@ -945,21 +978,3 @@ COMPARATORS = {
     'triads-inv': compare_triads_inv,
     'tetrads': compare_tetrads,
     'tetrads-inv': compare_tetrads_inv}
-
-
-def score(reference_labels, estimated_labels, intervals, vocabulary):
-    '''
-    '''
-    compare_fx = COMPARATORS.get(vocabulary, None)
-    if compare_fx is None:
-        raise ValueError("Unknown vocabulary: %s" % vocabulary)
-    comparison_scores = compare_fx(reference_labels, estimated_labels)
-    valid_idx = (comparison_scores >= 0)
-    if valid_idx.sum() == 0:
-        return -1
-    durations = np.abs(np.diff(intervals, axis=-1)).squeeze()
-    comparison_scores = comparison_scores[valid_idx]
-    durations = durations[valid_idx]
-    total_time = float(np.sum(durations))
-    duration_weights = np.asarray(durations, dtype=float) / total_time
-    return np.sum(comparison_scores * duration_weights)
