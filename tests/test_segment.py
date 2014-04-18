@@ -24,7 +24,6 @@ def generate_data():
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         ref_t, ref_l = mir_eval.io.load_annotation(ref_f)
         est_t, est_l = mir_eval.io.load_annotation(est_f)
-        est_t, est_l = mir_eval.util.adjust_intervals(est_t, labels=est_l, t_min=0.0, t_max=ref_t.max())
 
         with open(sco_f, 'r') as f:
             scores = json.load(f)
@@ -62,13 +61,17 @@ def test_boundaries():
 def test_structure():
 
     def __test_pairwise(_ref_t, _ref_l, _est_t, _est_l):
+        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
+        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
         precision, recall, fmeasure = mir_eval.structure.pairwise(_ref_t, _ref_l, _est_t, _est_l)
 
-        assert np.allclose(precision,   scores['Pair-P'], atol=A_TOL)
-        assert np.allclose(recall,      scores['Pair-R'], atol=A_TOL)
-        assert np.allclose(fmeasure,    scores['Pair-F'], atol=A_TOL)
+        assert np.allclose(precision,   scores['P_Pair'], atol=A_TOL)
+        assert np.allclose(recall,      scores['R_Pair'], atol=A_TOL)
+        assert np.allclose(fmeasure,    scores['F_Pair'], atol=A_TOL)
 
     def __test_entropy(_ref_t, _ref_l, _est_t, _est_l):
+        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
+        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
         s_over, s_under, _ = mir_eval.structure.nce(_ref_t, _ref_l, _est_t, _est_l)
 
         assert np.allclose(s_over,  scores['S_Over'],   atol=A_TOL)
