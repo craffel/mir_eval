@@ -963,18 +963,19 @@ def compare_sevenths_inv(reference_labels, estimated_labels):
     return comparison_scores
 
 
-COMPARATORS = {
-    # MIREX2013 Methods
-    'root': compare_root,
-    'majmin': compare_majmin,
-    'majmin-inv': compare_majmin_inv,
-    'sevenths': compare_sevenths,
-    'sevenths-inv': compare_sevenths_inv,
-    # Older / Other methods
-    'mirex09': compare_mirex,
-    'thirds': compare_thirds,
-    'thirds-inv': compare_thirds_inv,
-    'triads': compare_triads,
-    'triads-inv': compare_triads_inv,
-    'tetrads': compare_tetrads,
-    'tetrads-inv': compare_tetrads_inv}
+# Create an ordered dict mapping metric names to functions
+METRICS = collections.OrderedDict()
+# MIREX2013 Methods
+METRICS['root'] = compare_root
+METRICS['majmin'] = compare_majmin
+METRICS['majmin-inv'] = compare_majmin_inv
+METRICS['sevenths'] = compare_sevenths
+METRICS['sevenths-inv'] = compare_sevenths_inv
+# Older / Other methods
+METRICS['mirex09'] = compare_mirex
+METRICS['thirds'] = compare_thirds
+METRICS['thirds-inv'] = compare_thirds_inv
+METRICS['triads'] = compare_triads
+METRICS['triads-inv'] = compare_triads_inv
+METRICS['tetrads'] = compare_tetrads
+METRICS['tetrads-inv'] = compare_tetrads_inv
