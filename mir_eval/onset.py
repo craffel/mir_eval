@@ -89,7 +89,7 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
           estimated_index < len(estimated_onsets)):
         # Get the current onsets
         reference_onset = reference_onsets[reference_index]
-        estimated_onset = estimated_onsets[esimated_index]
+        estimated_onset = estimated_onsets[estimated_index]
         # Does the generated onset fall within window around the annotated one?
         if np.abs(reference_onset - estimated_onset) <= window:
             # Found a true positive!
