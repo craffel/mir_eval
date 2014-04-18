@@ -160,8 +160,8 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
 
     dist = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries) )
 
-    reference_to_estimated = np.median(dist.min(axis=0))
-    estimated_to_reference = np.median(dist.min(axis=1))
+    estimated_to_reference = np.median(dist.min(axis=0))
+    reference_to_estimated = np.median(dist.min(axis=1))
 
     return reference_to_estimated, estimated_to_reference
 
