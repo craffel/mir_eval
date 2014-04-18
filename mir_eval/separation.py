@@ -14,6 +14,7 @@ from scipy.signal import fftconvolve
 import functools
 import collections
 import itertools
+import warnings
 
 def validate(metric):
     '''Decorator which checks that the input data to a metric
@@ -39,7 +40,15 @@ def validate(metric):
                              'should match.  reference_sources.shape = {}, '
                              'estimated_sources = {}'.format(reference_sources.shape,
                                                              estimated_sources.shape))
-            return metric(reference_onsets, estimated_onsets, *args, **kwargs)
+
+        if reference_sources.size == 0:
+            warnings.warn("reference_sources is empty, should be of size (nsrc, nsample).  "
+                          "sdr, sir, sar, and perm will all be empty np.ndarrays")
+        if estimated_sources.size == 0:
+            warnings.warn("estimated_sources is empty, should be of size (nsrc, nsample).  "
+                          "sdr, sir, sar, and perm will all be empty np.ndarrays")
+
+        return metric(reference_sources, estimated_sources, *args, **kwargs)
     return metric_validated
 
 @validate
@@ -83,6 +92,10 @@ def bss_eval_sources(reference_sources, estimated_sources):
         Speech and Language Processing, 14(4):1462-1469, 2006.
 
     '''
+
+    # If empty matrices were supplied, return empty lists (special case)
+    if reference_sources.size == 0 or estimated_sources.size == 0:
+        return np.array([]), np.array([]), np.array([]), np.array([])
 
     # make sure the input is of shape (nsrc, nsampl)
     if estimated_sources.ndim == 1:
