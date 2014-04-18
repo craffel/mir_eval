@@ -42,7 +42,7 @@ def validate(metric):
             return metric(reference_onsets, estimated_onsets, *args, **kwargs)
     return metric_validated
 
-
+@validate
 def bss_eval_sources(reference_sources, estimated_sources):
     '''BSS_EVAL_SOURCES
         MATLAB translation of BSS_EVAL Toolbox
@@ -52,6 +52,10 @@ def bss_eval_sources(reference_sources, estimated_sources):
 
         The decomposition allows a time-invariant filter distortion of length
         512, as described in Section III.B of the reference below.
+
+    :usage:
+        >>> sdr, sir, sar, perm = mir_eval.separation.bss_eval_sources(reference_sources,
+                                                                       estimated_sources)
 
     :parameters:
         - reference_sources: ndarray
