@@ -365,9 +365,9 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
 
 
 # Create an ordered dict mapping metric names to functions
-metrics = collections.OrderedDict()
-metrics['pairwise'] = pairwise
-metrics['ARI']      = ari
-metrics['MI']       = mutual_information
-metrics['NCE']      = nce
+METRICS = collections.OrderedDict()
+METRICS['pairwise'] = pairwise
+METRICS['ARI']      = ari
+METRICS['MI']       = mutual_information
+METRICS['NCE']      = nce
 
