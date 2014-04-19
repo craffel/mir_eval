@@ -81,11 +81,11 @@ def process_arguments():
 
     parser.add_argument(    'ref_file',
                             action      =   'store',
-                            help        =   'path to the ground truth annotation')
+                            help        =   'path to the reference annotation')
 
     parser.add_argument(    'prediction_file',
                             action      =   'store',
-                            help        =   'path to the prediction file')
+                            help        =   'path to the estimated annotation')
 
     return vars(parser.parse_args(sys.argv[1:]))
    
