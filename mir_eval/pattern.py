@@ -81,6 +81,7 @@ Written by Oriol Nieto (oriol@nyu.edu), 2014
 import functools
 import numpy as np
 from . import util
+import warnings
 
 
 def validate(metric):
@@ -102,6 +103,11 @@ def validate(metric):
                          **kwargs):
         """ Metric with input pattern annotations validated.
         """
+        # Warn if pattern lists are empty
+        if len(reference_patterns) == 0:
+            warnings.warn('Reference patterns are empty.')
+        if len(estimated_patterns) == 0:
+            warnings.warn('Estimated patterns are empty.')
         for patterns in [reference_patterns, estimated_patterns]:
             for pattern in patterns:
                 if len(pattern) <= 0:
@@ -201,6 +207,10 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     nQ = len(estimated_patterns)    # Number of patterns in the estimation
     k = 0                           # Number of patterns that match
 
+    # If no patterns were provided, metric is zero
+    if nP == 0 or nQ == 0:
+        return 0., 0., 0.
+
     # Find matches of the prototype patterns
     for ref_pattern in reference_patterns:
         P = np.asarray(ref_pattern[0])      # Get reference prototype
@@ -255,6 +265,11 @@ def establishment_FPR(reference_patterns, estimated_patterns,
     nP = len(reference_patterns)    # Number of elements in reference
     nQ = len(estimated_patterns)    # Number of elements in estimation
     S = np.zeros((nP, nQ))          # Establishment matrix
+
+    # If no patterns were provided, metric is zero
+    if nP == 0 or nQ == 0:
+        return 0., 0., 0.
+
     for iP, ref_pattern in enumerate(reference_patterns):
         for iQ, est_pattern in enumerate(estimated_patterns):
             s = _compute_score_matrix(ref_pattern, est_pattern,
@@ -293,6 +308,13 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
             - "cardinality_score": Count of the intersection between
                 occurrences.
     :type similarity_metric: str
+    :returns:
+        - f_measure : float
+            The establishment F1 Score
+        - precision : float
+            The establishment Precision
+        - recall : float
+            The establishment Recall
     """
     nP = len(reference_patterns)    # Number of elements in reference
     nQ = len(estimated_patterns)    # Number of elements in estimation
@@ -301,6 +323,10 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
 
     # Index of the values that are greater than the specified threshold
     rel_idx = np.empty((0, 2), dtype=int)
+
+    # If no patterns were provided, metric is zero
+    if nP == 0 or nQ == 0:
+        return 0., 0., 0.
 
     for iP, ref_pattern in enumerate(reference_patterns):
         for iQ, est_pattern in enumerate(estimated_patterns):
@@ -403,6 +429,10 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
                 F[iP, iQ] = util.f_measure(precision, recall)
         return F
 
+    # If no patterns were provided, metric is zero
+    if len(reference_patterns) == 0 or len(estimated_patterns) == 0:
+        return 0., 0., 0.
+
     # Compute the second layer (it includes the first layer)
     F_2 = compute_layer(reference_patterns, estimated_patterns, layer=2)
 
@@ -424,7 +454,7 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
     :usage:
         >>> ref_patterns = mir_eval.pattern.load_patterns("ref_pattern.txt")
         >>> est_patterns = mir_eval.pattern.load_patterns("est_pattern.txt")
-        >>> F, P, R = mir_eval.pattern.first_n_three_layer_P(ref_patterns,
+        >>> P = mir_eval.pattern.first_n_three_layer_P(ref_patterns,
                                                        est_patterns, n=5)
 
     :param reference_patterns: The reference patterns using the same format as
@@ -440,6 +470,11 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
         - precision : float
             The first n three-layer Precision
     """
+
+    # If no patterns were provided, metric is zero
+    if len(reference_patterns) == 0 or len(estimated_patterns) == 0:
+        return 0.
+
     # Get only the first n patterns from the estimated results
     fn_est_patterns = estimated_patterns[:min(len(estimated_patterns), n)]
 
@@ -460,7 +495,7 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
     :usage:
         >>> ref_patterns = mir_eval.pattern.load_patterns("ref_pattern.txt")
         >>> est_patterns = mir_eval.pattern.load_patterns("est_pattern.txt")
-        >>> F, P, R = mir_eval.pattern.first_n_target_proportion_R(
+        >>> R = mir_eval.pattern.first_n_target_proportion_R(
                                             ref_patterns, est_patterns, n=5)
 
     :param reference_patterns: The reference patterns using the same format as
@@ -473,9 +508,14 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
         the order they appear in the matrix.
     :type n: int
     :returns:
-        - precision : float
+        - recall : float
             The first n target proportion Recall.
     """
+
+    # If no patterns were provided, metric is zero
+    if len(reference_patterns) == 0 or len(estimated_patterns) == 0:
+        return 0.
+
     # Get only the first n patterns from the estimated results
     fn_est_patterns = estimated_patterns[:min(len(estimated_patterns), n)]
 
