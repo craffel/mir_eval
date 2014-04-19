@@ -396,18 +396,18 @@ def merge_labeled_intervals(x_intervals, x_labels, y_intervals, y_labels):
         y_labels_out.append(y_labels[y_idx[-1]])
     return output_intervals, x_labels_out, y_labels_out
 
-def bipartite_match(graph):
+def _bipartite_match(graph):
     '''Find maximum cardinality matching of a bipartite graph (U,V,E).
     The input format is a dictionary mapping members of U to a list
-    of their neighbors in V.  
-    
+    of their neighbors in V.
+
     The output is a dict M mapping members of V to their matches in U.
     '''
     # Adapted from:
     #
     # Hopcroft-Karp bipartite max-cardinality matching and max independent set
     # David Eppstein, UC Irvine, 27 Apr 2002
-    
+
     # initialize greedy matching (redundant, but faster than full search)
     matching = {}
     for u in graph:
@@ -415,7 +415,7 @@ def bipartite_match(graph):
             if v not in matching:
                 matching[v] = u
                 break
-    
+
     while True:
         # structure residual graph into layers
         # pred[u] gives the neighbor in the previous layer for u in U
@@ -428,7 +428,7 @@ def bipartite_match(graph):
         for v in matching:
             del pred[matching[v]]
         layer = list(pred)
-        
+
         # repeatedly extend layering structure by another pair of layers
         while layer and not unmatched:
             newLayer = {}
@@ -444,7 +444,7 @@ def bipartite_match(graph):
                     pred[matching[v]] = v
                 else:
                     unmatched.append(v)
-        
+
         # did we finish layering without finding any alternating paths?
         if not unmatched:
             unlayered = {}
@@ -469,7 +469,7 @@ def bipartite_match(graph):
                             return 1
             return 0
 
-        for v in unmatched: 
+        for v in unmatched:
             recurse(v)
 
 def match_events(ref, est, window):
@@ -495,7 +495,7 @@ def match_events(ref, est, window):
           A list of matched reference and event numbers.
           `matching[i] == (i, j)` where `ref[i]` matches `est[j]`.
     '''
-    
+
     # Compute the indices of feasible pairings
     hits = np.where(np.abs(np.subtract.outer(ref, est)) <= window)
 
@@ -507,6 +507,6 @@ def match_events(ref, est, window):
         G[ref_i].append(est_i)
 
     # Compute the maximum matching
-    matching = sorted(bipartite_match(G).items())
+    matching = sorted(_bipartite_match(G).items())
 
     return matching
