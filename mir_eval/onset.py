@@ -81,44 +81,13 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     # If either list is empty, return 0s
     if reference_onsets.size == 0 or estimated_onsets.size == 0:
         return 0., 0., 0.
-    # For accessing entries in each list
-    reference_index = 0
-    estimated_index = 0
-    # Keep track of true/false positive/negatives
-    true_positives = 0.0
-    false_positives = 0.0
-    false_negatives = 0.0
-    while (reference_index < len(reference_onsets) and
-          estimated_index < len(estimated_onsets)):
-        # Get the current onsets
-        reference_onset = reference_onsets[reference_index]
-        estimated_onset = estimated_onsets[estimated_index]
-        # Does the generated onset fall within window around the annotated one?
-        if np.abs(reference_onset - estimated_onset) <= window:
-            # Found a true positive!
-            true_positives += 1
-            # Look at the next onset time for both
-            reference_index += 1
-            estimated_index += 1
-        # We're out of the window - are we before?
-        elif estimated_onset < reference_onset:
-            # Generated an extra onset - it's a false positive
-            false_positives += 1
-            # Next time, check if the next generated onset is correct
-            estimated_index += 1
-        # Or after?
-        elif estimated_onset > reference_onset:
-            # Must have missed the annotated onset - false negative
-            false_negatives += 1
-            # Next time, check this generated onset against the next annotated
-            reference_index += 1
-    # Any additional generated onsets are false positives
-    false_positives += len(estimated_onsets) - estimated_index
-    # Any additional annotated onsets are false negatives
-    false_negatives += len(reference_onsets) - reference_index
-    # Compute precision and recall
-    precision = true_positives/(true_positives + false_positives)
-    recall = true_positives/(true_positives + false_negatives)
+    # Compute the best-case matching between reference and estimated onset locations
+    matching = util.match_events(reference_onsets,
+                                 estimated_onsets,
+                                 window)
+
+    precision = float(len(matching))/len(estimated_onsets)
+    recall = float(len(matching))/len(reference_onsets)
     # Compute F-measure and return all statistics
     return util.f_measure(precision, recall), precision, recall
 
