@@ -135,34 +135,13 @@ def f_measure(reference_beats,
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0
-    # Values for calculating F measure
-    false_positives = 0
-    false_negatives = 0
-    true_positives = 0
-    for beat in reference_beats:
-        # Calculate window edges
-        window_min = beat - f_measure_threshold
-        window_max = beat + f_measure_threshold
-        # Find the (indeces of the) beats in the window
-        correct_beats = np.logical_and(estimated_beats >= window_min,
-                                       estimated_beats <= window_max)
-        beats_in_window = np.flatnonzero(correct_beats)
-        # Remove beats in this window so that they are only counted once
-        estimated_beats = np.delete(estimated_beats, beats_in_window)
-        # No beats found in window - add a false negative
-        if beats_in_window.shape[0] == 0:
-            false_negatives += 1
-        # One or more beats in the window
-        elif beats_in_window.shape[0] >= 1:
-            # Add a hit and false positives for each spurious beat
-            true_positives += 1
-            if beats_in_window.shape[0] > 1:
-                false_positives += beats_in_window.shape[0] - 1
-    # Add in all remaining beats to false positives
-    false_positives += false_positives + estimated_beats.shape[0]
-    # Compute precision and recall
-    precision = true_positives/float(true_positives + false_positives)
-    recall = true_positives/float(true_positives + false_negatives)
+    # Compute the best-case matching between reference and estimated onset locations
+    matching = util.match_events(reference_beats,
+                                 estimated_beats,
+                                 f_measure_threshold)
+
+    precision = float(len(matching))/len(estimated_beats)
+    recall = float(len(matching))/len(reference_beats)
     return util.f_measure(precision, recall)
 
 @validate
