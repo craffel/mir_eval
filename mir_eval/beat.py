@@ -598,9 +598,9 @@ def _get_entropy(reference_beats, estimated_beats, bins):
 
 # Create a dictionary which maps the name of each metric
 # to the function used to compute it
-metrics = collections.OrderedDict()
-metrics['F-measure'] = f_measure
-metrics['Cemgil'] = cemgil
-metrics['P-score'] = p_score
-metrics['Continuity'] = continuity
-metrics['Information Gain'] = information_gain
+METRICS = collections.OrderedDict()
+METRICS['F-measure'] = f_measure
+METRICS['Cemgil'] = cemgil
+METRICS['P-score'] = p_score
+METRICS['Continuity'] = continuity
+METRICS['Information Gain'] = information_gain

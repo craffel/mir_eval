@@ -124,5 +124,5 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
 
 # Create a dictionary which maps the name of each metric
 # to the function used to compute it
-metrics = collections.OrderedDict()
-metrics['F-measure'] = f_measure
+METRICS = collections.OrderedDict()
+METRICS['F-measure'] = f_measure
