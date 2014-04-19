@@ -556,13 +556,10 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     beat_error = np.round(10000*beat_error)/10000.0
     # Put beat errors in range (-.5, .5)
     beat_error = np.mod(beat_error + .5, -1) + .5
-    # These are set so that np.hist gives the same result as histogram
-    # in the beat evaluation toolbox.  They are not correct.
+    # Note these are slightly different the beat evaluation toolbox
+    # (they are uniform)
     bin_step = 1.0/(bins - 1.0)
-    histogram_bins = np.arange(-.5 + bin_step, .5, bin_step)
-    histogram_bins = np.concatenate(([-.5, -.5 + bin_step/4],
-                                     histogram_bins,
-                                     [.5 - bin_step/4, .5]))
+    histogram_bins = np.arange(-.5, .5 + bin_step, bin_step)
     # Get the histogram
     raw_bin_values = np.histogram(beat_error, histogram_bins)[0]
     # Add the last bin height to the first bin
