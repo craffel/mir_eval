@@ -4,7 +4,7 @@ Utility script for computing all onset metrics.
 
 Usage:
 
-./beat_eval.py REFERENCE.TXT ESTIMATED.TXT
+./onset_eval.py REFERENCE.TXT ESTIMATED.TXT
 '''
 
 import argparse
