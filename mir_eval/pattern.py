@@ -82,6 +82,7 @@ import functools
 import numpy as np
 from . import util
 import warnings
+import collections
 
 
 def validate(metric):
@@ -521,3 +522,11 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
 
     F, P, R = establishment_FPR(reference_patterns, fn_est_patterns)
     return R
+
+METRICS = collections.OrderedDict()
+METRICS['standard_FPR'] = standard_FPR
+METRICS['establishment_FPR'] = establishment_FPR
+METRICS['occurrence_FPR'] = occurrence_FPR
+METRICS['three_layer_FPR'] = three_layer_FPR
+METRICS['first_n_three_layer_P'] = first_n_three_layer_P
+METRICS['first_n_target_proportion_R'] = first_n_target_proportion_R
