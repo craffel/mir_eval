@@ -11,7 +11,36 @@ IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 import numpy as np
 import sys
 import scipy.interpolate
+import functools
 
+def validate_voicing(metric):
+    '''Decorator which checks that voicing inputs to a metric
+    are in the correct format.
+
+    :parameters:
+        - metric : function
+            Evaluation metric function.  First two arguments must be
+            reference_beats and estimated_beats.
+
+    :returns:
+        - metric_validated : function
+            The function with the beat times validated
+    '''
+    # Retain docstring, etc
+    @functools.wraps(metric)
+    def metric_validated(ref_voicing, est_voicing, *args, **kwargs):
+        '''
+        Metric with input beat annotations validated
+        '''
+        # Make sure they're the same length
+        if ref_voicing.shape[0] != est_voicing.shape[0]:
+            raise ValueError('Reference and estimated voicing arrays should be the same length.')
+        for voicing in [ref_voicing, est_voicing]:
+            # Make sure they're (effectively) boolean
+            if np.logical_and(voicing != 0, voicing != 1).any():
+                raise ValueError('Voicing arrays must be boolean.')
+        return metric(ref_voicing, est_voicing, *args, **kwargs)
+    return metric_validated
 
 def hz2cents(freq_hz, base_frequency=10.0):
     '''
@@ -90,6 +119,7 @@ def resample_melody_series(times, frequencies, voicing, hop=0.01):
     voicing_resampled = scipy.interpolate.interp1d(times, voicing, 'zero')(times_new)
     return times_new, frequencies_resampled, voicing_resampled.astype(np.bool)
 
+
 def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
     '''Converts reference and estimated time/frequency (Hz) annotations to
     sampled frequency (cent)/voicing arrays.
@@ -159,6 +189,8 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
 
     return ref_voicing, est_voicing, ref_cent, est_cent
 
+
+@validate_voicing
 def voicing_measures(ref_voicing, est_voicing):
     '''
     Compute the voicing recall and false alarm rates given two voicing indicator
@@ -215,7 +247,7 @@ def voicing_measures(ref_voicing, est_voicing):
 
     return vx_recall, vx_false_alm
 
-
+@validate_voicing
 def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     '''
     Compute the raw pitch accuracy given two pitch (frequency) sequences in cents
@@ -259,6 +291,7 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     return raw_pitch
 
 
+@validate_voicing
 def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     '''
     Compute the raw chroma accuracy given two pitch (frequency) sequences in cents
@@ -301,6 +334,7 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     return raw_chroma
 
 
+@validate_voicing
 def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     '''
     Compute the overall accuracy given two pitch (frequency) sequences in cents
