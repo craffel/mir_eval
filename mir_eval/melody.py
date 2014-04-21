@@ -20,7 +20,7 @@ def validate_voicing(metric):
     :parameters:
         - metric : function
             Evaluation metric function.  First two arguments must be
-            reference_beats and estimated_beats.
+            ref_voicing and est_voicing.
 
     :returns:
         - metric_validated : function
@@ -30,7 +30,7 @@ def validate_voicing(metric):
     @functools.wraps(metric)
     def metric_validated(ref_voicing, est_voicing, *args, **kwargs):
         '''
-        Metric with input beat annotations validated
+        Metric with voicing arrays validated.
         '''
         # Make sure they're the same length
         if ref_voicing.shape[0] != est_voicing.shape[0]:
@@ -40,6 +40,37 @@ def validate_voicing(metric):
             if np.logical_and(voicing != 0, voicing != 1).any():
                 raise ValueError('Voicing arrays must be boolean.')
         return metric(ref_voicing, est_voicing, *args, **kwargs)
+    return metric_validated
+
+def validate(metric):
+    '''Decorator which checks that voicing and frequency arrays are well-formed.
+    To be used in conjunction with validate_voicing
+
+    :parameters:
+        - metric : function
+            Evaluation metric function.  First four arguments must be
+            ref_voicing, est_voicing, ref_cent, est_cent
+
+    :returns:
+        - metric_validated : function
+            The function with the beat times validated
+    '''
+    # Retain docstring, etc
+    @functools.wraps(metric)
+    def metric_validated(ref_voicing,
+                         est_voicing,
+                         ref_cent,
+                         est_cent, *args, **kwargs):
+        '''
+        Metric with input beat annotations validated
+        '''
+        # Make sure they're the same length
+        if ref_voicing.shape[0] != ref_cent.shape[0] or \
+           est_voicing.shape[0] != est_cent.shape[0] or \
+           ref_cent.shape[0] != est_cent.shape[0]:
+            raise ValueError('All voicing and frequency arrays must have the same length.')
+        return metric(ref_voicing, est_voicing,
+                      ref_cent, est_cent, *args, **kwargs)
     return metric_validated
 
 def hz2cents(freq_hz, base_frequency=10.0):
@@ -248,6 +279,7 @@ def voicing_measures(ref_voicing, est_voicing):
     return vx_recall, vx_false_alm
 
 @validate_voicing
+@validate
 def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     '''
     Compute the raw pitch accuracy given two pitch (frequency) sequences in cents
@@ -292,6 +324,7 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
 
 
 @validate_voicing
+@validate
 def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     '''
     Compute the raw chroma accuracy given two pitch (frequency) sequences in cents
@@ -335,6 +368,7 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
 
 
 @validate_voicing
+@validate
 def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     '''
     Compute the overall accuracy given two pitch (frequency) sequences in cents
