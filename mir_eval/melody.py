@@ -216,7 +216,7 @@ def voicing_measures(ref_voicing, est_voicing):
     return vx_recall, vx_false_alm
 
 
-def raw_pitch_accuracy(ref_cent, ref_voicing, est_cent, est_voicing):
+def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     '''
     Compute the raw pitch accuracy given two pitch (frequency) sequences in cents
     and matching voicing indicator sequences. The first pitch and voicing arrays
@@ -259,7 +259,7 @@ def raw_pitch_accuracy(ref_cent, ref_voicing, est_cent, est_voicing):
     return raw_pitch
 
 
-def raw_chroma_accuracy(ref_cent, ref_voicing, est_cent, est_voicing):
+def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     '''
     Compute the raw chroma accuracy given two pitch (frequency) sequences in cents
     and matching voicing indicator sequences. The first pitch and voicing arrays
@@ -301,7 +301,7 @@ def raw_chroma_accuracy(ref_cent, ref_voicing, est_cent, est_voicing):
     return raw_chroma
 
 
-def overall_accuracy(ref_cent, ref_voicing, est_cent, est_voicing):
+def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     '''
     Compute the overall accuracy given two pitch (frequency) sequences in cents
     and matching voicing indicator sequences. The first pitch and voicing arrays

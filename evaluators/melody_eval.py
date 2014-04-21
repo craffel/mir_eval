@@ -75,11 +75,11 @@ def evaluate(reference_file, estimated_file):
     # F-Measure
     M['vx_recall'], M['vx_false_alarm'] = mir_eval.melody.voicing_measures(ref_voicing, est_voicing)
 
-    M['raw_pitch'] = mir_eval.melody.raw_pitch_accuracy(ref_cent, ref_voicing, est_cent, est_voicing)
+    M['raw_pitch'] = mir_eval.melody.raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent)
 
-    M['raw_chroma'] = mir_eval.melody.raw_chroma_accuracy(ref_cent, ref_voicing, est_cent, est_voicing)
+    M['raw_chroma'] = mir_eval.melody.raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent)
 
-    M['overall_accuracy'] = mir_eval.melody.overall_accuracy(ref_cent, ref_voicing, est_cent, est_voicing)
+    M['overall_accuracy'] = mir_eval.melody.overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent)
 
     return M
 
