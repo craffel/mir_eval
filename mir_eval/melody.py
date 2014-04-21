@@ -90,6 +90,74 @@ def resample_melody_series(times, frequencies, voicing, hop=0.01):
     voicing_resampled = scipy.interpolate.interp1d(times, voicing, 'zero')(times_new)
     return times_new, frequencies_resampled, voicing_resampled.astype(np.bool)
 
+def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
+    '''Converts reference and estimated time/frequency (Hz) annotations to
+    sampled frequency (cent)/voicing arrays.
+
+    A zero frequency indicates "unvoiced".
+
+    A negative frequency indicates "Predicted as unvoiced,
+    but if it's voiced, this is the frequency estimate".
+
+    :parameters:
+        - ref_time : ndarray
+            Time of each reference frequency value
+        - ref_freq : ndarray
+            Array of reference frequency values
+        - est_time : ndarray
+            Time of each reference frequency value
+        - est_freq : ndarray
+            Array of reference frequency values
+        - base_frequency : float
+            Base frequency in Hz for conversion to cents, default 10.0
+        - hop : float
+            Hop size, in seconds, to resample, default .01
+
+    :returns:
+        - ref_voicing : ndarray
+            Resampled reference boolean voicing array
+        - est_voicing : ndarray
+            Resampled estimated boolean voicing array
+        - ref_cent : ndarray
+            Resampled reference frequency (cent) array
+        - est_cent : ndarray
+            Resampled estimated frequency (cent) array
+    '''
+    # Set default kwargs parameters
+    base_frequency = kwargs.get('base_frequency', 10.)
+    hop = kwargs.get('hop', .01)
+    # Check if missing sample at time 0 and if so add one
+    if ref_time[0] > 0:
+        ref_time = np.insert(ref_time, 0, 0)
+        ref_freq = np.insert(ref_freq, 0, ref_voicing[0])
+    if est_time[0] > 0:
+        est_time = np.insert(est_time, 0, 0)
+        est_freq = np.insert(est_freq, 0, est_voicing[0])
+    # Get separated frequency array and voicing boolean array
+    ref_freq, ref_voicing = freq_to_voicing(ref_freq)
+    est_freq, est_voicing = freq_to_voicing(est_freq)
+    # convert both sequences to cents
+    ref_cent = hz2cents(ref_freq)
+    est_cent = hz2cents(est_freq)
+    # Resample to common time base
+    ref_time_grid, ref_cent, ref_voicing = resample_melody_series(ref_time,
+                                                                  ref_cent,
+                                                                  ref_voicing,
+                                                                  hop)
+    est_time_grid, est_cent, est_voicing = resample_melody_series(est_time,
+                                                                  est_cent,
+                                                                  est_voicing,
+                                                                  hop)
+    # ensure the estimated sequence is the same length as the reference
+    len_diff = ref_cent.shape[0] - est_cent.shape[0]
+    if len_diff >= 0:
+        est_cent = np.append(est_cent, np.zeros(len_diff))
+        est_voicing = np.append(est_voicing, np.zeros(len_diff))
+    else:
+        est_cent = est_cent[:ref_cent.shape[0]]
+        est_voicing = est_voicing[ref_voicing.shape[0]]
+
+    return ref_voicing, est_voicing, ref_cent, est_cent
 
 def voicing_measures(ref_voicing, est_voicing):
     '''
