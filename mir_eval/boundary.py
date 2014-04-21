@@ -55,8 +55,8 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     to the window constraint.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_annotation('reference.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_annotation('estimate.lab')
+        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
         >>> # With 0.5s windowing
         >>> P05, R05, F05 = mir_eval.boundary.detection(ref_intervals, est_intervals, window=0.5)
         >>> # With 3s windowing
@@ -67,10 +67,10 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, as returned by `mir_eval.io.load_annotation`
+            reference segment intervals, as returned by `mir_eval.io.load_intervals`
 
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, as returned by `mir_eval.io.load_annotation`
+            estimated segment intervals, as returned by `mir_eval.io.load_intervals`
 
         - window : float > 0
             size of the window of 'correctness' around ground-truth beats (in seconds)
@@ -122,16 +122,16 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
     '''Compute the median deviations between reference and estimated boundary times.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_annotation('reference.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_annotation('estimate.lab')
+        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
         >>> r_to_e, e_to_r = mir_eval.boundary.deviation(ref_intervals, est_intervals)
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, as returned by `mir_eval.io.load_annotation`
+            reference segment intervals, as returned by `mir_eval.io.load_intervals`
 
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, as returned by `mir_eval.io.load_annotation`
+            estimated segment intervals, as returned by `mir_eval.io.load_intervals`
 
         - trim : boolean
             if ``True``, the first and last intervals are ignored.
