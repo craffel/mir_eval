@@ -22,8 +22,8 @@ def generate_data():
     sco_files = sorted(glob.glob(MIREX_GLOB))
 
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
-        ref_t, ref_l = mir_eval.io.load_annotation(ref_f)
-        est_t, est_l = mir_eval.io.load_annotation(est_f)
+        ref_t, ref_l = mir_eval.io.load_intervals(ref_f)
+        est_t, est_l = mir_eval.io.load_intervals(est_f)
 
         with open(sco_f, 'r') as f:
             scores = json.load(f)

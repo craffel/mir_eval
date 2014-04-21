@@ -69,8 +69,8 @@ def evaluate_pair(reference_file, estimation_file, vocabularies=['dyads'],
     '''
 
     # load the data
-    ref_intervals, ref_labels = io.load_annotation(reference_file)
-    est_intervals, est_labels = io.load_annotation(estimation_file)
+    ref_intervals, ref_labels = io.load_intervals(reference_file)
+    est_intervals, est_labels = io.load_intervals(estimation_file)
 
     if boundary_mode == 'intersect':
         t_min = max([ref_intervals.min(), est_intervals.min()])
