@@ -10,6 +10,84 @@ IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 
 import numpy as np
 import sys
+import scipy.interpolate
+
+
+def hz2cents(freq_hz, base_frequency=10.0):
+    '''
+    Convert an array of frequency values in Hz to cents
+    0 values are left in place.
+
+    :parameters:
+        - freq_hz : ndarray
+            Array of frequencies in Hz.
+        - base_frequency : float
+            Base frequency for conversion.
+    :returns:
+        - cent : ndarray
+            Array of frequencies in cents, relative to base_frequency
+    '''
+    freq_cent = np.zeros(freq_hz.shape[0])
+    freq_nonz_ind = np.flatnonzero(freq_hz)
+    freq_cent[freq_nonz_ind] = 1200*np.log2(np.abs(freq_hz[freq_nonz_ind])/base_frequency)
+
+    return freq_cent
+
+
+def freq_to_voicing(frequencies):
+    '''Convert from an array of frequency values to frequency array + voice/unvoiced array
+
+    :parameters:
+        - frequencies : ndarray
+            Array of frequencies.  A frequency <= 0 indicates "unvoiced".
+    :returns:
+        - frequencies : ndarray
+            Array of frequencies, all >= 0.
+        - voiced : ndarray
+            Boolean array, same length as frequencies, which indicates voiced or unvoiced
+    '''
+    return np.abs(frequencies), frequencies > 0
+
+
+def resample_melody_series(times, frequencies, voicing, hop=0.01):
+    '''Resamples frequency and voicing time series to a new timescale.
+    Maintains any zero ("unvoiced") values in frequencies.
+
+    :parameters:
+        - times : ndarray
+            Times of each frequency value
+        - frequencies : ndarray
+            Array of frequency values, >= 0
+        - voicing : ndarray
+            Boolean array which indicates voiced or unvoiced
+        - hop : float
+            Hop size for resampling.  Default .01
+
+    :returns:
+        - times_new : ndarray
+            Times of each resampled frequency value
+        - frequencies_resampled : ndarray
+            Frequency array resampled to new timebase
+        - voicing_resampled : ndarray
+            Boolean voicing array resampled to new timebase
+    '''
+    # Fill in zero values with the last reported frequency
+    # to avoid erroneous values when resampling
+    frequencies_held = np.array(frequencies)
+    for n, frequency in enumerate(frequencies[1:]):
+        if frequency == 0:
+            frequencies_held[n + 1] = frequencies[n]
+    # Compute new timebase
+    times_new = np.arange(times.min(), times.max() + hop, hop)
+    times_new = times_new[times_new <= times.max()]
+    # Linearly interpolate frequencies
+    frequencies_resampled = scipy.interpolate.interp1d(times, frequencies)(times_new)
+    # Retain zeros
+    frequency_mask = scipy.interpolate.interp1d(times, frequencies, 'nearest')(times_new)
+    frequencies_resampled *= np.sign(frequency_mask)
+    # Nearest-neighbor interpolate voicing
+    voicing_resampled = scipy.interpolate.interp1d(times, voicing, 'nearest')(times_new)
+    return times_new, frequencies_resampled, voicing_resampled
 
 
 def voicing_measures(ref_voicing, est_voicing):
@@ -198,11 +276,3 @@ def overall_accuracy(ref_cent, ref_voicing, est_cent, est_voicing):
     overall_accuracy = (sum(cent_diff[v_ref * v_est] <= 50) + TN) / float(len(ref_cent))
 
     return overall_accuracy
-
-
-
-
-
-
-
-

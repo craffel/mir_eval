@@ -5,7 +5,8 @@ Unit tests for mir_eval.melody
 
 import numpy as np
 import os, sys
-from evaluators import melody_eval # requires __init__.py inside ../evaluators
+sys.path.append('../evaluators')
+import melody_eval
 
 def test_melody_functions():
 
@@ -34,7 +35,7 @@ def test_melody_functions():
         reffile = os.path.join(refpath, song + "REF.txt")
         estfile = os.path.join(estpath, song + "_mel.txt")
 
-        M = melody_eval.evaluate(reffile, estfile, hop)
+        M = melody_eval.evaluate(reffile, estfile)
 
         # compare results
         for metric in M.keys():
@@ -43,4 +44,3 @@ def test_melody_functions():
             diff = np.abs(mirex_result - mireval_result)
             if diff > 0.01:
                 print "\t%s: %.3f [mx:%.3f me:%.3f]" % (metric, diff, mirex_result, mireval_result)
-

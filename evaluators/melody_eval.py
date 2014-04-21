@@ -17,15 +17,13 @@ IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 '''
 
 import numpy as np
-import scipy as sp
 import argparse
 import sys
 import os
 from collections import OrderedDict
 import mir_eval
-from pylab import *
 
-def evaluate(truth_file=None, prediction_file=None, hop=0.010):
+def evaluate(reference_file, estimated_file):
     '''
     Evaluate two melody (predominant f0) transcriptions, where the first is
     treated as the reference (ground truth) and the second as the estimate to
@@ -62,178 +60,51 @@ def evaluate(truth_file=None, prediction_file=None, hop=0.010):
          scale.
     '''
 
-    # STEP 1
     # load the data
-    ref_time, ref_freq = mir_eval.io.load_time_series(truth_file)
-    est_time, est_freq = mir_eval.io.load_time_series(prediction_file)
-
-    # plot(ref_time,ref_freq,'b')
-    # plot(est_time,est_freq,'r')
-    # title('original sequences')
-    # show()
-
-    # STEP 2
+    ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
+    est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
+    # Get separated frequency array and voicing boolean array
+    ref_freq, ref_voicing = mir_eval.melody.freq_to_voicing(ref_freq)
+    est_freq, est_voicing = mir_eval.melody.freq_to_voicing(est_freq)
     # convert both sequences to cents
-    ref_cent = hz2cents(ref_freq)
-    est_cent = hz2cents(est_freq)
-
-    # plot(ref_time,ref_cent,'b')
-    # plot(est_time,est_cent,'r')
-    # title('mapped to cents')
-    # show()
-
-    # STEP 3
+    ref_cent = mir_eval.melody.hz2cents(ref_freq)
+    est_cent = mir_eval.melody.hz2cents(est_freq)
+    # Resample to common time base
+    ref_time_grid, ref_cent, ref_voicing = mir_eval.melody.resample_melody_series(ref_time,
+                                                                                                ref_cent,
+                                                                                                ref_voicing)
     # Check if missing sample at time 0 and if so add one
     if ref_time[0] > 0:
-        ref_time = np.insert(ref_time, 0, 0)
-        ref_cent = np.insert(ref_cent, 0, ref_cent[0])
+        ref_cent = np.insert(ref_cent, 0, ref_voicing[0])
+        ref_voicing = np.insert(ref_voicing, 0, ref_voicing[0])
+    est_time_grid, est_cent, est_voicing = mir_eval.melody.resample_melody_series(est_time,
+                                                                                                est_cent,
+                                                                                                est_voicing)
     if est_time[0] > 0:
-        est_time = np.insert(est_time, 0, 0)
-        est_cent = np.insert(est_cent, 0, est_cent[0])
-
-    # plot(ref_time,'b')
-    # plot(est_time,'r')
-    # title('times')
-    # show()
-
-    # STEP 4
-    # resample to common hop size using linear interpolation
-    ref_time_grid, ref_cent_interp = resample_time_series(ref_time, ref_cent, hop)
-    est_time_grid, est_cent_interp = resample_time_series(est_time, est_cent, hop)
-
-    # plot(ref_time_grid,'b')
-    # plot(est_time_grid,'r')
-    # title('time grids')
-    # show()
-
-    # STEP 5
-    # fix interpolated values between non-zero/zero transitions:
-    # interpolating these values doesn't make sense, so replace with value of start point.
-    fix_zero_transitions(ref_time, ref_cent, ref_time_grid, ref_cent_interp)
-    fix_zero_transitions(est_time, est_cent, est_time_grid, est_cent_interp)
-
-    # STEP 6
-    # restore original sign to interpolated sequences
-    restore_sign_to_resampled(ref_time, ref_freq, ref_time_grid, ref_cent_interp)
-    restore_sign_to_resampled(est_time, est_freq, est_time_grid, est_cent_interp)
-
-    # plot(ref_time_grid,ref_cent_interp,'b')
-    # plot(est_time_grid,est_cent_interp,'r')
-    # title('Interpolated with restored sign')
-    # show()
-
-    # STEP 7
+        est_cent = np.insert(est_cent, 0, est_voicing[0])
+        est_voicing = np.insert(est_voicing, 0, est_voicing[0])
     # ensure the estimated sequence is the same length as the reference
-    est_time_grid = ref_time_grid
-    len_diff = len(ref_cent_interp) - len(est_cent_interp)
+    len_diff = ref_cent.shape[0] - est_cent.shape[0]
     if len_diff >= 0:
-        est_cent_interp = np.append(est_cent_interp, np.zeros(len_diff))
+        est_cent = np.append(est_cent, np.zeros(len_diff))
+        est_voicing = np.append(est_voicing, np.zeros(len_diff))
     else:
-        est_cent_interp = np.resize(est_cent_interp, len(ref_cent_interp))
+        est_cent = est_cent[:ref_cent.shape[0]]
+        est_voicing = est_voicing[ref_voicing.shape[0]]
 
-    # plot(ref_time_grid,ref_cent_interp,'b')
-    # plot(est_time_grid,est_cent_interp,'r')
-    # title('Interpolated with restored sign and same length')
-    # show()
-
-    # STEP 8
-    # separate into pitch sequence and voicing indicator sequence
-    ref_pitch = np.abs(ref_cent_interp)
-    ref_voicing = np.sign(ref_cent_interp)
-    est_pitch = np.abs(est_cent_interp)
-    est_voicing = np.sign(est_cent_interp)
-
-    # STEP 9
-    # Compute the evaluation measures
+    # Compute metrics
     M = OrderedDict()
 
     # F-Measure
     M['vx_recall'], M['vx_false_alarm'] = mir_eval.melody.voicing_measures(ref_voicing, est_voicing)
 
-    M['raw_pitch'] = mir_eval.melody.raw_pitch_accuracy(ref_pitch, ref_voicing, est_pitch, est_voicing)
+    M['raw_pitch'] = mir_eval.melody.raw_pitch_accuracy(ref_cent, ref_voicing, est_cent, est_voicing)
 
-    M['raw_chroma'] = mir_eval.melody.raw_chroma_accuracy(ref_pitch, ref_voicing, est_pitch, est_voicing)
+    M['raw_chroma'] = mir_eval.melody.raw_chroma_accuracy(ref_cent, ref_voicing, est_cent, est_voicing)
 
-    M['overall_accuracy'] = mir_eval.melody.overall_accuracy(ref_pitch, ref_voicing, est_pitch, est_voicing)
+    M['overall_accuracy'] = mir_eval.melody.overall_accuracy(ref_cent, ref_voicing, est_cent, est_voicing)
 
     return M
-
-
-def restore_sign_to_resampled(times, values, time_grid, values_resampled):
-    '''
-    Given a time series and a resampled version of it, this function looks at
-    the sign of the original series and ensures the sign of the resampled values
-    matches that of the original for overlapping timestamps.
-    '''
-    index_interp = 0
-    for index_orig in range(len(values) - 1):
-        if values[index_orig] < 0:
-            while index_interp < len(time_grid) and time_grid[
-                index_interp] < times[index_orig]:
-                index_interp += 1
-            while index_interp < len(time_grid) and time_grid[
-                index_interp] < times[index_orig + 1]:
-                values_resampled[index_interp] *= -1
-                index_interp += 1
-
-
-def fix_zero_transitions(times, values, time_grid, values_resampled):
-    '''
-    Given a time series and a resampled version of it, this function looks at
-    the original series to determine where there were transitions to/from zero,
-    and ensures that the values in the second series which are just in between
-    these transitions are set to the start value, rather than a nonsensical
-    interpolated value.
-    '''
-    index_interp = 0
-    for index_orig in range(len(values) - 1):
-        if np.logical_xor(values[index_orig] > 0,
-                          values[index_orig + 1] > 0):
-            while index_interp < len(time_grid) and time_grid[
-                index_interp] <= times[index_orig]:
-                index_interp += 1
-            while index_interp < len(time_grid) and time_grid[
-                index_interp] < times[index_orig + 1]:
-                values_resampled[index_interp] = values[index_orig]
-                index_interp += 1
-
-
-def resample_time_series(times, values, hop):
-    '''
-    Given timestamps, corresponding values, and a desired hop size,
-    resamples the time series to the given hop size and returns the new time
-    grid and corresponding values.
-    NB: the series is assumed to start at time 0 (time[0] = 0)
-    NB: values are interpolated using linear interpolation
-    '''
-    # round to 5 decimal points
-    times = np.asarray(times)
-    times = np.round(times*1e5) * 1e-5
-
-    interp_func = sp.interpolate.interp1d(times, values)
-    time_grid = np.linspace(0, hop * int(np.floor(times[-1] / hop)), int(np.floor(times[-1] / hop)) + 1)
-
-    # round to 5 decimal points
-    time_grid = np.round(time_grid*1e5) * 1e-5
-
-    values_resampled = interp_func(time_grid)
-
-    return time_grid, values_resampled
-
-
-def hz2cents(freq_hz):
-    '''
-    Convert an array of frequency values in Hz to cents using 10 Hz as the
-    base frequency (i.e. 10 Hz = 0 cents)
-    NB: 0 Hz values are not converted!
-    '''
-    base_frequency = 10.0
-    freq_cent = np.zeros(len(freq_hz))
-    freq_nonz_ind = np.nonzero(freq_hz)[0]
-    freq_cent[freq_nonz_ind] = 1200 * np.log2(np.abs(freq_hz[freq_nonz_ind]) / base_frequency)
-
-    return freq_cent
-
 
 def print_evaluation(prediction_file, M):
     '''
@@ -250,13 +121,13 @@ def process_arguments():
 
     parser = argparse.ArgumentParser(description='mir_eval melody extraction evaluation')
 
-    parser.add_argument(    'truth_file',
-                            action      =   'store',
-                            help        =   'path to the ground truth annotation')
+    parser.add_argument('reference_file',
+                        action = 'store',
+                        help = 'path to the ground truth annotation')
 
-    parser.add_argument(    'prediction_file',
-                            action      =   'store',
-                            help        =   'path to the prediction file')
+    parser.add_argument('estimated_file',
+                        action = 'store',
+                        help = 'path to the estimation file')
 
     return vars(parser.parse_args(sys.argv[1:]))
 
@@ -269,4 +140,4 @@ if __name__ == '__main__':
     scores = evaluate(**parameters)
 
     # Print the scores
-    print_evaluation(parameters['prediction_file'], scores)
+    print_evaluation(parameters['reference_file'], scores)
