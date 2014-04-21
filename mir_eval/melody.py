@@ -77,9 +77,10 @@ def resample_melody_series(times, frequencies, voicing, hop=0.01):
     for n, frequency in enumerate(frequencies[1:]):
         if frequency == 0:
             frequencies_held[n + 1] = frequencies_held[n]
-    # Compute new timebase
-    times_new = np.arange(times.min(), times.max() + hop, hop)
-    times_new = times_new[times_new <= times.max()]
+    # Compute new timebase.  Rounding/linspace is to avoid float problems.
+    times = np.round(times*1e10)*1e-10
+    times_new = np.linspace(0, hop*int(np.floor(times[-1]/hop)), int(np.floor(times[-1]/hop)) + 1)
+    times_new = np.round(times_new*1e10)*1e-10
     # Linearly interpolate frequencies
     frequencies_resampled = scipy.interpolate.interp1d(times, frequencies_held)(times_new)
     # Retain zeros
