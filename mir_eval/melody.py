@@ -129,10 +129,10 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
     # Check if missing sample at time 0 and if so add one
     if ref_time[0] > 0:
         ref_time = np.insert(ref_time, 0, 0)
-        ref_freq = np.insert(ref_freq, 0, ref_voicing[0])
+        ref_freq = np.insert(ref_freq, 0, ref_freq[0])
     if est_time[0] > 0:
         est_time = np.insert(est_time, 0, 0)
-        est_freq = np.insert(est_freq, 0, est_voicing[0])
+        est_freq = np.insert(est_freq, 0, est_freq[0])
     # Get separated frequency array and voicing boolean array
     ref_freq, ref_voicing = freq_to_voicing(ref_freq)
     est_freq, est_voicing = freq_to_voicing(est_freq)
