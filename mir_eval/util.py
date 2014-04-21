@@ -157,7 +157,7 @@ def boundaries_to_intervals(boundaries, labels=None):
 
     :parameters:
       - boundaries : list-like
-          List of event times
+          List-like of event times.  These are assumed to be unique timestamps in ascending order.
 
       - labels : None or list of str
           Optional list of strings describing each event
@@ -168,7 +168,14 @@ def boundaries_to_intervals(boundaries, labels=None):
 
       - labels : list of str or None
           Labels for each event.
+
+    :raises:
+      - ValueError
+        If the input times are not unique and ascending
     '''
+
+    if not np.allclose(boundaries, np.unique(boundaries)):
+        raise ValueError('Boundary times are not unique or not ascending.')
 
     intervals = np.asarray(zip(boundaries[:-1], boundaries[1:]))
 
