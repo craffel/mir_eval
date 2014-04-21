@@ -4,13 +4,15 @@ import numpy as np
 import os
 
 
-def index_labels(labels):
+def index_labels(labels, case_sensitive=False):
     '''Convert a list of string identifiers into numerical indices.
 
     :parameters:
-        - labels : list, shape=(n,)
+        - labels : list of strings, shape=(n,)
           A list of annotations, e.g., segment or chord labels from an annotation file.
-          ``labels[i]`` can be any hashable type (such as `str` or `int`)
+
+        - case_sensitive : bool
+          Set to `True` to enable case-sensitive label indexing
 
     :returns:
         - indices : list, shape=(n,)
@@ -23,6 +25,10 @@ def index_labels(labels):
 
     label_to_index = {}
     index_to_label = {}
+
+    # If we're not case-sensitive, 
+    if not case_sensitive:
+        labels = [str(s).lower() for s in labels]
 
     # First, build the unique label mapping
     for index, s in enumerate(sorted(set(labels))):
