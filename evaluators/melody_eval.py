@@ -63,6 +63,13 @@ def evaluate(reference_file, estimated_file):
     # load the data
     ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
     est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
+    # Check if missing sample at time 0 and if so add one
+    if ref_time[0] > 0:
+        ref_time = np.insert(ref_time, 0, 0)
+        ref_freq = np.insert(ref_freq, 0, ref_voicing[0])
+    if est_time[0] > 0:
+        est_time = np.insert(est_time, 0, 0)
+        est_freq = np.insert(est_freq, 0, est_voicing[0])
     # Get separated frequency array and voicing boolean array
     ref_freq, ref_voicing = mir_eval.melody.freq_to_voicing(ref_freq)
     est_freq, est_voicing = mir_eval.melody.freq_to_voicing(est_freq)
@@ -71,18 +78,11 @@ def evaluate(reference_file, estimated_file):
     est_cent = mir_eval.melody.hz2cents(est_freq)
     # Resample to common time base
     ref_time_grid, ref_cent, ref_voicing = mir_eval.melody.resample_melody_series(ref_time,
-                                                                                                ref_cent,
-                                                                                                ref_voicing)
-    # Check if missing sample at time 0 and if so add one
-    if ref_time[0] > 0:
-        ref_cent = np.insert(ref_cent, 0, ref_voicing[0])
-        ref_voicing = np.insert(ref_voicing, 0, ref_voicing[0])
+                                                                                  ref_cent,
+                                                                                  ref_voicing)
     est_time_grid, est_cent, est_voicing = mir_eval.melody.resample_melody_series(est_time,
-                                                                                                est_cent,
-                                                                                                est_voicing)
-    if est_time[0] > 0:
-        est_cent = np.insert(est_cent, 0, est_voicing[0])
-        est_voicing = np.insert(est_voicing, 0, est_voicing[0])
+                                                                                  est_cent,
+                                                                                  est_voicing)
     # ensure the estimated sequence is the same length as the reference
     len_diff = ref_cent.shape[0] - est_cent.shape[0]
     if len_diff >= 0:

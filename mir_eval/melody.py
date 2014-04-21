@@ -76,18 +76,18 @@ def resample_melody_series(times, frequencies, voicing, hop=0.01):
     frequencies_held = np.array(frequencies)
     for n, frequency in enumerate(frequencies[1:]):
         if frequency == 0:
-            frequencies_held[n + 1] = frequencies[n]
+            frequencies_held[n + 1] = frequencies_held[n]
     # Compute new timebase
     times_new = np.arange(times.min(), times.max() + hop, hop)
     times_new = times_new[times_new <= times.max()]
     # Linearly interpolate frequencies
-    frequencies_resampled = scipy.interpolate.interp1d(times, frequencies)(times_new)
+    frequencies_resampled = scipy.interpolate.interp1d(times, frequencies_held)(times_new)
     # Retain zeros
-    frequency_mask = scipy.interpolate.interp1d(times, frequencies, 'nearest')(times_new)
-    frequencies_resampled *= np.sign(frequency_mask)
+    frequency_mask = scipy.interpolate.interp1d(times, frequencies, 'zero')(times_new)
+    frequencies_resampled *= (frequency_mask != 0)
     # Nearest-neighbor interpolate voicing
-    voicing_resampled = scipy.interpolate.interp1d(times, voicing, 'nearest')(times_new)
-    return times_new, frequencies_resampled, voicing_resampled
+    voicing_resampled = scipy.interpolate.interp1d(times, voicing, 'zero')(times_new)
+    return times_new, frequencies_resampled, voicing_resampled.astype(np.bool)
 
 
 def voicing_measures(ref_voicing, est_voicing):
