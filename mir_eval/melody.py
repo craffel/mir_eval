@@ -12,6 +12,7 @@ import numpy as np
 import sys
 import scipy.interpolate
 import functools
+import collections
 
 def validate_voicing(metric):
     '''Decorator which checks that voicing inputs to a metric
@@ -363,7 +364,7 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
         >>> est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
         >>> ref_v, est_v, ref_c, est_c = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
                                                                          est_time, est_freq)
-        >>> raw_chroma = mir_eval.melody.raw_chroma_accuracy(ref_v, est_v, ref_c, est_c)
+        >>> overall_accuracy = mir_eval.melody.overall_accuracy(ref_v, est_v, ref_c, est_c)
 
     :parameters:
         - ref_voicing : ndarray
@@ -388,3 +389,10 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     overall_accuracy = ((cent_diff[ref_voicing*est_voicing] <= 50).sum() + TN)/float(ref_cent.shape[0])
 
     return overall_accuracy
+
+
+METRICS = collections.OrderedDict()
+METRICS['Voicing Measures'] = voicing_measures
+METRICS['Raw Pitch Accuracy'] = raw_pitch_accuracy
+METRICS['Raw Chroma Accuracy'] = raw_chroma_accuracy
+METRICS['Overall Accuracy'] = overall_accuracy
