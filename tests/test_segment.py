@@ -97,6 +97,28 @@ def test_structure_pairwise():
     # Done
     pass
 
+def test_structure_mutual_information():
+    def __test_mutual_information(_ref_t, _ref_l, _est_t, _est_l):
+        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
+        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
+
+        mi, ami, nmi = mir_eval.structure.mutual_information(_ref_t, _ref_l, _est_t, _est_l)
+        
+        print mi, ami, nmi
+        print scores['MI'], scores['AMI'], scores['NMI']
+
+        assert np.allclose(mi,  scores['MI'], atol=A_TOL)
+        assert np.allclose(ami, scores['AMI'], atol=A_TOL)
+        assert np.allclose(nmi, scores['NMI'], atol=A_TOL)
+
+    # Iterate over fixtures
+    for ref_t, ref_l, est_t, est_l, scores in generate_data():
+        yield (__test_mutual_information, ref_t, ref_l, est_t, est_l)
+
+    # Done
+    pass
+
+
 def test_structure_entropy():
     def __test_entropy(_ref_t, _ref_l, _est_t, _est_l):
         _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
