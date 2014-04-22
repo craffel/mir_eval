@@ -227,6 +227,13 @@ def voicing_measures(ref_voicing, est_voicing):
     sequences, one as reference (truth) and the other as the estimate (prediction).
     The sequences must be of the same length.
 
+    :usage:
+        >>> ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
+        >>> est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
+        >>> ref_v, est_v, ref_c, est_c = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
+                                                                         est_time, est_freq)
+        >>> recall, false_alarm = mir_eval.melody.voicing_measures(ref_v, est_v)
+
     :parameters:
         - ref_voicing : ndarray
             Reference boolean voicing array
@@ -271,6 +278,13 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     are treated as the reference (truth), and the second two as the estimate (prediction).
     All 4 sequences must be of the same length.
 
+    :usage:
+        >>> ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
+        >>> est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
+        >>> ref_v, est_v, ref_c, est_c = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
+                                                                         est_time, est_freq)
+        >>> raw_pitch = mir_eval.melody.raw_pitch_accuracy(ref_v, est_v, ref_c, est_c)
+
     :parameters:
         - ref_voicing : ndarray
             Reference boolean voicing array
@@ -302,6 +316,14 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     and matching voicing indicator sequences. The first pitch and voicing arrays
     are treated as the reference (truth), and the second two as the estimate (prediction).
     All 4 sequences must be of the same length.
+
+    :usage:
+        >>> ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
+        >>> est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
+        >>> ref_v, est_v, ref_c, est_c = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
+                                                                         est_time, est_freq)
+        >>> raw_chroma = mir_eval.melody.raw_chroma_accuracy(ref_v, est_v, ref_c, est_c)
+
 
     :parameters:
         - ref_voicing : ndarray
@@ -335,6 +357,13 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     and matching voicing indicator sequences. The first pitch and voicing arrays
     are treated as the reference (truth), and the second two as the estimate (prediction).
     All 4 sequences must be of the same length.
+
+    :usage:
+        >>> ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
+        >>> est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
+        >>> ref_v, est_v, ref_c, est_c = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
+                                                                         est_time, est_freq)
+        >>> raw_chroma = mir_eval.melody.raw_chroma_accuracy(ref_v, est_v, ref_c, est_c)
 
     :parameters:
         - ref_voicing : ndarray
