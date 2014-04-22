@@ -23,7 +23,7 @@ import os
 from collections import OrderedDict
 import mir_eval
 
-def evaluate(reference_file, estimated_file, hop):
+def evaluate(reference_file, estimated_file, hop=None):
     '''
     Evaluate two melody (predominant f0) transcriptions, where the first is
     treated as the reference (ground truth) and the second as the estimate to
@@ -43,7 +43,8 @@ def evaluate(reference_file, estimated_file, hop):
         M - ordered dictionary containing 5 evaluation measures:
         voicing recall rate -       Fraction of voiced frames in ref estimated as voiced in est
         voicing false alarm rate -  Fraction of unvoiced frames in ref estimated as voiced in est
-        raw pitch -                 Fraction of voiced frames in ref for which est gives a correct pitch estimate (within 50 cents)
+        raw pitch -                 Fraction of voiced frames in ref for which
+                                    est gives a correct pitch estimate (within 50 cents)
         raw chroma -                Same as raw pitch, but ignores octave errors
         overall accuracy -          Overall performance measure combining pitch and voicing
 
