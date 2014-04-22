@@ -102,13 +102,14 @@ def test_structure_entropy():
         _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
         _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
 
-        s_over, s_under, _ = mir_eval.structure.nce(_ref_t, _ref_l, _est_t, _est_l)
+        s_over, s_under, s_f = mir_eval.structure.nce(_ref_t, _ref_l, _est_t, _est_l)
         
-        print s_over, s_under
-        print scores['S_Over'], scores['S_Under']
+        print s_over, s_under, s_f
+        print scores['S_Over'], scores['S_Under'], scores['S_F']
 
         assert np.allclose(s_over,  scores['S_Over'], atol=A_TOL)
         assert np.allclose(s_under, scores['S_Under'], atol=A_TOL)
+        assert np.allclose(s_f, scores['S_F'], atol=A_TOL)
 
     # Iterate over fixtures
     for ref_t, ref_l, est_t, est_l, scores in generate_data():
