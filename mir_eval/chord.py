@@ -598,7 +598,15 @@ def validate(comparison):
             warnings.warn('Reference labels are empty')
         if len(estimated_labels) == 0:
             warnings.warn('Estimated labels are empty')
-
+        # Intervals should be (n, 2) array
+        if intervals.ndim != 2 or intervals.shape[1] != 2:
+            raise ValueError('intervals should be an ndarray'
+                             ' of size (n, 2)')
+        # There should be as many intervals as labels
+        if intervals.shape[0] != N:
+            raise ValueError('intervals contains {} entries but '
+                             'len(reference_labels) = len(estimated_labels)'
+                             ' = {}'.format(intervals.shape[0], N))
 
         return comparison(reference_labels, estimated_labels, intervals)
     return comparison_validated
