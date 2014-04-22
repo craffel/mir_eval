@@ -23,7 +23,7 @@ import os
 from collections import OrderedDict
 import mir_eval
 
-def evaluate(reference_file, estimated_file):
+def evaluate(reference_file, estimated_file, hop):
     '''
     Evaluate two melody (predominant f0) transcriptions, where the first is
     treated as the reference (ground truth) and the second as the estimate to
@@ -59,15 +59,18 @@ def evaluate(reference_file, estimated_file):
          interpolation of the original frequency values converted to a cent
          scale.
     '''
-
+    # check if a hop size was specified, if not set to default
+    if hop is None:
+        hop = 0.01
     # load the data
     ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
     est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
     # Convert to reference/estimated voicing/frequency (cent) arrays
     ref_voicing, est_voicing, ref_cent, est_cent = mir_eval.melody.to_cent_voicing(ref_time,
-                                                                                   ref_freq,
-                                                                                   est_time,
-                                                                                   est_freq)
+                                                                                ref_freq,
+                                                                                est_time,
+                                                                                est_freq,
+                                                                                hop=hop)
 
     # Compute metrics
     M = OrderedDict()
@@ -105,6 +108,9 @@ def process_arguments():
     parser.add_argument('estimated_file',
                         action = 'store',
                         help = 'path to the estimation file')
+
+    parser.add_argument("--hop", type=float,
+                    help="hop size (in seconds) to use for the evaluation")
 
     return vars(parser.parse_args(sys.argv[1:]))
 
