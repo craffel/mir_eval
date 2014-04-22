@@ -75,14 +75,17 @@ def pairwise(reference_intervals, reference_labels,
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
         >>> # Trim or pad the estimate to match reference timing
-        >>> est_intervals, est_labels = mir_eval.io.adjust_intervals(est_intervals,
-                                                                     est_labels,
-                                                                     t_min=ref_intervals.min(),
-                                                                     t_max=ref_intervals.max())
-        >>> precision, recall, f   = mir_eval.segment.pairwise(ref_intervals,
-                                                               ref_labels,
-                                                               est_intervals,
-                                                               est_labels)
+        >>> ref_intervals, ref_labels = mir_eval.util.adjust_intervals(ref_intervals,
+                                                                       ref_labels,
+                                                                       t_min=0)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
+                                                                       est_labels,
+                                                                       t_min=0,
+                                                                       t_max=ref_intervals.max())
+        >>> precision, recall, f   = mir_eval.structure.pairwise(ref_intervals,
+                                                                 ref_labels,
+                                                                 est_intervals,
+                                                                 est_labels)
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
@@ -161,12 +164,15 @@ def ari(reference_intervals, reference_labels,
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
         >>> # Trim or pad the estimate to match reference timing
-        >>> est_intervals, est_labels = mir_eval.io.adjust_intervals(est_intervals,
-                                                                     est_labels,
-                                                                     t_min=ref_intervals.min(),
-                                                                     t_max=ref_intervals.max())
-        >>> ari_score              = mir_eval.segment.ari(ref_intervals, ref_labels,
-                                                          est_intervals, est_labels)
+        >>> ref_intervals, ref_labels = mir_eval.util.adjust_intervals(ref_intervals,
+                                                                       ref_labels,
+                                                                       t_min=0)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
+                                                                       est_labels,
+                                                                       t_min=0,
+                                                                       t_max=ref_intervals.max())
+        >>> ari_score              = mir_eval.structure.ari(ref_intervals, ref_labels,
+                                                            est_intervals, est_labels)
 
     :parameters:
         - reference_intervals : list-like, float
@@ -215,12 +221,15 @@ def mutual_information(reference_intervals, reference_labels,
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
         >>> # Trim or pad the estimate to match reference timing
-        >>> est_intervals, est_labels = mir_eval.io.adjust_intervals(est_intervals,
-                                                                     est_labels,
-                                                                     t_min=ref_intervals.min(),
-                                                                     t_max=ref_intervals.max())
-        >>> mi, ami, nmi           = mir_eval.segment.mi(ref_intervals, ref_labels,
-                                                         est_intervals, est_labels)
+        >>> ref_intervals, ref_labels = mir_eval.util.adjust_intervals(ref_intervals,
+                                                                       ref_labels,
+                                                                       t_min=0)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
+                                                                       est_labels,
+                                                                       t_min=0,
+                                                                       t_max=ref_intervals.max())
+        >>> mi, ami, nmi           = mir_eval.structure.mutual_information(ref_intervals, ref_labels,
+                                                                           est_intervals, est_labels)
 
     :parameters:
     - reference_intervals : list-like, float
@@ -281,13 +290,15 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> # Trim or pad the estimate to match reference timing
-        >>> est_intervals, est_labels = mir_eval.io.adjust_intervals(est_intervals,
-                                                                     est_labels,
-                                                                     t_min=ref_intervals.min(),
-                                                                     t_max=ref_intervals.max())
-        >>> S_over, S_under, S_F     = mir_eval.segment.nce(ref_intervals, ref_labels,
-                                                            est_intervals, est_labels)
+        >>> ref_intervals, ref_labels = mir_eval.util.adjust_intervals(ref_intervals,
+                                                                       ref_labels,
+                                                                       t_min=0)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
+                                                                       est_labels,
+                                                                       t_min=0,
+                                                                       t_max=ref_intervals.max())
+        >>> S_over, S_under, S_F     = mir_eval.structure.nce(ref_intervals, ref_labels,
+                                                              est_intervals, est_labels)
 
 
     :parameters:

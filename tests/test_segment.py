@@ -1,5 +1,5 @@
 '''
-Unit tests for mir_eval.segment
+Unit tests for mir_eval.structure and mir_eval.boundary
 '''
 
 import numpy as np
