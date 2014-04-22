@@ -641,7 +641,7 @@ def score(comparator):
 
 @validate
 @score
-def compare_thirds(reference_labels, estimated_labels):
+def thirds(reference_labels, estimated_labels):
     '''Compare chords along root & third relationships.
 
     :parameters:
@@ -666,7 +666,7 @@ def compare_thirds(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_thirds_inv(reference_labels, estimated_labels):
+def thirds_inv(reference_labels, estimated_labels):
     '''Score chords along root, third, & bass relationships.
 
     :parameters:
@@ -694,7 +694,7 @@ def compare_thirds_inv(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_triads(reference_labels, estimated_labels):
+def triads(reference_labels, estimated_labels):
     '''Compare chords along triad (root & quality to #5) relationships.
 
     :parameters:
@@ -720,7 +720,7 @@ def compare_triads(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_triads_inv(reference_labels, estimated_labels):
+def triads_inv(reference_labels, estimated_labels):
     '''Score chords along triad (root, quality to #5, & bass) relationships.
 
     :parameters:
@@ -749,7 +749,7 @@ def compare_triads_inv(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_tetrads(reference_labels, estimated_labels):
+def tetrads(reference_labels, estimated_labels):
     '''Compare chords along tetrad (root & full quality) relationships.
 
     :parameters:
@@ -774,7 +774,7 @@ def compare_tetrads(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_tetrads_inv(reference_labels, estimated_labels):
+def tetrads_inv(reference_labels, estimated_labels):
     '''Compare chords along seventh (root, quality) relationships.
 
     :parameters:
@@ -802,7 +802,7 @@ def compare_tetrads_inv(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_root(reference_labels, estimated_labels):
+def root(reference_labels, estimated_labels):
     '''Compare chords according to roots.
 
     :parameters:
@@ -826,7 +826,7 @@ def compare_root(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_mirex(reference_labels, estimated_labels):
+def mirex(reference_labels, estimated_labels):
     '''Compare chords along MIREX rules.
 
     :parameters:
@@ -853,7 +853,7 @@ def compare_mirex(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_majmin(reference_labels, estimated_labels):
+def majmin(reference_labels, estimated_labels):
     '''Compare chords along major-minor rules. Chords with qualities outside
     Major/minor/no-chord are ignored.
 
@@ -889,7 +889,7 @@ def compare_majmin(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_majmin_inv(reference_labels, estimated_labels):
+def majmin_inv(reference_labels, estimated_labels):
     '''Compare chords along major-minor rules, with inversions. Chords with
     qualities outside Major/minor/no-chord are ignored, and the bass note must
     exist in the triad (bass in [1, 3, 5]).
@@ -935,7 +935,7 @@ def compare_majmin_inv(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_sevenths(reference_labels, estimated_labels):
+def sevenths(reference_labels, estimated_labels):
     '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
     outside [maj, maj7, 7, min, min7, N] are ignored.
 
@@ -970,7 +970,7 @@ def compare_sevenths(reference_labels, estimated_labels):
 
 @validate
 @score
-def compare_sevenths_inv(reference_labels, estimated_labels):
+def sevenths_inv(reference_labels, estimated_labels):
     '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
     outside [maj, maj7, 7, min, min7, N] are ignored.
 
@@ -1014,16 +1014,16 @@ def compare_sevenths_inv(reference_labels, estimated_labels):
 # Create an ordered dict mapping metric names to functions
 METRICS = collections.OrderedDict()
 # MIREX2013 Methods
-METRICS['root'] = compare_root
-METRICS['majmin'] = compare_majmin
-METRICS['majmin-inv'] = compare_majmin_inv
-METRICS['sevenths'] = compare_sevenths
-METRICS['sevenths-inv'] = compare_sevenths_inv
+METRICS['root'] = root
+METRICS['majmin'] = majmin
+METRICS['majmin-inv'] = majmin_inv
+METRICS['sevenths'] = sevenths
+METRICS['sevenths-inv'] = sevenths_inv
 # Older / Other methods
-METRICS['mirex09'] = compare_mirex
-METRICS['thirds'] = compare_thirds
-METRICS['thirds-inv'] = compare_thirds_inv
-METRICS['triads'] = compare_triads
-METRICS['triads-inv'] = compare_triads_inv
-METRICS['tetrads'] = compare_tetrads
-METRICS['tetrads-inv'] = compare_tetrads_inv
+METRICS['mirex09'] = mirex
+METRICS['thirds'] = thirds
+METRICS['thirds-inv'] = thirds_inv
+METRICS['triads'] = triads
+METRICS['triads-inv'] = triads_inv
+METRICS['tetrads'] = tetrads
+METRICS['tetrads-inv'] = tetrads_inv
