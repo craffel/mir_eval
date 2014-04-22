@@ -223,32 +223,29 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
 
 @validate_voicing
 def voicing_measures(ref_voicing, est_voicing):
-    '''
-    Compute the voicing recall and false alarm rates given two voicing indicator
+    ''' Compute the voicing recall and false alarm rates given two voicing indicator
     sequences, one as reference (truth) and the other as the estimate (prediction).
     The sequences must be of the same length.
 
-    Input:
-    - ref_voicing : np.array or list
-    Reference voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
+    :parameters:
+        - ref_voicing : ndarray
+            Reference boolean voicing array
+        - est_voicing : ndarray
+            Estimated boolean voicing array
 
-    - est_voicing : np.array or list
-    Estimate voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
-
-    Output:
-    - vx_recall: float
-    Voicing recall rate, the fraction of voiced frames in ref indicated as voiced in est
-
-    - vx_false_alarm : float
-    Voicing false alarm rate, the fraction of unvoiced frames in ref indicated as voiced in est
+    :returns:
+        - vx_recall : float
+            Voicing recall rate, the fraction of voiced frames in ref indicated as voiced in est
+        - vx_false_alarm : float
+            Voicing false alarm rate, the fraction of unvoiced frames in ref indicated as voiced in est
     '''
 
     # How voicing is computed
-    #        | v_ref | uv_ref |
+    #        | ref_v | !ref_v |
     # -------|-------|--------|
-    # v_est  |  TP   |   FP   |
+    # est_v  |  TP   |   FP   |
     # -------|-------|------- |
-    # uv_est |  FN   |   TN   |
+    # !est_v |  FN   |   TN   |
     # -------------------------
 
     TP = (ref_voicing*est_voicing).sum()
@@ -269,29 +266,24 @@ def voicing_measures(ref_voicing, est_voicing):
 @validate_voicing
 @validate
 def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
-    '''
-    Compute the raw pitch accuracy given two pitch (frequency) sequences in cents
+    ''' Compute the raw pitch accuracy given two pitch (frequency) sequences in cents
     and matching voicing indicator sequences. The first pitch and voicing arrays
     are treated as the reference (truth), and the second two as the estimate (prediction).
     All 4 sequences must be of the same length.
 
-    Input:
-    - ref_cent : np.array
-    Reference pitch sequence in cents
-
-    - ref_voicing : np.array or list
-    Reference voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
-
-    - est_cent : np.array
-    Estimate pitch sequence in cents
-
-    - est_voicing : np.array or list
-    Estimate voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
-
-    Output:
-    - raw_pitch: float
-    Raw pitch accuracy, the fraction of voiced frames in ref_cent for which est_cent
-    provides a correct frequency values (within 50 cents).
+    :parameters:
+        - ref_voicing : ndarray
+            Reference boolean voicing array
+        - est_voicing : ndarray
+            Estimated boolean voicing array
+        - ref_cent : ndarray
+            Reference pitch sequence in cents
+        - est_cent : ndarray
+            Estimate pitch sequence in cents
+    :returns:
+        - raw_pitch : float
+            Raw pitch accuracy, the fraction of voiced frames in ref_cent for which est_cent
+            provides a correct frequency values (within 50 cents).
     '''
 
     # Raw pitch = the number of voiced frames in the reference for which the
@@ -306,29 +298,25 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
 @validate_voicing
 @validate
 def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
-    '''
-    Compute the raw chroma accuracy given two pitch (frequency) sequences in cents
+    ''' Compute the raw chroma accuracy given two pitch (frequency) sequences in cents
     and matching voicing indicator sequences. The first pitch and voicing arrays
     are treated as the reference (truth), and the second two as the estimate (prediction).
     All 4 sequences must be of the same length.
 
-    Input:
-    - ref_cent : np.array
-    Reference pitch sequence in cents
+    :parameters:
+        - ref_voicing : ndarray
+            Reference boolean voicing array
+        - est_voicing : ndarray
+            Estimated boolean voicing array
+        - ref_cent : ndarray
+            Reference pitch sequence in cents
+        - est_cent : ndarray
+            Estimate pitch sequence in cents
 
-    - ref_voicing : np.array or list
-    Reference voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
-
-    - est_cent : np.array
-    Estimate pitch sequence in cents
-
-    - est_voicing : np.array or list
-    Estimate voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
-
-    Output:
-    - raw_chroma: float
-    Raw chroma accuracy, the fraction of voiced frames in ref_cent for which est_cent
-    provides a correct frequency values (within 50 cents), ignoring octave errors
+    :returns:
+        - raw_chroma : float
+            Raw chroma accuracy, the fraction of voiced frames in ref_cent for which est_cent
+            provides a correct frequency values (within 50 cents), ignoring octave errors
     '''
 
     # Raw chroma = same as raw pitch except that octave errors are ignored.
@@ -348,23 +336,20 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     are treated as the reference (truth), and the second two as the estimate (prediction).
     All 4 sequences must be of the same length.
 
-    Input:
-    - ref_cent : np.array
-    Reference pitch sequence in cents
+    :parameters:
+        - ref_voicing : ndarray
+            Reference boolean voicing array
+        - est_voicing : ndarray
+            Estimated boolean voicing array
+        - ref_cent : ndarray
+            Reference pitch sequence in cents
+        - est_cent : ndarray
+            Estimate pitch sequence in cents
 
-    - ref_voicing : np.array or list
-    Reference voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
-
-    - est_cent : np.array
-    Estimate pitch sequence in cents
-
-    - est_voicing : np.array or list
-    Estimate voicing indicator where val>0 indicates voiced, val<=0 indicates unvoiced
-
-    Output:
-    - overall_accuracy: float
-    Overall accuracy, the total fraction of correctly estimates frames, where
-    provides a correct frequency values (within 50 cents).
+    :returns:
+        - overall_accuracy : float
+            Overall accuracy, the total fraction of correctly estimates frames, where
+            provides a correct frequency values (within 50 cents).
     '''
 
     # True negatives = frames correctly estimates as unvoiced
