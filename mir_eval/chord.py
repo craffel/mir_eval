@@ -610,22 +610,32 @@ def score(comparator):
     '''
     @functools.wraps(comparator)
     def metric(reference_labels, estimated_labels, intervals):
+        '''
+        Score wrapper for a comparator.
+        '''
         # Return 0 when no labels are given
         if len(reference_labels) == 0 or len(estimated_labels) == 0:
             return 0
+        # Compute comparison scores, in [0, 1] or -1
         comparison_scores = comparator(reference_labels, estimated_labels)
+        # Find all comparison scores which are valid
         valid_idx = (comparison_scores >= 0)
         # If no comparable chords were provided, warn and return 0
         if valid_idx.sum() == 0:
             warnings.warn("No reference chords were comparable "
                           "to estimated chords, returning 0.")
             return 0
+        # Convert intervals to durations
         durations = np.abs(np.diff(intervals, axis=-1)).flatten()
+        # Remove any uncomparable labels
         comparison_scores = comparison_scores[valid_idx]
         durations = durations[valid_idx]
+        # Get total amount of time
         total_time = float(np.sum(durations))
-        duration_weights = np.asarray(durations, dtype=float) / total_time
-        return np.sum(comparison_scores * duration_weights)
+        # Weight each score by the relative proportion of the total duration
+        duration_weights = np.asarray(durations, dtype=float)/total_time
+        # Score is the sum of all weighted comparisons
+        return np.sum(comparison_scores*duration_weights)
     return metric
 
 
