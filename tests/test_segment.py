@@ -7,13 +7,13 @@ import json
 import mir_eval
 import glob
 
-# We only need 1% absolute tolerance
-A_TOL = 1e-2
+# JSON encoding loses some precision, we'll keep it to 1e-5 precision
+A_TOL = 1e-5
 
 # Path to the fixture files
 REF_GLOB    = 'data/segment/ref*.lab'
 EST_GLOB    = 'data/segment/est*.lab'
-MIREX_GLOB  = 'data/segment/score*.json'
+MIREX_GLOB  = 'data/segment/output*.json'
 
 def generate_data():
 
@@ -33,11 +33,16 @@ def generate_data():
 def test_boundary_detection():
 
     def __test_detection(_window, _ref_t, _est_t):
+        _ref_t = mir_eval.util.adjust_intervals(_ref_t, t_min=0.0)[0]
+        _est_t = mir_eval.util.adjust_intervals(_est_t, t_min=0.0, t_max=_ref_t.max())[0]
         precision, recall, fmeasure = mir_eval.boundary.detection(_ref_t, _est_t, window=_window)
 
-        assert np.allclose(precision,   scores['P@%.1f'%_window], atol=A_TOL)
-        assert np.allclose(recall,      scores['R@%.1f'%_window], atol=A_TOL)
-        assert np.allclose(fmeasure,    scores['F@%.1f'%_window], atol=A_TOL)
+        print precision, recall, fmeasure
+        print scores['P@%0.1f'%_window], scores['R@%0.1f'%_window], scores['F@%0.1f'%_window]
+
+        assert np.allclose(precision,   scores['P@%0.1f'%_window], atol=A_TOL)
+        assert np.allclose(recall,      scores['R@%0.1f'%_window], atol=A_TOL)
+        assert np.allclose(fmeasure,    scores['F@%0.1f'%_window], atol=A_TOL)
 
     # Iterate over fixtures
     for ref_t, ref_l, est_t, est_l, scores in generate_data():
@@ -51,10 +56,15 @@ def test_boundary_detection():
 
 def test_boundary_deviation():
     def __test_deviation(_ref_t, _est_t):
+        _ref_t = mir_eval.util.adjust_intervals(_ref_t, t_min=0.0)[0]
+        _est_t = mir_eval.util.adjust_intervals(_est_t, t_min=0.0, t_max=_ref_t.max())[0]
         t_to_p, p_to_t = mir_eval.boundary.deviation(_ref_t, _est_t)
 
-        assert np.allclose(t_to_p,  scores['T_to_P'], atol=A_TOL)
-        assert np.allclose(p_to_t,  scores['P_to_T'], atol=A_TOL)
+        print t_to_p, p_to_t
+        print scores['True-to-Pred'], scores['Pred-to-True']
+
+        assert np.allclose(t_to_p,  scores['True-to-Pred'], atol=A_TOL)
+        assert np.allclose(p_to_t,  scores['Pred-to-True'], atol=A_TOL)
 
     # Iterate over fixtures
     for ref_t, ref_l, est_t, est_l, scores in generate_data():
@@ -73,11 +83,11 @@ def test_structure_pairwise():
         precision, recall, fmeasure = mir_eval.structure.pairwise(_ref_t, _ref_l, _est_t, _est_l)
 
         print precision, recall, fmeasure
-        print scores['P_Pair'], scores['R_Pair'], scores['F_Pair']
+        print scores['Pair-P'], scores['Pair-R'], scores['Pair-F']
 
-        assert np.allclose(precision,   scores['P_Pair'], atol=A_TOL)
-        assert np.allclose(recall,      scores['R_Pair'], atol=A_TOL)
-        assert np.allclose(fmeasure,    scores['F_Pair'], atol=A_TOL)
+        assert np.allclose(precision,   scores['Pair-P'], atol=A_TOL)
+        assert np.allclose(recall,      scores['Pair-R'], atol=A_TOL)
+        assert np.allclose(fmeasure,    scores['Pair-F'], atol=A_TOL)
 
     # Iterate over fixtures
     for ref_t, ref_l, est_t, est_l, scores in generate_data():
@@ -97,8 +107,8 @@ def test_structure_entropy():
         print s_over, s_under
         print scores['S_Over'], scores['S_Under']
 
-        assert np.allclose(s_over,  scores['S_Over'],   atol=A_TOL)
-        assert np.allclose(s_under, scores['S_Under'],  atol=A_TOL)
+        assert np.allclose(s_over,  scores['S_Over'], atol=A_TOL)
+        assert np.allclose(s_under, scores['S_Under'], atol=A_TOL)
 
     # Iterate over fixtures
     for ref_t, ref_l, est_t, est_l, scores in generate_data():
