@@ -649,6 +649,8 @@ def compare_thirds(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
@@ -672,6 +674,8 @@ def compare_thirds_inv(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - scores : np.ndarray, shape=(n,), dtype=np.float
@@ -698,6 +702,8 @@ def compare_triads(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
@@ -722,6 +728,8 @@ def compare_triads_inv(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - scores : np.ndarray, shape=(n,), dtype=np.float
@@ -749,6 +757,8 @@ def compare_tetrads(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
@@ -772,6 +782,8 @@ def compare_tetrads_inv(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
@@ -798,6 +810,8 @@ def compare_root(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
@@ -820,6 +834,8 @@ def compare_mirex(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
@@ -846,6 +862,8 @@ def compare_majmin(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
@@ -881,6 +899,8 @@ def compare_majmin_inv(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
@@ -924,6 +944,8 @@ def compare_sevenths(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
@@ -957,6 +979,8 @@ def compare_sevenths_inv(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
+        - intervals : np.ndarray, shape=(n, 2)
+            Start and end time of each chord label
 
     :returns:
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
