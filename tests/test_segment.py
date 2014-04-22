@@ -97,6 +97,25 @@ def test_structure_pairwise():
     # Done
     pass
 
+def test_structure_rand():
+    def __test_rand(_ref_t, _ref_l, _est_t, _est_l):
+        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
+        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
+
+        ari = mir_eval.structure.ari(_ref_t, _ref_l, _est_t, _est_l)
+        
+        print ari
+        print scores['ARI']
+
+        assert np.allclose(ari,  scores['ARI'], atol=A_TOL)
+
+    # Iterate over fixtures
+    for ref_t, ref_l, est_t, est_l, scores in generate_data():
+        yield (__test_rand, ref_t, ref_l, est_t, est_l)
+
+    # Done
+    pass
+
 def test_structure_mutual_information():
     def __test_mutual_information(_ref_t, _ref_l, _est_t, _est_l):
         _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
