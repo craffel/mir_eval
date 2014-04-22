@@ -26,7 +26,7 @@ def index_labels(labels, case_sensitive=False):
     label_to_index = {}
     index_to_label = {}
 
-    # If we're not case-sensitive, 
+    # If we're not case-sensitive,
     if not case_sensitive:
         labels = [str(s).lower() for s in labels]
 
@@ -48,7 +48,7 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
-            ``mir_eval.io.load_annotation``.
+            ``mir_eval.io.load_intervals``.
             The `i`th interval spans time ``intervals[i, 0]`` to
             ``intervals[i, 1]``.
 
@@ -92,7 +92,7 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
-            ``mir_eval.io.load_annotation``.
+            ``mir_eval.io.load_intervals``.
             The `i`th interval spans time ``intervals[i, 0]`` to
             ``intervals[i, 1]``.
 
