@@ -186,7 +186,12 @@ def boundaries_to_intervals(boundaries, labels=None):
 
     return intervals, interval_labels
 
-def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
+def adjust_intervals(intervals,
+                     labels=None,
+                     t_min=0.0,
+                     t_max=None,
+                     start_label='__T_MIN',
+                     end_label='__T_MAX'):
     '''Adjust a list of time intervals to span the range [t_min, t_max].
 
     Any intervals lying completely outside the specified range will be removed.
@@ -194,8 +199,9 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
     Any intervals lying partially outside the specified range will be truncated.
 
     If the specified range exceeds the span of the provided data in either direction,
-    additional intervals will be appended.  Any appended intervals will be prepended
-    with label_prefix.
+    additional intervals will be appended.  Any appended intervals at the start will
+    be given label `start_label`.  Any appended intervals at the end will be given
+    label `end_label`.
 
     :parameters:
         - intervals : np.ndarray, shape=(n_events, 2)
@@ -210,8 +216,11 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
         - t_max : float or None
             Maximum interval end time.
 
-        - label_prefix : str
-            Prefix string to use for synthetic labels
+        - start_label : str or float or int
+            Label to give any intervals appended at the beginning
+
+        - end_label : str or float or int
+            Label to give any intervals appended at the end
 
     :returns:
         - new_intervals : np.array
@@ -237,7 +246,7 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
             # Lowest boundary is higher than t_min: add a new boundary and label
             intervals = np.vstack( ([t_min, intervals[0, 0]], intervals) )
             if labels is not None:
-                labels.insert(0, '%sT_MIN' % label_prefix)
+                labels.insert(0, start_label)
 
     if t_max is not None:
         # Find the intervals that begin after t_max
@@ -257,7 +266,7 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
             # Last boundary is below t_max: add a new boundary and label
             intervals = np.vstack( (intervals, [intervals[-1, -1], t_max]) )
             if labels is not None:
-                labels.append('%sT_MAX' % label_prefix)
+                labels.append(end_label)
 
     return intervals, labels
 
