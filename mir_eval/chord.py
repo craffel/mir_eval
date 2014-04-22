@@ -620,7 +620,7 @@ def score(comparator):
             warnings.warn("No reference chords were comparable "
                           "to estimated chords, returning 0.")
             return 0
-        durations = np.abs(np.diff(intervals, axis=-1)).squeeze()
+        durations = np.abs(np.diff(intervals, axis=-1)).flatten()
         comparison_scores = comparison_scores[valid_idx]
         durations = durations[valid_idx]
         total_time = float(np.sum(durations))
