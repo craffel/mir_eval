@@ -3,6 +3,7 @@
 
 import unittest
 from mir_eval import chord
+import numpy as np
 
 
 class ChordTests(unittest.TestCase):
@@ -166,92 +167,109 @@ class ChordTests(unittest.TestCase):
         ref = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min']
         est = ['N', 'N',     'C:aug', 'C:dim', 'C:dim']
         ans = [1.0,  0.0,     1.0,     0.0,     1.0]
-        self.assertEqual(chord.compare_thirds(ref, est).tolist(), ans)
+        computed = [chord.thirds([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
         ref = ['C:maj',  'G:min',  'C:maj', 'C:min',   'C:min']
         est = ['C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:min7']
         ans = [1.0,       0.0,      0.0,     1.0,       1.0]
-        self.assertEqual(chord.compare_thirds(ref, est).tolist(), ans)
+        computed = [chord.thirds([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
         ref = ['C:maj',  'F:maj',  'C:maj',     'A:maj', 'A:maj']
         est = ['C:maj6', 'F:min6', 'C:minmaj7', 'A:7',   'A:9']
         ans = [1.0,       0.0,      0.0,         1.0,     1.0]
-        self.assertEqual(chord.compare_thirds(ref, est).tolist(), ans)
+        computed = [chord.thirds([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
     def test_compare_thirds_inv(self):
         ref = ['C:maj/5',  'G:min',    'C:maj',   'C:min/b3',   'C:min']
         est = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:hdim7/b3', 'C:dim']
         ans = [1.0,         0.0,        0.0,       1.0,          1.0]
-        self.assertEqual(chord.compare_thirds_inv(ref, est).tolist(), ans)
+        computed = [chord.thirds_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
     def test_compare_triads(self):
         ref = ['C:min',  'C:maj', 'C:maj', 'C:min', 'C:maj']
         est = ['C:min7', 'C:7',   'C:aug', 'C:dim', 'C:sus2']
         ans = [1.0,       1.0,     0.0,     0.0,     0.0]
-        self.assertEqual(chord.compare_triads(ref, est).tolist(), ans)
+        computed = [chord.triads([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
+
         ref = ['C:maj',  'G:min',     'C:maj', 'C:min',   'C:min']
         est = ['C:sus4', 'G:minmaj7', 'G:maj', 'C:hdim7', 'C:min6']
         ans = [0.0,       1.0,         0.0,     0.0,       1.0]
-        self.assertEqual(chord.compare_triads(ref, est).tolist(), ans)
+        computed = [chord.triads([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
     def test_compare_triads_inv(self):
         ref = ['C:maj/5',  'G:min',    'C:maj', 'C:min/b3',  'C:min/b3']
         est = ['C:maj7/5', 'G:min7/5', 'C:7/5', 'C:min6/b3', 'C:dim/b3']
         ans = [1.0,         0.0,        0.0,     1.0,         0.0]
-        self.assertEqual(chord.compare_triads_inv(ref, est).tolist(), ans)
+        computed = [chord.triads_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
     def test_compare_tetrads(self):
         ref = ['C:min',  'C:maj',  'C:7', 'C:maj7',   'C:sus2']
         est = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2']
         ans = [0.0,       0.0,      1.0,   1.0,        1.0]
-        self.assertEqual(chord.compare_tetrads(ref, est).tolist(), ans)
+        computed = [chord.tetrads([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
         # TODO(ejhumphrey): Revisit how minmaj7's are mapped.
         ref = ['C:7/3',   'G:min',  'C:maj', 'C:min',   'C:min']
         est = ['C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7']  # um..?
         ans = [1.0,        0.0,      0.0,     0.0,       1.0]
-        self.assertEqual(chord.compare_tetrads(ref, est).tolist(), ans)
+        computed = [chord.tetrads([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
     def test_compare_tetrads_inv(self):
         ref = ['C:maj7/5', 'G:min',    'C:7/5',  'C:min/b3',   'C:min']
         est = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:minmaj7/7']
         ans = [0.0,         0.0,        1.0,      0.0,          0.0]
-        self.assertEqual(chord.compare_tetrads_inv(ref, est).tolist(), ans)
+        computed = [chord.tetrads_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
     def test_compare_majmin(self):
         ref = ['N', 'C:maj', 'C:maj', 'C:aug', 'C:min', 'G:maj7']
         est = ['N', 'N',     'C:aug', 'C:maj', 'C:dim', 'G']
         ans = [1.0,  0.0,     0.0,     -1.0,     0.0,    1.0]
-        self.assertEqual(chord.compare_majmin(ref, est).tolist(), ans)
+        computed = [chord.majmin([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
     def test_compare_majmin_inv(self):
         ref = ['C:maj/5',  'G:min',    'C:maj/5', 'C:hdim7/b3', 'C:min7']
         est = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:min/b3',   'C:min']
         ans = [0.0,         0.0,        1.0,       -1.0,         1.0]
-        self.assertEqual(chord.compare_majmin_inv(ref, est).tolist(), ans)
+        computed = [chord.majmin_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
         ref = ['C:maj/4', 'G:min/b3', 'C:maj7/5', 'C:maj/2',  'C:7']
         est = ['C:maj/4', 'G:min/b3', 'C:maj/5',  'C:sus2/2', 'C:maj']
         ans = [-1.0,       1.0,        1.0,        -1.0,       1.0]
-        self.assertEqual(chord.compare_majmin_inv(ref, est).tolist(), ans)
+        computed = [chord.majmin_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
     def test_compare_sevenths(self):
         ref = ['C:min',  'C:maj',  'C:7', 'C:maj7',   'C:sus2']
         est = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2']
         ans = [0.0,       0.0,      1.0,   1.0,        -1.0]
-        self.assertEqual(chord.compare_sevenths(ref, est).tolist(), ans)
+        computed = [chord.sevenths([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
         # TODO(ejhumphrey): Revisit how minmaj7's are mapped.
         ref = ['C:7/3',   'G:min',  'C:maj', 'C:hdim7', 'C:7']
         est = ['C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:maj7']
         ans = [1.0,        0.0,      0.0,     -1.0,      0.0]
-        self.assertEqual(chord.compare_sevenths(ref, est).tolist(), ans)
+        computed = [chord.sevenths([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
-    def test_compare_sevents_inv(self):
+    def test_compare_sevenths_inv(self):
         ref = ['C:maj7/5', 'G:min',    'C:7/5',  'C:dim7/b3', 'C:min7/b7']
         est = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:dim7/b3', 'C:min7/b7']
         ans = [0.0,         0.0,        1.0,      -1.0,        1.0]
-        self.assertEqual(chord.compare_sevenths_inv(ref, est).tolist(), ans)
+        computed = [chord.sevenths_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
+        self.assertEqual(computed, ans)
 
 if __name__ == "__main__":
     unittest.main()
