@@ -13,13 +13,13 @@ A_TOL = 1e-5
 # Path to the fixture files
 REF_GLOB    = 'data/segment/ref*.lab'
 EST_GLOB    = 'data/segment/est*.lab'
-MIREX_GLOB  = 'data/segment/output*.json'
+SCORES_GLOB  = 'data/segment/output*.json'
 
 def generate_data():
 
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
-    sco_files = sorted(glob.glob(MIREX_GLOB))
+    sco_files = sorted(glob.glob(SCORES_GLOB))
 
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         ref_t, ref_l = mir_eval.io.load_intervals(ref_f)
