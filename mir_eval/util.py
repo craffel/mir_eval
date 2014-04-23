@@ -545,6 +545,5 @@ def validate_intervals(intervals):
         raise ValueError('Negative interval times found')
 
     # Make sure all intervals have strictly positive duration
-    for start, end in intervals:
-        if end - start <= 0:
-            raise ValueError('Non-positive interval detected: [%.3f, %.3f]' % (start, end))
+    if (intervals[:, 1] <= intervals[:, 0]).any():
+        raise ValueError('All interval durations must be strictly positive')
