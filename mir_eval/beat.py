@@ -577,6 +577,7 @@ def _get_entropy(reference_beats, estimated_beats, bins):
 METRICS = collections.OrderedDict()
 METRICS['F-measure'] = f_measure
 METRICS['Cemgil'] = cemgil
+METRICS['Goto'] = goto
 METRICS['P-score'] = p_score
 METRICS['Continuity'] = continuity
 METRICS['Information Gain'] = information_gain
