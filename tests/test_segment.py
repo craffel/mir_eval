@@ -1,5 +1,5 @@
 '''
-Unit tests for mir_eval.segment
+Unit tests for mir_eval.structure and mir_eval.boundary
 '''
 
 import numpy as np
@@ -70,7 +70,7 @@ def test_boundary_deviation():
     for ref_t, ref_l, est_t, est_l, scores in generate_data():
         # Test boundary deviation
         yield (__test_deviation, ref_t, est_t)
-    
+
     # Done
     pass
 
@@ -103,7 +103,7 @@ def test_structure_rand():
         _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
 
         ari = mir_eval.structure.ari(_ref_t, _ref_l, _est_t, _est_l)
-        
+
         print ari
         print scores['ARI']
 
@@ -122,7 +122,7 @@ def test_structure_mutual_information():
         _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
 
         mi, ami, nmi = mir_eval.structure.mutual_information(_ref_t, _ref_l, _est_t, _est_l)
-        
+
         print mi, ami, nmi
         print scores['MI'], scores['AMI'], scores['NMI']
 
@@ -144,7 +144,7 @@ def test_structure_entropy():
         _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
 
         s_over, s_under, s_f = mir_eval.structure.nce(_ref_t, _ref_l, _est_t, _est_l)
-        
+
         print s_over, s_under, s_f
         print scores['S_Over'], scores['S_Under'], scores['S_F']
 
@@ -158,4 +158,3 @@ def test_structure_entropy():
 
     # Done
     pass
-

@@ -112,14 +112,14 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
         return 0.0, 0.0, 0.0
 
     matching    = util.match_events(reference_boundaries, 
-                                    estimated_boundaries, 
+                                    estimated_boundaries,
                                     window)
-    
+
     precision   = float(len(matching)) / len(estimated_boundaries)
     recall      = float(len(matching)) / len(reference_boundaries)
-    
+
     f_measure   = util.f_measure(precision, recall, beta=beta)
-    
+
     return precision, recall, f_measure
 
 @validate
@@ -175,4 +175,3 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
 METRICS = collections.OrderedDict()
 METRICS['detection'] = detection
 METRICS['deviation'] = deviation
-
