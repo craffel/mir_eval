@@ -1,275 +1,324 @@
 """
+Unit tests for mir_eval.chord
 """
 
-import unittest
-from mir_eval import chord
+import mir_eval
 import numpy as np
+import nose.tools
+import warnings
+
+def __check_valid(function, parameters, result):
+    ''' Helper function for checking the output of a function '''
+    assert function(*parameters) == result
 
 
-class ChordTests(unittest.TestCase):
+def __check_exception(function, parameters, exception):
+    ''' Makes sure the provided function throws the provided
+    exception given the provided input '''
+    nose.tools.assert_raises(exception, function, *parameters)
 
-    def setUp(self):
-        pass
 
-    def tearDown(self):
-        pass
+def test_pitch_class_to_semitone():
+    valid_classes = ['Gbb', 'G', 'G#', 'Cb', 'B#']
+    valid_semitones = [5, 7, 8, 11, 0]
 
-    def test_pitch_class_to_semitone(self):
-        self.assertEqual(chord.pitch_class_to_semitone('Gbb'), 5)
-        self.assertEqual(chord.pitch_class_to_semitone('G'), 7)
-        self.assertEqual(chord.pitch_class_to_semitone('G#'), 8)
-        self.assertEqual(chord.pitch_class_to_semitone('Cb'), 11)
-        self.assertEqual(chord.pitch_class_to_semitone('B#'), 0)
+    for pitch_class, semitone in zip(valid_classes, valid_semitones):
+        yield (__check_valid, mir_eval.chord.pitch_class_to_semitone,
+               (pitch_class,), semitone)
 
-        self.assertRaises(
-            chord.InvalidChordException,
-            chord.pitch_class_to_semitone, "Cab")
+    invalid_classes = ['Cab', '#C', 'bG']
 
-        self.assertRaises(
-            chord.InvalidChordException,
-            chord.pitch_class_to_semitone, "#C")
+    for pitch_class in invalid_classes:
+        yield (__check_exception, mir_eval.chord.pitch_class_to_semitone,
+               (pitch_class,), mir_eval.chord.InvalidChordException)
 
-        self.assertRaises(
-            chord.InvalidChordException,
-            chord.pitch_class_to_semitone, "bG")
 
-    def test_scale_degree_to_semitone(self):
-        self.assertEqual(chord.scale_degree_to_semitone('b7'), 10)
-        self.assertEqual(chord.scale_degree_to_semitone('#3'), 5)
-        self.assertEqual(chord.scale_degree_to_semitone('1'), 0)
-        self.assertEqual(chord.scale_degree_to_semitone('b1'), 11)
-        self.assertEqual(chord.scale_degree_to_semitone('#7'), 0)
-        self.assertEqual(chord.scale_degree_to_semitone('bb5'), 5)
+def test_scale_degree_to_semitone():
+    valid_degrees = ['b7', '#3', '1', 'b1', '#7', 'bb5']
+    valid_semitones = [10, 5, 0, 11, 0, 5]
 
-        self.assertRaises(
-            chord.InvalidChordException,
-            chord.scale_degree_to_semitone, "7b")
+    for scale_degree, semitone in zip(valid_degrees, valid_semitones):
+        yield (__check_valid, mir_eval.chord.scale_degree_to_semitone,
+               (scale_degree,), semitone)
 
-        self.assertRaises(
-            chord.InvalidChordException,
-            chord.scale_degree_to_semitone, "4#")
+    invalid_degrees = ['7b', '4#', '77']
 
-        self.assertRaises(
-            chord.InvalidChordException,
-            chord.scale_degree_to_semitone, "77")
+    for scale_degree in invalid_degrees:
+        yield (__check_exception, mir_eval.chord.scale_degree_to_semitone,
+               (scale_degree,), mir_eval.chord.InvalidChordException)
 
-    def test_well_formedness(self):
-        # Good chords should pass.
-        for chord_label in ['C', 'Eb:min/5', 'A#:dim7',
-                            'B:maj(*1,*5)/3', 'A#:sus4']:
-            chord.validate_chord_label(chord_label)
 
-        # Bad chords should fail.
-        self.assertRaises(chord.InvalidChordException,
-                          chord.validate_chord_label, "C::maj")
-        self.assertRaises(chord.InvalidChordException,
-                          chord.validate_chord_label, "C//5")
-        self.assertRaises(chord.InvalidChordException,
-                          chord.validate_chord_label, "C((4)")
-        self.assertRaises(chord.InvalidChordException,
-                          chord.validate_chord_label, "C5))")
-        self.assertRaises(chord.InvalidChordException,
-                          chord.validate_chord_label, "C:maj(*3/3")
-        self.assertRaises(chord.InvalidChordException,
-                          chord.validate_chord_label, "Cmaj*3/3)")
+def test_validate_chord_label():
+    valid_labels = ['C', 'Eb:min/5', 'A#:dim7', 'B:maj(*1,*5)/3', 'A#:sus4']
+    # For valid labels, calling the function without an error = pass
+    for chord_label in valid_labels:
+        yield (mir_eval.chord.validate_chord_label, chord_label)
 
-    def test_split(self):
-        self.assertEqual(chord.split('C'), ['C', 'maj', set(), '1'])
-        self.assertEqual(chord.split('B:maj(*1,*3)/5'),
-                         ['B', 'maj', set(['*1', '*3']), '5'])
-        self.assertEqual(chord.split('Ab:min/b3'), ['Ab', 'min', set(), 'b3'])
-        self.assertEqual(chord.split('N'), ['N', '', set(), ''])
+    invalid_labels = ["C::maj", "C//5", "C((4)", "C5))",
+                      "C:maj(*3/3", "Cmaj*3/3)"]
 
-    def test_join(self):
-        self.assertEqual(chord.join('F#'), 'F#')
-        self.assertEqual(chord.join('F#', quality='hdim7'), 'F#:hdim7')
-        self.assertEqual(
-            chord.join('F#', extensions={'*b3', '4'}), 'F#:(*b3,4)')
-        self.assertEqual(chord.join('F#', bass='b7'), 'F#/b7')
-        self.assertEqual(chord.join('F#', extensions={'*b3', '4'}, bass='b7'),
-                         'F#:(*b3,4)/b7')
-        self.assertEqual(chord.join('F#', quality='hdim7', bass='b7'),
-                         'F#:hdim7/b7')
-        self.assertEqual(chord.join('F#', 'hdim7', {'*b3', '4'}, 'b7'),
-                         'F#:hdim7(*b3,4)/b7')
+    for chord_label in invalid_labels:
+        yield (__check_exception, mir_eval.chord.validate_chord_label,
+               (chord_label,), mir_eval.chord.InvalidChordException)
 
-    def test_rotate_bitmaps_to_roots(self):
-        bitmaps = [
-            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]]
-        roots = [0, 5, 11]
-        expected_bitmaps = [
-            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-            [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]]
-        ans = chord.rotate_bitmaps_to_roots(bitmaps, roots).tolist()
-        self.assertEqual(ans, expected_bitmaps)
+def test_split():
+    labels = ['C', 'B:maj(*1,*3)/5', 'Ab:min/b3', 'N']
+    splits = [['C', 'maj', set(), '1'],
+              ['B', 'maj', set(['*1', '*3']), '5'],
+              ['Ab', 'min', set(), 'b3'],
+              ['N', '', set(), '']]
 
-    def test_encode(self):
-        root, quality, notes, bass = chord.encode('B:maj(*1,*3)/5')
-        self.assertEqual(root, 11)
-        self.assertEqual(quality.tolist(),
-                         [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0])
-        self.assertEqual(notes.tolist(),
-                         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
-        self.assertEqual(bass, 7)
+    for chord_label, split_chord in zip(labels, splits):
+        yield (__check_valid, mir_eval.chord.split,
+               (chord_label,), split_chord)
 
-        root, quality, notes, bass = chord.encode('G:dim')
-        self.assertEqual(root, 7)
-        self.assertEqual(quality.tolist(),
-                         [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0])
-        self.assertEqual(notes.tolist(),
-                         [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0])
-        self.assertEqual(bass, 0)
 
-        # Non-chord bass notes *must* be explicitly named as extensions when
-        #   STRICT_BASS_INTERVALS == True
-        chord.STRICT_BASS_INTERVALS = True
-        self.assertRaises(
-            chord.InvalidChordException, chord.encode, 'G:dim(4)/6')
-        # Otherwise, we can cut a little slack.
-        chord.STRICT_BASS_INTERVALS = False
-        root, quality, notes, bass = chord.encode('G:dim(4)/6')
-        self.assertEqual(bass, 9)
-        self.assertEqual(notes.tolist(),
-                         [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0])
+def test_join():
+    # Arguments are root, quality, extensions, bass
+    splits = [('F#', '', None, ''),
+              ('F#', 'hdim7', None, ''),
+              ('F#', '', {'*b3', '4'}, ''),
+              ('F#', '', None, 'b7'),
+              ('F#', '', {'*b3', '4'}, 'b7'),
+              ('F#', 'hdim7', None, 'b7'),
+              ('F#', 'hdim7', {'*b3', '4'}, 'b7')]
+    labels = ['F#', 'F#:hdim7', 'F#:(*b3,4)', 'F#/b7',
+              'F#:(*b3,4)/b7', 'F#:hdim7/b7', 'F#:hdim7(*b3,4)/b7']
 
-    def test_encode_many(self):
-        input_list = ['B:maj(*1,*3)/5',
-                      'B:maj(*1,*3)/5',
-                      'N',
-                      'C:min',
-                      'C:min']
-        expected_roots = [11, 11, -1, 0, 0]
-        expected_qualities = [
-            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-            [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]
-        ]
-        expected_notes = [
-            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-            [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-        ]
-        expected_basses = [7, 7, -1, 0, 0]
-        roots, qualities, notes, basses = chord.encode_many(input_list)
-        self.assertEqual(roots.tolist(), expected_roots)
-        self.assertEqual(qualities.tolist(), expected_qualities)
-        self.assertEqual(notes.tolist(), expected_notes)
-        self.assertEqual(basses.tolist(), expected_basses)
+    for split_chord, chord_label in zip(splits, labels):
+        yield (__check_valid, mir_eval.chord.join,
+               split_chord, chord_label)
 
-    def test_compare_thirds(self):
-        ref = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min']
-        est = ['N', 'N',     'C:aug', 'C:dim', 'C:dim']
-        ans = [1.0,  0.0,     1.0,     0.0,     1.0]
-        computed = [chord.thirds([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
 
-        ref = ['C:maj',  'G:min',  'C:maj', 'C:min',   'C:min']
-        est = ['C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:min7']
-        ans = [1.0,       0.0,      0.0,     1.0,       1.0]
-        computed = [chord.thirds([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+def test_rotate_bitmaps_to_roots():
+    def __check_bitmaps(bitmaps, roots, expected_bitmaps):
+        ''' Helper function for checking bitmaps_to_roots '''
+        ans = mir_eval.chord.rotate_bitmaps_to_roots(bitmaps, roots)
+        assert np.all(ans == expected_bitmaps)
 
-        ref = ['C:maj',  'F:maj',  'C:maj',     'A:maj', 'A:maj']
-        est = ['C:maj6', 'F:min6', 'C:minmaj7', 'A:7',   'A:9']
-        ans = [1.0,       0.0,      0.0,         1.0,     1.0]
-        computed = [chord.thirds([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+    bitmaps = [
+        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]]
+    roots = [0, 5, 11]
+    expected_bitmaps = [
+        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]]
 
-    def test_compare_thirds_inv(self):
-        ref = ['C:maj/5',  'G:min',    'C:maj',   'C:min/b3',   'C:min']
-        est = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:hdim7/b3', 'C:dim']
-        ans = [1.0,         0.0,        0.0,       1.0,          1.0]
-        computed = [chord.thirds_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+    # The function can operate on many bitmaps/roots at a time
+    # but we should only test them one at a time.
+    for bitmap, root, expected_bitmap in zip(bitmaps, roots, expected_bitmaps):
+        yield (__check_bitmaps, [bitmap], [root], [expected_bitmap])
 
-    def test_compare_triads(self):
-        ref = ['C:min',  'C:maj', 'C:maj', 'C:min', 'C:maj']
-        est = ['C:min7', 'C:7',   'C:aug', 'C:dim', 'C:sus2']
-        ans = [1.0,       1.0,     0.0,     0.0,     0.0]
-        computed = [chord.triads([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
 
-        ref = ['C:maj',  'G:min',     'C:maj', 'C:min',   'C:min']
-        est = ['C:sus4', 'G:minmaj7', 'G:maj', 'C:hdim7', 'C:min6']
-        ans = [0.0,       1.0,         0.0,     0.0,       1.0]
-        computed = [chord.triads([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+def test_encode():
+    def __check_encode(label, expected_root, expected_quality,
+                        expected_notes, expected_bass):
+        ''' Helper function for checking encode '''
+        root, quality, notes, bass = mir_eval.chord.encode(label)
+        assert root == expected_root
+        assert np.all(quality == expected_quality)
+        assert np.all(notes == expected_notes)
+        assert bass == expected_bass
 
-    def test_compare_triads_inv(self):
-        ref = ['C:maj/5',  'G:min',    'C:maj', 'C:min/b3',  'C:min/b3']
-        est = ['C:maj7/5', 'G:min7/5', 'C:7/5', 'C:min6/b3', 'C:dim/b3']
-        ans = [1.0,         0.0,        0.0,     1.0,         0.0]
-        computed = [chord.triads_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+    labels = ['B:maj(*1,*3)/5', 'G:dim']
+    expected_roots = [11, 7]
+    expected_qualities = [[1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+                          [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]]
+    expected_notes = [[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                      [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]]
+    expected_bass = [7, 0]
 
-    def test_compare_tetrads(self):
-        ref = ['C:min',  'C:maj',  'C:7', 'C:maj7',   'C:sus2']
-        est = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2']
-        ans = [0.0,       0.0,      1.0,   1.0,        1.0]
-        computed = [chord.tetrads([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+    for label, e_root, e_quality, e_notes, e_bass in zip(labels,
+                                                         expected_roots,
+                                                         expected_qualities,
+                                                         expected_notes,
+                                                         expected_bass):
+        yield (__check_encode, label, e_root, e_quality, e_notes, e_bass)
 
-        # TODO(ejhumphrey): Revisit how minmaj7's are mapped.
-        ref = ['C:7/3',   'G:min',  'C:maj', 'C:min',   'C:min']
-        est = ['C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7']  # um..?
-        ans = [1.0,        0.0,      0.0,     0.0,       1.0]
-        computed = [chord.tetrads([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+    # Non-chord bass notes *must* be explicitly named as extensions when
+    #   STRICT_BASS_INTERVALS == True
+    mir_eval.chord.STRICT_BASS_INTERVALS = True
+    yield (__check_exception, mir_eval.chord.encode,
+           ('G:dim(4)/6',), mir_eval.chord.InvalidChordException)
+    # Otherwise, we can cut a little slack.
+    mir_eval.chord.STRICT_BASS_INTERVALS = False
+    yield (__check_encode, 'G:dim(4)/6', 7,
+                           [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+                           [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0], 9)
 
-    def test_compare_tetrads_inv(self):
-        ref = ['C:maj7/5', 'G:min',    'C:7/5',  'C:min/b3',   'C:min']
-        est = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:minmaj7/7']
-        ans = [0.0,         0.0,        1.0,      0.0,          0.0]
-        computed = [chord.tetrads_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+def test_encode_many():
+    def __check_encode_many(labels, expected_roots, expected_qualities,
+                            expected_notes, expected_basses):
+        ''' Does all of the logic for checking encode_many '''
+        roots, qualities, notes, basses = mir_eval.chord.encode_many(labels)
+        assert np.all(roots == expected_roots)
+        assert np.all(qualities == expected_qualities)
+        assert np.all(notes == expected_notes)
+        assert np.all(basses == expected_basses)
 
-    def test_compare_majmin(self):
-        ref = ['N', 'C:maj', 'C:maj', 'C:aug', 'C:min', 'G:maj7']
-        est = ['N', 'N',     'C:aug', 'C:maj', 'C:dim', 'G']
-        ans = [1.0,  0.0,     0.0,     -1.0,     0.0,    1.0]
-        computed = [chord.majmin([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+    labels = ['B:maj(*1,*3)/5',
+              'B:maj(*1,*3)/5',
+              'N',
+              'C:min',
+              'C:min']
+    expected_roots = [11, 11, -1, 0, 0]
+    expected_qualities = [
+        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+        [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]]
+    expected_notes = [
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+        [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]]
+    expected_basses = [7, 7, -1, 0, 0]
 
-    def test_compare_majmin_inv(self):
-        ref = ['C:maj/5',  'G:min',    'C:maj/5', 'C:hdim7/b3', 'C:min7']
-        est = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:min/b3',   'C:min']
-        ans = [0.0,         0.0,        1.0,       -1.0,         1.0]
-        computed = [chord.majmin_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+    yield (__check_encode_many, labels, expected_roots, expected_qualities,
+           expected_notes, expected_basses)
 
-        ref = ['C:maj/4', 'G:min/b3', 'C:maj7/5', 'C:maj/2',  'C:7']
-        est = ['C:maj/4', 'G:min/b3', 'C:maj/5',  'C:sus2/2', 'C:maj']
-        ans = [-1.0,       1.0,        1.0,        -1.0,       1.0]
-        computed = [chord.majmin_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
 
-    def test_compare_sevenths(self):
-        ref = ['C:min',  'C:maj',  'C:7', 'C:maj7',   'C:sus2']
-        est = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2']
-        ans = [0.0,       0.0,      1.0,   1.0,        -1.0]
-        computed = [chord.sevenths([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+def __check_one_metric(metric, ref_label, est_label, score):
+    ''' Checks that a metric function produces ans given ref_label and est_label '''
+    # We provide a dummy interval.  We're just checking one pair
+    # of labels at a time.
+    assert metric([ref_label], [est_label], np.array([[0, 1]])) == score
 
-        # TODO(ejhumphrey): Revisit how minmaj7's are mapped.
-        ref = ['C:7/3',   'G:min',  'C:maj', 'C:hdim7', 'C:7']
-        est = ['C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:maj7']
-        ans = [1.0,        0.0,      0.0,     -1.0,      0.0]
-        computed = [chord.sevenths([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
 
-    def test_compare_sevenths_inv(self):
-        ref = ['C:maj7/5', 'G:min',    'C:7/5',  'C:dim7/b3', 'C:min7/b7']
-        est = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:dim7/b3', 'C:min7/b7']
-        ans = [0.0,         0.0,        1.0,      -1.0,        1.0]
-        computed = [chord.sevenths_inv([r], [e], np.array([[0, 1]])) for r, e in zip(ref, est)]
-        self.assertEqual(computed, ans)
+def __check_not_comparable(metric, ref_label, est_label):
+    ''' Checks that ref_label is not comparable to est_label by metric '''
+    warnings.simplefilter('error')
+    nose.tools.assert_raises(UserWarning, metric, [ref_label],
+                             [est_label], np.array([[0, 1]]))
 
-if __name__ == "__main__":
-    unittest.main()
+def test_thirds():
+    ref_labels = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min',
+                  'C:maj', 'G:min', 'C:maj', 'C:min', 'C:min',
+                  'C:maj', 'F:maj', 'C:maj', 'A:maj', 'A:maj']
+    est_labels = ['N', 'N', 'C:aug', 'C:dim', 'C:dim',
+                  'C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:min7',
+                  'C:maj6', 'F:min6', 'C:minmaj7', 'A:7', 'A:9']
+    scores = [1.0, 0.0, 1.0, 0.0, 1.0,
+              1.0, 0.0, 0.0, 1.0, 1.0,
+              1.0, 0.0, 0.0, 1.0, 1.0]
+
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.thirds,
+               ref_label, est_label, score)
+
+
+def test_thirds_inv():
+    ref_labels = ['C:maj/5',  'G:min',    'C:maj',   'C:min/b3',   'C:min']
+    est_labels = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:hdim7/b3', 'C:dim']
+    scores = [1.0, 0.0, 0.0, 1.0, 1.0]
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.thirds_inv,
+               ref_label, est_label, score)
+
+
+def test_triads():
+    ref_labels = ['C:min',  'C:maj', 'C:maj', 'C:min', 'C:maj',
+                  'C:maj',  'G:min', 'C:maj', 'C:min', 'C:min']
+    est_labels = ['C:min7', 'C:7',   'C:aug', 'C:dim', 'C:sus2',
+                  'C:sus4', 'G:minmaj7', 'G:maj', 'C:hdim7', 'C:min6']
+    scores = [1.0, 1.0, 0.0, 0.0, 0.0,
+              0.0, 1.0, 0.0, 0.0, 1.0]
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.triads,
+               ref_label, est_label, score)
+
+
+def test_triads_inv():
+    ref_labels = ['C:maj/5',  'G:min',    'C:maj', 'C:min/b3',  'C:min/b3']
+    est_labels = ['C:maj7/5', 'G:min7/5', 'C:7/5', 'C:min6/b3', 'C:dim/b3']
+    scores = [1.0, 0.0, 0.0, 1.0, 0.0]
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.triads_inv,
+               ref_label, est_label, score)
+
+
+def test_tetrads():
+    # TODO(ejhumphrey): Revisit how minmaj7's are mapped.
+    ref_labels = ['C:min', 'C:maj', 'C:7', 'C:maj7', 'C:sus2',
+                  'C:7/3', 'G:min', 'C:maj', 'C:min', 'C:min']
+    est_labels = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2',
+                  'C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7'] # um..?
+    scores = [0.0, 0.0, 1.0, 1.0, 1.0,
+              1.0, 0.0, 0.0, 0.0, 1.0]
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.tetrads,
+               ref_label, est_label, score)
+
+
+def test_tetrads_inv():
+    ref_labels = ['C:maj7/5', 'G:min', 'C:7/5', 'C:min/b3', 'C:min']
+    est_labels = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:minmaj7/7']
+    scores = [0.0, 0.0, 1.0, 0.0, 0.0]
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.tetrads_inv,
+               ref_label, est_label, score)
+
+def test_majmin():
+    ref_labels = ['N', 'C:maj', 'C:maj', 'C:min', 'G:maj7']
+    est_labels = ['N', 'N', 'C:aug', 'C:dim', 'G']
+    scores = [1.0,  0.0, 0.0, 0.0, 1.0]
+
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.majmin,
+               ref_label, est_label, score)
+
+    __check_not_comparable(mir_eval.chord.majmin, 'C:aug', 'C:maj')
+
+
+def test_majmin_inv():
+    ref_labels = ['C:maj/5',  'G:min',    'C:maj/5', 'C:min7',
+                  'G:min/b3', 'C:maj7/5', 'C:7']
+    est_labels = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:min',
+                  'G:min/b3', 'C:maj/5', 'C:maj']
+    scores = [0.0, 0.0, 1.0, 1.0,
+              1.0, 1.0, 1.0]
+
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.majmin_inv,
+               ref_label, est_label, score)
+
+    ref_not_comparable = ['C:hdim7/b3', 'C:maj/4', 'C:maj/2']
+    est_not_comparable = ['C:min/b3', 'C:maj/4', 'C:sus2/2']
+    for ref_label, est_label in zip(ref_not_comparable, est_not_comparable):
+        yield (__check_not_comparable, mir_eval.chord.majmin_inv,
+               ref_label, est_label)
+
+
+def test_sevenths():
+    ref_labels = ['C:min',  'C:maj',  'C:7', 'C:maj7',
+                  'C:7/3',   'G:min',  'C:maj', 'C:7']
+    est_labels = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5',
+                  'C:11/b7', 'G:sus2', 'G:maj', 'C:maj7']
+    scores = [0.0, 0.0, 1.0, 1.0,
+              1.0, 0.0, 0.0, 0.0]
+
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.sevenths,
+               ref_label, est_label, score)
+
+    ref_not_comparable = ['C:sus2', 'C:hdim7']
+    est_not_comparable = ['C:sus2/2', 'C:hdim7']
+    for ref_label, est_label in zip(ref_not_comparable, est_not_comparable):
+        yield (__check_not_comparable, mir_eval.chord.sevenths,
+               ref_label, est_label)
+
+
+def test_sevenths_inv():
+    ref_labels = ['C:maj7/5', 'G:min',    'C:7/5', 'C:min7/b7']
+    est_labels = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:min7/b7']
+    scores = [0.0, 0.0, 1.0, 1.0]
+
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.sevenths_inv,
+               ref_label, est_label, score)
+
+    __check_not_comparable(mir_eval.chord.sevenths_inv, 'C:dim7/b3', 'C:dim7/b3')
