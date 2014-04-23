@@ -22,9 +22,14 @@ def __validate_intervals(intervals):
     if intervals.ndim != 2 or intervals.shape[1] != 2:
         raise ValueError('Segment intervals should be n-by-2 numpy ndarray')
 
-    # Make sure no beat times are negative
+    # Make sure no times are negative
     if (intervals < 0).any():
         raise ValueError('Negative interval times found')
+
+    # Make sure all intervals have strictly positive duration
+    for start, end in intervals:
+        if end - start <= 0:
+            raise ValueError('Non-positive interval detected: [%.3f, %.3f]' % (start, end))
 
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
