@@ -11,22 +11,6 @@ import collections
 
 from . import util
 
-def __validate_intervals(intervals):
-    '''Internal validation function for interval arrays'''
-
-    # Validate interval shape
-    if intervals.ndim != 2 or intervals.shape[1] != 2:
-        raise ValueError('Segment intervals should be n-by-2 numpy ndarray')
-
-    # Make sure no times are negative
-    if (intervals < 0).any():
-        raise ValueError('Negative interval times found')
-
-    # Make sure all intervals have strictly positive duration
-    for start, end in intervals:
-        if end - start <= 0:
-            raise ValueError('Non-positive interval detected: [%.3f, %.3f]' % (start, end))
-
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
     look like valid segment times, and throws helpful errors if not.
@@ -44,7 +28,7 @@ def validate(metric):
     def metric_validated(reference_intervals, estimated_intervals, *args, **kwargs):
         '''Validate both reference and estimated intervals'''
         for intervals in [reference_intervals, estimated_intervals]:
-            __validate_intervals(intervals)
+            util.validate_intervals(intervals)
 
         return metric(reference_intervals, estimated_intervals, *args, **kwargs)
 
@@ -111,7 +95,7 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
         return 0.0, 0.0, 0.0
 
-    matching    = util.match_events(reference_boundaries, 
+    matching    = util.match_events(reference_boundaries,
                                     estimated_boundaries,
                                     window)
 
