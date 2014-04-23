@@ -40,7 +40,7 @@ def validate(metric):
                 raise ValueError('Onset locations should be 1-d numpy ndarray')
             # Make sure no beat times are huge
             if (onsets > 30000).any():
-                raise ValueError('An onset at time {}'.format(beats.max()) + \
+                raise ValueError('An onset at time {}'.format(onsets.max()) + \
                                  ' was found; should be in seconds.')
             # Make sure no beat times are negative
             if (onsets < 0).any():
