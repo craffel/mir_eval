@@ -16,7 +16,7 @@ from collections import OrderedDict
 
 import mir_eval
 
-def evaluate(ref_file=None, prediction_file=None):
+def evaluate(ref_file=None, prediction_file=None, trim=False):
     '''Load data and perform the evaluation'''
 
     # load the data
@@ -39,14 +39,15 @@ def evaluate(ref_file=None, prediction_file=None):
     # Boundary detection
     M['P@0.5'], M['R@0.5'], M['F@0.5']  = mir_eval.boundary.detection(ref_intervals,
                                                                   est_intervals,
-                                                                  window=0.5)
+                                                                  window=0.5, 
+                                                                  trim=trim)
 
     M['P@3.0'], M['R@3.0'], M['F@3.0']  = mir_eval.boundary.detection(ref_intervals,
                                                                  est_intervals,
-                                                                 window=3.0)
+                                                                 window=3.0,
+                                                                 trim=trim)
     # Boundary deviation
-    M['True-to-Pred'], M['Pred-to-True'] = mir_eval.boundary.deviation(ref_intervals,
-                                                                  est_intervals)
+    M['True-to-Pred'], M['Pred-to-True'] = mir_eval.boundary.deviation(ref_intervals, est_intervals, trim=trim)
 
     # Pairwise clustering
     M['Pair-P'], M['Pair-R'], M['Pair-F'] = mir_eval.structure.pairwise(ref_intervals, ref_labels,
@@ -78,6 +79,13 @@ def process_arguments():
     '''Argparse function to get the program parameters'''
 
     parser = argparse.ArgumentParser(description='mir_eval segmentation evaluation')
+
+    parser.add_argument(    '-t',
+                            '--trim',
+                            dest        =   'trim',
+                            default     =   False,
+                            action      =   'store_true',
+                            help        =   'Trim beginning and end markers from boundary evaluation')
 
     parser.add_argument(    'ref_file',
                             action      =   'store',
