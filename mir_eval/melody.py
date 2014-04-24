@@ -226,7 +226,7 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
         est_voicing = np.append(est_voicing, np.zeros(len_diff))
     else:
         est_cent = est_cent[:ref_cent.shape[0]]
-        est_voicing = est_voicing[ref_voicing.shape[0]]
+        est_voicing = est_voicing[:ref_voicing.shape[0]]
 
     return ref_voicing, est_voicing, ref_cent, est_cent
 
