@@ -56,19 +56,7 @@ def validate(metric):
         if estimated_beats.size == 0:
             warnings.warn("Estimated beats are empty.")
         for beats in [reference_beats, estimated_beats]:
-            # Make sure beat locations are 1-d np ndarrays
-            if beats.ndim != 1:
-                raise ValueError('Beat locations should be 1-d numpy ndarray')
-            # Make sure no beat times are huge
-            if (beats > 30000).any():
-                raise ValueError('A beat at time {}'.format(beats.max()) + \
-                                 ' was found; should be in seconds.')
-            # Make sure no beat times are negative
-            if (beats < 0).any():
-                raise ValueError('Negative beat locations found')
-            # Make sure beat times are increasing
-            if (np.diff(beats) < 0).any():
-                raise ValueError('Beats should be in increasing order.')
+            util.validate_events(beats)
         return metric(reference_beats, estimated_beats, *args, **kwargs)
     return metric_validated
 

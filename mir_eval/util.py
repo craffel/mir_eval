@@ -552,3 +552,26 @@ def validate_intervals(intervals):
     # Make sure all intervals have strictly positive duration
     if (intervals[:, 1] <= intervals[:, 0]).any():
         raise ValueError('All interval durations must be strictly positive')
+
+def validate_events(events, max_time=30000.):
+    '''Checks that a 1-d event location ndarray is well-formed, and raises errors if not.
+
+    :parameters:
+        - events : np.ndarray, shape=(n,)
+            Array of event times
+        - max_time : float
+            If an event is found above this time, the user will be warned.
+    '''
+    # Make sure no beat times are huge
+    if (events > max_time).any():
+        raise ValueError('An event at time {} was found; '
+                         'should be in seconds.'.format(events.max()))
+    # Make sure beat locations are 1-d np ndarrays
+    if events.ndim != 1:
+        raise ValueError('Event times should be 1-d numpy ndarray')
+    # Make sure no beat times are negative
+    if (events < 0).any():
+        raise ValueError('Negative event times found')
+    # Make sure beat times are increasing
+    if (np.diff(events) < 0).any():
+        raise ValueError('Events should be in increasing order.')
