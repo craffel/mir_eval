@@ -543,7 +543,8 @@ def validate_intervals(intervals):
 
     # Validate interval shape
     if intervals.ndim != 2 or intervals.shape[1] != 2:
-        raise ValueError('Segment intervals should be n-by-2 numpy ndarray')
+        raise ValueError('Segment intervals should be n-by-2 numpy ndarray, '
+                         'but shape={}'.format(intervals.shape))
 
     # Make sure no times are negative
     if (intervals < 0).any():
@@ -568,7 +569,8 @@ def validate_events(events, max_time=30000.):
                          'should be in seconds.'.format(events.max()))
     # Make sure beat locations are 1-d np ndarrays
     if events.ndim != 1:
-        raise ValueError('Event times should be 1-d numpy ndarray')
+        raise ValueError('Event times should be 1-d numpy ndarray, '
+                         'but shape={}'.format(events.shape))
     # Make sure no beat times are negative
     if (events < 0).any():
         raise ValueError('Negative event times found')
