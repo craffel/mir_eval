@@ -8,6 +8,7 @@
 import numpy as np
 import functools
 import collections
+import warnings
 
 from . import util
 
@@ -27,6 +28,10 @@ def validate(metric):
     @functools.wraps(metric)
     def metric_validated(reference_intervals, estimated_intervals, *args, **kwargs):
         '''Validate both reference and estimated intervals'''
+        if reference_intervals.size == 0:
+            warnings.warn("Reference intervals are empty.")
+        if estimated_intervals.size == 0:
+            warnings.warn("Estimated intervals are empty.")
         for intervals in [reference_intervals, estimated_intervals]:
             util.validate_intervals(intervals)
 
