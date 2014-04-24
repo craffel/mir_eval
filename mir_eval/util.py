@@ -534,7 +534,12 @@ def match_events(ref, est, window):
     return matching
 
 def validate_intervals(intervals):
-    '''Internal validation function for interval arrays'''
+    '''Checks that an (n, 2) interval ndarray is well-formed, and raises errors if not.
+
+    :parameters:
+        - intervals : np.ndarray, shape=(n, 2)
+            Array of interval start/end locations.
+    '''
 
     # Validate interval shape
     if intervals.ndim != 2 or intervals.shape[1] != 2:
