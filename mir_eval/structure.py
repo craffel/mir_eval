@@ -12,6 +12,7 @@ import numpy as np
 import scipy.stats
 import sklearn.metrics.cluster as skmetrics
 import collections
+import warnings
 
 from . import util
 
@@ -46,6 +47,10 @@ def validate(metric):
             if not np.allclose(intervals[0, 0], 0.0):
                 raise ValueError('Segment intervals do not start at 0')
 
+        if reference_intervals.size == 0:
+            warnings.warn("Reference intervals are empty.")
+        if estimated_intervals.size == 0:
+            warnings.warn("Estimated intervals are empty.")
         if not np.allclose(reference_intervals[-1, 1], estimated_intervals[-1, 1]):
             raise ValueError('End times do not match')
 
