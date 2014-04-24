@@ -183,7 +183,7 @@ def test_encode_many():
 
 
 def __check_one_metric(metric, ref_label, est_label, score):
-    ''' Checks that a metric function produces ans given ref_label and est_label '''
+    ''' Checks that a metric function produces score given ref_label and est_label '''
     # We provide a dummy interval.  We're just checking one pair
     # of labels at a time.
     assert metric([ref_label], [est_label], np.array([[0, 1]])) == score
@@ -191,9 +191,16 @@ def __check_one_metric(metric, ref_label, est_label, score):
 
 def __check_not_comparable(metric, ref_label, est_label):
     ''' Checks that ref_label is not comparable to est_label by metric '''
-    warnings.simplefilter('error')
-    nose.tools.assert_raises(UserWarning, metric, [ref_label],
-                             [est_label], np.array([[0, 1]]))
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        # Try to produce the warning
+        score = metric([ref_label], [est_label], np.array([[0, 1]]))
+        assert len(w) == 1
+        assert issubclass(w[-1].category, UserWarning)
+        assert str(w[-1].message) == ("No reference chords were comparable "
+                                      "to estimated chords, returning 0.")
+        # And confirm that the metric is 0
+        assert np.allclose(score, 0)
 
 def test_thirds():
     ref_labels = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min',
@@ -271,7 +278,7 @@ def test_majmin():
         yield (__check_one_metric, mir_eval.chord.majmin,
                ref_label, est_label, score)
 
-    __check_not_comparable(mir_eval.chord.majmin, 'C:aug', 'C:maj')
+    yield (__check_not_comparable, mir_eval.chord.majmin, 'C:aug', 'C:maj')
 
 
 def test_majmin_inv():
@@ -321,4 +328,4 @@ def test_sevenths_inv():
         yield (__check_one_metric, mir_eval.chord.sevenths_inv,
                ref_label, est_label, score)
 
-    __check_not_comparable(mir_eval.chord.sevenths_inv, 'C:dim7/b3', 'C:dim7/b3')
+    yield (__check_not_comparable, mir_eval.chord.sevenths_inv, 'C:dim7/b3', 'C:dim7/b3')
