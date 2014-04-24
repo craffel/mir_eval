@@ -6,6 +6,15 @@ import mir_eval
 import numpy as np
 import nose.tools
 import warnings
+import glob
+import json
+
+A_TOL = 1e-12
+
+# Path to the fixture files
+REF_GLOB = 'data/chord/ref*.lab'
+EST_GLOB = 'data/chord/est*.lab'
+SCORES_GLOB = 'data/chord/output*.json'
 
 def __check_valid(function, parameters, result):
     ''' Helper function for checking the output of a function '''
@@ -202,6 +211,40 @@ def __check_not_comparable(metric, ref_label, est_label):
         # And confirm that the metric is 0
         assert np.allclose(score, 0)
 
+def __regression_test_one_file(metric, reference_file, estimated_file, score):
+    # Load in an example chord
+    ref_intervals, ref_labels = mir_eval.io.load_intervals(reference_file)
+    # Load in an example estimated chord labeling
+    est_intervals, est_labels = mir_eval.io.load_intervals(estimated_file)
+    # Intersect boundaries
+    t_min = max([ref_intervals.min(), est_intervals.min()])
+    t_max = min([ref_intervals.max(), est_intervals.max()])
+    ref_intervals, ref_labels = mir_eval.util.adjust_intervals(
+        ref_intervals, ref_labels, t_min, t_max,
+        mir_eval.chord.NO_CHORD, mir_eval.chord.NO_CHORD)
+    est_intervals, est_labels = mir_eval.util.adjust_intervals(
+        est_intervals, est_labels, t_min, t_max,
+        mir_eval.chord.NO_CHORD, mir_eval.chord.NO_CHORD)
+    # Merge the time-intervals
+    intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+        ref_intervals, ref_labels, est_intervals, est_labels)
+    # Ensure that the score is correct
+    assert np.allclose(metric(ref_labels, est_labels, intervals), score, atol=A_TOL)
+
+def __regression_test_chord_function(metric_name):
+    # Load in all files in the same order
+    ref_files = sorted(glob.glob(REF_GLOB))
+    est_files = sorted(glob.glob(EST_GLOB))
+    sco_files = sorted(glob.glob(SCORES_GLOB))
+    metric = mir_eval.chord.METRICS[metric_name]
+    # Regression tests
+    for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
+        with open(sco_f, 'r') as f:
+            scores = json.load(f)
+        yield (__regression_test_one_file, metric,
+               ref_f, est_f, scores[metric_name])
+
+
 def test_thirds():
     ref_labels = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min',
                   'C:maj', 'G:min', 'C:maj', 'C:min', 'C:min',
@@ -217,14 +260,21 @@ def test_thirds():
         yield (__check_one_metric, mir_eval.chord.thirds,
                ref_label, est_label, score)
 
+    for test in __regression_test_chord_function('thirds'):
+        yield test
+
 
 def test_thirds_inv():
     ref_labels = ['C:maj/5',  'G:min',    'C:maj',   'C:min/b3',   'C:min']
     est_labels = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:hdim7/b3', 'C:dim']
     scores = [1.0, 0.0, 0.0, 1.0, 1.0]
+
     for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
         yield (__check_one_metric, mir_eval.chord.thirds_inv,
                ref_label, est_label, score)
+
+    for test in __regression_test_chord_function('thirds-inv'):
+        yield test
 
 
 def test_triads():
@@ -234,18 +284,26 @@ def test_triads():
                   'C:sus4', 'G:minmaj7', 'G:maj', 'C:hdim7', 'C:min6']
     scores = [1.0, 1.0, 0.0, 0.0, 0.0,
               0.0, 1.0, 0.0, 0.0, 1.0]
+
     for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
         yield (__check_one_metric, mir_eval.chord.triads,
                ref_label, est_label, score)
+
+    for test in __regression_test_chord_function('triads'):
+        yield test
 
 
 def test_triads_inv():
     ref_labels = ['C:maj/5',  'G:min',    'C:maj', 'C:min/b3',  'C:min/b3']
     est_labels = ['C:maj7/5', 'G:min7/5', 'C:7/5', 'C:min6/b3', 'C:dim/b3']
     scores = [1.0, 0.0, 0.0, 1.0, 0.0]
+
     for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
         yield (__check_one_metric, mir_eval.chord.triads_inv,
                ref_label, est_label, score)
+
+    for test in __regression_test_chord_function('triads-inv'):
+        yield test
 
 
 def test_tetrads():
@@ -256,18 +314,27 @@ def test_tetrads():
                   'C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7'] # um..?
     scores = [0.0, 0.0, 1.0, 1.0, 1.0,
               1.0, 0.0, 0.0, 0.0, 1.0]
+
     for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
         yield (__check_one_metric, mir_eval.chord.tetrads,
                ref_label, est_label, score)
+
+    for test in __regression_test_chord_function('tetrads'):
+        yield test
 
 
 def test_tetrads_inv():
     ref_labels = ['C:maj7/5', 'G:min', 'C:7/5', 'C:min/b3', 'C:min']
     est_labels = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:minmaj7/7']
     scores = [0.0, 0.0, 1.0, 0.0, 0.0]
+
     for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
         yield (__check_one_metric, mir_eval.chord.tetrads_inv,
                ref_label, est_label, score)
+
+    for test in __regression_test_chord_function('triads-inv'):
+        yield test
+
 
 def test_majmin():
     ref_labels = ['N', 'C:maj', 'C:maj', 'C:min', 'G:maj7']
@@ -279,6 +346,9 @@ def test_majmin():
                ref_label, est_label, score)
 
     yield (__check_not_comparable, mir_eval.chord.majmin, 'C:aug', 'C:maj')
+
+    for test in __regression_test_chord_function('majmin'):
+        yield test
 
 
 def test_majmin_inv():
@@ -295,9 +365,13 @@ def test_majmin_inv():
 
     ref_not_comparable = ['C:hdim7/b3', 'C:maj/4', 'C:maj/2']
     est_not_comparable = ['C:min/b3', 'C:maj/4', 'C:sus2/2']
+
     for ref_label, est_label in zip(ref_not_comparable, est_not_comparable):
         yield (__check_not_comparable, mir_eval.chord.majmin_inv,
                ref_label, est_label)
+
+    for test in __regression_test_chord_function('majmin-inv'):
+        yield test
 
 
 def test_sevenths():
@@ -318,6 +392,8 @@ def test_sevenths():
         yield (__check_not_comparable, mir_eval.chord.sevenths,
                ref_label, est_label)
 
+    for test in __regression_test_chord_function('sevenths'):
+        yield test
 
 def test_sevenths_inv():
     ref_labels = ['C:maj7/5', 'G:min',    'C:7/5', 'C:min7/b7']
@@ -329,3 +405,6 @@ def test_sevenths_inv():
                ref_label, est_label, score)
 
     yield (__check_not_comparable, mir_eval.chord.sevenths_inv, 'C:dim7/b3', 'C:dim7/b3')
+
+    for test in __regression_test_chord_function('sevenths-inv'):
+        yield test
