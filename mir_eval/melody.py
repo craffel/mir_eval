@@ -38,6 +38,10 @@ def validate_voicing(metric):
             warnings.warn("Reference voicing array is empty.")
         if est_voicing.size == 0:
             warnings.warn("Estimated voicing array is empty.")
+        if ref_voicing.sum() == 0:
+            warnings.warn("Reference melody has no voiced frames.")
+        if est_voicing.sum() == 0:
+            warnings.warn("Estimated melody has no voiced frames.")
         # Make sure they're the same length
         if ref_voicing.shape[0] != est_voicing.shape[0]:
             raise ValueError('Reference and estimated voicing arrays should be the same length.')
@@ -259,7 +263,7 @@ def voicing_measures(ref_voicing, est_voicing):
 
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0:
-        return 0
+        return 0.
 
     # How voicing is computed
     #        | ref_v | !ref_v |
@@ -276,11 +280,17 @@ def voicing_measures(ref_voicing, est_voicing):
 
     # Voicing recall = fraction of voiced frames according the reference that
     # are declared as voiced by the estimate
-    vx_recall = TP/float(TP + FN)
+    if TP + FN == 0:
+        vx_recall = 0.
+    else:
+        vx_recall = TP/float(TP + FN)
 
     # Voicing false alarm = fraction of unvoiced frames according to the
     # reference that are declared as voiced by the estimate
-    vx_false_alm = FP/float(FP + TN + sys.float_info.epsilon)
+    if FP + TN == 0:
+        vx_false_alm = 0.
+    else:
+        vx_false_alm = FP/float(FP + TN)
 
     return vx_recall, vx_false_alm
 
@@ -317,7 +327,10 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_cent.size == 0 or est_cent.size == 0:
-        return 0
+        return 0.
+    # If there are no voiced frames in reference, metric is 0
+    if ref_voicing.sum() == 0:
+        return 0.
 
     # Raw pitch = the number of voiced frames in the reference for which the
     # estimate provides a correct frequency value (within 50 cents).
@@ -362,7 +375,11 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_cent.size == 0 or est_cent.size == 0:
-        return 0
+        return 0.
+
+    # If there are no voiced frames in reference, metric is 0
+    if ref_voicing.sum() == 0:
+        return 0.
 
     # Raw chroma = same as raw pitch except that octave errors are ignored.
     cent_diff = np.abs(ref_cent - est_cent)
@@ -406,7 +423,7 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_cent.size == 0 or est_cent.size == 0:
-        return 0
+        return 0.
 
     # True negatives = frames correctly estimates as unvoiced
     TN = ((ref_voicing == 0)*(est_voicing == 0)).sum()
