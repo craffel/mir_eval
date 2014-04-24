@@ -34,7 +34,12 @@ def collect_fileset(reference_dir, estimation_dir, fext='lab'):
     return ref_files, est_files
 
 
-def evaluate_pair(reference_file, estimation_file, vocabularies=['dyads'],
+def evaluate_pair(reference_file,
+                  estimation_file,
+                  vocabularies=['root', 'majmin',
+                                'majmin-inv',
+                                'sevenths',
+                                'sevenths-inv'],
                   boundary_mode='intersect'):
     '''Load data and perform the evaluation between a pair of annotations.
 
@@ -47,6 +52,7 @@ def evaluate_pair(reference_file, estimation_file, vocabularies=['dyads'],
 
     - vocabularies: list of strings
         Comparisons to make between the reference and estimated sequences.
+        Defaults to ['root', 'majmin', 'majmin-inv', 'sevenths', 'sevenths-inv']
 
     -boundary_mode: str
         Method for resolving sequences of different lengths, one of
@@ -84,12 +90,12 @@ def evaluate_pair(reference_file, estimation_file, vocabularies=['dyads'],
     # Reduce the two annotations to the time intersection of both interval
     #  sequences.
     ref_intervals, ref_labels = mir_eval.util.adjust_intervals(
-        ref_intervals, ref_labels, t_min,
-        t_max, mir_eval.chord.NO_CHORD, mir_eval.chord.NO_CHORD)
+        ref_intervals, ref_labels, t_min, t_max,
+        mir_eval.chord.NO_CHORD, mir_eval.chord.NO_CHORD)
 
     est_intervals, est_labels = mir_eval.util.adjust_intervals(
-        est_intervals, est_labels, t_min,
-        t_max, mir_eval.chord.NO_CHORD, mir_eval.chord.NO_CHORD)
+        est_intervals, est_labels, t_min, t_max,
+        mir_eval.chord.NO_CHORD, mir_eval.chord.NO_CHORD)
 
     # Merge the time-intervals
     intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
