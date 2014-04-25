@@ -52,6 +52,7 @@ def validate_voicing(metric):
         return metric(ref_voicing.astype(bool), est_voicing.astype(bool), *args, **kwargs)
     return metric_validated
 
+
 def validate(metric):
     '''Decorator which checks that voicing and frequency arrays are well-formed.
     To be used in conjunction with validate_voicing
@@ -180,9 +181,9 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
         - ref_freq : ndarray
             Array of reference frequency values
         - est_time : ndarray
-            Time of each reference frequency value
+            Time of each estimated frequency value
         - est_freq : ndarray
-            Array of reference frequency values
+            Array of estimated frequency values
         - base_frequency : float
             Base frequency in Hz for conversion to cents, default 10.0
         - hop : float
