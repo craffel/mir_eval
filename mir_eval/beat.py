@@ -183,7 +183,7 @@ def cemgil(reference_beats,
 @validate
 def goto(reference_beats,
          estimated_beats,
-         goto_threshold=0.2,
+         goto_threshold=0.35,
          goto_mu=0.2,
          goto_sigma=0.2):
     '''
