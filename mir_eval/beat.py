@@ -122,7 +122,7 @@ def f_measure(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0.
     # Compute the best-case matching between reference and estimated onset locations
     matching = util.match_events(reference_beats,
                                  estimated_beats,
@@ -161,7 +161,7 @@ def cemgil(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0, 0
+        return 0., 0.
     # We'll compute Cemgil's accuracy for each variation
     accuracies = []
     for reference_beats in _get_reference_beat_variations(reference_beats):
@@ -215,7 +215,7 @@ def goto(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0.
     # Error for each beat
     beat_error = np.ones(reference_beats.shape[0])
     # Flag for whether the reference and estimated beats are paired
@@ -300,7 +300,7 @@ def p_score(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0.
     # Quantize beats to 10ms
     sampling_rate = int(1.0/0.010)
     # Get the largest time index
@@ -367,7 +367,7 @@ def continuity(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0, 0, 0, 0
+        return 0., 0., 0., 0.
     # Accuracies for each variation
     continuous_accuracies = []
     total_accuracies = []
@@ -479,7 +479,7 @@ def information_gain(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0.
     # Get entropy for reference beats->estimated beats
     # and estimated beats->reference beats
     forward_entropy = _get_entropy(reference_beats, estimated_beats, bins)
