@@ -201,7 +201,7 @@ def goto(reference_beats,
         - estimated_beats : np.ndarray
             query beat times, in seconds
         - goto_threshold : float
-            Threshold of beat error for a beat to be "correct", default 0.2
+            Threshold of beat error for a beat to be "correct", default 0.35
         - goto_mu : float
             The mean of the beat errors in the continuously correct
             track must be less than this, default 0.2
