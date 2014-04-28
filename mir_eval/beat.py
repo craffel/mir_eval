@@ -268,7 +268,7 @@ def goto(reference_beats,
     # If we have a track
     if goto_criteria:
         # Are mean and std of the track less than the required thresholds?
-        if np.mean(np.abs(track)) < goto_mu and np.std(np.abs(track), ddof=1) < goto_sigma:
+        if np.mean(np.abs(track)) < goto_mu and np.std(track, ddof=1) < goto_sigma:
             goto_criteria = 3
     # If all criteria are met, score is 100%!
     return 1.0*(goto_criteria == 3)
