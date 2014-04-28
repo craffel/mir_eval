@@ -249,22 +249,22 @@ def goto(reference_beats,
             else:
                 beat_error[n] = offset/next_interval
     # Get indices of incorrect beats
-    correct_beats = np.flatnonzero(np.abs(beat_error) > goto_threshold)
+    incorrect_beats = np.flatnonzero(np.abs(beat_error) > goto_threshold)
     # All beats are correct (first and last will be 0 so always correct)
-    if correct_beats.shape[0] < 3:
+    if incorrect_beats.shape[0] < 3:
         # Get the track of correct beats
-        track = beat_error[correct_beats[0] + 1:correct_beats[-1] - 1]
+        track = beat_error[incorrect_beats[0] + 1:incorrect_beats[-1] - 1]
         goto_criteria = 1
     else:
         # Get the track of maximal length
-        track_length = np.max(np.diff(correct_beats))
-        track_start = np.nonzero(np.diff(correct_beats) == track_length)[0][0]
+        track_length = np.max(np.diff(incorrect_beats))
+        track_start = np.nonzero(np.diff(incorrect_beats) == track_length)[0][0]
         # Is the track length at least 25% of the song?
         if track_length - 1 > .25*(reference_beats.shape[0] - 2):
             goto_criteria = 1
-            start_beat = correct_beats[track_start]
-            end_beat = correct_beats[track_start + 1]
-            track = beat_error[start_beat:end_beat]
+            start_beat = incorrect_beats[track_start]
+            end_beat = incorrect_beats[track_start + 1]
+            track = beat_error[start_beat:end_beat + 1]
     # If we have a track
     if goto_criteria:
         # Are mean and std of the track less than the required thresholds?
