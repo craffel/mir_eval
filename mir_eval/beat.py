@@ -233,7 +233,7 @@ def goto(reference_beats,
         window_max = reference_beats[n] + next_interval
         # Get estimated beats in the window
         beats_in_window = np.logical_and((estimated_beats >= window_min),
-                                         (estimated_beats <= window_max))
+                                         (estimated_beats < window_max))
         # False negative/positive
         if beats_in_window.sum() == 0 or beats_in_window.sum() > 1:
             paired[n] = 0
