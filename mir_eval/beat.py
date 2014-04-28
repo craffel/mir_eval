@@ -29,7 +29,7 @@ def trim_beats(beats, min_beat_time=5.):
             Trimmed beat array.
     '''
     # Remove beats before min_beat_time
-    return beats[beats > min_beat_time]
+    return beats[beats >= min_beat_time]
 
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
