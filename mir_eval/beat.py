@@ -480,8 +480,6 @@ def information_gain(reference_beats,
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0
-    # To match beat evaluation toolbox
-    bins -= 1
     # Get entropy for reference beats->estimated beats
     # and estimated beats->reference beats
     forward_entropy = _get_entropy(reference_beats, estimated_beats, bins)
@@ -552,7 +550,6 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     raw_bin_values = np.histogram(beat_error, histogram_bins)[0]
     # Add the last bin height to the first bin
     raw_bin_values[0] += raw_bin_values[-1]
-    raw_bin_values = np.delete(raw_bin_values, -1)
     # Turn into a proper probability distribution
     raw_bin_values = raw_bin_values/(1.0*np.sum(raw_bin_values))
     # Set zero-valued bins to 1 to make the entropy calculation well-behaved
