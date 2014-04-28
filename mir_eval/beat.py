@@ -161,7 +161,7 @@ def cemgil(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0, 0
     # We'll compute Cemgil's accuracy for each variation
     accuracies = []
     for reference_beats in _get_reference_beat_variations(reference_beats):
