@@ -20,8 +20,8 @@ SCORES_GLOB = 'data/beat/output*.json'
 def test_trim_beats():
     # Construct dummy beat times [0., 1., ...]
     dummy_beats = np.arange(10, dtype=np.float)
-    # We expect trim_beats to remove all beats <= 5s
-    expected_beats = np.arange(6, 10, dtype=np.float)
+    # We expect trim_beats to remove all beats < 5s
+    expected_beats = np.arange(5, 10, dtype=np.float)
     assert np.allclose(mir_eval.beat.trim_beats(dummy_beats), expected_beats)
 
 
