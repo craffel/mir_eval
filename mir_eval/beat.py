@@ -156,7 +156,7 @@ def cemgil(reference_beats,
     :returns:
         - cemgil_score : float
             Cemgil's score for the original reference beats
-        - cemgil_max :
+        - cemgil_max : float
             The best Cemgil score for all metrical variations
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
