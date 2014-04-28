@@ -367,7 +367,7 @@ def continuity(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0, 0, 0, 0
     # Accuracies for each variation
     continuous_accuracies = []
     total_accuracies = []
