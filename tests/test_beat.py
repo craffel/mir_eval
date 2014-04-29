@@ -46,9 +46,6 @@ def __unit_test_beat_function(metric):
     # Beats must be in seconds (so not huge)
     beats = np.array([1e10, 1e11])
     nose.tools.assert_raises(ValueError, metric, beats, beats)
-    # Beats must be >= 0
-    beats = np.array([-1., 2.])
-    nose.tools.assert_raises(ValueError, metric, beats, beats)
     # Beats must be sorted
     beats = np.array([2., 1.])
     nose.tools.assert_raises(ValueError, metric, beats, beats)

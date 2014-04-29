@@ -571,9 +571,6 @@ def validate_events(events, max_time=30000.):
     if events.ndim != 1:
         raise ValueError('Event times should be 1-d numpy ndarray, '
                          'but shape={}'.format(events.shape))
-    # Make sure no beat times are negative
-    if (events < 0).any():
-        raise ValueError('Negative event times found')
     # Make sure beat times are increasing
     if (np.diff(events) < 0).any():
         raise ValueError('Events should be in increasing order.')

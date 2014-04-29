@@ -37,9 +37,6 @@ def __unit_test_onset_function(metric):
     # onsets must be in seconds (so not huge)
     onsets = np.array([1e10, 1e11])
     nose.tools.assert_raises(ValueError, metric, onsets, onsets)
-    # onsets must be >= 0
-    onsets = np.array([-1., 2.])
-    nose.tools.assert_raises(ValueError, metric, onsets, onsets)
     # onsets must be sorted
     onsets = np.array([2., 1.])
     nose.tools.assert_raises(ValueError, metric, onsets, onsets)
