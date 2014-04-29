@@ -311,18 +311,18 @@ def p_score(reference_beats,
     end_point = np.int(np.ceil(np.max([np.max(estimated_beats),
                                        np.max(reference_beats)])))
     # Make impulse trains with impulses at beat locations
-    annotations_train = np.zeros(end_point*sampling_rate + 1)
+    reference_train = np.zeros(end_point*sampling_rate + 1)
     beat_indices = np.ceil(reference_beats*sampling_rate).astype(np.int)
-    annotations_train[beat_indices] = 1.0
+    reference_train[beat_indices] = 1.0
     estimated_train = np.zeros(end_point*sampling_rate + 1)
     beat_indices = np.ceil(estimated_beats*sampling_rate).astype(np.int)
     estimated_train[beat_indices] = 1.0
     # Window size to take the correlation over
     # defined as .2*median(inter-annotation-intervals)
-    annotation_intervals = np.diff(np.flatnonzero(annotations_train))
+    annotation_intervals = np.diff(np.flatnonzero(reference_train))
     win_size = int(np.round(p_score_threshold*np.median(annotation_intervals)))
     # Get full correlation
-    train_correlation = np.correlate(annotations_train, estimated_train, 'full')
+    train_correlation = np.correlate(reference_train, estimated_train, 'full')
     # Get the middle element - note we are rounding down on purpose here
     middle_lag = train_correlation.shape[0]/2
     # Truncate to only valid lags (those corresponding to the window)
