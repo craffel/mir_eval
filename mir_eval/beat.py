@@ -303,6 +303,10 @@ def p_score(reference_beats,
         return 0.
     # Quantize beats to 10ms
     sampling_rate = int(1.0/0.010)
+    # Shift beats so that the minimum in either sequence is zero
+    offset = min(estimated_beats.min(), reference_beats.min())
+    estimated_beats = np.array(estimated_beats - offset)
+    reference_beats = np.array(reference_beats - offset)
     # Get the largest time index
     end_point = np.int(np.ceil(np.max([np.max(estimated_beats),
                                        np.max(reference_beats)])))
