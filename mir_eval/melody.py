@@ -337,7 +337,7 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     # estimate provides a correct frequency value (within 50 cents).
     # NB: voicing estimation is ignored in this measure
     cent_diff = np.abs(ref_cent - est_cent)
-    raw_pitch = (cent_diff[ref_voicing] <= 50).sum()/float(ref_voicing.sum())
+    raw_pitch = (cent_diff[ref_voicing] < 50).sum()/float(ref_voicing.sum())
 
     return raw_pitch
 
@@ -385,7 +385,7 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     # Raw chroma = same as raw pitch except that octave errors are ignored.
     cent_diff = np.abs(ref_cent - est_cent)
     cent_diff_chroma = np.abs(cent_diff - 1200*np.floor(cent_diff/1200.0 + 0.5))
-    raw_chroma = (cent_diff_chroma[ref_voicing] <= 50).sum()/float(ref_voicing.sum())
+    raw_chroma = (cent_diff_chroma[ref_voicing] < 50).sum()/float(ref_voicing.sum())
 
     return raw_chroma
 
@@ -430,7 +430,7 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     TN = ((ref_voicing == 0)*(est_voicing == 0)).sum()
 
     cent_diff = np.abs(ref_cent - est_cent)
-    overall_accuracy = ((cent_diff[ref_voicing*est_voicing] <= 50).sum() + TN)/float(ref_cent.shape[0])
+    overall_accuracy = ((cent_diff[ref_voicing*est_voicing] < 50).sum() + TN)/float(ref_cent.shape[0])
 
     return overall_accuracy
 
