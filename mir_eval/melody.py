@@ -142,7 +142,7 @@ def constant_hop_timebase(hop, end_time):
     times = np.round(times, 10)
     return times
 
-def resample_melody_series(times, frequencies, voicing, times_new):
+def resample_melody_series(times, frequencies, voicing, times_new, kind='linear'):
     '''Resamples frequency and voicing time series to a new timescale.
     Maintains any zero ("unvoiced") values in frequencies.
 
@@ -155,6 +155,8 @@ def resample_melody_series(times, frequencies, voicing, times_new):
             Boolean array which indicates voiced or unvoiced
         - times_new : ndarray
             Times to resample frequency and voicing sequences to
+        - kind : str
+            kind parameter to pass to scipy.interpolate.interp1d.
 
     :returns:
         - frequencies_resampled : ndarray
@@ -170,13 +172,21 @@ def resample_melody_series(times, frequencies, voicing, times_new):
             frequencies_held[n + 1] = frequencies_held[n]
     # Round to avoid floating point problems
     times = np.round(times, 10)
-    # Linearly interpolate frequencies
-    frequencies_resampled = scipy.interpolate.interp1d(times, frequencies_held)(times_new)
-    # Retain zeros
-    frequency_mask = scipy.interpolate.interp1d(times, frequencies, 'zero')(times_new)
-    frequencies_resampled *= (frequency_mask != 0)
-    # Nearest-neighbor interpolate voicing
-    voicing_resampled = scipy.interpolate.interp1d(times, voicing, 'zero')(times_new)
+    # We need to fix zero transitions if interpolation is not zero or nearest
+    if kind != 'zero' and kind != 'nearest':
+        # Linearly interpolate frequencies
+        frequencies_resampled = scipy.interpolate.interp1d(times, frequencies_held, kind)(times_new)
+        # Retain zeros
+        frequency_mask = scipy.interpolate.interp1d(times, frequencies, 'zero')(times_new)
+        frequencies_resampled *= (frequency_mask != 0)
+    else:
+        frequencies_resampled = scipy.interpolate.interp1d(times, frequencies, kind)(times_new)
+    # Use nearest-neighbor for voicing if it was used for frequencies
+    if kind == 'nearest':
+        voicing_resampled = scipy.interpolate.interp1d(times, voicing, kind)(times_new)
+    # otherwise, always use zeroth order
+    else:
+        voicing_resampled = scipy.interpolate.interp1d(times, voicing, 'zero')(times_new)
     return frequencies_resampled, voicing_resampled.astype(np.bool)
 
 
