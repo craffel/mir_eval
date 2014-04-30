@@ -164,16 +164,21 @@ def resample_melody_series(times, frequencies, voicing, times_new, kind='linear'
         - voicing_resampled : ndarray
             Boolean voicing array resampled to new timebase
     '''
-    # Fill in zero values with the last reported frequency
-    # to avoid erroneous values when resampling
-    frequencies_held = np.array(frequencies)
-    for n, frequency in enumerate(frequencies[1:]):
-        if frequency == 0:
-            frequencies_held[n + 1] = frequencies_held[n]
     # Round to avoid floating point problems
     times = np.round(times, 10)
+    # Add in an additional sample if we'll be asking for a time too large
+    if times_new.max() > times.max():
+        times = np.append(times, times_new.max())
+        frequencies = np.append(frequencies, 0)
+        voicing = np.append(voicing, 0)
     # We need to fix zero transitions if interpolation is not zero or nearest
     if kind != 'zero' and kind != 'nearest':
+        # Fill in zero values with the last reported frequency
+        # to avoid erroneous values when resampling
+        frequencies_held = np.array(frequencies)
+        for n, frequency in enumerate(frequencies[1:]):
+            if frequency == 0:
+                frequencies_held[n + 1] = frequencies_held[n]
         # Linearly interpolate frequencies
         frequencies_resampled = scipy.interpolate.interp1d(times, frequencies_held, kind)(times_new)
         # Retain zeros
@@ -211,7 +216,9 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
         - base_frequency : float
             Base frequency in Hz for conversion to cents, default 10.0
         - hop : float
-            Hop size, in seconds, to resample, default .01
+            Hop size, in seconds, to resample, default None which means use ref_time
+        - kind : str
+            kind parameter to pass to scipy.interpolate.interp1d.
 
     :returns:
         - ref_voicing : ndarray
@@ -225,7 +232,8 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
     '''
     # Set default kwargs parameters
     base_frequency = kwargs.get('base_frequency', 10.)
-    hop = kwargs.get('hop', .01)
+    hop = kwargs.get('hop', None)
+    kind = kwargs.get('kind', 'linear')
     # Check if missing sample at time 0 and if so add one
     if ref_time[0] > 0:
         ref_time = np.insert(ref_time, 0, 0)
@@ -239,13 +247,19 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
     # convert both sequences to cents
     ref_cent = hz2cents(ref_freq)
     est_cent = hz2cents(est_freq)
-    # Resample to common time base
-    ref_cent, ref_voicing = resample_melody_series(ref_time,
-                                ref_cent, ref_voicing,
-                                constant_hop_timebase(hop, ref_time.max()))
-    est_cent, est_voicing = resample_melody_series(est_time,
-                                est_cent, est_voicing,
-                                constant_hop_timebase(hop, est_time.max()))
+    # If we received a hop, use it to resample both
+    if hop is not None:
+        # Resample to common time base
+        ref_cent, ref_voicing = resample_melody_series(ref_time,
+                                    ref_cent, ref_voicing,
+                                    constant_hop_timebase(hop, ref_time.max()), kind)
+        est_cent, est_voicing = resample_melody_series(est_time,
+                                    est_cent, est_voicing,
+                                    constant_hop_timebase(hop, est_time.max()), kind)
+    # Otherwise, only resample estimated to the reference time base
+    else:
+        est_cent, est_voicing = resample_melody_series(est_time,
+                                    est_cent, est_voicing, ref_time, kind)
     # ensure the estimated sequence is the same length as the reference
     len_diff = ref_cent.shape[0] - est_cent.shape[0]
     if len_diff >= 0:
