@@ -38,17 +38,23 @@ def test_freq_to_voicing():
     assert np.all(res_voicing == expected_voicing)
 
 
+def test_constant_hop_timebase():
+    hop = .1
+    end_time = .35
+    expected_times = np.array([0, .1, .2, .3])
+    res_times = mir_eval.melody.constant_hop_timebase(hop, end_time)
+    assert np.allclose(res_times, expected_times)
+
 def test_resample_melody_series():
     # Check for a small example including a zero transition
     times = np.arange(4)/35.0
     cents = np.array([2., 0., -1., 1.])
     voicing = np.array([1, 0, 1, 1])
-    expected_times = np.linspace(0, .08, 9)
+    times_new = np.linspace(0, .08, 9)
     expected_cents = np.array([2., 2., 2., 0., 0., 0., -.8, -.1, .6])
     expected_voicing = np.array([1, 1, 1, 0, 0, 0, 1, 1, 1])
-    res_times, res_cents, res_voicing = mir_eval.melody.resample_melody_series(
-                                            times, cents, voicing)
-    assert np.allclose(res_times, expected_times)
+    res_cents, res_voicing = mir_eval.melody.resample_melody_series(
+                                 times, cents, voicing, times_new)
     assert np.allclose(res_cents, expected_cents)
     assert np.allclose(res_voicing, expected_voicing)
 

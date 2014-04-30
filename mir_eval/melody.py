@@ -124,7 +124,25 @@ def freq_to_voicing(frequencies):
     return np.abs(frequencies), frequencies > 0
 
 
-def resample_melody_series(times, frequencies, voicing, hop=0.01):
+def constant_hop_timebase(hop, end_time):
+    ''' Generates a time series from 0 to end_time with times spaced hop apart
+
+    :parameters:
+        - hop : float
+            Spacing of samples in the time series
+        - end_time : float
+            Time series will span [0, end_time]
+    :returns:
+        - times : ndarray
+            Generated timebase
+    '''
+    # Compute new timebase.  Rounding/linspace is to avoid float problems.
+    end_time = np.round(end_time, 10)
+    times = np.linspace(0, hop*int(np.floor(end_time/hop)), int(np.floor(end_time/hop)) + 1)
+    times = np.round(times, 10)
+    return times
+
+def resample_melody_series(times, frequencies, voicing, times_new):
     '''Resamples frequency and voicing time series to a new timescale.
     Maintains any zero ("unvoiced") values in frequencies.
 
@@ -135,12 +153,10 @@ def resample_melody_series(times, frequencies, voicing, hop=0.01):
             Array of frequency values, >= 0
         - voicing : ndarray
             Boolean array which indicates voiced or unvoiced
-        - hop : float
-            Hop size for resampling.  Default .01
+        - times_new : ndarray
+            Times to resample frequency and voicing sequences to
 
     :returns:
-        - times_new : ndarray
-            Times of each resampled frequency value
         - frequencies_resampled : ndarray
             Frequency array resampled to new timebase
         - voicing_resampled : ndarray
@@ -152,10 +168,8 @@ def resample_melody_series(times, frequencies, voicing, hop=0.01):
     for n, frequency in enumerate(frequencies[1:]):
         if frequency == 0:
             frequencies_held[n + 1] = frequencies_held[n]
-    # Compute new timebase.  Rounding/linspace is to avoid float problems.
-    times = np.round(times*1e10)*1e-10
-    times_new = np.linspace(0, hop*int(np.floor(times[-1]/hop)), int(np.floor(times[-1]/hop)) + 1)
-    times_new = np.round(times_new*1e10)*1e-10
+    # Round to avoid floating point problems
+    times = np.round(times, 10)
     # Linearly interpolate frequencies
     frequencies_resampled = scipy.interpolate.interp1d(times, frequencies_held)(times_new)
     # Retain zeros
@@ -163,7 +177,7 @@ def resample_melody_series(times, frequencies, voicing, hop=0.01):
     frequencies_resampled *= (frequency_mask != 0)
     # Nearest-neighbor interpolate voicing
     voicing_resampled = scipy.interpolate.interp1d(times, voicing, 'zero')(times_new)
-    return times_new, frequencies_resampled, voicing_resampled.astype(np.bool)
+    return frequencies_resampled, voicing_resampled.astype(np.bool)
 
 
 def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
@@ -216,14 +230,12 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
     ref_cent = hz2cents(ref_freq)
     est_cent = hz2cents(est_freq)
     # Resample to common time base
-    ref_time_grid, ref_cent, ref_voicing = resample_melody_series(ref_time,
-                                                                  ref_cent,
-                                                                  ref_voicing,
-                                                                  hop)
-    est_time_grid, est_cent, est_voicing = resample_melody_series(est_time,
-                                                                  est_cent,
-                                                                  est_voicing,
-                                                                  hop)
+    ref_cent, ref_voicing = resample_melody_series(ref_time,
+                                ref_cent, ref_voicing,
+                                constant_hop_timebase(hop, ref_time.max()))
+    est_cent, est_voicing = resample_melody_series(est_time,
+                                est_cent, est_voicing,
+                                constant_hop_timebase(hop, est_time.max()))
     # ensure the estimated sequence is the same length as the reference
     len_diff = ref_cent.shape[0] - est_cent.shape[0]
     if len_diff >= 0:
