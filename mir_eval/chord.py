@@ -93,6 +93,9 @@ import numpy as np
 import functools
 import warnings
 import collections
+from mir_eval import input_output as io
+from mir_eval import util
+
 
 NO_CHORD = "N"
 NO_CHORD_ENCODED = -1, np.array([0]*12), np.array([0]*12), -1
@@ -993,3 +996,76 @@ METRICS['triads'] = compare_triads
 METRICS['triads-inv'] = compare_triads_inv
 METRICS['tetrads'] = compare_tetrads
 METRICS['tetrads-inv'] = compare_tetrads_inv
+
+
+def evaluate_file_pair(reference_file, estimation_file, vocabularies=['dyads'],
+                       boundary_mode='intersect'):
+    '''Load data and perform the evaluation between a pair of annotations.
+
+    :parameters:
+    - reference_file: str
+        Path to a reference annotation.
+
+    - estimation_file: str
+        Path to an estimated annotation.
+
+    - vocabularies: list of strings
+        Comparisons to make between the reference and estimated sequences.
+
+    -boundary_mode: str
+        Method for resolving sequences of different lengths, one of
+        ['intersect', 'fit-to-ref', 'fit-to-est'].
+            intersect: Truncate both to the time range on with both sequences
+                are defined.
+            fit-to-ref: Pad the estimation to match the reference, filling
+                missing labels with 'no-chord'.
+            fit-to-est: Pad the reference to match the estimation, filling
+                missing labels with 'no-chord'.
+
+    :returns:
+    -result: dict
+        Dictionary containing the averaged scores for each vocabulary, along
+        with the total duration of the file ('_weight') and any errors
+        ('_error') caught in the process.
+    '''
+
+    # load the data
+    ref_intervals, ref_labels = io.load_annotation(reference_file)
+    est_intervals, est_labels = io.load_annotation(estimation_file)
+
+    if boundary_mode == 'intersect':
+        t_min = max([ref_intervals.min(), est_intervals.min()])
+        t_max = min([ref_intervals.max(), est_intervals.max()])
+    elif boundary_mode == 'fit-to-ref':
+        t_min = ref_intervals.min()
+        t_max = ref_intervals.max()
+    elif boundary_mode == 'fit-to-est':
+        t_min = est_intervals.min()
+        t_max = est_intervals.max()
+    else:
+        raise ValueError("Unsupported boundary mode: %s" % boundary_mode)
+
+    # Reduce the two annotations to the time intersection of both interval
+    #  sequences.
+    ref_intervals, ref_labels = util.adjust_intervals(
+        ref_intervals, ref_labels, t_min, t_max, NO_CHORD)
+
+    est_intervals, est_labels = util.adjust_intervals(
+        est_intervals, est_labels, t_min, t_max, NO_CHORD)
+
+    # Merge the time-intervals
+    intervals, ref_labels, est_labels = util.merge_labeled_intervals(
+        ref_intervals, ref_labels, est_intervals, est_labels)
+
+    # Now compute all requested metrics
+    result = collections.OrderedDict(_weight=intervals.max())
+    try:
+        for vocab in vocabularies:
+            result[vocab] = score(ref_labels, est_labels, intervals, vocab)
+    except InvalidChordException as err:
+        if err.chord_label in ref_labels:
+            offending_file = reference_file
+        else:
+            offending_file = estimation_file
+        result['_error'] = (err.chord_label, offending_file)
+    return result
