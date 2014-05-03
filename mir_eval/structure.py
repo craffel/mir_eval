@@ -149,6 +149,87 @@ def pairwise(reference_intervals, reference_labels,
     return precision, recall, f_measure
 
 @validate
+def rand_index(reference_intervals, reference_labels,
+                estimated_intervals, estimated_labels,
+                frame_size=0.1, beta=1.0):
+    '''(Non-adjusted) Rand index.
+
+    :usage:
+        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
+        >>> # Trim or pad the estimate to match reference timing
+        >>> ref_intervals, ref_labels = mir_eval.util.adjust_intervals(ref_intervals,
+                                                                       ref_labels,
+                                                                       t_min=0)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
+                                                                       est_labels,
+                                                                       t_min=0,
+                                                                       t_max=ref_intervals.max())
+        >>> rand_index   = mir_eval.structure.rand(ref_intervals, ref_labels,
+                                                   est_intervals, est_labels)
+
+    :parameters:
+        - reference_intervals : np.ndarray, shape=(n, 2)
+            reference segment intervals, as returned by `mir_eval.io.load_intervals`
+
+        - reference_labels : list, shape=(n,)
+            reference segment labels, as returned by `mir_eval.io.load_intervals`
+
+        - estimated_intervals : np.ndarray, shape=(m, 2)
+            estimated segment intervals, as returned by `mir_eval.io.load_intervals`
+
+        - estimated_labels : list, shape=(m,)
+            estimated segment labels, as returned by `mir_eval.io.load_intervals`
+
+        - frame_size : float > 0
+            length (in seconds) of frames for clustering
+
+        - beta : float > 0
+            beta value for F-measure
+
+    :returns:
+        - R : float > 0
+            Rand index
+
+    :raises:
+        - ValueError
+            If ``reference_intervals`` and ``estimated_intervals`` do not span the
+            same time duration.
+
+    ..seealso:: mir_eval.util.adjust_intervals
+    '''
+
+    # Generate the cluster labels
+    y_ref = util.intervals_to_samples(reference_intervals,
+                                      reference_labels,
+                                      sample_size=frame_size)[-1]
+
+    y_ref = util.index_labels(y_ref)[0]
+
+    # Map to index space
+    y_est = util.intervals_to_samples(estimated_intervals,
+                                      estimated_labels,
+                                      sample_size=frame_size)[-1]
+
+    y_est = util.index_labels(y_est)[0]
+
+    # Build the reference label agreement matrix
+    agree_ref   = np.equal.outer(y_ref, y_ref)
+
+    # Repeat for estimate
+    agree_est   = np.equal.outer(y_est, y_est)
+
+    # Find where they agree
+    matches     = np.logical_and(agree_ref, agree_est)
+
+    n_pairs     = len(y_ref) * (len(y_ref) - 1) / 2.0
+    n_matches   = (matches.sum() - len(y_ref)) / 2.0
+
+    rand        = n_matches / n_pairs
+
+    return rand
+
+@validate
 def ari(reference_intervals, reference_labels,
         estimated_intervals, estimated_labels,
         frame_size=0.1):

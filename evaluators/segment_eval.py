@@ -53,6 +53,9 @@ def evaluate(ref_file=None, prediction_file=None, trim=False):
     M['Pair-P'], M['Pair-R'], M['Pair-F'] = mir_eval.structure.pairwise(ref_intervals, ref_labels,
                                                                                        est_intervals, est_labels)
 
+    # Rand index
+    M['RI']                      = mir_eval.structure.rand_index(ref_intervals, ref_labels,
+                                                                    est_intervals, est_labels)
     # Adjusted rand index
     M['ARI']                     = mir_eval.structure.ari(ref_intervals, ref_labels,
                                                                     est_intervals, est_labels)
