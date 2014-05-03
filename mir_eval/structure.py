@@ -220,12 +220,16 @@ def rand_index(reference_intervals, reference_labels,
     agree_est   = np.equal.outer(y_est, y_est)
 
     # Find where they agree
-    matches     = np.logical_and(agree_ref, agree_est)
+    matches_pos = np.logical_and(agree_ref, agree_est)
+
+    # Find where they disagree
+    matches_neg = np.logical_and(~agree_ref, ~agree_est)
 
     n_pairs     = len(y_ref) * (len(y_ref) - 1) / 2.0
-    n_matches   = (matches.sum() - len(y_ref)) / 2.0
 
-    rand        = n_matches / n_pairs
+    n_matches_pos   = (matches_pos.sum() - len(y_ref)) / 2.0
+    n_matches_neg   = matches_neg.sum() / 2.0
+    rand            = (n_matches_pos + n_matches_neg) / n_pairs
 
     return rand
 
