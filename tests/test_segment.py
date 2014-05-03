@@ -102,6 +102,17 @@ def test_structure_rand():
         _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
         _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
 
+        ri = mir_eval.structure.rand_index(_ref_t, _ref_l, _est_t, _est_l)
+
+        print ri
+        print scores['RI']
+
+        assert np.allclose(ri,  scores['RI'], atol=A_TOL)
+
+    def __test_adj_rand(_ref_t, _ref_l, _est_t, _est_l):
+        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
+        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
+
         ari = mir_eval.structure.ari(_ref_t, _ref_l, _est_t, _est_l)
 
         print ari
@@ -111,6 +122,7 @@ def test_structure_rand():
 
     # Iterate over fixtures
     for ref_t, ref_l, est_t, est_l, scores in generate_data():
+        yield (__test_adj_rand, ref_t, ref_l, est_t, est_l)
         yield (__test_rand, ref_t, ref_l, est_t, est_l)
 
     # Done
