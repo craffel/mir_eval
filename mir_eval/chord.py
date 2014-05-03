@@ -93,9 +93,6 @@ import numpy as np
 import functools
 import warnings
 import collections
-from mir_eval import input_output as io
-from mir_eval import util
-
 
 NO_CHORD = "N"
 NO_CHORD_ENCODED = -1, np.array([0]*12), np.array([0]*12), -1
@@ -585,7 +582,7 @@ def validate(comparison):
             The function with the labels validated.
     '''
     @functools.wraps(comparison)
-    def comparison_validated(reference_labels, estimated_labels, intervals):
+    def comparison_validated(reference_labels, estimated_labels):
         '''Comparison with labels validated.'''
         N = len(reference_labels)
         M = len(estimated_labels)
@@ -602,8 +599,7 @@ def validate(comparison):
         if len(estimated_labels) == 0:
             warnings.warn('Estimated labels are empty')
 
-
-        return comparison(reference_labels, estimated_labels, intervals)
+        return comparison(reference_labels, estimated_labels)
     return comparison_validated
 
 
@@ -633,7 +629,7 @@ def score(comparator):
 
 
 @validate
-@score
+# @score
 def compare_thirds(reference_labels, estimated_labels):
     '''Compare chords along root & third relationships.
 
@@ -656,7 +652,7 @@ def compare_thirds(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_thirds_inv(reference_labels, estimated_labels):
     '''Score chords along root, third, & bass relationships.
 
@@ -682,7 +678,7 @@ def compare_thirds_inv(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_triads(reference_labels, estimated_labels):
     '''Compare chords along triad (root & quality to #5) relationships.
 
@@ -706,7 +702,7 @@ def compare_triads(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_triads_inv(reference_labels, estimated_labels):
     '''Score chords along triad (root, quality to #5, & bass) relationships.
 
@@ -733,7 +729,7 @@ def compare_triads_inv(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_tetrads(reference_labels, estimated_labels):
     '''Compare chords along tetrad (root & full quality) relationships.
 
@@ -756,7 +752,7 @@ def compare_tetrads(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_tetrads_inv(reference_labels, estimated_labels):
     '''Compare chords along seventh (root, quality) relationships.
 
@@ -782,7 +778,7 @@ def compare_tetrads_inv(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_root(reference_labels, estimated_labels):
     '''Compare chords according to roots.
 
@@ -804,7 +800,7 @@ def compare_root(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_mirex(reference_labels, estimated_labels):
     '''Compare chords along MIREX rules.
 
@@ -829,7 +825,7 @@ def compare_mirex(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_majmin(reference_labels, estimated_labels):
     '''Compare chords along major-minor rules. Chords with qualities outside
     Major/minor/no-chord are ignored.
@@ -863,7 +859,7 @@ def compare_majmin(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_majmin_inv(reference_labels, estimated_labels):
     '''Compare chords along major-minor rules, with inversions. Chords with
     qualities outside Major/minor/no-chord are ignored, and the bass note must
@@ -907,7 +903,7 @@ def compare_majmin_inv(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_sevenths(reference_labels, estimated_labels):
     '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
     outside [maj, maj7, 7, min, min7, N] are ignored.
@@ -940,7 +936,7 @@ def compare_sevenths(reference_labels, estimated_labels):
 
 
 @validate
-@score
+# @score
 def compare_sevenths_inv(reference_labels, estimated_labels):
     '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
     outside [maj, maj7, 7, min, min7, N] are ignored.
@@ -983,11 +979,11 @@ def compare_sevenths_inv(reference_labels, estimated_labels):
 # Create an ordered dict mapping metric names to functions
 METRICS = collections.OrderedDict()
 # MIREX2013 Methods
-METRICS['root'] = compare_root
-METRICS['majmin'] = compare_majmin
-METRICS['majmin-inv'] = compare_majmin_inv
-METRICS['sevenths'] = compare_sevenths
-METRICS['sevenths-inv'] = compare_sevenths_inv
+METRICS['root'] = score(compare_root)
+METRICS['majmin'] = score(compare_majmin)
+METRICS['majmin-inv'] = score(compare_majmin_inv)
+METRICS['sevenths'] = score(compare_sevenths)
+METRICS['sevenths-inv'] = score(compare_sevenths_inv)
 # Older / Other methods
 METRICS['mirex09'] = compare_mirex
 METRICS['thirds'] = compare_thirds
@@ -996,76 +992,3 @@ METRICS['triads'] = compare_triads
 METRICS['triads-inv'] = compare_triads_inv
 METRICS['tetrads'] = compare_tetrads
 METRICS['tetrads-inv'] = compare_tetrads_inv
-
-
-def evaluate_file_pair(reference_file, estimation_file, vocabularies=['dyads'],
-                       boundary_mode='intersect'):
-    '''Load data and perform the evaluation between a pair of annotations.
-
-    :parameters:
-    - reference_file: str
-        Path to a reference annotation.
-
-    - estimation_file: str
-        Path to an estimated annotation.
-
-    - vocabularies: list of strings
-        Comparisons to make between the reference and estimated sequences.
-
-    -boundary_mode: str
-        Method for resolving sequences of different lengths, one of
-        ['intersect', 'fit-to-ref', 'fit-to-est'].
-            intersect: Truncate both to the time range on with both sequences
-                are defined.
-            fit-to-ref: Pad the estimation to match the reference, filling
-                missing labels with 'no-chord'.
-            fit-to-est: Pad the reference to match the estimation, filling
-                missing labels with 'no-chord'.
-
-    :returns:
-    -result: dict
-        Dictionary containing the averaged scores for each vocabulary, along
-        with the total duration of the file ('_weight') and any errors
-        ('_error') caught in the process.
-    '''
-
-    # load the data
-    ref_intervals, ref_labels = io.load_annotation(reference_file)
-    est_intervals, est_labels = io.load_annotation(estimation_file)
-
-    if boundary_mode == 'intersect':
-        t_min = max([ref_intervals.min(), est_intervals.min()])
-        t_max = min([ref_intervals.max(), est_intervals.max()])
-    elif boundary_mode == 'fit-to-ref':
-        t_min = ref_intervals.min()
-        t_max = ref_intervals.max()
-    elif boundary_mode == 'fit-to-est':
-        t_min = est_intervals.min()
-        t_max = est_intervals.max()
-    else:
-        raise ValueError("Unsupported boundary mode: %s" % boundary_mode)
-
-    # Reduce the two annotations to the time intersection of both interval
-    #  sequences.
-    ref_intervals, ref_labels = util.adjust_intervals(
-        ref_intervals, ref_labels, t_min, t_max, NO_CHORD)
-
-    est_intervals, est_labels = util.adjust_intervals(
-        est_intervals, est_labels, t_min, t_max, NO_CHORD)
-
-    # Merge the time-intervals
-    intervals, ref_labels, est_labels = util.merge_labeled_intervals(
-        ref_intervals, ref_labels, est_intervals, est_labels)
-
-    # Now compute all requested metrics
-    result = collections.OrderedDict(_weight=intervals.max())
-    try:
-        for vocab in vocabularies:
-            result[vocab] = score(ref_labels, est_labels, intervals, vocab)
-    except InvalidChordException as err:
-        if err.chord_label in ref_labels:
-            offending_file = reference_file
-        else:
-            offending_file = estimation_file
-        result['_error'] = (err.chord_label, offending_file)
-    return result
