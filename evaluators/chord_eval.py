@@ -15,10 +15,7 @@ import os
 
 from collections import OrderedDict
 
-from mir_eval import io
-import mir_eval.chord as chord
-import mir_eval.util as util
-
+import mir_eval
 
 def collect_fileset(reference_dir, estimation_dir, fext='lab'):
     '''Collect the set of files for evaluation.
@@ -33,7 +30,7 @@ def collect_fileset(reference_dir, estimation_dir, fext='lab'):
     '''
     ref_files = glob.glob(os.path.join(reference_dir, "*.%s" % fext))
     est_files = glob.glob(os.path.join(estimation_dir, "*.%s" % fext))
-    ref_files, est_files = util.intersect_files(ref_files, est_files)
+    ref_files, est_files = mir_eval.util.intersect_files(ref_files, est_files)
     return ref_files, est_files
 
 
@@ -50,8 +47,8 @@ def print_summary(results):
     '''
     file_errors = []
     chord_errors = set()
-    print "\n%s\n%s" % (chord.InvalidChordException().name,
-                        '-'*len(chord.InvalidChordException().name))
+    print "\n%s\n%s" % (mir_eval.chord.InvalidChordException().name,
+                        '-'*len(mir_eval.chord.InvalidChordException().name))
     for item in results:
         err_pair = item.get("_error", None)
         if err_pair:
@@ -106,5 +103,5 @@ if __name__ == '__main__':
         '-strict_bass', '--strict_bass', type=bool, default=False)
 
     args = parser.parse_args()
-    chord.STRICT_BASS_INTERVALS = args.strict_bass
+    mir_eval.chord.STRICT_BASS_INTERVALS = args.strict_bass
     main(args.reference_data, args.estimation_data, args.vocabularies)

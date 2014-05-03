@@ -3,7 +3,9 @@
 import numpy as np
 import re
 import os
+import warnings
 
+from . import util
 
 def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
     r'''Import time-stamp events from an annotation file.  This is primarily useful for
@@ -72,8 +74,8 @@ def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
     return times, labels
 
 
-def load_annotation(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
-    r'''Import annotation events from an annotation file.  This is primarily useful for
+def load_intervals(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
+    r'''Import labeled intervals from an annotation file.  This is primarily useful for
         processing events which span a duration, such as segmentation, chords, or instrument
         activation.
 
@@ -131,6 +133,11 @@ def load_annotation(filename, delimiter=r'\s+', converter=None, label_prefix='__
                 raise ValueError('parse error %s:%d:\n%s' % (filename, row, line))
 
     times = np.asarray(times)
+
+    try:
+        util.validate_intervals(times)
+    except ValueError as e:
+        warnings.warn(e.args[0])
 
     return times, labels
 

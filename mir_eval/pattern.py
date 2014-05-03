@@ -85,6 +85,10 @@ import warnings
 import collections
 
 
+def _n_onset_midi(patterns):
+    ''' Computes the number of onset_midi objects in a pattern '''
+    return len([o_m for pat in patterns for occ in pat for o_m in occ])
+
 def validate(metric):
     """Decorator which checks that the input annotations to a metric
     look like valid pattern lists, and throws helpful errors if not.
@@ -105,9 +109,9 @@ def validate(metric):
         """ Metric with input pattern annotations validated.
         """
         # Warn if pattern lists are empty
-        if len(reference_patterns) == 0:
+        if _n_onset_midi(reference_patterns) == 0:
             warnings.warn('Reference patterns are empty.')
-        if len(estimated_patterns) == 0:
+        if _n_onset_midi(estimated_patterns) == 0:
             warnings.warn('Estimated patterns are empty.')
         for patterns in [reference_patterns, estimated_patterns]:
             for pattern in patterns:
@@ -209,7 +213,8 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     k = 0                           # Number of patterns that match
 
     # If no patterns were provided, metric is zero
-    if nP == 0 or nQ == 0:
+    if (_n_onset_midi(reference_patterns) == 0 or
+        _n_onset_midi(estimated_patterns) == 0):
         return 0., 0., 0.
 
     # Find matches of the prototype patterns
@@ -268,7 +273,8 @@ def establishment_FPR(reference_patterns, estimated_patterns,
     S = np.zeros((nP, nQ))          # Establishment matrix
 
     # If no patterns were provided, metric is zero
-    if nP == 0 or nQ == 0:
+    if (_n_onset_midi(reference_patterns) == 0 or
+        _n_onset_midi(estimated_patterns) == 0):
         return 0., 0., 0.
 
     for iP, ref_pattern in enumerate(reference_patterns):
@@ -326,7 +332,8 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
     rel_idx = np.empty((0, 2), dtype=int)
 
     # If no patterns were provided, metric is zero
-    if nP == 0 or nQ == 0:
+    if (_n_onset_midi(reference_patterns) == 0 or
+        _n_onset_midi(estimated_patterns) == 0):
         return 0., 0., 0.
 
     for iP, ref_pattern in enumerate(reference_patterns):
@@ -431,7 +438,8 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         return F
 
     # If no patterns were provided, metric is zero
-    if len(reference_patterns) == 0 or len(estimated_patterns) == 0:
+    if (_n_onset_midi(reference_patterns) == 0 or
+        _n_onset_midi(estimated_patterns) == 0):
         return 0., 0., 0.
 
     # Compute the second layer (it includes the first layer)
@@ -473,8 +481,9 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
     """
 
     # If no patterns were provided, metric is zero
-    if len(reference_patterns) == 0 or len(estimated_patterns) == 0:
-        return 0.
+    if (_n_onset_midi(reference_patterns) == 0 or
+        _n_onset_midi(estimated_patterns) == 0):
+        return 0., 0., 0.
 
     # Get only the first n patterns from the estimated results
     fn_est_patterns = estimated_patterns[:min(len(estimated_patterns), n)]
@@ -514,8 +523,9 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
     """
 
     # If no patterns were provided, metric is zero
-    if len(reference_patterns) == 0 or len(estimated_patterns) == 0:
-        return 0.
+    if (_n_onset_midi(reference_patterns) == 0 or
+        _n_onset_midi(estimated_patterns) == 0):
+        return 0., 0., 0.
 
     # Get only the first n patterns from the estimated results
     fn_est_patterns = estimated_patterns[:min(len(estimated_patterns), n)]

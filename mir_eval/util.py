@@ -4,13 +4,15 @@ import numpy as np
 import os
 
 
-def index_labels(labels):
+def index_labels(labels, case_sensitive=False):
     '''Convert a list of string identifiers into numerical indices.
 
     :parameters:
-        - labels : list, shape=(n,)
+        - labels : list of strings, shape=(n,)
           A list of annotations, e.g., segment or chord labels from an annotation file.
-          ``labels[i]`` can be any hashable type (such as `str` or `int`)
+
+        - case_sensitive : bool
+          Set to `True` to enable case-sensitive label indexing
 
     :returns:
         - indices : list, shape=(n,)
@@ -23,6 +25,10 @@ def index_labels(labels):
 
     label_to_index = {}
     index_to_label = {}
+
+    # If we're not case-sensitive,
+    if not case_sensitive:
+        labels = [str(s).lower() for s in labels]
 
     # First, build the unique label mapping
     for index, s in enumerate(sorted(set(labels))):
@@ -42,7 +48,7 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
-            ``mir_eval.io.load_annotation``.
+            ``mir_eval.io.load_intervals``.
             The `i`th interval spans time ``intervals[i, 0]`` to
             ``intervals[i, 1]``.
 
@@ -86,7 +92,7 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
-            ``mir_eval.io.load_annotation``.
+            ``mir_eval.io.load_intervals``.
             The `i`th interval spans time ``intervals[i, 0]`` to
             ``intervals[i, 1]``.
 
@@ -151,7 +157,7 @@ def boundaries_to_intervals(boundaries, labels=None):
 
     :parameters:
       - boundaries : list-like
-          List of event times
+          List-like of event times.  These are assumed to be unique timestamps in ascending order.
 
       - labels : None or list of str
           Optional list of strings describing each event
@@ -162,7 +168,14 @@ def boundaries_to_intervals(boundaries, labels=None):
 
       - labels : list of str or None
           Labels for each event.
+
+    :raises:
+      - ValueError
+        If the input times are not unique and ascending
     '''
+
+    if not np.allclose(boundaries, np.unique(boundaries)):
+        raise ValueError('Boundary times are not unique or not ascending.')
 
     intervals = np.asarray(zip(boundaries[:-1], boundaries[1:]))
 
@@ -173,7 +186,12 @@ def boundaries_to_intervals(boundaries, labels=None):
 
     return intervals, interval_labels
 
-def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix='__'):
+def adjust_intervals(intervals,
+                     labels=None,
+                     t_min=0.0,
+                     t_max=None,
+                     start_label='__T_MIN',
+                     end_label='__T_MAX'):
     '''Adjust a list of time intervals to span the range [t_min, t_max].
 
     Any intervals lying completely outside the specified range will be removed.
@@ -181,8 +199,9 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
     Any intervals lying partially outside the specified range will be truncated.
 
     If the specified range exceeds the span of the provided data in either direction,
-    additional intervals will be appended.  Any appended intervals will be prepended
-    with label_prefix.
+    additional intervals will be appended.  Any appended intervals at the start will
+    be given label `start_label`.  Any appended intervals at the end will be given
+    label `end_label`.
 
     :parameters:
         - intervals : np.ndarray, shape=(n_events, 2)
@@ -197,8 +216,11 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
         - t_max : float or None
             Maximum interval end time.
 
-        - label_prefix : str
-            Prefix string to use for synthetic labels
+        - start_label : str or float or int
+            Label to give any intervals appended at the beginning
+
+        - end_label : str or float or int
+            Label to give any intervals appended at the end
 
     :returns:
         - new_intervals : np.array
@@ -224,7 +246,7 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
             # Lowest boundary is higher than t_min: add a new boundary and label
             intervals = np.vstack( ([t_min, intervals[0, 0]], intervals) )
             if labels is not None:
-                labels.insert(0, '%sT_MIN' % label_prefix)
+                labels.insert(0, start_label)
 
     if t_max is not None:
         # Find the intervals that begin after t_max
@@ -244,7 +266,7 @@ def adjust_intervals(intervals, labels=None, t_min=0.0, t_max=None, label_prefix
             # Last boundary is below t_max: add a new boundary and label
             intervals = np.vstack( (intervals, [intervals[-1, -1], t_max]) )
             if labels is not None:
-                labels.append('%sT_MAX' % label_prefix)
+                labels.append(end_label)
 
     return intervals, labels
 
@@ -510,3 +532,45 @@ def match_events(ref, est, window):
     matching = sorted(_bipartite_match(G).items())
 
     return matching
+
+def validate_intervals(intervals):
+    '''Checks that an (n, 2) interval ndarray is well-formed, and raises errors if not.
+
+    :parameters:
+        - intervals : np.ndarray, shape=(n, 2)
+            Array of interval start/end locations.
+    '''
+
+    # Validate interval shape
+    if intervals.ndim != 2 or intervals.shape[1] != 2:
+        raise ValueError('Segment intervals should be n-by-2 numpy ndarray, '
+                         'but shape={}'.format(intervals.shape))
+
+    # Make sure no times are negative
+    if (intervals < 0).any():
+        raise ValueError('Negative interval times found')
+
+    # Make sure all intervals have strictly positive duration
+    if (intervals[:, 1] <= intervals[:, 0]).any():
+        raise ValueError('All interval durations must be strictly positive')
+
+def validate_events(events, max_time=30000.):
+    '''Checks that a 1-d event location ndarray is well-formed, and raises errors if not.
+
+    :parameters:
+        - events : np.ndarray, shape=(n,)
+            Array of event times
+        - max_time : float
+            If an event is found above this time, the user will be warned.
+    '''
+    # Make sure no beat times are huge
+    if (events > max_time).any():
+        raise ValueError('An event at time {} was found; '
+                         'should be in seconds.'.format(events.max()))
+    # Make sure beat locations are 1-d np ndarrays
+    if events.ndim != 1:
+        raise ValueError('Event times should be 1-d numpy ndarray, '
+                         'but shape={}'.format(events.shape))
+    # Make sure beat times are increasing
+    if (np.diff(events) < 0).any():
+        raise ValueError('Events should be in increasing order.')
