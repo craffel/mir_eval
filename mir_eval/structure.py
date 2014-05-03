@@ -165,8 +165,8 @@ def rand_index(reference_intervals, reference_labels,
                                                                        est_labels,
                                                                        t_min=0,
                                                                        t_max=ref_intervals.max())
-        >>> rand_index   = mir_eval.structure.rand(ref_intervals, ref_labels,
-                                                   est_intervals, est_labels)
+        >>> rand_index   = mir_eval.structure.rand_index(ref_intervals, ref_labels,
+                                                         est_intervals, est_labels)
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
