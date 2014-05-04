@@ -585,7 +585,7 @@ def validate(comparison):
             The function with the labels validated.
     '''
     @functools.wraps(comparison)
-    def comparison_validated(reference_labels, estimated_labels):
+    def comparison_validated(reference_labels, estimated_labels, intervals):
         '''Comparison with labels validated.'''
         N = len(reference_labels)
         M = len(estimated_labels)
@@ -601,10 +601,7 @@ def validate(comparison):
             warnings.warn('Reference labels are empty')
         if len(estimated_labels) == 0:
             warnings.warn('Estimated labels are empty')
-<<<<<<< HEAD
 
-        return comparison(reference_labels, estimated_labels)
-=======
         # Intervals should be (n, 2) array
         if intervals.ndim != 2 or intervals.shape[1] != 2:
             raise ValueError('intervals should be an ndarray'
@@ -614,9 +611,11 @@ def validate(comparison):
             raise ValueError('intervals contains {} entries but '
                              'len(reference_labels) = len(estimated_labels)'
                              ' = {}'.format(intervals.shape[0], N))
+        if 0 in np.diff(np.array(intervals), axis=1):
+            warnings.warn('Zero-duration interval')
 
         return comparison(reference_labels, estimated_labels, intervals)
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
+
     return comparison_validated
 
 
@@ -656,13 +655,8 @@ def score(comparator):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_thirds(reference_labels, estimated_labels):
-=======
 @score
 def thirds(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Compare chords along root & third relationships.
 
     :usage:
@@ -701,13 +695,8 @@ def thirds(reference_labels, estimated_labels):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_thirds_inv(reference_labels, estimated_labels):
-=======
 @score
 def thirds_inv(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Score chords along root, third, & bass relationships.
 
     :usage:
@@ -749,13 +738,8 @@ def thirds_inv(reference_labels, estimated_labels):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_triads(reference_labels, estimated_labels):
-=======
 @score
 def triads(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Compare chords along triad (root & quality to #5) relationships.
 
     :usage:
@@ -795,13 +779,8 @@ def triads(reference_labels, estimated_labels):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_triads_inv(reference_labels, estimated_labels):
-=======
 @score
 def triads_inv(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Score chords along triad (root, quality to #5, & bass) relationships.
 
     :usage:
@@ -844,13 +823,8 @@ def triads_inv(reference_labels, estimated_labels):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_tetrads(reference_labels, estimated_labels):
-=======
 @score
 def tetrads(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Compare chords along tetrad (root & full quality) relationships.
 
     :usage:
@@ -889,13 +863,8 @@ def tetrads(reference_labels, estimated_labels):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_tetrads_inv(reference_labels, estimated_labels):
-=======
 @score
 def tetrads_inv(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Compare chords along seventh (root, quality) relationships.
 
     :usage:
@@ -937,13 +906,8 @@ def tetrads_inv(reference_labels, estimated_labels):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_root(reference_labels, estimated_labels):
-=======
 @score
 def root(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Compare chords according to roots.
 
     :usage:
@@ -981,13 +945,8 @@ def root(reference_labels, estimated_labels):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_mirex(reference_labels, estimated_labels):
-=======
 @score
 def mirex(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Compare chords along MIREX rules.
 
     :usage:
@@ -1028,13 +987,8 @@ def mirex(reference_labels, estimated_labels):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_majmin(reference_labels, estimated_labels):
-=======
 @score
 def majmin(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Compare chords along major-minor rules. Chords with qualities outside
     Major/minor/no-chord are ignored.
 
@@ -1068,8 +1022,11 @@ def majmin(reference_labels, estimated_labels):
     '''
     maj_quality = np.array(QUALITIES['maj'][:8])
     min_quality = np.array(QUALITIES['min'][:8])
-    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
-    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+
+    ref_roots, ref_qualities, ref_notes, ref_bass = encode_many(
+        reference_labels, True)
+    est_roots, est_qualities, est_notes, est_bass = encode_many(
+        estimated_labels, True)
 
     correct_root = ref_roots == est_roots
     correct_quality = np.all(
@@ -1079,18 +1036,23 @@ def majmin(reference_labels, estimated_labels):
     is_maj = np.all(np.equal(ref_qualities[:, :8], maj_quality), axis=1)
     is_min = np.all(np.equal(ref_qualities[:, :8], min_quality), axis=1)
     is_none = np.all(np.equal(ref_qualities, np.zeros(12)), axis=1)
+
+    # Only keep majors, minors, and Nones
     comparison_scores[(is_maj + is_min + is_none) == 0] = -1
+
+    # Disable chords that disrupt this quality (apparently)
+    ref_voicing = np.all(np.equal(ref_qualities[:, :8],
+                                  ref_notes[:, :8]), axis=1)
+    comparison_scores[ref_voicing == 0] = -1
+    est_voicing = np.all(np.equal(est_qualities[:, :8],
+                                  est_notes[:, :8]), axis=1)
+    comparison_scores[est_voicing == 0] = -1
     return comparison_scores
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_majmin_inv(reference_labels, estimated_labels):
-=======
 @score
 def majmin_inv(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Compare chords along major-minor rules, with inversions. Chords with
     qualities outside Major/minor/no-chord are ignored, and the bass note must
     exist in the triad (bass in [1, 3, 5]).
@@ -1150,13 +1112,8 @@ def majmin_inv(reference_labels, estimated_labels):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_sevenths(reference_labels, estimated_labels):
-=======
 @score
 def sevenths(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
     outside [maj, maj7, 7, min, min7, N] are ignored.
 
@@ -1205,13 +1162,8 @@ def sevenths(reference_labels, estimated_labels):
 
 
 @validate
-<<<<<<< HEAD
-# @score
-def compare_sevenths_inv(reference_labels, estimated_labels):
-=======
 @score
 def sevenths_inv(reference_labels, estimated_labels):
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9
     '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
     outside [maj, maj7, 7, min, min7, N] are ignored.
 
@@ -1270,24 +1222,23 @@ def sevenths_inv(reference_labels, estimated_labels):
 # Create an ordered dict mapping metric names to functions
 METRICS = collections.OrderedDict()
 # MIREX2013 Methods
-<<<<<<< HEAD
-METRICS['root'] = score(compare_root)
-METRICS['majmin'] = score(compare_majmin)
-METRICS['majmin-inv'] = score(compare_majmin_inv)
-METRICS['sevenths'] = score(compare_sevenths)
-METRICS['sevenths-inv'] = score(compare_sevenths_inv)
+METRICS['root'] = root
+METRICS['majmin'] = majmin
+METRICS['majmin-inv'] = majmin_inv
+METRICS['sevenths'] = sevenths
+METRICS['sevenths-inv'] = sevenths_inv
 # Older / Other methods
-METRICS['mirex09'] = compare_mirex
-METRICS['thirds'] = compare_thirds
-METRICS['thirds-inv'] = compare_thirds_inv
-METRICS['triads'] = compare_triads
-METRICS['triads-inv'] = compare_triads_inv
-METRICS['tetrads'] = compare_tetrads
-METRICS['tetrads-inv'] = compare_tetrads_inv
+METRICS['mirex09'] = mirex
+METRICS['thirds'] = thirds
+METRICS['thirds-inv'] = thirds_inv
+METRICS['triads'] = triads
+METRICS['triads-inv'] = triads_inv
+METRICS['tetrads'] = tetrads
+METRICS['tetrads-inv'] = tetrads_inv
 
 
-def evaluate_file_pair(reference_file, estimation_file, vocabularies=['dyads'],
-                       boundary_mode='intersect'):
+def evaluate_file_pair(reference_file, estimation_file,
+                       vocabularies=['majmin'], boundary_mode='fit-to-ref'):
     '''Load data and perform the evaluation between a pair of annotations.
 
     :parameters:
@@ -1335,15 +1286,22 @@ def evaluate_file_pair(reference_file, estimation_file, vocabularies=['dyads'],
 
     # Reduce the two annotations to the time intersection of both interval
     #  sequences.
-    ref_intervals, ref_labels = util.adjust_intervals(
-        ref_intervals, ref_labels, t_min, t_max, NO_CHORD)
+    ref_intervals, ref_labels = util.filter_labeled_intervals(*util.adjust_intervals(
+        ref_intervals, ref_labels, t_min, t_max, NO_CHORD, NO_CHORD))
 
-    est_intervals, est_labels = util.adjust_intervals(
-        est_intervals, est_labels, t_min, t_max, NO_CHORD)
+    est_intervals, est_labels = util.filter_labeled_intervals(*util.adjust_intervals(
+        est_intervals, est_labels, t_min, t_max, NO_CHORD, NO_CHORD))
 
     # Merge the time-intervals
-    intervals, ref_labels, est_labels = util.merge_labeled_intervals(
-        ref_intervals, ref_labels, est_intervals, est_labels)
+    try:
+        intervals, ref_labels, est_labels = util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
+    except IndexError:
+        print est_intervals
+        print est_labels
+        raise IndexError
+
+    # return ref_labels, est_labels
 
     # Now compute all the metrics
     result = collections.OrderedDict(_weight=intervals.max())
@@ -1357,18 +1315,3 @@ def evaluate_file_pair(reference_file, estimation_file, vocabularies=['dyads'],
             offending_file = estimation_file
         result['_error'] = (err.chord_label, offending_file)
     return result
-=======
-METRICS['root'] = root
-METRICS['majmin'] = majmin
-METRICS['majmin-inv'] = majmin_inv
-METRICS['sevenths'] = sevenths
-METRICS['sevenths-inv'] = sevenths_inv
-# Older / Other methods
-METRICS['mirex09'] = mirex
-METRICS['thirds'] = thirds
-METRICS['thirds-inv'] = thirds_inv
-METRICS['triads'] = triads
-METRICS['triads-inv'] = triads_inv
-METRICS['tetrads'] = tetrads
-METRICS['tetrads-inv'] = tetrads_inv
->>>>>>> d5c7649dc9cc1c86dabf8a19e962338746cf85a9

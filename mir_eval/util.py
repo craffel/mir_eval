@@ -554,6 +554,7 @@ def validate_intervals(intervals):
     if (intervals[:, 1] <= intervals[:, 0]).any():
         raise ValueError('All interval durations must be strictly positive')
 
+
 def validate_events(events, max_time=30000.):
     '''Checks that a 1-d event location ndarray is well-formed, and raises errors if not.
 
@@ -574,3 +575,27 @@ def validate_events(events, max_time=30000.):
     # Make sure beat times are increasing
     if (np.diff(events) < 0).any():
         raise ValueError('Events should be in increasing order.')
+
+
+def filter_labeled_intervals(intervals, labels):
+    r'''Remove all invalid intervals (start >= end) and corresponding labels.
+
+    :parameters:
+        - intervals : np.array
+            Array of interval times (seconds)
+
+        - labels : list
+            List of labels
+
+    :returns:
+        - filtered_intervals : np.array
+            Valid interval times.
+        - filtered_labels : list
+            Corresponding filtered labels
+    '''
+    filt_intervals, filt_labels = [], []
+    for interval, label in zip(intervals, labels):
+        if interval[0] < interval[1]:
+            filt_intervals.append(interval)
+            filt_labels.append(label)
+    return np.array(filt_intervals), filt_labels
