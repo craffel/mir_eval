@@ -111,7 +111,7 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
         return 0.0, 0.0, 0.0
 
-    matching    = util.match_events(reference_boundaries, 
+    matching    = util.match_events(reference_boundaries,
                                     estimated_boundaries,
                                     window)
 
