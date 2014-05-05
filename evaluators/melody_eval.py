@@ -76,14 +76,11 @@ def evaluate(reference_file, estimated_file, hop=None):
     # Compute metrics
     M = OrderedDict()
 
-    # F-Measure
-    M['vx_recall'], M['vx_false_alarm'] = mir_eval.melody.voicing_measures(ref_voicing, est_voicing)
-
-    M['raw_pitch'] = mir_eval.melody.raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent)
-
-    M['raw_chroma'] = mir_eval.melody.raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent)
-
-    M['overall_accuracy'] = mir_eval.melody.overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent)
+    for name, metric in mir_eval.melody.METRICS.items():
+        if metric == mir_eval.melody.voicing_measures:
+            M[name] = metric(ref_voicing, est_voicing)
+        else:
+            M[name] = metric(ref_voicing, est_voicing, ref_cent, est_cent)
 
     return M
 

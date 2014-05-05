@@ -35,19 +35,7 @@ def validate(metric):
         if estimated_onsets.size == 0:
             warnings.warn("Estimated onsets are empty.")
         for onsets in [reference_onsets, estimated_onsets]:
-            # Make sure beat locations are 1-d np ndarrays
-            if onsets.ndim != 1:
-                raise ValueError('Onset locations should be 1-d numpy ndarray')
-            # Make sure no beat times are huge
-            if (onsets > 30000).any():
-                raise ValueError('An onset at time {}'.format(beats.max()) + \
-                                 ' was found; should be in seconds.')
-            # Make sure no beat times are negative
-            if (onsets < 0).any():
-                raise ValueError('Negative beat locations found')
-            # Make sure beat times are increasing
-            if (np.diff(onsets) < 0).any():
-                raise ValueError('Onsets should be in increasing order.')
+            util.validate_events(onsets)
         return metric(reference_onsets, estimated_onsets, *args, **kwargs)
     return metric_validated
 

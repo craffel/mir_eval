@@ -12,16 +12,17 @@ Usage:
 import argparse
 import sys
 import os
+import json
 from collections import OrderedDict
 
 import mir_eval
 
-def evaluate(ref_file=None, prediction_file=None):
+def evaluate(ref_file=None, est_file=None, trim=False):
     '''Load data and perform the evaluation'''
 
     # load the data
     ref_intervals, ref_labels   = mir_eval.io.load_intervals(ref_file)
-    est_intervals, est_labels   = mir_eval.io.load_intervals(prediction_file)
+    est_intervals, est_labels   = mir_eval.io.load_intervals(est_file)
 
     # Adjust timespan of estimations relative to ground truth
     ref_intervals, ref_labels   = mir_eval.util.adjust_intervals(ref_intervals, 
@@ -39,19 +40,23 @@ def evaluate(ref_file=None, prediction_file=None):
     # Boundary detection
     M['P@0.5'], M['R@0.5'], M['F@0.5']  = mir_eval.boundary.detection(ref_intervals,
                                                                   est_intervals,
-                                                                  window=0.5)
+                                                                  window=0.5, 
+                                                                  trim=trim)
 
     M['P@3.0'], M['R@3.0'], M['F@3.0']  = mir_eval.boundary.detection(ref_intervals,
                                                                  est_intervals,
-                                                                 window=3.0)
+                                                                 window=3.0,
+                                                                 trim=trim)
     # Boundary deviation
-    M['True-to-Pred'], M['Pred-to-True'] = mir_eval.boundary.deviation(ref_intervals,
-                                                                  est_intervals)
+    M['True-to-Pred'], M['Pred-to-True'] = mir_eval.boundary.deviation(ref_intervals, est_intervals, trim=trim)
 
     # Pairwise clustering
     M['Pair-P'], M['Pair-R'], M['Pair-F'] = mir_eval.structure.pairwise(ref_intervals, ref_labels,
                                                                                        est_intervals, est_labels)
 
+    # Rand index
+    M['RI']                      = mir_eval.structure.rand_index(ref_intervals, ref_labels,
+                                                                    est_intervals, est_labels)
     # Adjusted rand index
     M['ARI']                     = mir_eval.structure.ari(ref_intervals, ref_labels,
                                                                     est_intervals, est_labels)
@@ -66,9 +71,14 @@ def evaluate(ref_file=None, prediction_file=None):
 
     return M
 
-def print_evaluation(prediction_file, M):
+def save_results(results, output_file):
+
+    with open(output_file, 'w') as f:
+        json.dump(results, f)
+
+def print_evaluation(est_file, M):
     # And print them
-    print os.path.basename(prediction_file)
+    print os.path.basename(est_file)
     for key, value in M.iteritems():
         print '\t%12s:\t%0.3f' % (key, value)
 
@@ -79,11 +89,25 @@ def process_arguments():
 
     parser = argparse.ArgumentParser(description='mir_eval segmentation evaluation')
 
+    parser.add_argument(    '-t',
+                            '--trim',
+                            dest        =   'trim',
+                            default     =   False,
+                            action      =   'store_true',
+                            help        =   'Trim beginning and end markers from boundary evaluation')
+
+    parser.add_argument(    '-o',
+                            dest        =   'output_file',
+                            default     =   None,
+                            type        =   str,
+                            action      =   'store',
+                            help        =   'Store results in json format')
+
     parser.add_argument(    'ref_file',
                             action      =   'store',
                             help        =   'path to the reference annotation')
 
-    parser.add_argument(    'prediction_file',
+    parser.add_argument(    'est_file',
                             action      =   'store',
                             help        =   'path to the estimated annotation')
 
@@ -94,6 +118,13 @@ if __name__ == '__main__':
     parameters = process_arguments()
 
     # Compute all the scores
-    scores = evaluate(**parameters)
-    print_evaluation(parameters['prediction_file'], scores)
+    scores = evaluate(ref_file=parameters['ref_file'], 
+                        est_file=parameters['est_file'], 
+                        trim=parameters['trim'])
+    print_evaluation(parameters['est_file'], scores)
 
+    if parameters['output_file']:
+        print 'Saving results to: ', parameters['output_file']
+        save_results(scores, parameters['output_file'])
+
+# end

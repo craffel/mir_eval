@@ -8,24 +8,9 @@
 import numpy as np
 import functools
 import collections
+import warnings
 
 from . import util
-
-def __validate_intervals(intervals):
-    '''Internal validation function for interval arrays'''
-
-    # Validate interval shape
-    if intervals.ndim != 2 or intervals.shape[1] != 2:
-        raise ValueError('Segment intervals should be n-by-2 numpy ndarray')
-
-    # Make sure no times are negative
-    if (intervals < 0).any():
-        raise ValueError('Negative interval times found')
-
-    # Make sure all intervals have strictly positive duration
-    for start, end in intervals:
-        if end - start <= 0:
-            raise ValueError('Non-positive interval detected: [%.3f, %.3f]' % (start, end))
 
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
@@ -43,8 +28,12 @@ def validate(metric):
     @functools.wraps(metric)
     def metric_validated(reference_intervals, estimated_intervals, *args, **kwargs):
         '''Validate both reference and estimated intervals'''
+        if reference_intervals.size == 0:
+            warnings.warn("Reference intervals are empty.")
+        if estimated_intervals.size == 0:
+            warnings.warn("Estimated intervals are empty.")
         for intervals in [reference_intervals, estimated_intervals]:
-            __validate_intervals(intervals)
+            util.validate_intervals(intervals)
 
         return metric(reference_intervals, estimated_intervals, *args, **kwargs)
 

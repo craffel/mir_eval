@@ -29,7 +29,7 @@ def trim_beats(beats, min_beat_time=5.):
             Trimmed beat array.
     '''
     # Remove beats before min_beat_time
-    return beats[beats > min_beat_time]
+    return beats[beats >= min_beat_time]
 
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
@@ -56,19 +56,7 @@ def validate(metric):
         if estimated_beats.size == 0:
             warnings.warn("Estimated beats are empty.")
         for beats in [reference_beats, estimated_beats]:
-            # Make sure beat locations are 1-d np ndarrays
-            if beats.ndim != 1:
-                raise ValueError('Beat locations should be 1-d numpy ndarray')
-            # Make sure no beat times are huge
-            if (beats > 30000).any():
-                raise ValueError('A beat at time {}'.format(beats.max()) + \
-                                 ' was found; should be in seconds.')
-            # Make sure no beat times are negative
-            if (beats < 0).any():
-                raise ValueError('Negative beat locations found')
-            # Make sure beat times are increasing
-            if (np.diff(beats) < 0).any():
-                raise ValueError('Beats should be in increasing order.')
+            util.validate_events(beats)
         return metric(reference_beats, estimated_beats, *args, **kwargs)
     return metric_validated
 
@@ -134,7 +122,7 @@ def f_measure(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0.
     # Compute the best-case matching between reference and estimated onset locations
     matching = util.match_events(reference_beats,
                                  estimated_beats,
@@ -168,12 +156,12 @@ def cemgil(reference_beats,
     :returns:
         - cemgil_score : float
             Cemgil's score for the original reference beats
-        - cemgil_max :
+        - cemgil_max : float
             The best Cemgil score for all metrical variations
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0., 0.
     # We'll compute Cemgil's accuracy for each variation
     accuracies = []
     for reference_beats in _get_reference_beat_variations(reference_beats):
@@ -195,7 +183,7 @@ def cemgil(reference_beats,
 @validate
 def goto(reference_beats,
          estimated_beats,
-         goto_threshold=0.2,
+         goto_threshold=0.35,
          goto_mu=0.2,
          goto_sigma=0.2):
     '''
@@ -213,7 +201,7 @@ def goto(reference_beats,
         - estimated_beats : np.ndarray
             query beat times, in seconds
         - goto_threshold : float
-            Threshold of beat error for a beat to be "correct", default 0.2
+            Threshold of beat error for a beat to be "correct", default 0.35
         - goto_mu : float
             The mean of the beat errors in the continuously correct
             track must be less than this, default 0.2
@@ -227,7 +215,7 @@ def goto(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0.
     # Error for each beat
     beat_error = np.ones(reference_beats.shape[0])
     # Flag for whether the reference and estimated beats are paired
@@ -245,7 +233,7 @@ def goto(reference_beats,
         window_max = reference_beats[n] + next_interval
         # Get estimated beats in the window
         beats_in_window = np.logical_and((estimated_beats >= window_min),
-                                         (estimated_beats <= window_max))
+                                         (estimated_beats < window_max))
         # False negative/positive
         if beats_in_window.sum() == 0 or beats_in_window.sum() > 1:
             paired[n] = 0
@@ -261,26 +249,26 @@ def goto(reference_beats,
             else:
                 beat_error[n] = offset/next_interval
     # Get indices of incorrect beats
-    correct_beats = np.flatnonzero(np.abs(beat_error) > goto_threshold)
+    incorrect_beats = np.flatnonzero(np.abs(beat_error) > goto_threshold)
     # All beats are correct (first and last will be 0 so always correct)
-    if correct_beats.shape[0] < 3:
+    if incorrect_beats.shape[0] < 3:
         # Get the track of correct beats
-        track = beat_error[correct_beats[0] + 1:correct_beats[-1] - 1]
+        track = beat_error[incorrect_beats[0] + 1:incorrect_beats[-1] - 1]
         goto_criteria = 1
     else:
         # Get the track of maximal length
-        track_length = np.max(np.diff(correct_beats))
-        track_start = np.nonzero(np.diff(correct_beats) == track_length)[0][0]
+        track_length = np.max(np.diff(incorrect_beats))
+        track_start = np.nonzero(np.diff(incorrect_beats) == track_length)[0][0]
         # Is the track length at least 25% of the song?
         if track_length - 1 > .25*(reference_beats.shape[0] - 2):
             goto_criteria = 1
-            start_beat = correct_beats[track_start]
-            end_beat = correct_beats[track_start + 1]
-            track = beat_error[start_beat:end_beat]
+            start_beat = incorrect_beats[track_start]
+            end_beat = incorrect_beats[track_start + 1]
+            track = beat_error[start_beat:end_beat + 1]
     # If we have a track
     if goto_criteria:
         # Are mean and std of the track less than the required thresholds?
-        if np.mean(track) < goto_mu and np.std(track) < goto_sigma:
+        if np.mean(np.abs(track)) < goto_mu and np.std(track, ddof=1) < goto_sigma:
             goto_criteria = 3
     # If all criteria are met, score is 100%!
     return 1.0*(goto_criteria == 3)
@@ -312,25 +300,29 @@ def p_score(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0.
     # Quantize beats to 10ms
     sampling_rate = int(1.0/0.010)
+    # Shift beats so that the minimum in either sequence is zero
+    offset = min(estimated_beats.min(), reference_beats.min())
+    estimated_beats = np.array(estimated_beats - offset)
+    reference_beats = np.array(reference_beats - offset)
     # Get the largest time index
     end_point = np.int(np.ceil(np.max([np.max(estimated_beats),
                                        np.max(reference_beats)])))
     # Make impulse trains with impulses at beat locations
-    annotations_train = np.zeros(end_point*sampling_rate + 1)
+    reference_train = np.zeros(end_point*sampling_rate + 1)
     beat_indices = np.ceil(reference_beats*sampling_rate).astype(np.int)
-    annotations_train[beat_indices] = 1.0
+    reference_train[beat_indices] = 1.0
     estimated_train = np.zeros(end_point*sampling_rate + 1)
     beat_indices = np.ceil(estimated_beats*sampling_rate).astype(np.int)
     estimated_train[beat_indices] = 1.0
     # Window size to take the correlation over
     # defined as .2*median(inter-annotation-intervals)
-    annotation_intervals = np.diff(np.flatnonzero(annotations_train))
+    annotation_intervals = np.diff(np.flatnonzero(reference_train))
     win_size = int(np.round(p_score_threshold*np.median(annotation_intervals)))
     # Get full correlation
-    train_correlation = np.correlate(annotations_train, estimated_train, 'full')
+    train_correlation = np.correlate(reference_train, estimated_train, 'full')
     # Get the middle element - note we are rounding down on purpose here
     middle_lag = train_correlation.shape[0]/2
     # Truncate to only valid lags (those corresponding to the window)
@@ -379,7 +371,7 @@ def continuity(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
+        return 0., 0., 0., 0.
     # Accuracies for each variation
     continuous_accuracies = []
     total_accuracies = []
@@ -491,9 +483,7 @@ def information_gain(reference_beats,
     '''
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
-        return 0
-    # To match beat evaluation toolbox
-    bins -= 1
+        return 0.
     # Get entropy for reference beats->estimated beats
     # and estimated beats->reference beats
     forward_entropy = _get_entropy(reference_beats, estimated_beats, bins)
@@ -564,7 +554,6 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     raw_bin_values = np.histogram(beat_error, histogram_bins)[0]
     # Add the last bin height to the first bin
     raw_bin_values[0] += raw_bin_values[-1]
-    raw_bin_values = np.delete(raw_bin_values, -1)
     # Turn into a proper probability distribution
     raw_bin_values = raw_bin_values/(1.0*np.sum(raw_bin_values))
     # Set zero-valued bins to 1 to make the entropy calculation well-behaved
@@ -577,6 +566,7 @@ def _get_entropy(reference_beats, estimated_beats, bins):
 METRICS = collections.OrderedDict()
 METRICS['F-measure'] = f_measure
 METRICS['Cemgil'] = cemgil
+METRICS['Goto'] = goto
 METRICS['P-score'] = p_score
 METRICS['Continuity'] = continuity
 METRICS['Information Gain'] = information_gain

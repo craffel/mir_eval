@@ -209,4 +209,4 @@ def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
 # Create a dictionary which maps the name of each metric
 # to the function used to compute it
 METRICS = collections.OrderedDict()
-METRICS['bss_eval'] = bss_eval_sources
+METRICS['bss_eval_sources'] = bss_eval_sources

@@ -532,3 +532,70 @@ def match_events(ref, est, window):
     matching = sorted(_bipartite_match(G).items())
 
     return matching
+
+def validate_intervals(intervals):
+    '''Checks that an (n, 2) interval ndarray is well-formed, and raises errors if not.
+
+    :parameters:
+        - intervals : np.ndarray, shape=(n, 2)
+            Array of interval start/end locations.
+    '''
+
+    # Validate interval shape
+    if intervals.ndim != 2 or intervals.shape[1] != 2:
+        raise ValueError('Segment intervals should be n-by-2 numpy ndarray, '
+                         'but shape={}'.format(intervals.shape))
+
+    # Make sure no times are negative
+    if (intervals < 0).any():
+        raise ValueError('Negative interval times found')
+
+    # Make sure all intervals have strictly positive duration
+    if (intervals[:, 1] <= intervals[:, 0]).any():
+        raise ValueError('All interval durations must be strictly positive')
+
+
+def validate_events(events, max_time=30000.):
+    '''Checks that a 1-d event location ndarray is well-formed, and raises errors if not.
+
+    :parameters:
+        - events : np.ndarray, shape=(n,)
+            Array of event times
+        - max_time : float
+            If an event is found above this time, the user will be warned.
+    '''
+    # Make sure no beat times are huge
+    if (events > max_time).any():
+        raise ValueError('An event at time {} was found; '
+                         'should be in seconds.'.format(events.max()))
+    # Make sure beat locations are 1-d np ndarrays
+    if events.ndim != 1:
+        raise ValueError('Event times should be 1-d numpy ndarray, '
+                         'but shape={}'.format(events.shape))
+    # Make sure beat times are increasing
+    if (np.diff(events) < 0).any():
+        raise ValueError('Events should be in increasing order.')
+
+
+def filter_labeled_intervals(intervals, labels):
+    r'''Remove all invalid intervals (start >= end) and corresponding labels.
+
+    :parameters:
+        - intervals : np.array
+            Array of interval times (seconds)
+
+        - labels : list
+            List of labels
+
+    :returns:
+        - filtered_intervals : np.array
+            Valid interval times.
+        - filtered_labels : list
+            Corresponding filtered labels
+    '''
+    filt_intervals, filt_labels = [], []
+    for interval, label in zip(intervals, labels):
+        if interval[0] < interval[1]:
+            filt_intervals.append(interval)
+            filt_labels.append(label)
+    return np.array(filt_intervals), filt_labels

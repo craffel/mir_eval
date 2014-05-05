@@ -38,6 +38,10 @@ def validate_voicing(metric):
             warnings.warn("Reference voicing array is empty.")
         if est_voicing.size == 0:
             warnings.warn("Estimated voicing array is empty.")
+        if ref_voicing.sum() == 0:
+            warnings.warn("Reference melody has no voiced frames.")
+        if est_voicing.sum() == 0:
+            warnings.warn("Estimated melody has no voiced frames.")
         # Make sure they're the same length
         if ref_voicing.shape[0] != est_voicing.shape[0]:
             raise ValueError('Reference and estimated voicing arrays should be the same length.')
@@ -47,6 +51,7 @@ def validate_voicing(metric):
                 raise ValueError('Voicing arrays must be boolean.')
         return metric(ref_voicing.astype(bool), est_voicing.astype(bool), *args, **kwargs)
     return metric_validated
+
 
 def validate(metric):
     '''Decorator which checks that voicing and frequency arrays are well-formed.
@@ -119,7 +124,25 @@ def freq_to_voicing(frequencies):
     return np.abs(frequencies), frequencies > 0
 
 
-def resample_melody_series(times, frequencies, voicing, hop=0.01):
+def constant_hop_timebase(hop, end_time):
+    ''' Generates a time series from 0 to end_time with times spaced hop apart
+
+    :parameters:
+        - hop : float
+            Spacing of samples in the time series
+        - end_time : float
+            Time series will span [0, end_time]
+    :returns:
+        - times : ndarray
+            Generated timebase
+    '''
+    # Compute new timebase.  Rounding/linspace is to avoid float problems.
+    end_time = np.round(end_time, 10)
+    times = np.linspace(0, hop*int(np.floor(end_time/hop)), int(np.floor(end_time/hop)) + 1)
+    times = np.round(times, 10)
+    return times
+
+def resample_melody_series(times, frequencies, voicing, times_new, kind='linear'):
     '''Resamples frequency and voicing time series to a new timescale.
     Maintains any zero ("unvoiced") values in frequencies.
 
@@ -130,35 +153,46 @@ def resample_melody_series(times, frequencies, voicing, hop=0.01):
             Array of frequency values, >= 0
         - voicing : ndarray
             Boolean array which indicates voiced or unvoiced
-        - hop : float
-            Hop size for resampling.  Default .01
+        - times_new : ndarray
+            Times to resample frequency and voicing sequences to
+        - kind : str
+            kind parameter to pass to scipy.interpolate.interp1d.
 
     :returns:
-        - times_new : ndarray
-            Times of each resampled frequency value
         - frequencies_resampled : ndarray
             Frequency array resampled to new timebase
         - voicing_resampled : ndarray
             Boolean voicing array resampled to new timebase
     '''
-    # Fill in zero values with the last reported frequency
-    # to avoid erroneous values when resampling
-    frequencies_held = np.array(frequencies)
-    for n, frequency in enumerate(frequencies[1:]):
-        if frequency == 0:
-            frequencies_held[n + 1] = frequencies_held[n]
-    # Compute new timebase.  Rounding/linspace is to avoid float problems.
-    times = np.round(times*1e10)*1e-10
-    times_new = np.linspace(0, hop*int(np.floor(times[-1]/hop)), int(np.floor(times[-1]/hop)) + 1)
-    times_new = np.round(times_new*1e10)*1e-10
-    # Linearly interpolate frequencies
-    frequencies_resampled = scipy.interpolate.interp1d(times, frequencies_held)(times_new)
-    # Retain zeros
-    frequency_mask = scipy.interpolate.interp1d(times, frequencies, 'zero')(times_new)
-    frequencies_resampled *= (frequency_mask != 0)
-    # Nearest-neighbor interpolate voicing
-    voicing_resampled = scipy.interpolate.interp1d(times, voicing, 'zero')(times_new)
-    return times_new, frequencies_resampled, voicing_resampled.astype(np.bool)
+    # Round to avoid floating point problems
+    times = np.round(times, 10)
+    # Add in an additional sample if we'll be asking for a time too large
+    if times_new.max() > times.max():
+        times = np.append(times, times_new.max())
+        frequencies = np.append(frequencies, 0)
+        voicing = np.append(voicing, 0)
+    # We need to fix zero transitions if interpolation is not zero or nearest
+    if kind != 'zero' and kind != 'nearest':
+        # Fill in zero values with the last reported frequency
+        # to avoid erroneous values when resampling
+        frequencies_held = np.array(frequencies)
+        for n, frequency in enumerate(frequencies[1:]):
+            if frequency == 0:
+                frequencies_held[n + 1] = frequencies_held[n]
+        # Linearly interpolate frequencies
+        frequencies_resampled = scipy.interpolate.interp1d(times, frequencies_held, kind)(times_new)
+        # Retain zeros
+        frequency_mask = scipy.interpolate.interp1d(times, frequencies, 'zero')(times_new)
+        frequencies_resampled *= (frequency_mask != 0)
+    else:
+        frequencies_resampled = scipy.interpolate.interp1d(times, frequencies, kind)(times_new)
+    # Use nearest-neighbor for voicing if it was used for frequencies
+    if kind == 'nearest':
+        voicing_resampled = scipy.interpolate.interp1d(times, voicing, kind)(times_new)
+    # otherwise, always use zeroth order
+    else:
+        voicing_resampled = scipy.interpolate.interp1d(times, voicing, 'zero')(times_new)
+    return frequencies_resampled, voicing_resampled.astype(np.bool)
 
 
 def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
@@ -176,13 +210,15 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
         - ref_freq : ndarray
             Array of reference frequency values
         - est_time : ndarray
-            Time of each reference frequency value
+            Time of each estimated frequency value
         - est_freq : ndarray
-            Array of reference frequency values
+            Array of estimated frequency values
         - base_frequency : float
             Base frequency in Hz for conversion to cents, default 10.0
         - hop : float
-            Hop size, in seconds, to resample, default .01
+            Hop size, in seconds, to resample, default None which means use ref_time
+        - kind : str
+            kind parameter to pass to scipy.interpolate.interp1d.
 
     :returns:
         - ref_voicing : ndarray
@@ -196,7 +232,8 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
     '''
     # Set default kwargs parameters
     base_frequency = kwargs.get('base_frequency', 10.)
-    hop = kwargs.get('hop', .01)
+    hop = kwargs.get('hop', None)
+    kind = kwargs.get('kind', 'linear')
     # Check if missing sample at time 0 and if so add one
     if ref_time[0] > 0:
         ref_time = np.insert(ref_time, 0, 0)
@@ -210,15 +247,19 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
     # convert both sequences to cents
     ref_cent = hz2cents(ref_freq)
     est_cent = hz2cents(est_freq)
-    # Resample to common time base
-    ref_time_grid, ref_cent, ref_voicing = resample_melody_series(ref_time,
-                                                                  ref_cent,
-                                                                  ref_voicing,
-                                                                  hop)
-    est_time_grid, est_cent, est_voicing = resample_melody_series(est_time,
-                                                                  est_cent,
-                                                                  est_voicing,
-                                                                  hop)
+    # If we received a hop, use it to resample both
+    if hop is not None:
+        # Resample to common time base
+        ref_cent, ref_voicing = resample_melody_series(ref_time,
+                                    ref_cent, ref_voicing,
+                                    constant_hop_timebase(hop, ref_time.max()), kind)
+        est_cent, est_voicing = resample_melody_series(est_time,
+                                    est_cent, est_voicing,
+                                    constant_hop_timebase(hop, est_time.max()), kind)
+    # Otherwise, only resample estimated to the reference time base
+    else:
+        est_cent, est_voicing = resample_melody_series(est_time,
+                                    est_cent, est_voicing, ref_time, kind)
     # ensure the estimated sequence is the same length as the reference
     len_diff = ref_cent.shape[0] - est_cent.shape[0]
     if len_diff >= 0:
@@ -226,7 +267,7 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
         est_voicing = np.append(est_voicing, np.zeros(len_diff))
     else:
         est_cent = est_cent[:ref_cent.shape[0]]
-        est_voicing = est_voicing[ref_voicing.shape[0]]
+        est_voicing = est_voicing[:ref_voicing.shape[0]]
 
     return ref_voicing, est_voicing, ref_cent, est_cent
 
@@ -259,7 +300,7 @@ def voicing_measures(ref_voicing, est_voicing):
 
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0:
-        return 0
+        return 0.
 
     # How voicing is computed
     #        | ref_v | !ref_v |
@@ -276,11 +317,17 @@ def voicing_measures(ref_voicing, est_voicing):
 
     # Voicing recall = fraction of voiced frames according the reference that
     # are declared as voiced by the estimate
-    vx_recall = TP/float(TP + FN)
+    if TP + FN == 0:
+        vx_recall = 0.
+    else:
+        vx_recall = TP/float(TP + FN)
 
     # Voicing false alarm = fraction of unvoiced frames according to the
     # reference that are declared as voiced by the estimate
-    vx_false_alm = FP/float(FP + TN + sys.float_info.epsilon)
+    if FP + TN == 0:
+        vx_false_alm = 0.
+    else:
+        vx_false_alm = FP/float(FP + TN)
 
     return vx_recall, vx_false_alm
 
@@ -317,13 +364,16 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_cent.size == 0 or est_cent.size == 0:
-        return 0
+        return 0.
+    # If there are no voiced frames in reference, metric is 0
+    if ref_voicing.sum() == 0:
+        return 0.
 
     # Raw pitch = the number of voiced frames in the reference for which the
     # estimate provides a correct frequency value (within 50 cents).
     # NB: voicing estimation is ignored in this measure
     cent_diff = np.abs(ref_cent - est_cent)
-    raw_pitch = (cent_diff[ref_voicing] <= 50).sum()/float(ref_voicing.sum())
+    raw_pitch = (cent_diff[ref_voicing] < 50).sum()/float(ref_voicing.sum())
 
     return raw_pitch
 
@@ -362,12 +412,16 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_cent.size == 0 or est_cent.size == 0:
-        return 0
+        return 0.
+
+    # If there are no voiced frames in reference, metric is 0
+    if ref_voicing.sum() == 0:
+        return 0.
 
     # Raw chroma = same as raw pitch except that octave errors are ignored.
     cent_diff = np.abs(ref_cent - est_cent)
     cent_diff_chroma = np.abs(cent_diff - 1200*np.floor(cent_diff/1200.0 + 0.5))
-    raw_chroma = (cent_diff_chroma[ref_voicing] <= 50).sum()/float(ref_voicing.sum())
+    raw_chroma = (cent_diff_chroma[ref_voicing] < 50).sum()/float(ref_voicing.sum())
 
     return raw_chroma
 
@@ -406,13 +460,13 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_cent.size == 0 or est_cent.size == 0:
-        return 0
+        return 0.
 
     # True negatives = frames correctly estimates as unvoiced
     TN = ((ref_voicing == 0)*(est_voicing == 0)).sum()
 
     cent_diff = np.abs(ref_cent - est_cent)
-    overall_accuracy = ((cent_diff[ref_voicing*est_voicing] <= 50).sum() + TN)/float(ref_cent.shape[0])
+    overall_accuracy = ((cent_diff[ref_voicing*est_voicing] < 50).sum() + TN)/float(ref_cent.shape[0])
 
     return overall_accuracy
 

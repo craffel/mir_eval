@@ -94,6 +94,9 @@ import functools
 import warnings
 import collections
 
+from mir_eval import input_output as io
+from mir_eval import util
+
 NO_CHORD = "N"
 NO_CHORD_ENCODED = -1, np.array([0]*12), np.array([0]*12), -1
 # See Line 445
@@ -598,6 +601,7 @@ def validate(comparison):
             warnings.warn('Reference labels are empty')
         if len(estimated_labels) == 0:
             warnings.warn('Estimated labels are empty')
+
         # Intervals should be (n, 2) array
         if intervals.ndim != 2 or intervals.shape[1] != 2:
             raise ValueError('intervals should be an ndarray'
@@ -607,8 +611,11 @@ def validate(comparison):
             raise ValueError('intervals contains {} entries but '
                              'len(reference_labels) = len(estimated_labels)'
                              ' = {}'.format(intervals.shape[0], N))
+        if 0 in np.diff(np.array(intervals), axis=1):
+            warnings.warn('Zero-duration interval')
 
         return comparison(reference_labels, estimated_labels, intervals)
+
     return comparison_validated
 
 
@@ -1015,8 +1022,11 @@ def majmin(reference_labels, estimated_labels):
     '''
     maj_quality = np.array(QUALITIES['maj'][:8])
     min_quality = np.array(QUALITIES['min'][:8])
-    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
-    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+
+    ref_roots, ref_qualities, ref_notes, ref_bass = encode_many(
+        reference_labels, True)
+    est_roots, est_qualities, est_notes, est_bass = encode_many(
+        estimated_labels, True)
 
     correct_root = ref_roots == est_roots
     correct_quality = np.all(
@@ -1026,7 +1036,17 @@ def majmin(reference_labels, estimated_labels):
     is_maj = np.all(np.equal(ref_qualities[:, :8], maj_quality), axis=1)
     is_min = np.all(np.equal(ref_qualities[:, :8], min_quality), axis=1)
     is_none = np.all(np.equal(ref_qualities, np.zeros(12)), axis=1)
+
+    # Only keep majors, minors, and Nones
     comparison_scores[(is_maj + is_min + is_none) == 0] = -1
+
+    # Disable chords that disrupt this quality (apparently)
+    ref_voicing = np.all(np.equal(ref_qualities[:, :8],
+                                  ref_notes[:, :8]), axis=1)
+    comparison_scores[ref_voicing == 0] = -1
+    est_voicing = np.all(np.equal(est_qualities[:, :8],
+                                  est_notes[:, :8]), axis=1)
+    comparison_scores[est_voicing == 0] = -1
     return comparison_scores
 
 
@@ -1215,3 +1235,83 @@ METRICS['triads'] = triads
 METRICS['triads-inv'] = triads_inv
 METRICS['tetrads'] = tetrads
 METRICS['tetrads-inv'] = tetrads_inv
+
+
+def evaluate_file_pair(reference_file, estimation_file,
+                       vocabularies=['majmin'], boundary_mode='fit-to-ref'):
+    '''Load data and perform the evaluation between a pair of annotations.
+
+    :parameters:
+    - reference_file: str
+        Path to a reference annotation.
+
+    - estimation_file: str
+        Path to an estimated annotation.
+
+    - vocabularies: list of strings
+        Comparisons to make between the reference and estimated sequences.
+
+    -boundary_mode: str
+        Method for resolving sequences of different lengths, one of
+        ['intersect', 'fit-to-ref', 'fit-to-est'].
+            intersect: Truncate both to the time range on with both sequences
+                are defined.
+            fit-to-ref: Pad the estimation to match the reference, filling
+                missing labels with 'no-chord'.
+            fit-to-est: Pad the reference to match the estimation, filling
+                missing labels with 'no-chord'.
+
+    :returns:
+    -result: dict
+        Dictionary containing the averaged scores for each vocabulary, along
+        with the total duration of the file ('_weight') and any errors
+        ('_error') caught in the process.
+    '''
+
+    # load the data
+    ref_intervals, ref_labels = io.load_annotation(reference_file)
+    est_intervals, est_labels = io.load_annotation(estimation_file)
+
+    if boundary_mode == 'intersect':
+        t_min = max([ref_intervals.min(), est_intervals.min()])
+        t_max = min([ref_intervals.max(), est_intervals.max()])
+    elif boundary_mode == 'fit-to-ref':
+        t_min = ref_intervals.min()
+        t_max = ref_intervals.max()
+    elif boundary_mode == 'fit-to-est':
+        t_min = est_intervals.min()
+        t_max = est_intervals.max()
+    else:
+        raise ValueError("Unsupported boundary mode: %s" % boundary_mode)
+
+    # Reduce the two annotations to the time intersection of both interval
+    #  sequences.
+    ref_intervals, ref_labels = util.filter_labeled_intervals(*util.adjust_intervals(
+        ref_intervals, ref_labels, t_min, t_max, NO_CHORD, NO_CHORD))
+
+    est_intervals, est_labels = util.filter_labeled_intervals(*util.adjust_intervals(
+        est_intervals, est_labels, t_min, t_max, NO_CHORD, NO_CHORD))
+
+    # Merge the time-intervals
+    try:
+        intervals, ref_labels, est_labels = util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
+    except IndexError:
+        print est_intervals
+        print est_labels
+        raise IndexError
+
+    # return ref_labels, est_labels
+
+    # Now compute all the metrics
+    result = collections.OrderedDict(_weight=intervals.max())
+    try:
+        for vocab in vocabularies:
+            result[vocab] = METRICS[vocab](ref_labels, est_labels, intervals)
+    except InvalidChordException as err:
+        if err.chord_label in ref_labels:
+            offending_file = reference_file
+        else:
+            offending_file = estimation_file
+        result['_error'] = (err.chord_label, offending_file)
+    return result

@@ -13,13 +13,13 @@ A_TOL = 1e-5
 # Path to the fixture files
 REF_GLOB    = 'data/segment/ref*.lab'
 EST_GLOB    = 'data/segment/est*.lab'
-MIREX_GLOB  = 'data/segment/output*.json'
+SCORES_GLOB  = 'data/segment/output*.json'
 
 def generate_data():
 
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
-    sco_files = sorted(glob.glob(MIREX_GLOB))
+    sco_files = sorted(glob.glob(SCORES_GLOB))
 
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         ref_t, ref_l = mir_eval.io.load_intervals(ref_f)
@@ -102,6 +102,17 @@ def test_structure_rand():
         _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
         _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
 
+        ri = mir_eval.structure.rand_index(_ref_t, _ref_l, _est_t, _est_l)
+
+        print ri
+        print scores['RI']
+
+        assert np.allclose(ri,  scores['RI'], atol=A_TOL)
+
+    def __test_adj_rand(_ref_t, _ref_l, _est_t, _est_l):
+        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l, t_min=0.0)
+        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l, t_min=0.0, t_max=_ref_t.max())
+
         ari = mir_eval.structure.ari(_ref_t, _ref_l, _est_t, _est_l)
 
         print ari
@@ -111,6 +122,7 @@ def test_structure_rand():
 
     # Iterate over fixtures
     for ref_t, ref_l, est_t, est_l, scores in generate_data():
+        yield (__test_adj_rand, ref_t, ref_l, est_t, est_l)
         yield (__test_rand, ref_t, ref_l, est_t, est_l)
 
     # Done
