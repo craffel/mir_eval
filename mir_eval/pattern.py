@@ -89,6 +89,7 @@ def _n_onset_midi(patterns):
     ''' Computes the number of onset_midi objects in a pattern '''
     return len([o_m for pat in patterns for occ in pat for o_m in occ])
 
+
 def validate(metric):
     """Decorator which checks that the input annotations to a metric
     look like valid pattern lists, and throws helpful errors if not.
@@ -227,7 +228,7 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
                 continue
 
             # Check transposition given a certain tolerance
-            if np.sum(np.diff(P - Q, axis=0)) <= tol:
+            if np.abs(np.sum(np.diff(P - Q, axis=0))) <= tol:
                 k += 1
                 break
 
