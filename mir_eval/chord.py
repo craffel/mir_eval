@@ -98,7 +98,7 @@ from mir_eval import input_output as io
 from mir_eval import util
 
 NO_CHORD = "N"
-NO_CHORD_ENCODED = -1, np.array([0]*12), np.array([0]*12), -1
+NO_CHORD_ENCODED = -1, np.array([0]*12), -1
 # See Line 445
 STRICT_BASS_INTERVALS = False
 
@@ -232,7 +232,7 @@ QUALITIES = {
     'min6':   [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
     'dim7':   [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
     'hdim7':  [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
-    NO_CHORD: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+    '':       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
 
 def quality_to_bitmap(quality):
@@ -252,7 +252,7 @@ def quality_to_bitmap(quality):
     '''
     if not quality in QUALITIES:
         raise InvalidChordException(
-            "Unsupported chord quality: '%s' "
+            "Unsupported chord quality shorthand: '%s' "
             "Did you mean to reduce extended chords?" % quality)
     return np.array(QUALITIES[quality])
 
@@ -436,10 +436,7 @@ def encode(chord_label, reduce_extended_chords=False):
     -root_number: int
         Absolute semitone of the chord's root.
 
-    - quality_bitmap: np.ndarray of ints, in [0, 1]
-        12-dim vector of relative semitones in the chord quality.
-
-    - note_bitmap: np.ndarray of ints, in [0, 1]
+    - interval_bitmap: np.ndarray of ints, in [0, 1]
         12-dim vector of relative semitones in the chord spelling.
 
     - bass_number: int
@@ -452,25 +449,26 @@ def encode(chord_label, reduce_extended_chords=False):
 
     if chord_label == NO_CHORD:
         return NO_CHORD_ENCODED
-    root, quality, exts, bass = split(
+    root, quality, intervals, bass = split(
         chord_label, reduce_extended_chords=reduce_extended_chords)
 
     root_number = pitch_class_to_semitone(root)
     bass_number = scale_degree_to_semitone(bass)
-    quality_bitmap = quality_to_bitmap(quality)
 
-    note_bitmap = np.array(quality_bitmap)
-    for sd in list(exts):
-        note_bitmap += scale_degree_to_bitmap(sd)
+    interval_bitmap = quality_to_bitmap(quality)
+    interval_bitmap[0] = 1
 
-    note_bitmap = (note_bitmap > 0).astype(np.int)
-    if not note_bitmap[bass_number] and STRICT_BASS_INTERVALS:
+    for scale_degree in intervals:
+        interval_bitmap += scale_degree_to_bitmap(scale_degree)
+
+    interval_bitmap = (interval_bitmap > 0).astype(np.int)
+    if not interval_bitmap[bass_number] and STRICT_BASS_INTERVALS:
         raise InvalidChordException(
             "Given bass scale degree is absent from this chord: "
             "%s" % chord_label, chord_label)
     else:
-        note_bitmap[bass_number] = 1.0
-    return root_number, quality_bitmap, note_bitmap, bass_number
+        interval_bitmap[bass_number] = 1
+    return root_number, interval_bitmap, bass_number
 
 
 def encode_many(chord_labels, reduce_extended_chords=False):
@@ -490,11 +488,8 @@ def encode_many(chord_labels, reduce_extended_chords=False):
     - root_number: np.ndarray of ints
         Absolute semitone of the chord's root.
 
-    - quality_bitmap: np.ndarray of ints, in [0, 1]
+    - interval_bitmap: np.ndarray of ints, in [0, 1]
         12-dim vector of relative semitones in the given chord quality.
-
-    - note_bitmap: np.ndarray of ints, in [0, 1]
-        12-dim vector of relative semitones in the given chord spelling.
 
     - bass_number: np.ndarray
         Relative semitones of the chord's bass notes.
@@ -505,15 +500,15 @@ def encode_many(chord_labels, reduce_extended_chords=False):
     """
     num_items = len(chord_labels)
     roots, basses = np.zeros([2, num_items], dtype=np.int)
-    qualities, notes = np.zeros([2, num_items, 12], dtype=np.int)
+    intervals = np.zeros([num_items, 12], dtype=np.int)
     local_cache = dict()
     for i, label in enumerate(chord_labels):
         result = local_cache.get(label, None)
         if result is None:
             result = encode(label, reduce_extended_chords)
             local_cache[label] = result
-        roots[i], qualities[i], notes[i], basses[i] = result
-    return roots, qualities, notes, basses
+        roots[i], intervals[i], basses[i] = result
+    return roots, intervals, basses
 
 
 def rotate_bitmap_to_root(bitmap, root):

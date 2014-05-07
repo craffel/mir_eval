@@ -124,29 +124,26 @@ def test_rotate_bitmaps_to_roots():
 
 
 def test_encode():
-    def __check_encode(label, expected_root, expected_quality,
-                        expected_notes, expected_bass):
+    def __check_encode(label, expected_root, expected_intervals,
+                       expected_bass):
         ''' Helper function for checking encode '''
-        root, quality, notes, bass = mir_eval.chord.encode(label)
+        root, intervals, bass = mir_eval.chord.encode(label)
         assert root == expected_root
-        assert np.all(quality == expected_quality)
-        assert np.all(notes == expected_notes)
+        assert np.all(intervals == expected_intervals)
         assert bass == expected_bass
 
-    labels = ['B:maj(*1,*3)/5', 'G:dim']
-    expected_roots = [11, 7]
-    expected_qualities = [[1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-                          [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]]
-    expected_notes = [[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-                      [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]]
-    expected_bass = [7, 0]
+    labels = ['B:maj(*1,*3)/5', 'G:dim', 'C:(3)/3']
+    expected_roots = [11, 7, 0]
+    expected_intervals = [[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                          [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+                          [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]]
+    expected_bass = [7, 0, 4]
 
-    for label, e_root, e_quality, e_notes, e_bass in zip(labels,
-                                                         expected_roots,
-                                                         expected_qualities,
-                                                         expected_notes,
-                                                         expected_bass):
-        yield (__check_encode, label, e_root, e_quality, e_notes, e_bass)
+    for label, e_root, e_interval, e_bass in zip(labels,
+                                                 expected_roots,
+                                                 expected_intervals,
+                                                 expected_bass):
+        yield (__check_encode, label, e_root, e_interval, e_bass)
 
     # Non-chord bass notes *must* be explicitly named as extensions when
     #   STRICT_BASS_INTERVALS == True
@@ -156,17 +153,16 @@ def test_encode():
     # Otherwise, we can cut a little slack.
     mir_eval.chord.STRICT_BASS_INTERVALS = False
     yield (__check_encode, 'G:dim(4)/6', 7,
-                           [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
                            [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0], 9)
 
+
 def test_encode_many():
-    def __check_encode_many(labels, expected_roots, expected_qualities,
-                            expected_notes, expected_basses):
+    def __check_encode_many(labels, expected_roots, expected_intervals,
+                            expected_basses):
         ''' Does all of the logic for checking encode_many '''
-        roots, qualities, notes, basses = mir_eval.chord.encode_many(labels)
+        roots, intervals, basses = mir_eval.chord.encode_many(labels)
         assert np.all(roots == expected_roots)
-        assert np.all(qualities == expected_qualities)
-        assert np.all(notes == expected_notes)
+        assert np.all(intervals == expected_intervals)
         assert np.all(basses == expected_basses)
 
     labels = ['B:maj(*1,*3)/5',
@@ -175,13 +171,7 @@ def test_encode_many():
               'C:min',
               'C:min']
     expected_roots = [11, 11, -1, 0, 0]
-    expected_qualities = [
-        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-        [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]]
-    expected_notes = [
+    expected_intervals = [
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -189,8 +179,8 @@ def test_encode_many():
         [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]]
     expected_basses = [7, 7, -1, 0, 0]
 
-    yield (__check_encode_many, labels, expected_roots, expected_qualities,
-           expected_notes, expected_basses)
+    yield (__check_encode_many, labels, expected_roots, expected_intervals,
+           expected_basses)
 
 
 def __check_one_metric(metric, ref_label, est_label, score):
