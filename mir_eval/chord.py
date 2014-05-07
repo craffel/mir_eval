@@ -212,8 +212,9 @@ def scale_degree_to_bitmap(scale_degree):
     if scale_degree.startswith("*"):
         sign = -1
         scale_degree = scale_degree.strip("*")
-    edit_map = [0] * 12
-    edit_map[scale_degree_to_semitone(scale_degree)] = sign
+    edit_map = [0] * BITMAP_LENGTH
+    sd_idx = scale_degree_to_semitone(scale_degree)
+    edit_map[sd_idx] = sign
     return np.array(edit_map)
 
 
@@ -1241,8 +1242,8 @@ def evaluate_file_pair(reference_file, estimation_file,
     '''
 
     # load the data
-    ref_intervals, ref_labels = io.load_annotation(reference_file)
-    est_intervals, est_labels = io.load_annotation(estimation_file)
+    ref_intervals, ref_labels = io.load_intervals(reference_file)
+    est_intervals, est_labels = io.load_intervals(estimation_file)
 
     if boundary_mode == 'intersect':
         t_min = max([ref_intervals.min(), est_intervals.min()])
