@@ -481,6 +481,9 @@ def information_gain(reference_beats,
         - information_gain_score : float
             Entropy of beat error histogram
     '''
+    # If an even number of bins is provided, there will be no bin centered at zero, so warn the user.
+    if not bins % 2:
+        warnings.warn("bins parameter is even, so there will not be a bin centered at zero.")
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0.
@@ -542,18 +545,13 @@ def _get_entropy(reference_beats, estimated_beats, bins):
                 interval = .5*(start - end)
         # The actual error of this beat
         beat_error[n] = .5*absolute_error/interval
-    # Trick to deal with bin boundaries
-    beat_error = np.round(10000*beat_error)/10000.0
     # Put beat errors in range (-.5, .5)
     beat_error = np.mod(beat_error + .5, -1) + .5
     # Note these are slightly different the beat evaluation toolbox
     # (they are uniform)
-    bin_step = 1.0/(bins - 1.0)
-    histogram_bins = np.arange(-.5, .5 + bin_step, bin_step)
+    histogram_bin_edges = np.linspace(-.5, .5, bins + 1)
     # Get the histogram
-    raw_bin_values = np.histogram(beat_error, histogram_bins)[0]
-    # Add the last bin height to the first bin
-    raw_bin_values[0] += raw_bin_values[-1]
+    raw_bin_values = np.histogram(beat_error, histogram_bin_edges)[0]
     # Turn into a proper probability distribution
     raw_bin_values = raw_bin_values/(1.0*np.sum(raw_bin_values))
     # Set zero-valued bins to 1 to make the entropy calculation well-behaved
