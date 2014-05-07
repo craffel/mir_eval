@@ -191,7 +191,7 @@ def scale_degree_to_semitone(scale_degree):
     if semitone is None:
         raise InvalidChordException(
             "Scale degree improperly formed: %s" % scale_degree)
-    return (semitone + offset) % 12
+    return semitone + offset
 
 
 def scale_degree_to_bitmap(scale_degree):
@@ -214,7 +214,8 @@ def scale_degree_to_bitmap(scale_degree):
         scale_degree = scale_degree.strip("*")
     edit_map = [0] * BITMAP_LENGTH
     sd_idx = scale_degree_to_semitone(scale_degree)
-    edit_map[sd_idx] = sign
+    if sd_idx < BITMAP_LENGTH:
+        edit_map[sd_idx % BITMAP_LENGTH] = sign
     return np.array(edit_map)
 
 
@@ -469,7 +470,7 @@ def encode(chord_label, reduce_extended_chords=False):
         chord_label, reduce_extended_chords=reduce_extended_chords)
 
     root_number = pitch_class_to_semitone(root)
-    bass_number = scale_degree_to_semitone(bass)
+    bass_number = scale_degree_to_semitone(bass) % 12
 
     semitone_bitmap = quality_to_bitmap(quality)
     semitone_bitmap[0] = 1

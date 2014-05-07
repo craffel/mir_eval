@@ -44,7 +44,7 @@ def test_pitch_class_to_semitone():
 
 def test_scale_degree_to_semitone():
     valid_degrees = ['b7', '#3', '1', 'b1', '#7', 'bb5']
-    valid_semitones = [10, 5, 0, 11, 0, 5]
+    valid_semitones = [10, 5, 0, -1, 12, 5]
 
     for scale_degree, semitone in zip(valid_degrees, valid_semitones):
         yield (__check_valid, mir_eval.chord.scale_degree_to_semitone,
