@@ -672,16 +672,12 @@ def thirds(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.thirds(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -696,12 +692,12 @@ def thirds(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in [0.0, 1.0]
     '''
-    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
-    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+    ref_roots, ref_semitones = encode_many(reference_labels, True)[:2]
+    est_roots, est_semitones = encode_many(estimated_labels, True)[:2]
 
-    correct_root = ref_roots == est_roots
-    correct_third = ref_qualities[:, 3] == est_qualities[:, 3]
-    return (correct_root * correct_third).astype(np.float)
+    eq_roots = ref_roots == est_roots
+    eq_thirds = ref_semitones[:, 3] == est_semitones[:, 3]
+    return (eq_roots * eq_thirds).astype(np.float)
 
 
 @validate
@@ -712,16 +708,12 @@ def thirds_inv(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.thirds_inv(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -736,15 +728,13 @@ def thirds_inv(reference_labels, estimated_labels):
         - scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in [0.0, 1.0]
     '''
-    ref_data = encode_many(reference_labels, True)
-    ref_roots, ref_qualities, ref_bass = ref_data[0], ref_data[1], ref_data[3]
-    est_data = encode_many(estimated_labels, True)
-    est_roots, est_qualities, est_bass = est_data[0], est_data[1], est_data[3]
+    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, True)
+    est_roots, est_semitones, est_bass = encode_many(estimated_labels, True)
 
-    correct_root = ref_roots == est_roots
-    correct_bass = ref_bass == est_bass
-    correct_third = ref_qualities[:, 3] == est_qualities[:, 3]
-    return (correct_root * correct_third * correct_bass).astype(np.float)
+    eq_root = ref_roots == est_roots
+    eq_bass = ref_bass == est_bass
+    eq_third = ref_semitones[:, 3] == est_semitones[:, 3]
+    return (eq_root * eq_third * eq_bass).astype(np.float)
 
 
 @validate
@@ -755,16 +745,12 @@ def triads(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.triads(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -779,13 +765,13 @@ def triads(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
-    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
-    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+    ref_roots, ref_semitones = encode_many(reference_labels, True)[:2]
+    est_roots, est_semitones = encode_many(estimated_labels, True)[:2]
 
-    correct_root = ref_roots == est_roots
-    correct_quality = np.all(
-        np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
-    return (correct_root * correct_quality).astype(np.float)
+    eq_roots = ref_roots == est_roots
+    eq_semitones = np.all(
+        np.equal(ref_semitones[:, :8], est_semitones[:, :8]), axis=1)
+    return (eq_roots * eq_semitones).astype(np.float)
 
 
 @validate
@@ -796,16 +782,12 @@ def triads_inv(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.triads_inv(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -820,16 +802,14 @@ def triads_inv(reference_labels, estimated_labels):
         - scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
-    ref_data = encode_many(reference_labels, True)
-    ref_roots, ref_qualities, ref_bass = ref_data[0], ref_data[1], ref_data[3]
-    est_data = encode_many(estimated_labels, True)
-    est_roots, est_qualities, est_bass = est_data[0], est_data[1], est_data[3]
+    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, True)
+    est_roots, est_semitones, est_bass = encode_many(estimated_labels, True)
 
-    correct_root = ref_roots == est_roots
-    correct_bass = ref_bass == est_bass
-    correct_quality = np.all(
-        np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
-    return (correct_root * correct_quality * correct_bass).astype(np.float)
+    eq_roots = ref_roots == est_roots
+    eq_basses = ref_bass == est_bass
+    eq_semitones = np.all(
+        np.equal(ref_semitones[:, :8], est_semitones[:, :8]), axis=1)
+    return (eq_roots * eq_semitones * eq_basses).astype(np.float)
 
 
 @validate
@@ -840,16 +820,12 @@ def tetrads(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.tetrads(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -864,12 +840,12 @@ def tetrads(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
-    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
-    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+    ref_roots, ref_semitones = encode_many(reference_labels, True)[:2]
+    est_roots, est_semitones = encode_many(estimated_labels, True)[:2]
 
-    correct_root = ref_roots == est_roots
-    correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
-    return (correct_root * correct_quality).astype(np.float)
+    eq_roots = ref_roots == est_roots
+    eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
+    return (eq_roots * eq_semitones).astype(np.float)
 
 
 @validate
@@ -880,16 +856,12 @@ def tetrads_inv(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.tetrads_inv(ref_labels, est_labels, intervals)
 
         :parameters:
@@ -904,15 +876,13 @@ def tetrads_inv(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
-    ref_data = encode_many(reference_labels, True)
-    ref_roots, ref_qualities, ref_bass = ref_data[0], ref_data[1], ref_data[3]
-    est_data = encode_many(estimated_labels, True)
-    est_roots, est_qualities, est_bass = est_data[0], est_data[1], est_data[3]
+    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, True)
+    est_roots, est_semitones, est_bass = encode_many(estimated_labels, True)
 
-    correct_root = ref_roots == est_roots
-    correct_bass = ref_bass == est_bass
-    correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
-    return (correct_root * correct_quality * correct_bass).astype(np.float)
+    eq_roots = ref_roots == est_roots
+    eq_basses = ref_bass == est_bass
+    eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
+    return (eq_roots * eq_semitones * eq_basses).astype(np.float)
 
 
 @validate
@@ -923,16 +893,12 @@ def root(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.root(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -962,16 +928,12 @@ def mirex(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.mirex(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -988,12 +950,12 @@ def mirex(reference_labels, estimated_labels):
     '''
     MIN_INTERSECTION = 3
     ref_data = encode_many(reference_labels, True)
-    ref_notes = rotate_bitmaps_to_roots(ref_data[2], ref_data[0])
+    ref_chroma = rotate_bitmaps_to_roots(ref_data[1], ref_data[0])
     est_data = encode_many(estimated_labels, True)
-    est_notes = rotate_bitmaps_to_roots(est_data[2], est_data[0])
+    est_chroma = rotate_bitmaps_to_roots(est_data[1], est_data[0])
 
-    correct_notes = (ref_notes * est_notes).sum(axis=-1)
-    return (correct_notes >= MIN_INTERSECTION).astype(np.float)
+    eq_chroma = (ref_chroma * est_chroma).sum(axis=-1)
+    return (eq_chroma >= MIN_INTERSECTION).astype(np.float)
 
 
 @validate
@@ -1005,16 +967,12 @@ def majmin(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.majmin(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -1030,33 +988,32 @@ def majmin(reference_labels, estimated_labels):
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
-    maj_quality = np.array(QUALITIES['maj'][:8])
-    min_quality = np.array(QUALITIES['min'][:8])
+    maj_semitones = np.array(QUALITIES['maj'][:8])
+    min_semitones = np.array(QUALITIES['min'][:8])
 
-    ref_roots, ref_qualities, ref_notes, ref_bass = encode_many(
-        reference_labels, True)
-    est_roots, est_qualities, est_notes, est_bass = encode_many(
-        estimated_labels, True)
+    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, True)
+    est_roots, est_semitones, est_bass = encode_many(estimated_labels, True)
 
-    correct_root = ref_roots == est_roots
-    correct_quality = np.all(
-        np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
-    comparison_scores = (correct_root * correct_quality).astype(np.float)
+    eq_root = ref_roots == est_roots
+    eq_quality = np.all(np.equal(ref_semitones[:, :8],
+                                 est_semitones[:, :8]), axis=1)
+    comparison_scores = (eq_root * eq_quality).astype(np.float)
+
     # Test for Major / Minor / No-chord
-    is_maj = np.all(np.equal(ref_qualities[:, :8], maj_quality), axis=1)
-    is_min = np.all(np.equal(ref_qualities[:, :8], min_quality), axis=1)
-    is_none = np.all(np.equal(ref_qualities, np.zeros(12)), axis=1)
+    is_maj = np.all(np.equal(ref_semitones[:, :8], maj_semitones), axis=1)
+    is_min = np.all(np.equal(ref_semitones[:, :8], min_semitones), axis=1)
+    is_none = ref_roots < 0
 
-    # Only keep majors, minors, and Nones
+    # Only keep majors, minors, and Nones (NOR)
     comparison_scores[(is_maj + is_min + is_none) == 0] = -1
 
     # Disable chords that disrupt this quality (apparently)
-    ref_voicing = np.all(np.equal(ref_qualities[:, :8],
-                                  ref_notes[:, :8]), axis=1)
-    comparison_scores[ref_voicing == 0] = -1
-    est_voicing = np.all(np.equal(est_qualities[:, :8],
-                                  est_notes[:, :8]), axis=1)
-    comparison_scores[est_voicing == 0] = -1
+    # ref_voicing = np.all(np.equal(ref_qualities[:, :8],
+    #                               ref_notes[:, :8]), axis=1)
+    # comparison_scores[ref_voicing == 0] = -1
+    # est_voicing = np.all(np.equal(est_qualities[:, :8],
+    #                               est_notes[:, :8]), axis=1)
+    # comparison_scores[est_voicing == 0] = -1
     return comparison_scores
 
 
@@ -1070,16 +1027,12 @@ def majmin_inv(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.majmin_inv(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -1095,28 +1048,29 @@ def majmin_inv(reference_labels, estimated_labels):
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
-    maj_quality = np.array(QUALITIES['maj'][:8])
-    min_quality = np.array(QUALITIES['min'][:8])
-    ref_codes = encode_many(reference_labels, True)
-    ref_roots, ref_qualities, ref_bass = [ref_codes[n] for n in (0, 1, 3)]
-    est_codes = encode_many(estimated_labels, True)
-    est_roots, est_qualities, est_bass = [est_codes[n] for n in (0, 1, 3)]
+    maj_semitones = np.array(QUALITIES['maj'][:8])
+    min_semitones = np.array(QUALITIES['min'][:8])
 
-    correct_root_bass = (ref_roots == est_roots) * (ref_bass == est_bass)
-    correct_quality = np.all(
-        np.equal(ref_qualities[:, :8], est_qualities[:, :8]), axis=1)
-    comparison_scores = (correct_root_bass * correct_quality).astype(np.float)
+    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, True)
+    est_roots, est_semitones, est_bass = encode_many(estimated_labels, True)
+
+    eq_root_bass = (ref_roots == est_roots) * (ref_bass == est_bass)
+    eq_semitones = np.all(np.equal(ref_semitones[:, :8],
+                                   est_semitones[:, :8]), axis=1)
+    comparison_scores = (eq_root_bass * eq_semitones).astype(np.float)
 
     # Test for Major / Minor / No-chord
-    is_maj = np.all(np.equal(ref_qualities[:, :8], maj_quality), axis=1)
-    is_min = np.all(np.equal(ref_qualities[:, :8], min_quality), axis=1)
-    is_none = np.all(np.equal(ref_qualities, np.zeros(12)), axis=1)
+    is_maj = np.all(np.equal(ref_semitones[:, :8], maj_semitones), axis=1)
+    is_min = np.all(np.equal(ref_semitones[:, :8], min_semitones), axis=1)
+    is_none = ref_roots < 0
+
+    # Only keep majors, minors, and Nones (NOR)
     comparison_scores[(is_maj + is_min + is_none) == 0] = -1
 
     # Disable inversions that are not part of the quality
     valid_inversion = np.ones(ref_bass.shape, dtype=bool)
     bass_idx = ref_bass >= 0
-    valid_inversion[bass_idx] = ref_qualities[bass_idx, ref_bass[bass_idx]]
+    valid_inversion[bass_idx] = ref_semitones[bass_idx, ref_bass[bass_idx]]
     comparison_scores[valid_inversion == 0] = -1
     return comparison_scores
 
@@ -1130,16 +1084,12 @@ def sevenths(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.sevenths(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -1155,18 +1105,20 @@ def sevenths(reference_labels, estimated_labels):
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
-    valid_qualities = ['maj', 'min', 'maj7', '7', 'min7', 'N']
-    valid_qualities = np.array([QUALITIES[name] for name in valid_qualities])
+    seventh_qualities = ['maj', 'min', 'maj7', '7', 'min7', '']
+    valid_semitones = np.array([QUALITIES[name] for name in seventh_qualities])
 
-    ref_roots, ref_qualities = encode_many(reference_labels, True)[:2]
-    est_roots, est_qualities = encode_many(estimated_labels, True)[:2]
+    ref_roots, ref_semitones = encode_many(reference_labels, True)[:2]
+    est_roots, est_semitones = encode_many(estimated_labels, True)[:2]
 
-    correct_root = ref_roots == est_roots
-    correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
-    comparison_scores = (correct_root * correct_quality).astype(np.float)
-    # Test for Major / Minor / No-chord
-    is_valid = np.array([np.all(np.equal(ref_qualities, quality), axis=1)
-                         for quality in valid_qualities])
+    eq_root = ref_roots == est_roots
+    eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
+    comparison_scores = (eq_root * eq_semitones).astype(np.float)
+
+    # Test for reference chord inclusion
+    is_valid = np.array([np.all(np.equal(ref_semitones, semitones), axis=1)
+                         for semitones in valid_semitones])
+    # Drop if NOR
     comparison_scores[np.sum(is_valid, axis=0) == 0] = -1
     return comparison_scores
 
@@ -1180,16 +1132,12 @@ def sevenths_inv(reference_labels, estimated_labels):
     :usage:
         >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
         >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(est_intervals,
-                                                                       est_labels,
-                                                                       ref_intervals.min(),
-                                                                       ref_intervals.max(),
-                                                                       mir_eval.chord.NO_CHORD,
-                                                                       mir_eval.chord.NO_CHORD)
-        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(ref_intervals,
-                                                                                      ref_labels,
-                                                                                      est_intervals,
-                                                                                      est_labels)
+        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, ref_intervals.min(),
+            ref_intervals.max(), mir_eval.chord.NO_CHORD,
+            mir_eval.chord.NO_CHORD)
+        >>> intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
+            ref_intervals, ref_labels, est_intervals, est_labels)
         >>> score = mir_eval.chord.sevenths_inv(ref_labels, est_labels, intervals)
 
     :parameters:
@@ -1205,26 +1153,25 @@ def sevenths_inv(reference_labels, estimated_labels):
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
-    valid_qualities = ['maj', 'min', 'maj7', '7', 'min7', 'N']
-    valid_qualities = np.array([QUALITIES[name] for name in valid_qualities])
+    seventh_qualities = ['maj', 'min', 'maj7', '7', 'min7', '']
+    valid_semitones = np.array([QUALITIES[name] for name in seventh_qualities])
 
-    ref_codes = encode_many(reference_labels, True)
-    ref_roots, ref_qualities, ref_bass = [ref_codes[n] for n in (0, 1, 3)]
-    est_codes = encode_many(estimated_labels, True)
-    est_roots, est_qualities, est_bass = [est_codes[n] for n in (0, 1, 3)]
+    ref_roots, ref_semitones, ref_basses = encode_many(reference_labels, True)
+    est_roots, est_semitones, est_basses = encode_many(estimated_labels, True)
 
-    correct_root_bass = (ref_roots == est_roots) * (ref_bass == est_bass)
-    correct_quality = np.all(np.equal(ref_qualities, est_qualities), axis=1)
-    comparison_scores = (correct_root_bass * correct_quality).astype(np.float)
+    eq_roots_basses = (ref_roots == est_roots) * (ref_basses == est_basses)
+    eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
+    comparison_scores = (eq_roots_basses * eq_semitones).astype(np.float)
+
     # Test for Major / Minor / No-chord
-    is_valid = np.array([np.all(np.equal(ref_qualities, quality), axis=1)
-                         for quality in valid_qualities])
+    is_valid = np.array([np.all(np.equal(ref_semitones, semitones), axis=1)
+                         for semitones in valid_semitones])
     comparison_scores[np.sum(is_valid, axis=0) == 0] = -1
 
     # Disable inversions that are not part of the quality
-    valid_inversion = np.ones(ref_bass.shape, dtype=bool)
-    bass_idx = ref_bass >= 0
-    valid_inversion[bass_idx] = ref_qualities[bass_idx, ref_bass[bass_idx]]
+    valid_inversion = np.ones(ref_basses.shape, dtype=bool)
+    bass_idx = ref_basses >= 0
+    valid_inversion[bass_idx] = ref_semitones[bass_idx, ref_basses[bass_idx]]
     comparison_scores[valid_inversion == 0] = -1
     return comparison_scores
 
