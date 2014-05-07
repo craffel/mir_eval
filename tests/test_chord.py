@@ -70,12 +70,14 @@ def test_validate_chord_label():
         yield (__check_exception, mir_eval.chord.validate_chord_label,
                (chord_label,), mir_eval.chord.InvalidChordException)
 
+
 def test_split():
-    labels = ['C', 'B:maj(*1,*3)/5', 'Ab:min/b3', 'N']
+    labels = ['C', 'B:maj(*1,*3)/5', 'Ab:min/b3', 'N', 'G:(3)']
     splits = [['C', 'maj', set(), '1'],
               ['B', 'maj', set(['*1', '*3']), '5'],
               ['Ab', 'min', set(), 'b3'],
-              ['N', '', set(), '']]
+              ['N', '', set(), ''],
+              ['G', '', set(['3']), '1']]
 
     for chord_label, split_chord in zip(labels, splits):
         yield (__check_valid, mir_eval.chord.split,

@@ -323,13 +323,19 @@ def validate_chord_label(chord_label):
 def split(chord_label, reduce_extended_chords=False):
     '''Parse a chord label into its four constituent parts:
     - root
-    - quality
-    - extensions
+    - quality shorthand
+    - intervals
     - bass
+
+    Note: Chords lacking quality AND interval information are major.
+      If a quality is specified, it is returned.
+      If an interval is specified WITHOUT a quality, the quality field is
+        empty.
 
     Some examples:
         'C' -> ['C', 'maj', {}, '1']
         'G#:min(*b3,*5)/5' -> ['G#', 'min', {'*b3', '*5'}, '5']
+        'A:(3)/6' -> ['A', '', {'3'}, '6']
 
 
     :parameters:
@@ -349,14 +355,23 @@ def split(chord_label, reduce_extended_chords=False):
     if "/" in chord_label:
         chord_label, bass = chord_label.split("/")
 
-    extensions = set()
+    intervals = set()
+    omission = False
     if "(" in chord_label:
-        chord_label, extensions = chord_label.split("(")
-        extensions = extensions.strip(")")
-        extensions = set([e.strip() for e in extensions.split(",")])
+        chord_label, intervals = chord_label.split("(")
+        omission = "*" in intervals
+        intervals = intervals.strip(")")
+        intervals = set([i.strip() for i in intervals.split(",")])
 
-    # By default, unspecified qualities are major.
-    quality = 'maj'
+    # Note: Chords lacking quality AND added interval information are major.
+    #   If a quality shorthand is specified, it is returned.
+    #   If an interval is specified WITHOUT a quality, the quality field is
+    #     empty.
+    #   Intervals specifying omissions MUST have a quality.
+    if omission and not ":" in chord_label:
+        raise InvalidChordException(
+            "Intervals specifying omissions MUST have a quality.")
+    quality = '' if intervals else 'maj'
     if ":" in chord_label:
         root, quality_name = chord_label.split(":")
         # Extended chords (with ":"s) may not explicitly have Major qualities,
@@ -367,10 +382,10 @@ def split(chord_label, reduce_extended_chords=False):
         root = chord_label
 
     if reduce_extended_chords:
-        quality, addl_extensions = reduce_extended_quality(quality)
-        extensions.update(addl_extensions)
+        quality, addl_intervals = reduce_extended_quality(quality)
+        intervals.update(addl_intervals)
 
-    return [root, quality, extensions, bass]
+    return [root, quality, intervals, bass]
 
 
 def join(root, quality='', extensions=None, bass=''):
