@@ -324,7 +324,7 @@ def split(chord_label, reduce_extended_chords=False):
     '''Parse a chord label into its four constituent parts:
     - root
     - quality shorthand
-    - intervals
+    - scale degrees
     - bass
 
     Note: Chords lacking quality AND interval information are major.
@@ -355,13 +355,13 @@ def split(chord_label, reduce_extended_chords=False):
     if "/" in chord_label:
         chord_label, bass = chord_label.split("/")
 
-    intervals = set()
+    scale_degrees = set()
     omission = False
     if "(" in chord_label:
-        chord_label, intervals = chord_label.split("(")
-        omission = "*" in intervals
-        intervals = intervals.strip(")")
-        intervals = set([i.strip() for i in intervals.split(",")])
+        chord_label, scale_degrees = chord_label.split("(")
+        omission = "*" in scale_degrees
+        scale_degrees = scale_degrees.strip(")")
+        scale_degrees = set([i.strip() for i in scale_degrees.split(",")])
 
     # Note: Chords lacking quality AND added interval information are major.
     #   If a quality shorthand is specified, it is returned.
@@ -371,7 +371,7 @@ def split(chord_label, reduce_extended_chords=False):
     if omission and not ":" in chord_label:
         raise InvalidChordException(
             "Intervals specifying omissions MUST have a quality.")
-    quality = '' if intervals else 'maj'
+    quality = '' if scale_degrees else 'maj'
     if ":" in chord_label:
         root, quality_name = chord_label.split(":")
         # Extended chords (with ":"s) may not explicitly have Major qualities,
@@ -382,10 +382,10 @@ def split(chord_label, reduce_extended_chords=False):
         root = chord_label
 
     if reduce_extended_chords:
-        quality, addl_intervals = reduce_extended_quality(quality)
-        intervals.update(addl_intervals)
+        quality, addl_scale_degrees = reduce_extended_quality(quality)
+        scale_degrees.update(addl_scale_degrees)
 
-    return [root, quality, intervals, bass]
+    return [root, quality, scale_degrees, bass]
 
 
 def join(root, quality='', extensions=None, bass=''):
@@ -436,7 +436,7 @@ def encode(chord_label, reduce_extended_chords=False):
     -root_number: int
         Absolute semitone of the chord's root.
 
-    - interval_bitmap: np.ndarray of ints, in [0, 1]
+    - semitone_bitmap: np.ndarray of ints, in [0, 1]
         12-dim vector of relative semitones in the chord spelling.
 
     - bass_number: int
@@ -449,26 +449,26 @@ def encode(chord_label, reduce_extended_chords=False):
 
     if chord_label == NO_CHORD:
         return NO_CHORD_ENCODED
-    root, quality, intervals, bass = split(
+    root, quality, scale_degrees, bass = split(
         chord_label, reduce_extended_chords=reduce_extended_chords)
 
     root_number = pitch_class_to_semitone(root)
     bass_number = scale_degree_to_semitone(bass)
 
-    interval_bitmap = quality_to_bitmap(quality)
-    interval_bitmap[0] = 1
+    semitone_bitmap = quality_to_bitmap(quality)
+    semitone_bitmap[0] = 1
 
-    for scale_degree in intervals:
-        interval_bitmap += scale_degree_to_bitmap(scale_degree)
+    for scale_degree in scale_degrees:
+        semitone_bitmap += scale_degree_to_bitmap(scale_degree)
 
-    interval_bitmap = (interval_bitmap > 0).astype(np.int)
-    if not interval_bitmap[bass_number] and STRICT_BASS_INTERVALS:
+    semitone_bitmap = (semitone_bitmap > 0).astype(np.int)
+    if not semitone_bitmap[bass_number] and STRICT_BASS_INTERVALS:
         raise InvalidChordException(
             "Given bass scale degree is absent from this chord: "
             "%s" % chord_label, chord_label)
     else:
-        interval_bitmap[bass_number] = 1
-    return root_number, interval_bitmap, bass_number
+        semitone_bitmap[bass_number] = 1
+    return root_number, semitone_bitmap, bass_number
 
 
 def encode_many(chord_labels, reduce_extended_chords=False):
@@ -500,15 +500,15 @@ def encode_many(chord_labels, reduce_extended_chords=False):
     """
     num_items = len(chord_labels)
     roots, basses = np.zeros([2, num_items], dtype=np.int)
-    intervals = np.zeros([num_items, 12], dtype=np.int)
+    semitones = np.zeros([num_items, 12], dtype=np.int)
     local_cache = dict()
     for i, label in enumerate(chord_labels):
         result = local_cache.get(label, None)
         if result is None:
             result = encode(label, reduce_extended_chords)
             local_cache[label] = result
-        roots[i], intervals[i], basses[i] = result
-    return roots, intervals, basses
+        roots[i], semitones[i], basses[i] = result
+    return roots, semitones, basses
 
 
 def rotate_bitmap_to_root(bitmap, root):
