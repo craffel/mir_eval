@@ -299,13 +299,12 @@ def test_triads_inv():
 
 
 def test_tetrads():
-    # TODO(ejhumphrey): Revisit how minmaj7's are mapped.
     ref_labels = ['C:min', 'C:maj', 'C:7', 'C:maj7', 'C:sus2',
                   'C:7/3', 'G:min', 'C:maj', 'C:min', 'C:min']
     est_labels = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2',
-                  'C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7'] # um..?
+                  'C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7']
     scores = [0.0, 0.0, 1.0, 1.0, 1.0,
-              1.0, 0.0, 0.0, 0.0, 1.0]
+              1.0, 0.0, 0.0, 0.0, 0.0]
 
     for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
         yield (__check_one_metric, mir_eval.chord.tetrads,
@@ -316,9 +315,9 @@ def test_tetrads():
 
 
 def test_tetrads_inv():
-    ref_labels = ['C:maj7/5', 'G:min', 'C:7/5', 'C:min/b3', 'C:min']
-    est_labels = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:minmaj7/7']
-    scores = [0.0, 0.0, 1.0, 0.0, 0.0]
+    ref_labels = ['C:maj7/5', 'G:min', 'C:7/5', 'C:min/b3', 'C:min9']
+    est_labels = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:min7']
+    scores = [0.0, 0.0, 1.0, 0.0, 1.0]
 
     for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
         yield (__check_one_metric, mir_eval.chord.tetrads_inv,

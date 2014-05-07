@@ -97,8 +97,9 @@ import collections
 from mir_eval import input_output as io
 from mir_eval import util
 
+BITMAP_LENGTH = 12
 NO_CHORD = "N"
-NO_CHORD_ENCODED = -1, np.array([0]*12), -1
+NO_CHORD_ENCODED = -1, np.array([0]*BITMAP_LENGTH), -1
 # See Line 445
 STRICT_BASS_INTERVALS = False
 
@@ -123,7 +124,7 @@ def _pitch_classes():
 def _scale_degrees():
     r'''Mapping from scale degrees (str) to semitones (int).'''
     degrees = ['1', '2', '3', '4', '5', '6', '7', '9', '10', '11', '12', '13']
-    semitones = [0, 2, 4, 5, 7, 9, 11, 2, 4, 5, 7, 9]
+    semitones = [0, 2, 4, 5, 7, 9, 11, 14, 16, 17, 19, 21]
     return dict([(d, s) for d, s in zip(degrees, semitones)])
 
 
@@ -172,7 +173,7 @@ def scale_degree_to_semitone(scale_degree):
 
     :returns:
     - semitone: int
-        Relative semitone value of the scale degree.
+        Relative semitone of the scale degree, wrapped to a single octave
 
     :raises:
     - InvalidChordException
@@ -219,20 +220,34 @@ def scale_degree_to_bitmap(scale_degree):
 # Maps quality strings to bitmaps, corresponding to relative pitch class
 # semitones, i.e. vector[0] is the tonic.
 QUALITIES = {
-    'maj':    [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-    'min':    [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-    'aug':    [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-    'dim':    [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-    'sus4':   [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-    'sus2':   [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    '7':      [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
-    'maj7':   [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
-    'min7':   [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
-    'maj6':   [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
-    'min6':   [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
-    'dim7':   [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
-    'hdim7':  [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
-    '':       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+    #           1     2     3     4  5     6     7
+    'maj':     [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+    'min':     [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+    'aug':     [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+    'dim':     [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+    'sus4':    [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+    'sus2':    [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+    '7':       [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    'maj7':    [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
+    'min7':    [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
+    'minmaj7': [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+    'maj6':    [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
+    'min6':    [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+    'dim7':    [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+    'hdim7':   [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
+    'maj9':    [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
+    'min9':    [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
+    '9':       [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    'b9':      [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    '#9':      [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    'min11':   [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
+    '11':      [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    '#11':     [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    'maj13':   [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
+    'min13':   [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
+    '13':      [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    'b13':     [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    '':        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
 
 def quality_to_bitmap(quality):
@@ -692,8 +707,8 @@ def thirds(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in [0.0, 1.0]
     '''
-    ref_roots, ref_semitones = encode_many(reference_labels, True)[:2]
-    est_roots, est_semitones = encode_many(estimated_labels, True)[:2]
+    ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
+    est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
 
     eq_roots = ref_roots == est_roots
     eq_thirds = ref_semitones[:, 3] == est_semitones[:, 3]
@@ -728,8 +743,8 @@ def thirds_inv(reference_labels, estimated_labels):
         - scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in [0.0, 1.0]
     '''
-    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, True)
-    est_roots, est_semitones, est_bass = encode_many(estimated_labels, True)
+    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
+    est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
     eq_root = ref_roots == est_roots
     eq_bass = ref_bass == est_bass
@@ -765,8 +780,8 @@ def triads(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
-    ref_roots, ref_semitones = encode_many(reference_labels, True)[:2]
-    est_roots, est_semitones = encode_many(estimated_labels, True)[:2]
+    ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
+    est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
 
     eq_roots = ref_roots == est_roots
     eq_semitones = np.all(
@@ -802,8 +817,8 @@ def triads_inv(reference_labels, estimated_labels):
         - scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
-    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, True)
-    est_roots, est_semitones, est_bass = encode_many(estimated_labels, True)
+    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
+    est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
     eq_roots = ref_roots == est_roots
     eq_basses = ref_bass == est_bass
@@ -840,8 +855,8 @@ def tetrads(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
-    ref_roots, ref_semitones = encode_many(reference_labels, True)[:2]
-    est_roots, est_semitones = encode_many(estimated_labels, True)[:2]
+    ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
+    est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
 
     eq_roots = ref_roots == est_roots
     eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
@@ -876,8 +891,8 @@ def tetrads_inv(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
-    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, True)
-    est_roots, est_semitones, est_bass = encode_many(estimated_labels, True)
+    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
+    est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
     eq_roots = ref_roots == est_roots
     eq_basses = ref_bass == est_bass
@@ -915,8 +930,8 @@ def root(reference_labels, estimated_labels):
             gamut.
     '''
 
-    ref_roots = encode_many(reference_labels, True)[0]
-    est_roots = encode_many(estimated_labels, True)[0]
+    ref_roots = encode_many(reference_labels, False)[0]
+    est_roots = encode_many(estimated_labels, False)[0]
     return (ref_roots == est_roots).astype(np.float)
 
 
@@ -949,9 +964,9 @@ def mirex(reference_labels, estimated_labels):
             Comparison scores, in {0.0, 1.0}
     '''
     MIN_INTERSECTION = 3
-    ref_data = encode_many(reference_labels, True)
+    ref_data = encode_many(reference_labels, False)
     ref_chroma = rotate_bitmaps_to_roots(ref_data[1], ref_data[0])
-    est_data = encode_many(estimated_labels, True)
+    est_data = encode_many(estimated_labels, False)
     est_chroma = rotate_bitmaps_to_roots(est_data[1], est_data[0])
 
     eq_chroma = (ref_chroma * est_chroma).sum(axis=-1)
@@ -991,8 +1006,8 @@ def majmin(reference_labels, estimated_labels):
     maj_semitones = np.array(QUALITIES['maj'][:8])
     min_semitones = np.array(QUALITIES['min'][:8])
 
-    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, True)
-    est_roots, est_semitones, est_bass = encode_many(estimated_labels, True)
+    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
+    est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
     eq_root = ref_roots == est_roots
     eq_quality = np.all(np.equal(ref_semitones[:, :8],
@@ -1051,8 +1066,8 @@ def majmin_inv(reference_labels, estimated_labels):
     maj_semitones = np.array(QUALITIES['maj'][:8])
     min_semitones = np.array(QUALITIES['min'][:8])
 
-    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, True)
-    est_roots, est_semitones, est_bass = encode_many(estimated_labels, True)
+    ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
+    est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
     eq_root_bass = (ref_roots == est_roots) * (ref_bass == est_bass)
     eq_semitones = np.all(np.equal(ref_semitones[:, :8],
@@ -1108,8 +1123,8 @@ def sevenths(reference_labels, estimated_labels):
     seventh_qualities = ['maj', 'min', 'maj7', '7', 'min7', '']
     valid_semitones = np.array([QUALITIES[name] for name in seventh_qualities])
 
-    ref_roots, ref_semitones = encode_many(reference_labels, True)[:2]
-    est_roots, est_semitones = encode_many(estimated_labels, True)[:2]
+    ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
+    est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
 
     eq_root = ref_roots == est_roots
     eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
@@ -1156,8 +1171,8 @@ def sevenths_inv(reference_labels, estimated_labels):
     seventh_qualities = ['maj', 'min', 'maj7', '7', 'min7', '']
     valid_semitones = np.array([QUALITIES[name] for name in seventh_qualities])
 
-    ref_roots, ref_semitones, ref_basses = encode_many(reference_labels, True)
-    est_roots, est_semitones, est_basses = encode_many(estimated_labels, True)
+    ref_roots, ref_semitones, ref_basses = encode_many(reference_labels, False)
+    est_roots, est_semitones, est_basses = encode_many(estimated_labels, False)
 
     eq_roots_basses = (ref_roots == est_roots) * (ref_basses == est_basses)
     eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
