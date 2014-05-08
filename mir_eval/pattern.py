@@ -258,8 +258,10 @@ def establishment_FPR(reference_patterns, estimated_patterns,
     :type estimated_patterns: list
     :param similarity_metric: A string representing the metric to be used
         when computing the similarity matrix. Accepted values:
-            - "cardinality_score": Count of the intersection between
-                occurrences.
+
+            "cardinality_score": 
+               Count of the intersection between occurrences.
+
     :type similarity_metric: str
     :returns:
         - f_measure : float
@@ -313,8 +315,10 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
     :type thres: float
     :param similarity_metric: A string representing the metric to be used
         when computing the similarity matrix. Accepted values:
-            - "cardinality_score": Count of the intersection between
-                occurrences.
+
+          "cardinality_score": 
+             Count of the intersection between occurrences.
+
     :type similarity_metric: str
     :returns:
         - f_measure : float

@@ -1,6 +1,7 @@
 # CREATED:2013-08-13 12:02:42 by Brian McFee <brm2132@columbia.edu>
 '''Structural segmentation evaluation, following the protocols of MIREX2012.
-    Frame clustering metrics:
+
+   Frame clustering metrics:
         - pairwise classification
         - adjusted rand index
         - mutual information
@@ -311,22 +312,22 @@ def mutual_information(reference_intervals, reference_labels,
                                                                            est_intervals, est_labels)
 
     :parameters:
-    - reference_intervals : list-like, float
-        ground-truth segment boundary times (in seconds)
+      - reference_intervals : list-like, float
+          ground-truth segment boundary times (in seconds)
 
-    - estimated_intervals : list-like, float
-        estimated segment boundary times (in seconds)
+      - estimated_intervals : list-like, float
+          estimated segment boundary times (in seconds)
 
-    - frame_size : float > 0
-        length (in seconds) of frames for clustering
+      - frame_size : float > 0
+          length (in seconds) of frames for clustering
 
     :returns:
-    - MI : float >0
-        Mutual information between segmentations
-    - AMI : float
-        Adjusted mutual information between segmentations.
-    - NMI : float > 0
-        Normalize mutual information between segmentations
+      - MI : float >0
+          Mutual information between segmentations
+      - AMI : float
+          Adjusted mutual information between segmentations.
+      - NMI : float > 0
+          Normalize mutual information between segmentations
 
     .. note::
         It is assumed that `intervals[-1] == length of song`

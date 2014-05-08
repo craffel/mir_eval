@@ -7,77 +7,103 @@ import numpy as np
 def evaluate_chords(GT, P, resolution=0.001, trim_method='min', method='MIREX', augdim_switch=True):
 
     '''
-    Evaluate two chord transcriptions. Each should be a list of tuples:
-    GT = [(start_1, end_1, chord_1), ... , (start_n, end_n, chord_n)]
-    P  = [(start_1, end_1, chord_1), ... , (start_m, end_m, chord_m)]
+    Evaluate two chord transcriptions. Each should be a list of tuples::
+
+      GT = [(start_1, end_1, chord_1), ... , (start_n, end_n, chord_n)]
+      P  = [(start_1, end_1, chord_1), ... , (start_m, end_m, chord_m)]
 
     times measured in seconds, chords in Chris Harte's format:
 
     http://ismir2005.ismir.net/proceedings/1080.pdf
 
-    Inputs: GT, list of tuples          - Ground truth chords
-            P, list of tuples           - Predicted chords
-            resolution, float           - frame rate to use.
-            trim_method, string         - how to deal with predictions and gts of 
-                                          different length. One of:
-                                          'min' - choose the true length to be minimum of 
-                                          gt and p. Everything else is trimmed off
-                                          'max' - true length is max. Anything shorter is 
-                                          scored as 0.0
-                                          'GT'  - always trust the GT length
-                                          'P'   - always trust the P length   
+    :inputs: 
+      - GT: list of tuples          
+          Ground truth chords
 
-          method, string              - scoring method. currently supported:
-                                        'MIREX'                 - count pitch class overlap. Requires
-                                                                  an additional switch argument:
-                                                                - augdim_switch. Boolean. If True,
-                                                                  only require 2 pitch classes in common
-                                                                  with gt to get a point for augmented
-                                                                  or diminished chords and 3 otherwise.
-                                                                  Strange, but seems to be what MIREX team 
-                                                                  does.
+      - P: list of tuples
+          Predicted chords
 
-                                        'Correct'               - chords are correct only if they are identical,
-                                                                  including enharmonics ie 'F#:maj' != 'Gb:maj'
+      - resolution: float
+          frame rate to use.
 
-                                        'Correct_at_pitchclass' - chords are reduced to pitch classes, 
-                                                                  and compared at this level. This means that 
-                                                                  enharmonics and inversions are considered equal
-                                                                  i.e. score('F#:maj', 'Gb:maj') = 1.0 and 
-                                                                  score('C:maj6' = [C,E,G,A], 'A:min7' = [A,C,E,G]) = 1.0                                                                
+      - trim_method: string
+          how to deal with predictions and gts of different length. One of:
+            'min'
+               choose the true length to be minimum of 
+               gt and p. Everything else is trimmed off
+            'max'
+               true length is max. Anything shorter is 
+               scored as 0.0
+            'GT'
+               always trust the GT length
+            'P'
+               always trust the P length   
 
-                                        'Correct_at_minmaj'     - chords are mapped to major or minor triads,
-                                                                  and compared at this level. For example,
-                                                                  score('A:7', 'A:maj') = 1.0, but also
-                                                                  score('A:min', 'A:dim') = 1.0 as dim gets 
-                                                                  mapped to min. Probably a bit sketchy, 
-                                                                  but is a common metric
+      - method: string
+          scoring method. currently supported:
+            'MIREX'
+               count pitch class overlap. Requires an additional switch argument:
+                    - augdim_switch: Boolean
+                        If True, only require 2 pitch classes in common
+                        with gt to get a point for augmented
+                        or diminished chords and 3 otherwise.
+                        Strange, but seems to be what MIREX team 
+                        does.
 
-                                        'Correct_at_triad'      - chords are mapped to triad (major, minor, 
-                                                                  augmented, diminished, suspended) and 
-                                                                  compared at this level. For example, 
-                                                                  score('A:7','A:maj') = 1.0, 
-                                                                  score('A:min', 'A:dim') = 0.0   
+            'Correct'
+               chords are correct only if they are identical,
+               including enharmonics ie 'F#:maj' != 'Gb:maj'
 
-                                        'Correct_at_seventh'    - chords are mapped to 7th type (7, maj7, 
-                                                                  min7, minmaj7, susb7, dim7) and compared
-                                                                  at this level. For example:
-                                                                  score('A:7', 'A:9') = 1.0, 
-                                                                  score('A:7', 'A:maj7') = 0.0      
+            'Correct_at_pitchclass'
+               chords are reduced to pitch classes, 
+               and compared at this level. This means that 
+               enharmonics and inversions are considered equal
+               i.e. score('F#:maj', 'Gb:maj') = 1.0 and 
+               score('C:maj6' = [C,E,G,A], 'A:min7' = [A,C,E,G]) = 1.0                                                                
+            'Correct_at_minmaj'
+               chords are mapped to major or minor triads,
+               and compared at this level. For example,
+               score('A:7', 'A:maj') = 1.0, but also
+               score('A:min', 'A:dim') = 1.0 as dim gets 
+               mapped to min. Probably a bit sketchy, 
+               but is a common metric
 
-                                        'Pitchclass_recall'     - recall on pitch classes in GT/P. Chords are not
-                                                                  reduced to a simpler alphabet in this evaluation
+            'Correct_at_triad'
+               chords are mapped to triad (major, minor, 
+               augmented, diminished, suspended) and 
+               compared at this level. For example, 
+               score('A:7','A:maj') = 1.0, 
+               score('A:min', 'A:dim') = 0.0   
 
-                                        'Pitchclass_precision'  - precision on pitch classes in GT/P. Chords are not
-                                                                  reduced to a simpler alphabet in this evaluation   
+            'Correct_at_seventh'
+               chords are mapped to 7th type (7, maj7, 
+               min7, minmaj7, susb7, dim7) and compared
+               at this level. For example:
+               score('A:7', 'A:9') = 1.0, 
+               score('A:7', 'A:maj7') = 0.0      
+
+            'Pitchclass_recall'
+               recall on pitch classes in GT/P. Chords are not
+               reduced to a simpler alphabet in this evaluation
+
+            'Pitchclass_precision'
+               precision on pitch classes in GT/P. Chords are not
+               reduced to a simpler alphabet in this evaluation   
                                                                   
-                                        'Pitchclass_f'          - f-measure on pitch classes. Chords are not
-                                                                  reduced to a simpler alphabet in this evaluation                                               
+            'Pitchclass_f'
+               f-measure on pitch classes. Chords are not
+               reduced to a simpler alphabet in this evaluation                                               
                                
 
-    Outputs: accuracy, float    
-             GT_sample, list of sampled GT annotations
-             P_sample, list of sampled Prediction                                              
+    :outputs: 
+      - accuracy: float    
+          The accuracy figure
+
+      - GT_sample: list
+          List of sampled GT annotations
+
+       - P_sample: list
+          List of sampled Predictions
     '''
 
 
