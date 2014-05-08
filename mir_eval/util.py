@@ -334,18 +334,15 @@ def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix='__')
 
 def intersect_files(flist1, flist2):
     '''Return the intersection of two sets of filepaths, based on the file name
-    (after the final '/') and ignoring the file extension.
+    (after the final '/') and ignoring the file extension.  For example::
 
-    For example,
-    >>> flist1 = ['/a/b/abc.lab', '/c/d/123.lab', '/e/f/xyz.lab']
-    >>> flist2 = ['/g/h/xyz.npy', '/i/j/123.txt', '/k/l/456.lab']
-    >>> sublist1, sublist2 = instersect_files(flist1, flist2)
-    >>> print sublist1
-    ['/e/f/xyz.lab',
-     '/c/d/123.lab']
-    >>> print sublist2
-    ['/g/h/xyz.npy',
-     '/i/j/123.txt'])
+      >>> flist1 = ['/a/b/abc.lab', '/c/d/123.lab', '/e/f/xyz.lab']
+      >>> flist2 = ['/g/h/xyz.npy', '/i/j/123.txt', '/k/l/456.lab']
+      >>> sublist1, sublist2 = mir_eval.util.intersect_files(flist1, flist2)
+      >>> print sublist1
+      ['/e/f/xyz.lab', '/c/d/123.lab']
+      >>> print sublist2
+      ['/g/h/xyz.npy', '/i/j/123.txt']
 
     :parameters:
         - flist1 : list of filepaths

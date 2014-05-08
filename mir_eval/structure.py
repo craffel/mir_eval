@@ -112,7 +112,7 @@ def pairwise(reference_intervals, reference_labels,
             If ``reference_intervals`` and ``estimated_intervals`` do not span the
             same time duration.
 
-    ..seealso:: mir_eval.util.adjust_intervals
+    .. seealso:: mir_eval.util.adjust_intervals
     '''
 
     # Generate the cluster labels
@@ -196,7 +196,7 @@ def rand_index(reference_intervals, reference_labels,
             If ``reference_intervals`` and ``estimated_intervals`` do not span the
             same time duration.
 
-    ..seealso:: mir_eval.util.adjust_intervals
+    .. seealso:: mir_eval.util.adjust_intervals
     '''
 
     # Generate the cluster labels
@@ -267,10 +267,10 @@ def ari(reference_intervals, reference_labels,
         - ARI : float > 0
             Adjusted Rand index between segmentations.
 
-    ..note::
+    .. note::
         It is assumed that ``intervals[-1]`` == length of song
 
-    ..note::
+    .. note::
         Segment intervals will be rounded down to the nearest multiple
         of frame_size.
     '''
@@ -328,10 +328,10 @@ def mutual_information(reference_intervals, reference_labels,
     - NMI : float > 0
         Normalize mutual information between segmentations
 
-    ..note::
+    .. note::
         It is assumed that `intervals[-1] == length of song`
 
-    ..note::
+    .. note::
         Segment intervals will be rounded down to the nearest multiple
         of frame_size.
     '''
@@ -407,7 +407,7 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
         - S_F
             F-measure for (S_over, S_under)
 
-    ..note:: Towards quantitative measures of evaluating song segmentation.
+    .. note:: Towards quantitative measures of evaluating song segmentation.
         Lukashevich, H. ISMIR 2008.
     '''
 

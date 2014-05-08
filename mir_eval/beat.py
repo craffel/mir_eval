@@ -1,12 +1,15 @@
 '''
 A variety of evaluation techniques for determining a beat tracker's accuracy
-Based on the methods described in
+
+Based on the methods described in:
     Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
     "Evaluation Methods for Musical Audio Beat Tracking Algorithms",
     Queen Mary University of London Technical Report C4DM-TR-09-06
     London, United Kingdom, 8 October 2009.
+
 See also the Beat Evaluation Toolbox:
     https://code.soundsoftware.ac.uk/projects/beat-evaluation/
+
 '''
 
 import numpy as np
