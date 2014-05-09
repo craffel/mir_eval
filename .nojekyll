@@ -1,0 +1,1 @@
+Needed to stop gh-pages thinking this is jekyll and not propagating the _static/ directory created by sphinx
