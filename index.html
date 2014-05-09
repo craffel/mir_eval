@@ -1086,7 +1086,7 @@ empty.</li>
 </dl>
 <p>Some examples:</p>
 <div class="highlight-python"><div class="highlight"><pre>&#39;C&#39; -&gt; [&#39;C&#39;, &#39;maj&#39;, {}, &#39;1&#39;]
-&#39;G#:min(\*b3,\*5)/5&#39; -&gt; [&#39;G#&#39;, &#39;min&#39;, {&#39;\*b3&#39;, &#39;\*5&#39;}, &#39;5&#39;]
+&#39;G#:min(*b3,*5)/5&#39; -&gt; [&#39;G#&#39;, &#39;min&#39;, {&#39;*b3&#39;, &#39;*5&#39;}, &#39;5&#39;]
 &#39;A:(3)/6&#39; -&gt; [&#39;A&#39;, &#39;&#39;, {&#39;3&#39;}, &#39;6&#39;]
 </pre></div>
 </div>
@@ -1096,7 +1096,7 @@ empty.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>chord_label: str</dt>
+<dt>chord_label <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">A chord label.</p>
 </dd>
 </dl>
@@ -1106,7 +1106,7 @@ empty.</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>chord_parts: list</dt>
+<dt>chord_parts <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
 <dd><p class="first last">Split version of the chord label.</p>
 </dd>
 </dl>
@@ -1129,25 +1129,25 @@ empty.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>root: str</dt>
+<dt>root <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">Root pitch class of the chord, e.g. &#8216;C&#8217;, &#8216;Eb&#8217;</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>quality: str</dt>
+<dt>quality <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">Quality of the chord, e.g. &#8216;maj&#8217;, &#8216;hdim7&#8217;</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>extensions: list</dt>
+<dt>extensions <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
 <dd><p class="first last">Any added or absent scaled degrees for this chord, e.g. [&#8216;4&#8217;, &#8216;*3&#8217;]</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>bass: str</dt>
+<dt>bass <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">Scale degree of the bass note, e.g. &#8216;5&#8217;.</p>
 </dd>
 </dl>
@@ -1157,7 +1157,7 @@ empty.</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul>
 <li><dl class="first docutils">
-<dt>chord_label: str</dt>
+<dt>chord_label <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">A complete chord label.</p>
 </dd>
 </dl>
@@ -1166,8 +1166,13 @@ empty.</li>
 </p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li>InvalidChordException: Thrown if the provided args yield a garbage chord label.</li>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last">
+<li><dl class="first docutils">
+<dt>InvalidChordException</dt>
+<dd><p class="first last">Thrown if the provided args yield a garbage chord label.</p>
+</dd>
+</dl>
+</li>
 </ul>
 </td>
 </tr>
@@ -1185,13 +1190,13 @@ empty.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>chord_label: str</dt>
+<dt>chord_label <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">Chord label to encode.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>reduce_extended_chords: bool, default=False</dt>
+<dt>reduce_extended_chords <span class="classifier-delimiter">:</span> <span class="classifier">bool, default=False</span></dt>
 <dd><p class="first last">Map the upper voicings of extended chords (9&#8217;s, 11&#8217;s, 13&#8217;s) to semitone
 extensions.</p>
 </dd>
@@ -1201,19 +1206,19 @@ extensions.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
-<dt>-root_number: int</dt>
+<dt>-root_number <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">Absolute semitone of the chord&#8217;s root.</p>
 </dd>
 </dl>
 <ul>
 <li><dl class="first docutils">
-<dt>semitone_bitmap: np.ndarray of ints, in [0, 1]</dt>
+<dt>semitone_bitmap <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray of ints, in [0, 1]</span></dt>
 <dd><p class="first last">12-dim vector of relative semitones in the chord spelling.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>bass_number: int</dt>
+<dt>bass_number <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">Relative semitone of the chord&#8217;s bass note, e.g. 0=root, 7=fifth, etc.</p>
 </dd>
 </dl>
@@ -1224,8 +1229,9 @@ extensions.</p>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last">
 <li><dl class="first docutils">
-<dt>InvalidChordException: Thrown if the given bass note is not explicitly</dt>
-<dd><p class="first last">named as an extension.</p>
+<dt>InvalidChordException</dt>
+<dd><p class="first last">Thrown if the given bass note is not explicitly
+named as an extension.</p>
 </dd>
 </dl>
 </li>
@@ -1247,13 +1253,13 @@ evaluation.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>chord_labels: list</dt>
+<dt>chord_labels <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
 <dd><p class="first last">Set of chord labels to encode.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>reduce_extended_chords: bool, default=True</dt>
+<dt>reduce_extended_chords <span class="classifier-delimiter">:</span> <span class="classifier">bool, default=True</span></dt>
 <dd><p class="first last">Map the upper voicings of extended chords (9&#8217;s, 11&#8217;s, 13&#8217;s) to semitone
 extensions.</p>
 </dd>
@@ -1264,19 +1270,19 @@ extensions.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul>
 <li><dl class="first docutils">
-<dt>root_number: np.ndarray of ints</dt>
+<dt>root_number <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray of ints</span></dt>
 <dd><p class="first last">Absolute semitone of the chord&#8217;s root.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>interval_bitmap: np.ndarray of ints, in [0, 1]</dt>
+<dt>interval_bitmap <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray of ints, in [0, 1]</span></dt>
 <dd><p class="first last">12-dim vector of relative semitones in the given chord quality.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>bass_number: np.ndarray</dt>
+<dt>bass_number <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Relative semitones of the chord&#8217;s bass notes.</p>
 </dd>
 </dl>
@@ -1320,13 +1326,13 @@ and quality map are as follows:</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>bitmap: np.ndarray, shape=(12,)</dt>
+<dt>bitmap <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(12,)</span></dt>
 <dd><p class="first last">Bitmap of active notes, relative to the given root.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>root: int</dt>
+<dt>root <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">Absolute pitch class number.</p>
 </dd>
 </dl>
@@ -1336,7 +1342,7 @@ and quality map are as follows:</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>bitmap: np.ndarray, shape=(12,)</dt>
+<dt>bitmap <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(12,)</span></dt>
 <dd><p class="first last">Absolute bitmap of active pitch classes.</p>
 </dd>
 </dl>
@@ -1360,13 +1366,13 @@ and quality map are as follows:</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>bitmap: np.ndarray, shape=(N, 12)</dt>
+<dt>bitmap <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(N, 12)</span></dt>
 <dd><p class="first last">Bitmap of active notes, relative to the given root.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>root: np.ndarray, shape=(N,)</dt>
+<dt>root <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(N,)</span></dt>
 <dd><p class="first last">Absolute pitch class number.</p>
 </dd>
 </dl>
@@ -1376,7 +1382,7 @@ and quality map are as follows:</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>bitmap: np.ndarray, shape=(N, 12)</dt>
+<dt>bitmap <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(N, 12)</span></dt>
 <dd><p class="first last">Absolute bitmaps of active pitch classes.</p>
 </dd>
 </dl>
@@ -1399,13 +1405,13 @@ and quality map are as follows:</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>bass: int</dt>
+<dt>bass <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">Relative bass interval.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>root: int</dt>
+<dt>root <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">Absolute root pitch class.</p>
 </dd>
 </dl>
@@ -1415,7 +1421,7 @@ and quality map are as follows:</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>bass: int</dt>
+<dt>bass <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">Pitch class of the bass intervalself.</p>
 </dd>
 </dl>
@@ -2261,27 +2267,27 @@ with the total duration of the file (&#8216;_weight&#8217;) and any errors
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Inputs:</th><td class="field-body"><ul class="first">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>GT: list of tuples          </dt>
+<dt>GT <span class="classifier-delimiter">:</span> <span class="classifier">list of tuples          </span></dt>
 <dd><p class="first last">Ground truth chords</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>P: list of tuples</dt>
+<dt>P <span class="classifier-delimiter">:</span> <span class="classifier">list of tuples</span></dt>
 <dd><p class="first last">Predicted chords</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>resolution: float</dt>
+<dt>resolution <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
 <dd><p class="first last">frame rate to use.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>trim_method: string</dt>
+<dt>trim_method <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
 <dd><dl class="first last docutils">
 <dt>how to deal with predictions and gts of different length. One of:</dt>
 <dd><dl class="first last docutils">
@@ -2306,7 +2312,7 @@ scored as 0.0</p>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>method: string</dt>
+<dt>method <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
 <dd><dl class="first last docutils">
 <dt>scoring method. currently supported:</dt>
 <dd><dl class="first last docutils">
@@ -2382,26 +2388,27 @@ reduced to a simpler alphabet in this evaluation</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Outputs:</th><td class="field-body"><ul class="first last">
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>accuracy: float    </dt>
+<dt>accuracy <span class="classifier-delimiter">:</span> <span class="classifier">float    </span></dt>
 <dd><p class="first last">The accuracy figure</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>GT_sample: list</dt>
+<dt>GT_sample <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
 <dd><p class="first last">List of sampled GT annotations</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>P_sample: list</dt>
+<dt>P_sample <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
 <dd><p class="first last">List of sampled Predictions</p>
 </dd>
 </dl>
 </li>
 </ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -2642,7 +2649,7 @@ occurrence being a list of (onset, midi) pairs.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Params:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>filename: str</dt>
+<dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd><p class="first last">The input file path containing the patterns of a given
 given piece using the MIREX 2013 format.</p>
 </dd>
@@ -2653,7 +2660,7 @@ given piece using the MIREX 2013 format.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>list: list </dt>
+<dt>list <span class="classifier-delimiter">:</span> <span class="classifier">list </span></dt>
 <dd><p class="first">the list of patterns, containing all their occurrences,
 using the following format:</p>
 <div class="last highlight-python"><div class="highlight"><pre>P = [pattern1, ..., patternN]
@@ -2765,7 +2772,7 @@ ref_voicing, est_voicing, ref_cent, est_cent</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>freq_hz <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>freq_hz <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of frequencies in Hz.</p>
 </dd>
 </dl>
@@ -2781,7 +2788,7 @@ ref_voicing, est_voicing, ref_cent, est_cent</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>cent <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>cent <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of frequencies in cents, relative to base_frequency</p>
 </dd>
 </dl>
@@ -2804,7 +2811,7 @@ ref_voicing, est_voicing, ref_cent, est_cent</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>frequencies <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>frequencies <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of frequencies.  A frequency &lt;= 0 indicates &#8220;unvoiced&#8221;.</p>
 </dd>
 </dl>
@@ -2814,13 +2821,13 @@ ref_voicing, est_voicing, ref_cent, est_cent</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>frequencies <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>frequencies <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of frequencies, all &gt;= 0.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>voiced <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>voiced <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Boolean array, same length as frequencies, which indicates voiced or unvoiced</p>
 </dd>
 </dl>
@@ -2859,7 +2866,7 @@ ref_voicing, est_voicing, ref_cent, est_cent</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>times <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>times <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Generated timebase</p>
 </dd>
 </dl>
@@ -2883,25 +2890,25 @@ Maintains any zero (&#8220;unvoiced&#8221;) values in frequencies.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>times <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>times <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Times of each frequency value</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>frequencies <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>frequencies <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of frequency values, &gt;= 0</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Boolean array which indicates voiced or unvoiced</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>times_new <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>times_new <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Times to resample frequency and voicing sequences to</p>
 </dd>
 </dl>
@@ -2917,13 +2924,13 @@ Maintains any zero (&#8220;unvoiced&#8221;) values in frequencies.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>frequencies_resampled <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>frequencies_resampled <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Frequency array resampled to new timebase</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>voicing_resampled <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>voicing_resampled <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Boolean voicing array resampled to new timebase</p>
 </dd>
 </dl>
@@ -2950,25 +2957,25 @@ but if it&#8217;s voiced, this is the frequency estimate&#8221;.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>ref_time <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_time <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Time of each reference frequency value</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>ref_freq <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_freq <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of reference frequency values</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_time <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_time <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Time of each estimated frequency value</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_freq <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_freq <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of estimated frequency values</p>
 </dd>
 </dl>
@@ -2996,25 +3003,25 @@ but if it&#8217;s voiced, this is the frequency estimate&#8221;.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>ref_voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Resampled reference boolean voicing array</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Resampled estimated boolean voicing array</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>ref_cent <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_cent <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Resampled reference frequency (cent) array</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_cent <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_cent <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Resampled estimated frequency (cent) array</p>
 </dd>
 </dl>
@@ -3048,13 +3055,13 @@ The sequences must be of the same length.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>ref_voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Reference boolean voicing array</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Estimated boolean voicing array</p>
 </dd>
 </dl>
@@ -3105,25 +3112,25 @@ All 4 sequences must be of the same length.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>ref_voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Reference boolean voicing array</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Estimated boolean voicing array</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>ref_cent <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_cent <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Reference pitch sequence in cents</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_cent <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_cent <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Estimate pitch sequence in cents</p>
 </dd>
 </dl>
@@ -3169,25 +3176,25 @@ All 4 sequences must be of the same length.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>ref_voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Reference boolean voicing array</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Estimated boolean voicing array</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>ref_cent <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_cent <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Reference pitch sequence in cents</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_cent <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_cent <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Estimate pitch sequence in cents</p>
 </dd>
 </dl>
@@ -3233,25 +3240,25 @@ All 4 sequences must be of the same length.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>ref_voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Reference boolean voicing array</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_voicing <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_voicing <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Estimated boolean voicing array</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>ref_cent <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>ref_cent <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Reference pitch sequence in cents</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>est_cent <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dt>est_cent <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Estimate pitch sequence in cents</p>
 </dd>
 </dl>
@@ -3501,14 +3508,28 @@ restictive and it tends to be 0 in most of 2013 MIREX results.</p>
 </div>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>reference_patterns</strong> (<em>list</em>) &#8211; The reference patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>estimated_patterns</strong> (<em>list</em>) &#8211; The estimated patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>tol</strong> (<em>float</em>) &#8211; Tolerance level when comparing reference against estimation.
+<tr class="field-even field"><th class="field-name">Params:</th><td class="field-body"><ul class="first">
+<li><dl class="first docutils">
+<dt>reference_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">The reference patterns using the format returned by 
+<a class="reference internal" href="#mir_eval.input_output.load_patterns" title="mir_eval.input_output.load_patterns"><tt class="xref py py-func docutils literal"><span class="pre">mir_eval.input_output.load_patterns()</span></tt></a></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>estimated_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">The estimated patterns in the same format</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>tol <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Tolerance level when comparing reference against estimation.
 Default parameter is the one found in the original matlab code by
-Tom Collins used for MIREX 2013.</li>
+Tom Collins used for MIREX 2013.</p>
+</dd>
+</dl>
+</li>
 </ul>
 </td>
 </tr>
@@ -3555,19 +3576,36 @@ Tom Collins used for MIREX 2013.</li>
 </div>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>reference_patterns</strong> (<em>list</em>) &#8211; The reference patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>estimated_patterns</strong> (<em>list</em>) &#8211; The estimated patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>similarity_metric</strong> (<em>str</em>) &#8211; <p>A string representing the metric to be used
-when computing the similarity matrix. Accepted values:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>&#8220;cardinality_score&#8221;: </dt>
-<dd>Count of the intersection between occurrences.</dd>
+<tr class="field-even field"><th class="field-name">Params:</th><td class="field-body"><ul class="first">
+<li><dl class="first docutils">
+<dt>reference_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">The reference patterns in the format returned by 
+<a class="reference internal" href="#mir_eval.input_output.load_patterns" title="mir_eval.input_output.load_patterns"><tt class="xref py py-func docutils literal"><span class="pre">mir_eval.input_output.load_patterns()</span></tt></a></p>
+</dd>
 </dl>
+</li>
+<li><dl class="first docutils">
+<dt>estimated_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">The estimated patterns in the same format</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>similarity_metric <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first">A string representing the metric to be used
+when computing the similarity matrix. Accepted values:</p>
+<blockquote class="last">
+<div><ul>
+<li><dl class="first docutils">
+<dt>&#8220;cardinality_score&#8221;: </dt>
+<dd><p class="first last">Count of the intersection between occurrences.</p>
+</dd>
+</dl>
+</li>
+</ul>
 </div></blockquote>
+</dd>
+</dl>
 </li>
 </ul>
 </td>
@@ -3615,21 +3653,43 @@ when computing the similarity matrix. Accepted values:</p>
 </div>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>reference_patterns</strong> (<em>list</em>) &#8211; The reference patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>estimated_patterns</strong> (<em>list</em>) &#8211; The estimated patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>thres</strong> (<em>float</em>) &#8211; How much similar two occcurrences must be in order to be
-considered equal.</li>
-<li><strong>similarity_metric</strong> (<em>str</em>) &#8211; <p>A string representing the metric to be used
-when computing the similarity matrix. Accepted values:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>&#8220;cardinality_score&#8221;: </dt>
-<dd>Count of the intersection between occurrences.</dd>
+<tr class="field-even field"><th class="field-name">Params:</th><td class="field-body"><ul class="first">
+<li><dl class="first docutils">
+<dt>reference_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">The reference patterns in the format returned by 
+<a class="reference internal" href="#mir_eval.input_output.load_patterns" title="mir_eval.input_output.load_patterns"><tt class="xref py py-func docutils literal"><span class="pre">mir_eval.input_output.load_patterns()</span></tt></a></p>
+</dd>
 </dl>
+</li>
+<li><dl class="first docutils">
+<dt>estimated_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">The estimated patterns in the same format</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>thres <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">How similar two occcurrences must be in order to be
+considered equal</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>similarity_metric <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first">A string representing the metric to be used
+when computing the similarity matrix. Accepted values:</p>
+<blockquote class="last">
+<div><ul>
+<li><dl class="first docutils">
+<dt>&#8220;cardinality_score&#8221;: </dt>
+<dd><p class="first last">Count of the intersection between occurrences.</p>
+</dd>
+</dl>
+</li>
+</ul>
 </div></blockquote>
+</dd>
+</dl>
 </li>
 </ul>
 </td>
@@ -3678,11 +3738,20 @@ when computing the similarity matrix. Accepted values:</p>
 </div>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>reference_patterns</strong> (<em>list</em>) &#8211; The reference patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>estimated_patterns</strong> (<em>list</em>) &#8211; The estimated patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
+<tr class="field-even field"><th class="field-name">Params:</th><td class="field-body"><ul class="first">
+<li><dl class="first docutils">
+<dt>reference_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">The reference patterns in the format returned by 
+<a class="reference internal" href="#mir_eval.input_output.load_patterns" title="mir_eval.input_output.load_patterns"><tt class="xref py py-func docutils literal"><span class="pre">mir_eval.input_output.load_patterns()</span></tt></a></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>estimated_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list </span></dt>
+<dd><p class="first last">The estimated patterns in the same format</p>
+</dd>
+</dl>
+</li>
 </ul>
 </td>
 </tr>
@@ -3732,13 +3801,27 @@ precision. In MIREX and typically, n = 5.</p>
 </div>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>reference_patterns</strong> (<em>list</em>) &#8211; The reference patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>estimated_patterns</strong> (<em>list</em>) &#8211; The estimated patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>n</strong> (<em>int</em>) &#8211; Number of patterns to consider from the estimated results, in
-the order they appear in the matrix.</li>
+<tr class="field-even field"><th class="field-name">Params:</th><td class="field-body"><ul class="first">
+<li><dl class="first docutils">
+<dt>reference_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">The reference patterns in the format returned by 
+<a class="reference internal" href="#mir_eval.input_output.load_patterns" title="mir_eval.input_output.load_patterns"><tt class="xref py py-func docutils literal"><span class="pre">mir_eval.input_output.load_patterns()</span></tt></a></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>estimated_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list </span></dt>
+<dd><p class="first last">The estimated patterns in the same format</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of patterns to consider from the estimated results, in
+the order they appear in the matrix</p>
+</dd>
+</dl>
+</li>
 </ul>
 </td>
 </tr>
@@ -3776,13 +3859,27 @@ outputs the Recall value of it.</p>
 </div>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>reference_patterns</strong> (<em>list</em>) &#8211; The reference patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>estimated_patterns</strong> (<em>list</em>) &#8211; The estimated patterns using the same format as
-the one load_patterns in the input_output module returns.</li>
-<li><strong>n</strong> (<em>int</em>) &#8211; Number of patterns to consider from the estimated results, in
-the order they appear in the matrix.</li>
+<tr class="field-even field"><th class="field-name">Params:</th><td class="field-body"><ul class="first">
+<li><dl class="first docutils">
+<dt>reference_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">The reference patterns in the format returned by 
+<a class="reference internal" href="#mir_eval.input_output.load_patterns" title="mir_eval.input_output.load_patterns"><tt class="xref py py-func docutils literal"><span class="pre">mir_eval.input_output.load_patterns()</span></tt></a></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>estimated_patterns <span class="classifier-delimiter">:</span> <span class="classifier">list </span></dt>
+<dd><p class="first last">The estimated patterns in the same format</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>n <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">Number of patterns to consider from the estimated results, in
+the order they appear in the matrix.</p>
+</dd>
+</dl>
+</li>
 </ul>
 </td>
 </tr>
@@ -3853,15 +3950,17 @@ reference_sources and estimated_sources.</p>
 <dl class="function">
 <dt id="mir_eval.separation.bss_eval_sources">
 <tt class="descclassname">mir_eval.separation.</tt><tt class="descname">bss_eval_sources</tt><big>(</big><em>reference_sources</em>, <em>estimated_sources</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mir_eval.separation.bss_eval_sources" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>BSS_EVAL_SOURCES</dt>
-<dd><p class="first">MATLAB translation of BSS_EVAL Toolbox</p>
+<dd><blockquote>
+<div><p>MATLAB translation of BSS_EVAL Toolbox</p>
 <p>Ordering and measurement of the separation quality for estimated source
 signals in terms of filtered true source, interference and artifacts.</p>
-<p class="last">The decomposition allows a time-invariant filter distortion of length
-512, as described in Section III.B of the reference below.</p>
-</dd>
-</dl>
+<p>The decomposition allows a time-invariant filter distortion of length
+512, as described in Section III.B of:</p>
+<blockquote>
+<div>Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, &#8220;Performance
+measurement in blind audio source separation,&#8221; IEEE Trans. on Audio,
+Speech and Language Processing, 14(4):1462-1469, 2006.</div></blockquote>
+</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3876,14 +3975,14 @@ signals in terms of filtered true source, interference and artifacts.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>reference_sources: ndarray</dt>
-<dd><p class="first last">(nsrc, nsampl) matrix containing true sources</p>
+<dt>reference_sources <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(nsrc, nsampl)</span></dt>
+<dd><p class="first last">matrix containing true sources</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>estimated_sources: ndarray</dt>
-<dd><p class="first last">(nsrc, nsampl) matrix containing estimated sources</p>
+<dt>estimated_sources <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(nsrc, nsampl)</span></dt>
+<dd><p class="first last">matrix containing estimated sources</p>
 </dd>
 </dl>
 </li>
@@ -3892,26 +3991,26 @@ signals in terms of filtered true source, interference and artifacts.</p>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>sdr: ndarray</dt>
-<dd><p class="first last">(nsrc, ) vector of Signal to Distortion Ratios (SDR)</p>
+<dt>sdr <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(nsrc,)</span></dt>
+<dd><p class="first last">vector of Signal to Distortion Ratios (SDR)</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>sir: ndarray</dt>
-<dd><p class="first last">(nsrc, ) vector of Source to Interference Ratios (SIR)</p>
+<dt>sir <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(nsrc,)</span></dt>
+<dd><p class="first last">vector of Source to Interference Ratios (SIR)</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>sar: ndarray</dt>
-<dd><p class="first last">(nsrc, ) vector of Sources to Artifacts Ratios (SAR)</p>
+<dt>sar <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(nsrc,)</span></dt>
+<dd><p class="first last">vector of Sources to Artifacts Ratios (SAR)</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>perm: ndarray</dt>
-<dd><p class="first last">(nsrc, ) vector containing the best ordering of estimated sources in
+<dt>perm <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(nsrc,)</span></dt>
+<dd><p class="first last">vector containing the best ordering of estimated sources in
 the mean SIR sense (estimated source number perm[j] corresponds to
 true source number j)</p>
 </dd>
@@ -3923,12 +4022,6 @@ true source number j)</p>
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt>Reference:</dt>
-<dd>Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, &#8220;Performance
-measurement in blind audio source separation,&#8221; IEEE Trans. on Audio,
-Speech and Language Processing, 14(4):1462-1469, 2006.</dd>
-</dl>
 </dd></dl>
 
 </div>
@@ -3946,25 +4039,25 @@ All functions return a raw signal at the specified sampling rate.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Inputs:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>times: np.ndarray</dt>
+<dt>times <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">times to place clicks, in seconds</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>fs: int</dt>
+<dt>fs <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">desired sampling rate of the output signal</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>click: np.array</dt>
-<dd><p class="first last">click signal, defaults to an 1 kHz blip</p>
+<dt>click <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
+<dd><p class="first last">click signal, defaults to a 1 kHz blip</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>length: int</dt>
+<dt>length <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
 <dd><p class="first last">desired number of samples in the output signal,
 defaults to times.max()*fs + click.shape[0] + 1</p>
 </dd>
@@ -3975,7 +4068,7 @@ defaults to times.max()*fs + click.shape[0] + 1</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Outputs:</th><td class="field-body"><ul class="first last">
 <li><dl class="first docutils">
-<dt>click_signal: np.array</dt>
+<dt>click_signal <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Synthesized click signal</p>
 </dd>
 </dl>
@@ -3997,40 +4090,40 @@ defaults to times.max()*fs + click.shape[0] + 1</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Inputs:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>gram: np.ndarray </dt>
+<dt>gram <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray </span></dt>
 <dd><p class="first last">gram[n, m] is the magnitude of frequencies[n]
 from times[n] to times[n + 1]</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>frequencies: np.ndarray </dt>
+<dt>frequencies <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray </span></dt>
 <dd><p class="first last">array of size gram.shape[0] denoting the frequency of
 each row of gram</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>times: np.ndarray </dt>
+<dt>times <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray </span></dt>
 <dd><p class="first last">array of size gram.shape[1] denoting the start time of each
 column of gram</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>fs: int </dt>
+<dt>fs <span class="classifier-delimiter">:</span> <span class="classifier">int </span></dt>
 <dd><p class="first last">desired sampling rate of the output signal</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>function: function</dt>
+<dt>function <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
 <dd><p class="first last">function to use to synthesize notes, should be 2pi-periodic</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>length: int </dt>
+<dt>length <span class="classifier-delimiter">:</span> <span class="classifier">int </span></dt>
 <dd><p class="first last">desired number of samples in the output signal,
 defaults to times[-1]*fs</p>
 </dd>
@@ -4041,7 +4134,7 @@ defaults to times[-1]*fs</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Outputs:</th><td class="field-body"><ul class="first last">
 <li><dl class="first docutils">
-<dt>output: np.array </dt>
+<dt>output <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray </span></dt>
 <dd><p class="first last">synthetized version of the piano roll</p>
 </dd>
 </dl>
@@ -4200,7 +4293,7 @@ same time duration.</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last">mir_eval.util.adjust_intervals</p>
+<p class="last"><a class="reference internal" href="#mir_eval.util.adjust_intervals" title="mir_eval.util.adjust_intervals"><tt class="xref py py-func docutils literal"><span class="pre">mir_eval.util.adjust_intervals()</span></tt></a></p>
 </div>
 </dd></dl>
 
@@ -4294,7 +4387,7 @@ same time duration.</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last">mir_eval.util.adjust_intervals</p>
+<p class="last"><a class="reference internal" href="#mir_eval.util.adjust_intervals" title="mir_eval.util.adjust_intervals"><tt class="xref py py-func docutils literal"><span class="pre">mir_eval.util.adjust_intervals()</span></tt></a></p>
 </div>
 </dd></dl>
 
@@ -4416,7 +4509,7 @@ of frame_size.</p>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>MI <span class="classifier-delimiter">:</span> <span class="classifier">float &gt;0</span></dt>
+<dt>MI <span class="classifier-delimiter">:</span> <span class="classifier">float &gt; 0</span></dt>
 <dd><p class="first last">Mutual information between segmentations</p>
 </dd>
 </dl>
@@ -4550,20 +4643,39 @@ Lukashevich, H. ISMIR 2008.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li>labels : list of strings, shape=(n,)
-A list of annotations, e.g., segment or chord labels from an annotation file.</li>
-<li>case_sensitive : bool
-Set to <cite>True</cite> to enable case-sensitive label indexing</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
+<li><dl class="first docutils">
+<dt>labels <span class="classifier-delimiter">:</span> <span class="classifier">list of strings, shape=(n,)</span></dt>
+<dd><p class="first last">A list of annotations, e.g., segment or chord labels from an annotation file.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>case_sensitive <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd><p class="first last">Set to <em>True</em> to enable case-sensitive label indexing</p>
+</dd>
+</dl>
+</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li>indices : list, shape=(n,)
-Numerical representation of <cite>labels</cite></li>
-<li>index_to_label : dict
-Mapping to convert numerical indices back to labels.
-<cite>labels[i] == index_to_label[indices[i]]`</cite></li>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
+<li><dl class="first docutils">
+<dt>indices <span class="classifier-delimiter">:</span> <span class="classifier">list, shape=(n,)</span></dt>
+<dd><p class="first last">Numerical representation of <em>labels</em></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>index_to_label <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><dl class="first last docutils">
+<dt>Mapping to convert numerical indices back to labels.</dt>
+<dd><p class="first last"><tt class="docutils literal"><span class="pre">labels[i]</span> <span class="pre">==</span> <span class="pre">index_to_label[indices[i]]</span></tt></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
 </ul>
 </p>
 </td>
@@ -4584,8 +4696,8 @@ Mapping to convert numerical indices back to labels.
 <li><dl class="first docutils">
 <dt>intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(n, d)</span></dt>
 <dd><p class="first last">An array of time intervals, as returned by
-<tt class="docutils literal"><span class="pre">mir_eval.io.load_intervals</span></tt>.
-The <cite>i`th interval spans time ``intervals[i, 0]`</cite> to
+:func:<tt class="docutils literal"><span class="pre">mir_eval.input_output.load_intervals()</span></tt>.
+The <em>i</em> th interval spans time <tt class="docutils literal"><span class="pre">intervals[i,</span> <span class="pre">0]</span></tt> to
 <tt class="docutils literal"><span class="pre">intervals[i,</span> <span class="pre">1]</span></tt>.</p>
 </dd>
 </dl>
@@ -4636,11 +4748,11 @@ The <cite>i`th interval spans time ``intervals[i, 0]`</cite> to
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt>..note::</dt>
-<dd>Segment intervals will be rounded down to the nearest multiple
-of <tt class="docutils literal"><span class="pre">frame_size</span></tt>.</dd>
-</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Segment intervals will be rounded down to the nearest multiple
+of <em>frame_size</em>.</p>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -4656,8 +4768,8 @@ of <tt class="docutils literal"><span class="pre">frame_size</span></tt>.</dd>
 <li><dl class="first docutils">
 <dt>intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(n, d)</span></dt>
 <dd><p class="first last">An array of time intervals, as returned by
-<tt class="docutils literal"><span class="pre">mir_eval.io.load_intervals</span></tt>.
-The <cite>i`th interval spans time ``intervals[i, 0]`</cite> to
+:func:<tt class="docutils literal"><span class="pre">mir_eval.input_output.load_intervals()</span></tt>.
+The <em>i</em> th interval spans time <tt class="docutils literal"><span class="pre">intervals[i,</span> <span class="pre">0]</span></tt> to
 <tt class="docutils literal"><span class="pre">intervals[i,</span> <span class="pre">1]</span></tt>.</p>
 </dd>
 </dl>
@@ -4829,8 +4941,8 @@ If the input times are not unique and ascending</li>
 <p>Any intervals lying partially outside the specified range will be truncated.</p>
 <p>If the specified range exceeds the span of the provided data in either direction,
 additional intervals will be appended.  Any appended intervals at the start will
-be given label <cite>start_label</cite>.  Any appended intervals at the end will be given
-label <cite>end_label</cite>.</p>
+be given label <em>start_label</em>.  Any appended intervals at the end will be given
+label <em>end_label</em>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -4877,7 +4989,7 @@ label <cite>end_label</cite>.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>new_intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dt>new_intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Intervals spanning [t_min, t_max]</p>
 </dd>
 </dl>
@@ -4909,7 +5021,7 @@ the prefix label_prefix.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>events <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dt>events <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of event times (seconds)</p>
 </dd>
 </dl>
@@ -4943,7 +5055,7 @@ the prefix label_prefix.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>new_times <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dt>new_times <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Event times corrected to the given range.</p>
 </dd>
 </dl>
@@ -4974,15 +5086,35 @@ the prefix label_prefix.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li>flist1 : list of filepaths</li>
-<li>flist2 : list of filepaths</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
+<li><dl class="first docutils">
+<dt>flist1 <span class="classifier-delimiter">:</span> <span class="classifier">list </span></dt>
+<dd><p class="first last">first list of filepaths</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>flist2 <span class="classifier-delimiter">:</span> <span class="classifier">list </span></dt>
+<dd><p class="first last">second list of filepaths</p>
+</dd>
+</dl>
+</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li>sublist1 : list of filepaths</li>
-<li>sublist2 : list of filepaths</li>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
+<li><dl class="first docutils">
+<dt>sublist1 <span class="classifier-delimiter">:</span> <span class="classifier">list </span></dt>
+<dd><p class="first last">subset of filepaths with matching stems from <em>flist1</em></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>sublist2 <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><p class="first last">corresponding filepaths from <em>flist2</em></p>
+</dd>
+</dl>
+</li>
 </ul>
 </p>
 </td>
@@ -4994,14 +5126,14 @@ the prefix label_prefix.</p>
 <dl class="function">
 <dt id="mir_eval.util.merge_labeled_intervals">
 <tt class="descclassname">mir_eval.util.</tt><tt class="descname">merge_labeled_intervals</tt><big>(</big><em>x_intervals</em>, <em>x_labels</em>, <em>y_intervals</em>, <em>y_labels</em><big>)</big><a class="headerlink" href="#mir_eval.util.merge_labeled_intervals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Merge the time intervals of two sequences &#8216;x&#8217; and &#8216;y&#8217;.</p>
+<dd><p>Merge the time intervals of two sequences <em>x</em> and <em>y</em>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>x_intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dt>x_intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of interval times (seconds)</p>
 </dd>
 </dl>
@@ -5013,7 +5145,7 @@ the prefix label_prefix.</p>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>y_intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dt>y_intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of interval times (seconds)</p>
 </dd>
 </dl>
@@ -5029,20 +5161,20 @@ the prefix label_prefix.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul>
 <li><dl class="first docutils">
-<dt>new_intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dt>new_intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">New interval times of the merged sequences.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
 <dt>new_x_labels <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd><p class="first last">New labels for the sequence &#8216;x&#8217;</p>
+<dd><p class="first last">New labels for the sequence <em>x</em></p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
 <dt>new_y_labels <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd><p class="first last">New labels for the sequence &#8216;y&#8217;</p>
+<dd><p class="first last">New labels for the sequence <em>y</em></p>
 </dd>
 </dl>
 </li>
@@ -5057,35 +5189,54 @@ the prefix label_prefix.</p>
 </tr>
 </tbody>
 </table>
-<p>..note:: The intervals of x and y must be aligned, or previously adjusted
-via &#8216;adjust_intervals&#8217;.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The intervals of x and y must be aligned, or previously adjusted
+via <a class="reference internal" href="#mir_eval.util.adjust_intervals" title="mir_eval.util.adjust_intervals"><tt class="xref py py-func docutils literal"><span class="pre">mir_eval.util.adjust_intervals()</span></tt></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="function">
 <dt id="mir_eval.util.match_events">
 <tt class="descclassname">mir_eval.util.</tt><tt class="descname">match_events</tt><big>(</big><em>ref</em>, <em>est</em>, <em>window</em><big>)</big><a class="headerlink" href="#mir_eval.util.match_events" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute a maximum matching between reference and estimated event times, subject to a window constraint.</p>
-<p>Given two list of event times <cite>ref</cite> and <cite>est</cite>, we seek the largest set of correspondences <cite>(ref[i], est[j])</cite>
-such that <cite>|ref[i] - est[j]| &lt;= window</cite>, and each <cite>ref[i]</cite> and <cite>est[j]</cite> is matched at most once.</p>
+<p>Given two list of event times <em>ref</em> and <em>est</em>, we seek the largest set of correspondences <tt class="docutils literal"><span class="pre">(ref[i],</span> <span class="pre">est[j])</span></tt>
+such that <tt class="docutils literal"><span class="pre">|ref[i]</span> <span class="pre">-</span> <span class="pre">est[j]|</span> <span class="pre">&lt;=</span> <span class="pre">window</span></tt>, and each <tt class="docutils literal"><span class="pre">ref[i]</span></tt> and <tt class="docutils literal"><span class="pre">est[j]</span></tt> is matched at most once.</p>
 <p>This is useful for computing precision/recall metrics in beat tracking, onset detection, and segmentation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li>ref : np.ndarray, shape=(n,)
-Array of reference event times</li>
-<li>est : np.ndarray, shape=(m,)
-Array of estimated event times</li>
-<li>window : float &gt; 0
-Size of the window.</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
+<li><dl class="first docutils">
+<dt>ref <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(n,)</span></dt>
+<dd><p class="first last">Array of reference event times</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>est <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray, shape=(m,)</span></dt>
+<dd><p class="first last">Array of estimated event times</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>window <span class="classifier-delimiter">:</span> <span class="classifier">float &gt; 0</span></dt>
+<dd><p class="first last">Size of the window.</p>
+</dd>
+</dl>
+</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li>matching : list of tuples
-A list of matched reference and event numbers.
-<cite>matching[i] == (i, j)</cite> where <cite>ref[i]</cite> matches <cite>est[j]</cite>.</li>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
+<li><dl class="first docutils">
+<dt>matching <span class="classifier-delimiter">:</span> <span class="classifier">list of tuples</span></dt>
+<dd><p class="first last">A list of matched reference and event numbers.
+<tt class="docutils literal"><span class="pre">matching[i]</span> <span class="pre">==</span> <span class="pre">(i,</span> <span class="pre">j)</span></tt> where <tt class="docutils literal"><span class="pre">ref[i]</span></tt> matches <tt class="docutils literal"><span class="pre">est[j]</span></tt>.</p>
+</dd>
+</dl>
+</li>
 </ul>
 </p>
 </td>
@@ -5154,7 +5305,7 @@ A list of matched reference and event numbers.
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first">
 <li><dl class="first docutils">
-<dt>intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dt>intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Array of interval times (seconds)</p>
 </dd>
 </dl>
@@ -5170,7 +5321,7 @@ A list of matched reference and event numbers.
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul>
 <li><dl class="first docutils">
-<dt>filtered_intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.array</span></dt>
+<dt>filtered_intervals <span class="classifier-delimiter">:</span> <span class="classifier">np.ndarray</span></dt>
 <dd><p class="first last">Valid interval times.</p>
 </dd>
 </dl>
