@@ -10,17 +10,17 @@ def clicks(times, fs, click=None, length=None):
     Returns a signal with the signal 'click' placed at each specified time
 
     :inputs:
-        - times: np.ndarray
+        - times : np.ndarray
             times to place clicks, in seconds
-        - fs: int
+        - fs : int
             desired sampling rate of the output signal
-        - click: np.array
-            click signal, defaults to an 1 kHz blip
-        - length: int
+        - click : np.ndarray
+            click signal, defaults to a 1 kHz blip
+        - length : int
             desired number of samples in the output signal,
             defaults to times.max()*fs + click.shape[0] + 1
     :outputs:
-        - click_signal: np.array
+        - click_signal : np.ndarray
             Synthesized click signal
     '''
     # Create default click signal
@@ -54,24 +54,24 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     Reverse synthesis of a time-frequency representation of a signal
 
     :inputs:
-        - gram: np.ndarray 
+        - gram : np.ndarray 
             gram[n, m] is the magnitude of frequencies[n]
             from times[n] to times[n + 1]
-        - frequencies: np.ndarray 
+        - frequencies : np.ndarray 
             array of size gram.shape[0] denoting the frequency of
             each row of gram
-        - times: np.ndarray 
+        - times : np.ndarray 
             array of size gram.shape[1] denoting the start time of each
             column of gram
-        - fs: int 
+        - fs : int 
             desired sampling rate of the output signal
-        - function: function
+        - function : function
             function to use to synthesize notes, should be 2\pi-periodic
-        - length: int 
+        - length : int 
             desired number of samples in the output signal,
             defaults to times[-1]*fs
     :outputs:
-        - output: np.array 
+        - output : np.ndarray 
             synthetized version of the piano roll
     '''
     # Default value for length

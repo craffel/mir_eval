@@ -16,17 +16,17 @@ def evaluate_chords(GT, P, resolution=0.001, trim_method='min', method='MIREX', 
 
     http://ismir2005.ismir.net/proceedings/1080.pdf
 
-    :inputs: 
-      - GT: list of tuples          
+    :parameters:
+      - GT : list of tuples          
           Ground truth chords
 
-      - P: list of tuples
+      - P : list of tuples
           Predicted chords
 
-      - resolution: float
+      - resolution : float
           frame rate to use.
 
-      - trim_method: string
+      - trim_method : string
           how to deal with predictions and gts of different length. One of:
             'min'
                choose the true length to be minimum of 
@@ -39,7 +39,7 @@ def evaluate_chords(GT, P, resolution=0.001, trim_method='min', method='MIREX', 
             'P'
                always trust the P length   
 
-      - method: string
+      - method : string
           scoring method. currently supported:
             'MIREX'
                count pitch class overlap. Requires an additional switch argument:
@@ -95,14 +95,14 @@ def evaluate_chords(GT, P, resolution=0.001, trim_method='min', method='MIREX', 
                reduced to a simpler alphabet in this evaluation                                               
                                
 
-    :outputs: 
-      - accuracy: float    
+    :returns: 
+      - accuracy : float    
           The accuracy figure
 
-      - GT_sample: list
+      - GT_sample : list
           List of sampled GT annotations
 
-       - P_sample: list
+      - P_sample : list
           List of sampled Predictions
     '''
 

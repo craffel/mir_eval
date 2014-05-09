@@ -9,18 +9,18 @@ def index_labels(labels, case_sensitive=False):
 
     :parameters:
         - labels : list of strings, shape=(n,)
-          A list of annotations, e.g., segment or chord labels from an annotation file.
+            A list of annotations, e.g., segment or chord labels from an annotation file.
 
         - case_sensitive : bool
-          Set to `True` to enable case-sensitive label indexing
+            Set to *True* to enable case-sensitive label indexing
 
     :returns:
         - indices : list, shape=(n,)
-          Numerical representation of `labels`
+            Numerical representation of *labels*
 
         - index_to_label : dict
-          Mapping to convert numerical indices back to labels.
-          `labels[i] == index_to_label[indices[i]]``
+            Mapping to convert numerical indices back to labels.
+             ``labels[i] == index_to_label[indices[i]]``
     '''
 
     label_to_index = {}
@@ -48,8 +48,8 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
-            ``mir_eval.io.load_intervals``.
-            The `i`th interval spans time ``intervals[i, 0]`` to
+            :func:``mir_eval.input_output.load_intervals()``.
+            The *i* th interval spans time ``intervals[i, 0]`` to
             ``intervals[i, 1]``.
 
         - labels : list, shape=(n,)
@@ -71,9 +71,9 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
         - sample_labels : list
             array of segment labels for each generated sample
 
-    ..note::
+    .. note::
         Segment intervals will be rounded down to the nearest multiple
-        of ``frame_size``.
+        of *frame_size*.
     '''
 
     # Round intervals to the sample size
@@ -92,8 +92,8 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
-            ``mir_eval.io.load_intervals``.
-            The `i`th interval spans time ``intervals[i, 0]`` to
+            :func:``mir_eval.input_output.load_intervals()``.
+            The *i* th interval spans time ``intervals[i, 0]`` to
             ``intervals[i, 1]``.
 
         - labels : list, shape=(n,)
@@ -200,8 +200,8 @@ def adjust_intervals(intervals,
 
     If the specified range exceeds the span of the provided data in either direction,
     additional intervals will be appended.  Any appended intervals at the start will
-    be given label `start_label`.  Any appended intervals at the end will be given
-    label `end_label`.
+    be given label *start_label*.  Any appended intervals at the end will be given
+    label *end_label*.
 
     :parameters:
         - intervals : np.ndarray, shape=(n_events, 2)
@@ -223,7 +223,7 @@ def adjust_intervals(intervals,
             Label to give any intervals appended at the end
 
     :returns:
-        - new_intervals : np.array
+        - new_intervals : np.ndarray
             Intervals spanning [t_min, t_max]
 
         - new_labels : list
@@ -279,7 +279,7 @@ def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix='__')
     the prefix label_prefix.
 
     :parameters:
-        - events : np.array
+        - events : np.ndarray
             Array of event times (seconds)
 
         - labels : list or None
@@ -295,7 +295,7 @@ def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix='__')
             Prefix string to use for synthetic labels
 
     :returns:
-        - new_times : np.array
+        - new_times : np.ndarray
             Event times corrected to the given range.
     '''
     if t_min is not None:
@@ -345,12 +345,16 @@ def intersect_files(flist1, flist2):
       ['/g/h/xyz.npy', '/i/j/123.txt']
 
     :parameters:
-        - flist1 : list of filepaths
-        - flist2 : list of filepaths
+        - flist1 : list 
+            first list of filepaths
+        - flist2 : list 
+            second list of filepaths
 
     :returns:
-        - sublist1 : list of filepaths
-        - sublist2 : list of filepaths
+        - sublist1 : list 
+            subset of filepaths with matching stems from *flist1*
+        - sublist2 : list
+            corresponding filepaths from *flist2*
     '''
     def fname(abs_path):
         return os.path.splitext(os.path.split(f)[-1])[0]
@@ -365,34 +369,34 @@ def intersect_files(flist1, flist2):
     return pairs
 
 def merge_labeled_intervals(x_intervals, x_labels, y_intervals, y_labels):
-    r'''Merge the time intervals of two sequences 'x' and 'y'.
+    r'''Merge the time intervals of two sequences *x* and *y*.
 
     :parameters:
-        - x_intervals : np.array
+        - x_intervals : np.ndarray
             Array of interval times (seconds)
 
         - x_labels : list or None
             List of labels
 
-        - y_intervals : np.array
+        - y_intervals : np.ndarray
             Array of interval times (seconds)
 
         - y_labels : list or None
             List of labels
 
     :returns:
-        - new_intervals : np.array
+        - new_intervals : np.ndarray
             New interval times of the merged sequences.
         - new_x_labels : list
-            New labels for the sequence 'x'
+            New labels for the sequence *x*
         - new_y_labels : list
-            New labels for the sequence 'y'
+            New labels for the sequence *y*
 
     :raises:
         - ValueError
 
-    ..note:: The intervals of x and y must be aligned, or previously adjusted
-    via 'adjust_intervals'.
+    .. note:: The intervals of x and y must be aligned, or previously adjusted
+              via :func:`mir_eval.util.adjust_intervals()`.
     '''
     align_check = [x_intervals[0, 0] == y_intervals[0, 0],
                    x_intervals[-1, 1] == y_intervals[-1, 1]]
@@ -494,25 +498,25 @@ def _bipartite_match(graph):
 def match_events(ref, est, window):
     '''Compute a maximum matching between reference and estimated event times, subject to a window constraint.
 
-    Given two list of event times `ref` and `est`, we seek the largest set of correspondences `(ref[i], est[j])`
-    such that `|ref[i] - est[j]| <= window`, and each `ref[i]` and `est[j]` is matched at most once.
+    Given two list of event times *ref* and *est*, we seek the largest set of correspondences ``(ref[i], est[j])``
+    such that ``|ref[i] - est[j]| <= window``, and each ``ref[i]`` and ``est[j]`` is matched at most once.
 
     This is useful for computing precision/recall metrics in beat tracking, onset detection, and segmentation.
 
     :parameters:
         - ref : np.ndarray, shape=(n,)
-          Array of reference event times
+            Array of reference event times
 
         - est : np.ndarray, shape=(m,)
-          Array of estimated event times
+            Array of estimated event times
 
         - window : float > 0
-          Size of the window.
+            Size of the window.
 
     :returns:
         - matching : list of tuples
-          A list of matched reference and event numbers.
-          `matching[i] == (i, j)` where `ref[i]` matches `est[j]`.
+            A list of matched reference and event numbers.
+            ``matching[i] == (i, j)`` where ``ref[i]`` matches ``est[j]``.
     '''
 
     # Compute the indices of feasible pairings
@@ -578,14 +582,14 @@ def filter_labeled_intervals(intervals, labels):
     r'''Remove all invalid intervals (start >= end) and corresponding labels.
 
     :parameters:
-        - intervals : np.array
+        - intervals : np.ndarray
             Array of interval times (seconds)
 
         - labels : list
             List of labels
 
     :returns:
-        - filtered_intervals : np.array
+        - filtered_intervals : np.ndarray
             Valid interval times.
         - filtered_labels : list
             Corresponding filtered labels

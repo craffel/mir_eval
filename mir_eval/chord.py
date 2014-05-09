@@ -136,11 +136,11 @@ def pitch_class_to_semitone(pitch_class):
     r'''Convert a pitch class to semitone.
 
     :parameters:
-     - pitch_class: str
+     - pitch_class : str
         Spelling of a given pitch class, e.g. 'C#', 'Gbb'
 
     :returns:
-     - semitone: int
+     - semitone : int
         Semitone value of the pitch class.
 
     :raises:
@@ -168,11 +168,11 @@ def scale_degree_to_semitone(scale_degree):
     r'''Convert a scale degree to semitone.
 
     :parameters:
-     - scale degree: str
+     - scale degree : str
         Spelling of a relative scale degree, e.g. 'b3', '7', '#5'
 
     :returns:
-     - semitone: int
+     - semitone : int
         Relative semitone of the scale degree, wrapped to a single octave
 
     :raises:
@@ -201,11 +201,11 @@ def scale_degree_to_bitmap(scale_degree):
     semitone is to be removed.
 
     :parameters:
-     - scale_degree: str
+     - scale_degree : str
         Spelling of a relative scale degree, e.g. 'b3', '7', '#5'
 
     :returns:
-     - bitmap: np.ndarray, in [-1, 0, 1]
+     - bitmap : np.ndarray, in [-1, 0, 1]
         Bitmap representation of this scale degree (12-dim).
     '''
     sign = 1
@@ -256,11 +256,11 @@ def quality_to_bitmap(quality):
     '''Return the bitmap for a given quality.
 
     :parameters:
-      - quality: str
+      - quality : str
           Chord quality name.
 
     :returns:
-      - bitmap: np.ndarray, in [0, 1]
+      - bitmap : np.ndarray, in [0, 1]
           Bitmap representation of this quality (12-dim).
 
     :raises:
@@ -298,13 +298,13 @@ def reduce_extended_quality(quality):
     a set of scale degree extensions.
 
     :parameters:
-     - quality: str
+     - quality : str
         Extended chord quality to reduce.
 
     :returns:
-     - base_quality: str
+     - base_quality : str
         New chord quality.
-     - extensions: set
+     - extensions : set
         Scale degrees extensions for the quality.
     '''
     return EXTENDED_QUALITY_REDUX.get(quality, (quality, set()))
@@ -315,7 +315,7 @@ def validate_chord_label(chord_label):
     '''Test for well-formedness of a chord label.
 
     :parameters:
-     - chord: str
+     - chord : str
         Chord label to validate.
 
     :raises:
@@ -348,18 +348,19 @@ def split(chord_label, reduce_extended_chords=False):
       - If an interval is specified WITHOUT a quality, the quality field is
         empty.
 
-    Some examples:
+    Some examples::
+
         'C' -> ['C', 'maj', {}, '1']
-        'G#:min(\*b3,\*5)/5' -> ['G#', 'min', {'\*b3', '\*5'}, '5']
+        'G#:min(*b3,*5)/5' -> ['G#', 'min', {'*b3', '*5'}, '5']
         'A:(3)/6' -> ['A', '', {'3'}, '6']
 
 
     :parameters:
-     - chord_label: str
+     - chord_label : str
         A chord label.
 
     :returns:
-     - chord_parts: list
+     - chord_parts : list
         Split version of the chord label.
     '''
     chord_label = str(chord_label)
@@ -408,21 +409,22 @@ def join(root, quality='', extensions=None, bass=''):
     '''Join the parts of a chord into a complete chord label.
 
     :parameters:
-     - root: str
+     - root : str
         Root pitch class of the chord, e.g. 'C', 'Eb'
-     - quality: str
+     - quality : str
         Quality of the chord, e.g. 'maj', 'hdim7'
-     - extensions: list
+     - extensions : list
         Any added or absent scaled degrees for this chord, e.g. ['4', '\*3']
-     - bass: str
+     - bass : str
         Scale degree of the bass note, e.g. '5'.
 
     :returns:
-     - chord_label: str
+     - chord_label : str
         A complete chord label.
 
     :raises:
-     - InvalidChordException: Thrown if the provided args yield a garbage chord label.
+     - InvalidChordException
+         Thrown if the provided args yield a garbage chord label.
     '''
     chord_label = root
     if quality or extensions:
@@ -440,26 +442,27 @@ def encode(chord_label, reduce_extended_chords=False):
     """Translate a chord label to numerical representations for evaluation.
 
     :parameters:
-     - chord_label: str
+     - chord_label : str
         Chord label to encode.
 
-     - reduce_extended_chords: bool, default=False
+     - reduce_extended_chords : bool, default=False
         Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
         extensions.
 
     :returns:
-     -root_number: int
+     -root_number : int
         Absolute semitone of the chord's root.
 
-     - semitone_bitmap: np.ndarray of ints, in [0, 1]
+     - semitone_bitmap : np.ndarray of ints, in [0, 1]
         12-dim vector of relative semitones in the chord spelling.
 
-     - bass_number: int
+     - bass_number : int
         Relative semitone of the chord's bass note, e.g. 0=root, 7=fifth, etc.
 
     :raises:
-     - InvalidChordException: Thrown if the given bass note is not explicitly
-        named as an extension.
+     - InvalidChordException
+         Thrown if the given bass note is not explicitly
+         named as an extension.
     """
 
     if chord_label == NO_CHORD:
@@ -491,21 +494,21 @@ def encode_many(chord_labels, reduce_extended_chords=False):
     evaluation.
 
     :parameters:
-     - chord_labels: list
+     - chord_labels : list
         Set of chord labels to encode.
 
-     - reduce_extended_chords: bool, default=True
+     - reduce_extended_chords : bool, default=True
         Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
         extensions.
 
     :returns:
-     - root_number: np.ndarray of ints
+     - root_number : np.ndarray of ints
         Absolute semitone of the chord's root.
 
-     - interval_bitmap: np.ndarray of ints, in [0, 1]
+     - interval_bitmap : np.ndarray of ints, in [0, 1]
         12-dim vector of relative semitones in the given chord quality.
 
-     - bass_number: np.ndarray
+     - bass_number : np.ndarray
         Relative semitones of the chord's bass notes.
 
     :raises:
@@ -540,14 +543,14 @@ def rotate_bitmap_to_root(bitmap, root):
         abs_quality = [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1]  # G, B, and D
 
     :parameters:
-        - bitmap: np.ndarray, shape=(12,)
+        - bitmap : np.ndarray, shape=(12,)
             Bitmap of active notes, relative to the given root.
 
-        - root: int
+        - root : int
             Absolute pitch class number.
 
     :returns:
-        - bitmap: np.ndarray, shape=(12,)
+        - bitmap : np.ndarray, shape=(12,)
             Absolute bitmap of active pitch classes.
     '''
     bitmap = np.asarray(bitmap)
@@ -565,14 +568,14 @@ def rotate_bitmaps_to_roots(bitmaps, roots):
     See rotate_bitmap_to_root for more information.
 
     :parameters:
-        - bitmap: np.ndarray, shape=(N, 12)
+        - bitmap : np.ndarray, shape=(N, 12)
             Bitmap of active notes, relative to the given root.
 
-        - root: np.ndarray, shape=(N,)
+        - root : np.ndarray, shape=(N,)
             Absolute pitch class number.
 
     :returns:
-        - bitmap: np.ndarray, shape=(N, 12)
+        - bitmap : np.ndarray, shape=(N, 12)
             Absolute bitmaps of active pitch classes.
     '''
     abs_bitmaps = []
@@ -585,13 +588,13 @@ def rotate_bass_to_root(bass, root):
     '''Rotate a relative bass interval to its asbolute pitch class.
 
     :parameters:
-        - bass: int
+        - bass : int
             Relative bass interval.
-        - root: int
+        - root : int
             Absolute root pitch class.
 
     :returns:
-        - bass: int
+        - bass : int
             Pitch class of the bass intervalself.
     '''
     return (bass + root) % 12
@@ -1216,16 +1219,16 @@ def evaluate_file_pair(reference_file, estimation_file,
     '''Load data and perform the evaluation between a pair of annotations.
 
     :parameters:
-     - reference_file: str
+     - reference_file : str
         Path to a reference annotation.
 
-     - estimation_file: str
+     - estimation_file : str
         Path to an estimated annotation.
 
-     - vocabularies: list of strings
+     - vocabularies : list of strings
         Comparisons to make between the reference and estimated sequences.
 
-     - boundary_mode: str
+     - boundary_mode : str
         Method for resolving sequences of different lengths, one of:
           'intersect': 
               Truncate both to the time range on with both sequences are defined.
@@ -1235,7 +1238,7 @@ def evaluate_file_pair(reference_file, estimation_file,
               Pad the reference to match the estimation, filling missing labels with 'no-chord'.
 
     :returns:
-     - result: dict
+     - result : dict
         Dictionary containing the averaged scores for each vocabulary, along
         with the total duration of the file ('_weight') and any errors
         ('_error') caught in the process.

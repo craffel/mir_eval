@@ -113,7 +113,7 @@ def pairwise(reference_intervals, reference_labels,
             If ``reference_intervals`` and ``estimated_intervals`` do not span the
             same time duration.
 
-    .. seealso:: mir_eval.util.adjust_intervals
+    .. seealso:: :func:`mir_eval.util.adjust_intervals`
     '''
 
     # Generate the cluster labels
@@ -197,7 +197,7 @@ def rand_index(reference_intervals, reference_labels,
             If ``reference_intervals`` and ``estimated_intervals`` do not span the
             same time duration.
 
-    .. seealso:: mir_eval.util.adjust_intervals
+    .. seealso:: :func:`mir_eval.util.adjust_intervals`
     '''
 
     # Generate the cluster labels
@@ -322,7 +322,7 @@ def mutual_information(reference_intervals, reference_labels,
           length (in seconds) of frames for clustering
 
     :returns:
-      - MI : float >0
+      - MI : float > 0
           Mutual information between segmentations
       - AMI : float
           Adjusted mutual information between segmentations.

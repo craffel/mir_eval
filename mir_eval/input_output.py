@@ -200,12 +200,12 @@ def load_patterns(filename):
         http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_%26_Sections
 
     :params:
-      - filename: str
+      - filename : str
           The input file path containing the patterns of a given
           given piece using the MIREX 2013 format.
 
     :returns: 
-       - list: list 
+       - list : list 
            the list of patterns, containing all their occurrences,
            using the following format::
 
