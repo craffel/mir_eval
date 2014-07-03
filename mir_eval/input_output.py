@@ -7,17 +7,19 @@ import warnings
 
 from . import util
 
+
 def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
-    r'''Import time-stamp events from an annotation file.  This is primarily useful for
-        processing events which lack duration, such as beats or onsets.
+    r'''Import time-stamp events from an annotation file.  This is primarily
+        useful for processing events which lack duration, such as beats or
+        onsets.
 
         The annotation file may be either of two formats:
-         - Single-column.  Each line contains a single value, corresponding to the time of
-           the annotated event.
+         - Single-column.  Each line contains a single value, corresponding to
+           the time of the annotated event.
 
-         - Double-column.  Each line contains two values, separated by ``delimiter``: the
-           first contains the time of the annotated event, and the second contains its
-           label.
+         - Double-column.  Each line contains two values, separated by
+           ``delimiter``: the first contains the time of the annotated event,
+           and the second contains its label.
 
         :parameters:
          - filename : str
@@ -28,7 +30,8 @@ def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
             By default, lines will be split by any amount of whitespace ('\s+')
 
          - converter : function
-            Function to convert time-stamp data into numerics. Defaults to float().
+            Function to convert time-stamp data into numerics.
+            Defaults to float().
 
          - label_prefix : str
             String to append to any synthetically generated labels
@@ -44,8 +47,8 @@ def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
     if converter is None:
         converter = float
 
-    times   = []
-    labels  = []
+    times = []
+    labels = []
 
     splitter = re.compile(delimiter)
 
@@ -68,25 +71,29 @@ def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
                 labels.append(data[1])
 
             else:
-                raise ValueError('Parse error on %s:%d:\n\t%s' % (filename, row, line))
+                raise ValueError('Parse error on %s:%d:\n\t%s' %
+                                 (filename, row, line))
 
     times = np.asarray(times)
 
     return times, labels
 
 
-def load_intervals(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
-    r'''Import labeled intervals from an annotation file.  This is primarily useful for
-        processing events which span a duration, such as segmentation, chords, or instrument
-        activation.
+def load_intervals(filename, delimiter=r'\s+',
+                   converter=None, label_prefix='__'):
+    r'''Import labeled intervals from an annotation file.  This is primarily
+        useful for processing events which span a duration, such as
+        segmentation, chords, or instrument activation.
 
         The annotation file may be either of two formats:
-         - Double-column.  Each line contains two values, separated by ``delimiter``,
-           corresponding to the start and end time annotated event.
+         - Double-column.  Each line contains two values, separated by
+           ``delimiter``, corresponding to the start and end time annotated
+           event.
 
-         - Triple-column.  Each line contains three values, separated by ``delimiter``.
-           The first two values specify the start and end times, the last value specifies
-           the label for the event (e.g. "Verse" or "A:min").
+         - Triple-column.  Each line contains three values, separated by
+           ``delimiter``.  The first two values specify the start and end
+           times, the last value specifies the label for the event (e.g.
+           "Verse" or "A:min").
 
         :parameters:
           - filename : str
@@ -94,10 +101,12 @@ def load_intervals(filename, delimiter=r'\s+', converter=None, label_prefix='__'
 
           - delimiter : str
               Separator regular expression.
-              By default, lines will be split by any amount of whitespace ('\s+')
+              By default, lines will be split by any amount of whitespace
+              ('\s+')
 
           - converter : function
-              Function to convert time-stamp data into numerics. Defaults to float().
+              Function to convert time-stamp data into numerics. Defaults to
+              float().
 
           - label_prefix : str
               String to append to any synthetically generated labels
@@ -113,8 +122,8 @@ def load_intervals(filename, delimiter=r'\s+', converter=None, label_prefix='__'
     if converter is None:
         converter = float
 
-    times   = []
-    labels  = []
+    times = []
+    labels = []
 
     splitter = re.compile(delimiter)
 
@@ -131,35 +140,37 @@ def load_intervals(filename, delimiter=r'\s+', converter=None, label_prefix='__'
                 labels.append(data[2])
 
             else:
-                raise ValueError('parse error %s:%d:\n%s' % (filename, row, line))
+                raise ValueError('parse error %s:%d:\n%s' %
+                                 (filename, row, line))
 
     times = np.asarray(times)
 
     try:
         util.validate_intervals(times)
-    except ValueError as e:
-        warnings.warn(e.args[0])
+    except ValueError as error:
+        warnings.warn(error.args[0])
 
     return times, labels
 
 
 def load_time_series(filename, delimiter=None):
-    r'''Import a time series from an annotation file.  This is primarily useful for
-        processing dense time series with timestamps and corresponding numeric values
+    r'''Import a time series from an annotation file.  This is primarily useful
+        for processing dense time series with timestamps and corresponding
+        numeric values
 
         The annotation file must be of the following format:
-          - Double-column.  Each line contains two values, separated by ``delimiter``: the
-            first contains the timestamp, and the second contains its corresponding
-            numeric value.
+          - Double-column.  Each line contains two values, separated by
+            ``delimiter``: the first contains the timestamp, and the second
+            contains its corresponding numeric value.
 
         :parameters:
           - filename : str
               Path to the annotation file
 
           - delimiter : str
-              Column separator. By default, lines will be split by any amount of
-              whitespace, unless the file ending is .csv, in which case a comma ','
-              is used as the delimiter.
+              Column separator. By default, lines will be split by any amount
+              of whitespace, unless the file ending is .csv, in which case a
+              comma ',' is used as the delimiter.
 
         :returns:
           - times : np.ndarray
@@ -175,15 +186,19 @@ def load_time_series(filename, delimiter=None):
         delimiter = ','
 
     try:
-        data = np.loadtxt(filename,'float','#',delimiter)
+        data = np.loadtxt(filename, 'float', '#', delimiter)
     except ValueError:
-        raise ValueError('Error: could no load %s, please check if it is in the correct 2 column format' % os.path.basename(filename))
+        raise ValueError('Error: could no load %s, please check if it is '
+                         'in the correct 2 column format'
+                         % os.path.basename(filename))
 
     data = data.T
 
     # we do however want to make sure the data is in the right format!
     if data.shape[0] != 2:
-        raise ValueError('Error: %s should be of dimension (2,x), but is of dimension %s' % (os.path.basename(filename),data.shape))
+        raise ValueError('Error: %s should be of dimension (2,x), but is '
+                         'of dimension %s'
+                         % (os.path.basename(filename), data.shape))
 
     times = data[0]
     values = data[1]
@@ -204,12 +219,12 @@ def load_patterns(filename):
           The input file path containing the patterns of a given
           given piece using the MIREX 2013 format.
 
-    :returns: 
-       - list : list 
+    :returns:
+       - pattern_list : list
            the list of patterns, containing all their occurrences,
            using the following format::
 
-             P = [pattern1, ..., patternN]
+             pattern_list = [pattern1, ..., patternN]
              pattern = [occurrence1, ..., occurrenceM]
              occurrence = [onset_midi1, ..., onset_midiO]
              onset_midi = (onset_time, midi_number)
@@ -218,33 +233,35 @@ def load_patterns(filename):
              P = [[[(77.0, 67.0), (77.5, 77.0), ... ]]]
     """
 
-    def append_if_necessary(list, element):
-        """Appends element to a list only if the element is not an empty
-        list."""
-        if element != []:
-            list.append(element)
-
     with open(filename, "r") as input_file:
-        P = []              # List with all the patterns
-        pattern = []        # Current pattern, which will contain all occs
-        occurrence = []     # Current occurrence, containing (onset, midi)
+        # List with all the patterns
+        pattern_list = []
+        # Current pattern, which will contain all occs
+        pattern = []
+        # Current occurrence, containing (onset, midi)
+        occurrence = []
         for line in input_file.readlines():
             if "pattern" in line:
-                append_if_necessary(pattern, occurrence)
-                append_if_necessary(P, pattern)
+                if occurrence != []:
+                    pattern.append(occurrence)
+                if pattern != []:
+                    pattern_list.append(pattern)
                 occurrence = []
                 pattern = []
                 continue
             if "occurrence" in line:
-                append_if_necessary(pattern, occurrence)
+                if occurrence != []:
+                    pattern.append(occurrence)
                 occurrence = []
                 continue
             string_values = line.split(",")
             onset_midi = (float(string_values[0]), float(string_values[1]))
             occurrence.append(onset_midi)
 
-        # Add last occurrence and pattern to P
-        append_if_necessary(pattern, occurrence)
-        append_if_necessary(P, pattern)
+        # Add last occurrence and pattern to pattern_list
+        if occurrence != []:
+            pattern.append(occurrence)
+        if pattern != []:
+            pattern_list.append(pattern)
 
-    return P
+    return pattern_list
