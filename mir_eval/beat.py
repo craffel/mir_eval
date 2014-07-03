@@ -18,6 +18,7 @@ import collections
 from . import util
 import warnings
 
+
 def trim_beats(beats, min_beat_time=5.):
     '''Removes beats before min_beat_time.  A common preprocessing step.
 
@@ -33,6 +34,7 @@ def trim_beats(beats, min_beat_time=5.):
     '''
     # Remove beats before min_beat_time
     return beats[beats >= min_beat_time]
+
 
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
@@ -53,7 +55,8 @@ def validate(metric):
         '''
         Metric with input beat annotations validated
         '''
-        # If reference or estimated beats are empty, warn because metric will be 0
+        # If reference or estimated beats are empty,
+        # warn because metric will be 0
         if reference_beats.size == 0:
             warnings.warn("Reference beats are empty.")
         if estimated_beats.size == 0:
@@ -62,6 +65,7 @@ def validate(metric):
             util.validate_events(beats)
         return metric(reference_beats, estimated_beats, *args, **kwargs)
     return metric_validated
+
 
 def _get_reference_beat_variations(reference_beats):
     '''
@@ -91,12 +95,13 @@ def _get_reference_beat_variations(reference_beats):
                                        original_indices,
                                        reference_beats)
     # Return metric variations:
-    #True, off-beat, double tempo, half tempo odd, and half tempo even
+    # True, off-beat, double tempo, half tempo odd, and half tempo even
     return (reference_beats,
            double_reference_beats[1::2],
            double_reference_beats,
            reference_beats[::2],
            reference_beats[1::2])
+
 
 @validate
 def f_measure(reference_beats,
@@ -107,9 +112,12 @@ def f_measure(reference_beats,
     "Corectness" is determined over a small window.
 
     :usage:
-        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
-        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
-        >>> f_measure = mir_eval.beat.f_measure(reference_beats, estimated_beats)
+        >>> reference_beats = mir_eval.io.load_events('reference.txt')
+        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
+        >>> f_measure = mir_eval.beat.f_measure(reference_beats,
+                                                estimated_beats)
 
     :parameters:
         - reference_beats : np.ndarray
@@ -126,7 +134,7 @@ def f_measure(reference_beats,
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0.
-    # Compute the best-case matching between reference and estimated onset locations
+    # Compute the best-case matching between reference and estimated locations
     matching = util.match_events(reference_beats,
                                  estimated_beats,
                                  f_measure_threshold)
@@ -134,6 +142,7 @@ def f_measure(reference_beats,
     precision = float(len(matching))/len(estimated_beats)
     recall = float(len(matching))/len(reference_beats)
     return util.f_measure(precision, recall)
+
 
 @validate
 def cemgil(reference_beats,
@@ -144,9 +153,12 @@ def cemgil(reference_beats,
     Compares against the original beat times and all metrical variations.
 
     :usage:
-        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
-        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
-        >>> cemgil_score, cemgil_max = mir_eval.beat.cemgil(reference_beats, estimated_beats)
+        >>> reference_beats = mir_eval.io.load_events('reference.txt')
+        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
+        >>> cemgil_score, cemgil_max = mir_eval.beat.cemgil(reference_beats,
+                                                            estimated_beats)
 
     :parameters:
         - reference_beats : np.ndarray
@@ -183,6 +195,7 @@ def cemgil(reference_beats,
     # and maximal accuracy across all variations
     return accuracies[0], np.max(accuracies)
 
+
 @validate
 def goto(reference_beats,
          estimated_beats,
@@ -194,8 +207,10 @@ def goto(reference_beats,
     heuristic criteria
 
     :usage:
-        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
-        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
+        >>> reference_beats = mir_eval.io.load_events('reference.txt')
+        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
         >>> goto_score = mir_eval.beat.goto(reference_beats, estimated_beats)
 
     :parameters:
@@ -261,7 +276,7 @@ def goto(reference_beats,
     else:
         # Get the track of maximal length
         track_length = np.max(np.diff(incorrect_beats))
-        track_start = np.nonzero(np.diff(incorrect_beats) == track_length)[0][0]
+        track_start = np.flatnonzero(np.diff(incorrect_beats) == track_length)
         # Is the track length at least 25% of the song?
         if track_length - 1 > .25*(reference_beats.shape[0] - 2):
             goto_criteria = 1
@@ -271,10 +286,12 @@ def goto(reference_beats,
     # If we have a track
     if goto_criteria:
         # Are mean and std of the track less than the required thresholds?
-        if np.mean(np.abs(track)) < goto_mu and np.std(track, ddof=1) < goto_sigma:
+        if np.mean(np.abs(track)) < goto_mu \
+           and np.std(track, ddof=1) < goto_sigma:
             goto_criteria = 3
     # If all criteria are met, score is 100%!
     return 1.0*(goto_criteria == 3)
+
 
 @validate
 def p_score(reference_beats,
@@ -285,8 +302,10 @@ def p_score(reference_beats,
     Based on the autocorrelation of the reference and estimated beats
 
     :usage:
-        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
-        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
+        >>> reference_beats = mir_eval.io.load_events('reference.txt')
+        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
         >>> p_score = mir_eval.beat.p_score(reference_beats, estimated_beats)
 
     :parameters:
@@ -295,7 +314,9 @@ def p_score(reference_beats,
         - estimated_beats : np.ndarray
             query beat times, in seconds
         - p_score_threshold : float
-            Window size will be p_score_threshold*median(inter_annotation_intervals), default 0.2
+            Window size will be
+            p_score_threshold*median(inter_annotation_intervals),
+            default 0.2
 
     :returns:
         - correlation : float
@@ -336,6 +357,7 @@ def p_score(reference_beats,
     n_beats = np.max([estimated_beats.shape[0], reference_beats.shape[0]])
     return np.sum(train_correlation)/n_beats
 
+
 @validate
 def continuity(reference_beats,
                estimated_beats,
@@ -346,9 +368,12 @@ def continuity(reference_beats,
     continually correct.
 
     :usage:
-        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
-        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
-        >>> CMLc, CMLt, AMLc, AMLt = mir_eval.beat.continuity(reference_beats, estimated_beats)
+        >>> reference_beats = mir_eval.io.load_events('reference.txt')
+        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
+        >>> CMLc, CMLt, AMLc, AMLt = mir_eval.beat.continuity(reference_beats,
+                                                              estimated_beats)
 
     :parameters:
         - reference_beats : np.ndarray
@@ -399,20 +424,20 @@ def continuity(reference_beats,
             if used_annotations[nearest] == 0:
                 # Is this the first beat or first annotation?
                 # If so, look forward.
-                if ((m == 0 or nearest == 0) and
-                    (m + 1 < estimated_beats.shape[0])):
+                if (m == 0 or nearest == 0) and \
+                   (m + 1 < estimated_beats.shape[0]):
                     # How far is the estimated beat from the reference beat,
                     # relative to the inter-annotation-interval?
-                    reference_interval = reference_beats[nearest + 1] - \
-                                         reference_beats[nearest]
+                    reference_interval = (reference_beats[nearest + 1] -
+                                         reference_beats[nearest])
                     phase = np.abs(min_difference/reference_interval)
                     # How close is the inter-beat-interval
                     # to the inter-annotation-interval?
-                    estimated_interval = estimated_beats[m + 1] - \
-                                         estimated_beats[m]
+                    estimated_interval = (estimated_beats[m + 1] -
+                                          estimated_beats[m])
                     period = np.abs(1 - estimated_interval/reference_interval)
-                    if (phase < continuity_phase_threshold and
-                        period < continuity_period_threshold):
+                    if phase < continuity_phase_threshold and \
+                       period < continuity_period_threshold:
                         # Set this annotation as used
                         used_annotations[nearest] = 1
                         # This beat is matched
@@ -421,18 +446,18 @@ def continuity(reference_beats,
                 else:
                     # How far is the estimated beat from the reference beat,
                     # relative to the inter-annotation-interval?
-                    reference_interval = reference_beats[nearest] - \
-                                         reference_beats[nearest - 1]
+                    reference_interval = (reference_beats[nearest] -
+                                          reference_beats[nearest - 1])
                     phase = np.abs(min_difference/reference_interval)
                     # How close is the inter-beat-interval
                     # to the inter-annotation-interval?
-                    estimated_interval = estimated_beats[m] - \
-                                         estimated_beats[m - 1]
-                    reference_interval = reference_beats[nearest] - \
-                                         reference_beats[nearest - 1]
+                    estimated_interval = (estimated_beats[m] -
+                                          estimated_beats[m - 1])
+                    reference_interval = (reference_beats[nearest] -
+                                          reference_beats[nearest - 1])
                     period = np.abs(1 - estimated_interval/reference_interval)
-                    if (phase < continuity_phase_threshold and
-                        period < continuity_period_threshold):
+                    if phase < continuity_phase_threshold and \
+                       period < continuity_period_threshold:
                         # Set this annotation as used
                         used_annotations[nearest] = 1
                         # This beat is matched
@@ -459,6 +484,7 @@ def continuity(reference_beats,
             np.max(continuous_accuracies),
             np.max(total_accuracies))
 
+
 @validate
 def information_gain(reference_beats,
                      estimated_beats,
@@ -468,9 +494,12 @@ def information_gain(reference_beats,
     to a uniform histogram
 
     :usage:
-        >>> reference_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('reference.txt'))
-        >>> estimated_beats = mir_eval.beat.trim_beats(mir_eval.io.load_events('estimated.txt'))
-        >>> information_gain = mir_eval.beat.information_gain(reference_beats, estimated_beats)
+        >>> reference_beats = mir_eval.io.load_events('reference.txt')
+        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
+        >>> information_gain = mir_eval.beat.information_gain(reference_beats,
+                                                              estimated_beats)
 
     :parameters:
         - reference_beats : np.ndarray
@@ -484,9 +513,11 @@ def information_gain(reference_beats,
         - information_gain_score : float
             Entropy of beat error histogram
     '''
-    # If an even number of bins is provided, there will be no bin centered at zero, so warn the user.
+    # If an even number of bins is provided,
+    # there will be no bin centered at zero, so warn the user.
     if not bins % 2:
-        warnings.warn("bins parameter is even, so there will not be a bin centered at zero.")
+        warnings.warn("bins parameter is even, "
+                      "so there will not be a bin centered at zero.")
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0.
@@ -502,6 +533,7 @@ def information_gain(reference_beats,
     else:
         information_gain_score = (norm - backward_entropy)/norm
     return information_gain_score
+
 
 def _get_entropy(reference_beats, estimated_beats, bins):
     '''
