@@ -59,14 +59,18 @@ def validate(metric):
 
 @validate
 def bss_eval_sources(reference_sources, estimated_sources):
-    '''BSS_EVAL_SOURCES
+    ''' 
         MATLAB translation of BSS_EVAL Toolbox
 
         Ordering and measurement of the separation quality for estimated source
         signals in terms of filtered true source, interference and artifacts.
 
         The decomposition allows a time-invariant filter distortion of length
-        512, as described in Section III.B of the reference below.
+        512, as described in Section III.B of:
+
+          Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
+          measurement in blind audio source separation," IEEE Trans. on Audio,
+          Speech and Language Processing, 14(4):1462-1469, 2006.
 
     :usage:
         >>> # reference_sources[n] should be an ndarray of samples of the n'th reference source
@@ -75,27 +79,22 @@ def bss_eval_sources(reference_sources, estimated_sources):
                                                                        estimated_sources)
 
     :parameters:
-        - reference_sources: ndarray
-            (nsrc, nsampl) matrix containing true sources
-        - estimated_sources: ndarray
-            (nsrc, nsampl) matrix containing estimated sources
+        - reference_sources : np.ndarray, shape=(nsrc, nsampl)
+            matrix containing true sources
+        - estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+            matrix containing estimated sources
 
     :returns:
-        - sdr: ndarray
-            (nsrc, ) vector of Signal to Distortion Ratios (SDR)
-        - sir: ndarray
-            (nsrc, ) vector of Source to Interference Ratios (SIR)
-        - sar: ndarray
-            (nsrc, ) vector of Sources to Artifacts Ratios (SAR)
-        - perm: ndarray
-            (nsrc, ) vector containing the best ordering of estimated sources in
+        - sdr : np.ndarray, shape=(nsrc,)
+            vector of Signal to Distortion Ratios (SDR)
+        - sir : np.ndarray, shape=(nsrc,)
+            vector of Source to Interference Ratios (SIR)
+        - sar : np.ndarray, shape=(nsrc,)
+            vector of Sources to Artifacts Ratios (SAR)
+        - perm : np.ndarray, shape=(nsrc,)
+            vector containing the best ordering of estimated sources in
             the mean SIR sense (estimated source number perm[j] corresponds to
             true source number j)
-
-    Reference:
-        Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
-        measurement in blind audio source separation," IEEE Trans. on Audio,
-        Speech and Language Processing, 14(4):1462-1469, 2006.
 
     '''
 

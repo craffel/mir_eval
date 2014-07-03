@@ -44,7 +44,7 @@ def test_pitch_class_to_semitone():
 
 def test_scale_degree_to_semitone():
     valid_degrees = ['b7', '#3', '1', 'b1', '#7', 'bb5']
-    valid_semitones = [10, 5, 0, 11, 0, 5]
+    valid_semitones = [10, 5, 0, -1, 12, 5]
 
     for scale_degree, semitone in zip(valid_degrees, valid_semitones):
         yield (__check_valid, mir_eval.chord.scale_degree_to_semitone,
@@ -70,12 +70,14 @@ def test_validate_chord_label():
         yield (__check_exception, mir_eval.chord.validate_chord_label,
                (chord_label,), mir_eval.chord.InvalidChordException)
 
+
 def test_split():
-    labels = ['C', 'B:maj(*1,*3)/5', 'Ab:min/b3', 'N']
+    labels = ['C', 'B:maj(*1,*3)/5', 'Ab:min/b3', 'N', 'G:(3)']
     splits = [['C', 'maj', set(), '1'],
               ['B', 'maj', set(['*1', '*3']), '5'],
               ['Ab', 'min', set(), 'b3'],
-              ['N', '', set(), '']]
+              ['N', '', set(), ''],
+              ['G', '', set(['3']), '1']]
 
     for chord_label, split_chord in zip(labels, splits):
         yield (__check_valid, mir_eval.chord.split,
@@ -122,29 +124,26 @@ def test_rotate_bitmaps_to_roots():
 
 
 def test_encode():
-    def __check_encode(label, expected_root, expected_quality,
-                        expected_notes, expected_bass):
+    def __check_encode(label, expected_root, expected_intervals,
+                       expected_bass):
         ''' Helper function for checking encode '''
-        root, quality, notes, bass = mir_eval.chord.encode(label)
+        root, intervals, bass = mir_eval.chord.encode(label)
         assert root == expected_root
-        assert np.all(quality == expected_quality)
-        assert np.all(notes == expected_notes)
+        assert np.all(intervals == expected_intervals)
         assert bass == expected_bass
 
-    labels = ['B:maj(*1,*3)/5', 'G:dim']
-    expected_roots = [11, 7]
-    expected_qualities = [[1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-                          [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]]
-    expected_notes = [[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-                      [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]]
-    expected_bass = [7, 0]
+    labels = ['B:maj(*1,*3)/5', 'G:dim', 'C:(3)/3']
+    expected_roots = [11, 7, 0]
+    expected_intervals = [[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                          [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+                          [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]]
+    expected_bass = [7, 0, 4]
 
-    for label, e_root, e_quality, e_notes, e_bass in zip(labels,
-                                                         expected_roots,
-                                                         expected_qualities,
-                                                         expected_notes,
-                                                         expected_bass):
-        yield (__check_encode, label, e_root, e_quality, e_notes, e_bass)
+    for label, e_root, e_interval, e_bass in zip(labels,
+                                                 expected_roots,
+                                                 expected_intervals,
+                                                 expected_bass):
+        yield (__check_encode, label, e_root, e_interval, e_bass)
 
     # Non-chord bass notes *must* be explicitly named as extensions when
     #   STRICT_BASS_INTERVALS == True
@@ -154,17 +153,16 @@ def test_encode():
     # Otherwise, we can cut a little slack.
     mir_eval.chord.STRICT_BASS_INTERVALS = False
     yield (__check_encode, 'G:dim(4)/6', 7,
-                           [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
                            [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0], 9)
 
+
 def test_encode_many():
-    def __check_encode_many(labels, expected_roots, expected_qualities,
-                            expected_notes, expected_basses):
+    def __check_encode_many(labels, expected_roots, expected_intervals,
+                            expected_basses):
         ''' Does all of the logic for checking encode_many '''
-        roots, qualities, notes, basses = mir_eval.chord.encode_many(labels)
+        roots, intervals, basses = mir_eval.chord.encode_many(labels)
         assert np.all(roots == expected_roots)
-        assert np.all(qualities == expected_qualities)
-        assert np.all(notes == expected_notes)
+        assert np.all(intervals == expected_intervals)
         assert np.all(basses == expected_basses)
 
     labels = ['B:maj(*1,*3)/5',
@@ -173,13 +171,7 @@ def test_encode_many():
               'C:min',
               'C:min']
     expected_roots = [11, 11, -1, 0, 0]
-    expected_qualities = [
-        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-        [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]]
-    expected_notes = [
+    expected_intervals = [
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -187,8 +179,8 @@ def test_encode_many():
         [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]]
     expected_basses = [7, 7, -1, 0, 0]
 
-    yield (__check_encode_many, labels, expected_roots, expected_qualities,
-           expected_notes, expected_basses)
+    yield (__check_encode_many, labels, expected_roots, expected_intervals,
+           expected_basses)
 
 
 def __check_one_metric(metric, ref_label, est_label, score):
@@ -307,13 +299,12 @@ def test_triads_inv():
 
 
 def test_tetrads():
-    # TODO(ejhumphrey): Revisit how minmaj7's are mapped.
     ref_labels = ['C:min', 'C:maj', 'C:7', 'C:maj7', 'C:sus2',
                   'C:7/3', 'G:min', 'C:maj', 'C:min', 'C:min']
     est_labels = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2',
-                  'C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7'] # um..?
+                  'C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7']
     scores = [0.0, 0.0, 1.0, 1.0, 1.0,
-              1.0, 0.0, 0.0, 0.0, 1.0]
+              1.0, 0.0, 0.0, 0.0, 0.0]
 
     for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
         yield (__check_one_metric, mir_eval.chord.tetrads,
@@ -324,9 +315,9 @@ def test_tetrads():
 
 
 def test_tetrads_inv():
-    ref_labels = ['C:maj7/5', 'G:min', 'C:7/5', 'C:min/b3', 'C:min']
-    est_labels = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:minmaj7/7']
-    scores = [0.0, 0.0, 1.0, 0.0, 0.0]
+    ref_labels = ['C:maj7/5', 'G:min', 'C:7/5', 'C:min/b3', 'C:min9']
+    est_labels = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:min7']
+    scores = [0.0, 0.0, 1.0, 0.0, 1.0]
 
     for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
         yield (__check_one_metric, mir_eval.chord.tetrads_inv,

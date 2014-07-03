@@ -12,32 +12,33 @@ def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
         processing events which lack duration, such as beats or onsets.
 
         The annotation file may be either of two formats:
-        - Single-column.  Each line contains a single value, corresponding to the time of
-        the annotated event.
+         - Single-column.  Each line contains a single value, corresponding to the time of
+           the annotated event.
 
-        - Double-column.  Each line contains two values, separated by ``delimiter``: the
-        first contains the time of the annotated event, and the second contains its
-        label.
+         - Double-column.  Each line contains two values, separated by ``delimiter``: the
+           first contains the time of the annotated event, and the second contains its
+           label.
 
         :parameters:
-        - filename : str
-        Path to the annotation file
+         - filename : str
+            Path to the annotation file
 
-        - delimiter : str
-        Separator regular expression.
-        By default, lines will be split by any amount of whitespace ('\s+')
+         - delimiter : str
+            Separator regular expression.
+            By default, lines will be split by any amount of whitespace ('\s+')
 
-        - converter : function
-        Function to convert time-stamp data into numerics. Defaults to float().
+         - converter : function
+            Function to convert time-stamp data into numerics. Defaults to float().
 
-        - label_prefix : str
-        String to append to any synthetically generated labels
+         - label_prefix : str
+            String to append to any synthetically generated labels
 
         :returns:
-        - event_times : np.ndarray
-        array of event times (float)
-        - event_labels : list of str
-        list of corresponding event labels
+         - event_times : np.ndarray
+            array of event times (float)
+
+         - event_labels : list of str
+            list of corresponding event labels
         '''
 
     if converter is None:
@@ -80,33 +81,33 @@ def load_intervals(filename, delimiter=r'\s+', converter=None, label_prefix='__'
         activation.
 
         The annotation file may be either of two formats:
-        - Double-column.  Each line contains two values, separated by ``delimiter``,
-        corresponding to the start and end time annotated event.
+         - Double-column.  Each line contains two values, separated by ``delimiter``,
+           corresponding to the start and end time annotated event.
 
-        - Triple-column.  Each line contains three values, separated by ``delimiter``.
-        The first two values specify the start and end times, the last value specifies
-        the label for the event (e.g. "Verse" or "A:min").
+         - Triple-column.  Each line contains three values, separated by ``delimiter``.
+           The first two values specify the start and end times, the last value specifies
+           the label for the event (e.g. "Verse" or "A:min").
 
         :parameters:
-        - filename : str
-        Path to the annotation file
+          - filename : str
+              Path to the annotation file
 
-        - delimiter : str
-        Separator regular expression.
-        By default, lines will be split by any amount of whitespace ('\s+')
+          - delimiter : str
+              Separator regular expression.
+              By default, lines will be split by any amount of whitespace ('\s+')
 
-        - converter : function
-        Function to convert time-stamp data into numerics. Defaults to float().
+          - converter : function
+              Function to convert time-stamp data into numerics. Defaults to float().
 
-        - label_prefix : str
-        String to append to any synthetically generated labels
+          - label_prefix : str
+              String to append to any synthetically generated labels
 
         :returns:
-        - event_times : np.ndarray, shape=(n_events, 2)
-        array of event start and end times
+          - event_times : np.ndarray, shape=(n_events, 2)
+              array of event start and end times
 
-        - event_labels : list of str
-        list of corresponding event labels
+          - event_labels : list of str
+              list of corresponding event labels
         '''
 
     if converter is None:
@@ -147,24 +148,24 @@ def load_time_series(filename, delimiter=None):
         processing dense time series with timestamps and corresponding numeric values
 
         The annotation file must be of the following format:
-        - Double-column.  Each line contains two values, separated by ``delimiter``: the
-        first contains the timestamp, and the second contains its corresponding
-        numeric value.
+          - Double-column.  Each line contains two values, separated by ``delimiter``: the
+            first contains the timestamp, and the second contains its corresponding
+            numeric value.
 
         :parameters:
-        - filename : str
-        Path to the annotation file
+          - filename : str
+              Path to the annotation file
 
-        - delimiter : str
-        Column separator. By default, lines will be split by any amount of
-        whitespace, unless the file ending is .csv, in which case a comma ','
-        is used as the delimiter.
+          - delimiter : str
+              Column separator. By default, lines will be split by any amount of
+              whitespace, unless the file ending is .csv, in which case a comma ','
+              is used as the delimiter.
 
         :returns:
-        - times : np.ndarray
-        array of timestamps (float)
-        - values : np.ndarray
-        array of corresponding numeric values (float)
+          - times : np.ndarray
+              array of timestamps (float)
+          - values : np.ndarray
+              array of corresponding numeric values (float)
         '''
 
     # Note: unlike load_events, here we expect float data in both columns,
@@ -196,20 +197,25 @@ def load_patterns(filename):
     occurrence being a list of (onset, midi) pairs.
 
     The input file must be formatted as described in MIREX 2013:
-        http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_\
-            %26_Sections
+        http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_%26_Sections
 
-    :param filename: The input file path containing the patterns of a given
-        given piece using the MIREX 2013 format.
-    :type filename: str.
-    :returns: list -- the list of patterns, containing all their occurrences,
-        using the following format:
-            P = [pattern1, ..., patternN]
-            pattern = [occurrence1, ..., occurrenceM]
-            occurrence = [onset_midi1, ..., onset_midiO]
-            onset_midi = (onset_time, midi_number)
-        E.g.:
-            P = [[[(77.0, 67.0), (77.5, 77.0), ... ]]]
+    :params:
+      - filename : str
+          The input file path containing the patterns of a given
+          given piece using the MIREX 2013 format.
+
+    :returns: 
+       - list : list 
+           the list of patterns, containing all their occurrences,
+           using the following format::
+
+             P = [pattern1, ..., patternN]
+             pattern = [occurrence1, ..., occurrenceM]
+             occurrence = [onset_midi1, ..., onset_midiO]
+             onset_midi = (onset_time, midi_number)
+
+             E.g.:
+             P = [[[(77.0, 67.0), (77.5, 77.0), ... ]]]
     """
 
     def append_if_necessary(list, element):

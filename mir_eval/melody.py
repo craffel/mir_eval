@@ -94,12 +94,12 @@ def hz2cents(freq_hz, base_frequency=10.0):
     0 values are left in place.
 
     :parameters:
-        - freq_hz : ndarray
+        - freq_hz : np.ndarray
             Array of frequencies in Hz.
         - base_frequency : float
             Base frequency for conversion.
     :returns:
-        - cent : ndarray
+        - cent : np.ndarray
             Array of frequencies in cents, relative to base_frequency
     '''
     freq_cent = np.zeros(freq_hz.shape[0])
@@ -113,12 +113,12 @@ def freq_to_voicing(frequencies):
     '''Convert from an array of frequency values to frequency array + voice/unvoiced array
 
     :parameters:
-        - frequencies : ndarray
+        - frequencies : np.ndarray
             Array of frequencies.  A frequency <= 0 indicates "unvoiced".
     :returns:
-        - frequencies : ndarray
+        - frequencies : np.ndarray
             Array of frequencies, all >= 0.
-        - voiced : ndarray
+        - voiced : np.ndarray
             Boolean array, same length as frequencies, which indicates voiced or unvoiced
     '''
     return np.abs(frequencies), frequencies > 0
@@ -133,7 +133,7 @@ def constant_hop_timebase(hop, end_time):
         - end_time : float
             Time series will span [0, end_time]
     :returns:
-        - times : ndarray
+        - times : np.ndarray
             Generated timebase
     '''
     # Compute new timebase.  Rounding/linspace is to avoid float problems.
@@ -147,21 +147,21 @@ def resample_melody_series(times, frequencies, voicing, times_new, kind='linear'
     Maintains any zero ("unvoiced") values in frequencies.
 
     :parameters:
-        - times : ndarray
+        - times : np.ndarray
             Times of each frequency value
-        - frequencies : ndarray
+        - frequencies : np.ndarray
             Array of frequency values, >= 0
-        - voicing : ndarray
+        - voicing : np.ndarray
             Boolean array which indicates voiced or unvoiced
-        - times_new : ndarray
+        - times_new : np.ndarray
             Times to resample frequency and voicing sequences to
         - kind : str
             kind parameter to pass to scipy.interpolate.interp1d.
 
     :returns:
-        - frequencies_resampled : ndarray
+        - frequencies_resampled : np.ndarray
             Frequency array resampled to new timebase
-        - voicing_resampled : ndarray
+        - voicing_resampled : np.ndarray
             Boolean voicing array resampled to new timebase
     '''
     # Round to avoid floating point problems
@@ -205,13 +205,13 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
     but if it's voiced, this is the frequency estimate".
 
     :parameters:
-        - ref_time : ndarray
+        - ref_time : np.ndarray
             Time of each reference frequency value
-        - ref_freq : ndarray
+        - ref_freq : np.ndarray
             Array of reference frequency values
-        - est_time : ndarray
+        - est_time : np.ndarray
             Time of each estimated frequency value
-        - est_freq : ndarray
+        - est_freq : np.ndarray
             Array of estimated frequency values
         - base_frequency : float
             Base frequency in Hz for conversion to cents, default 10.0
@@ -221,13 +221,13 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
             kind parameter to pass to scipy.interpolate.interp1d.
 
     :returns:
-        - ref_voicing : ndarray
+        - ref_voicing : np.ndarray
             Resampled reference boolean voicing array
-        - est_voicing : ndarray
+        - est_voicing : np.ndarray
             Resampled estimated boolean voicing array
-        - ref_cent : ndarray
+        - ref_cent : np.ndarray
             Resampled reference frequency (cent) array
-        - est_cent : ndarray
+        - est_cent : np.ndarray
             Resampled estimated frequency (cent) array
     '''
     # Set default kwargs parameters
@@ -286,9 +286,9 @@ def voicing_measures(ref_voicing, est_voicing):
         >>> recall, false_alarm = mir_eval.melody.voicing_measures(ref_v, est_v)
 
     :parameters:
-        - ref_voicing : ndarray
+        - ref_voicing : np.ndarray
             Reference boolean voicing array
-        - est_voicing : ndarray
+        - est_voicing : np.ndarray
             Estimated boolean voicing array
 
     :returns:
@@ -347,13 +347,13 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
         >>> raw_pitch = mir_eval.melody.raw_pitch_accuracy(ref_v, est_v, ref_c, est_c)
 
     :parameters:
-        - ref_voicing : ndarray
+        - ref_voicing : np.ndarray
             Reference boolean voicing array
-        - est_voicing : ndarray
+        - est_voicing : np.ndarray
             Estimated boolean voicing array
-        - ref_cent : ndarray
+        - ref_cent : np.ndarray
             Reference pitch sequence in cents
-        - est_cent : ndarray
+        - est_cent : np.ndarray
             Estimate pitch sequence in cents
     :returns:
         - raw_pitch : float
@@ -395,13 +395,13 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
 
 
     :parameters:
-        - ref_voicing : ndarray
+        - ref_voicing : np.ndarray
             Reference boolean voicing array
-        - est_voicing : ndarray
+        - est_voicing : np.ndarray
             Estimated boolean voicing array
-        - ref_cent : ndarray
+        - ref_cent : np.ndarray
             Reference pitch sequence in cents
-        - est_cent : ndarray
+        - est_cent : np.ndarray
             Estimate pitch sequence in cents
 
     :returns:
@@ -443,13 +443,13 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
         >>> overall_accuracy = mir_eval.melody.overall_accuracy(ref_v, est_v, ref_c, est_c)
 
     :parameters:
-        - ref_voicing : ndarray
+        - ref_voicing : np.ndarray
             Reference boolean voicing array
-        - est_voicing : ndarray
+        - est_voicing : np.ndarray
             Estimated boolean voicing array
-        - ref_cent : ndarray
+        - ref_cent : np.ndarray
             Reference pitch sequence in cents
-        - est_cent : ndarray
+        - est_cent : np.ndarray
             Estimate pitch sequence in cents
 
     :returns:

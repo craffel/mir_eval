@@ -1,6 +1,7 @@
 # CREATED:2013-08-13 12:02:42 by Brian McFee <brm2132@columbia.edu>
 '''Structural segmentation evaluation, following the protocols of MIREX2012.
-    Frame clustering metrics:
+
+   Frame clustering metrics:
         - pairwise classification
         - adjusted rand index
         - mutual information
@@ -112,7 +113,7 @@ def pairwise(reference_intervals, reference_labels,
             If ``reference_intervals`` and ``estimated_intervals`` do not span the
             same time duration.
 
-    ..seealso:: mir_eval.util.adjust_intervals
+    .. seealso:: :func:`mir_eval.util.adjust_intervals`
     '''
 
     # Generate the cluster labels
@@ -196,7 +197,7 @@ def rand_index(reference_intervals, reference_labels,
             If ``reference_intervals`` and ``estimated_intervals`` do not span the
             same time duration.
 
-    ..seealso:: mir_eval.util.adjust_intervals
+    .. seealso:: :func:`mir_eval.util.adjust_intervals`
     '''
 
     # Generate the cluster labels
@@ -267,10 +268,10 @@ def ari(reference_intervals, reference_labels,
         - ARI : float > 0
             Adjusted Rand index between segmentations.
 
-    ..note::
+    .. note::
         It is assumed that ``intervals[-1]`` == length of song
 
-    ..note::
+    .. note::
         Segment intervals will be rounded down to the nearest multiple
         of frame_size.
     '''
@@ -311,27 +312,27 @@ def mutual_information(reference_intervals, reference_labels,
                                                                            est_intervals, est_labels)
 
     :parameters:
-    - reference_intervals : list-like, float
-        ground-truth segment boundary times (in seconds)
+      - reference_intervals : list-like, float
+          ground-truth segment boundary times (in seconds)
 
-    - estimated_intervals : list-like, float
-        estimated segment boundary times (in seconds)
+      - estimated_intervals : list-like, float
+          estimated segment boundary times (in seconds)
 
-    - frame_size : float > 0
-        length (in seconds) of frames for clustering
+      - frame_size : float > 0
+          length (in seconds) of frames for clustering
 
     :returns:
-    - MI : float >0
-        Mutual information between segmentations
-    - AMI : float
-        Adjusted mutual information between segmentations.
-    - NMI : float > 0
-        Normalize mutual information between segmentations
+      - MI : float > 0
+          Mutual information between segmentations
+      - AMI : float
+          Adjusted mutual information between segmentations.
+      - NMI : float > 0
+          Normalize mutual information between segmentations
 
-    ..note::
+    .. note::
         It is assumed that `intervals[-1] == length of song`
 
-    ..note::
+    .. note::
         Segment intervals will be rounded down to the nearest multiple
         of frame_size.
     '''
@@ -407,7 +408,7 @@ def nce(reference_intervals, reference_labels, estimated_intervals, estimated_la
         - S_F
             F-measure for (S_over, S_under)
 
-    ..note:: Towards quantitative measures of evaluating song segmentation.
+    .. note:: Towards quantitative measures of evaluating song segmentation.
         Lukashevich, H. ISMIR 2008.
     '''
 

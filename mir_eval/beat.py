@@ -1,12 +1,15 @@
 '''
 A variety of evaluation techniques for determining a beat tracker's accuracy
-Based on the methods described in
+
+Based on the methods described in:
     Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
     "Evaluation Methods for Musical Audio Beat Tracking Algorithms",
     Queen Mary University of London Technical Report C4DM-TR-09-06
     London, United Kingdom, 8 October 2009.
+
 See also the Beat Evaluation Toolbox:
     https://code.soundsoftware.ac.uk/projects/beat-evaluation/
+
 '''
 
 import numpy as np
@@ -19,13 +22,13 @@ def trim_beats(beats, min_beat_time=5.):
     '''Removes beats before min_beat_time.  A common preprocessing step.
 
     :parameters:
-        - beats : ndarray
+        - beats : np.ndarray
             Array of beat times in seconds.
         - min_beat_time : float
             Minimum beat time to allow, default 5
 
     :returns:
-        - beats_trimmed : ndarray
+        - beats_trimmed : np.ndarray
             Trimmed beat array.
     '''
     # Remove beats before min_beat_time
