@@ -13,6 +13,7 @@ import warnings
 
 from . import util
 
+
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
     look like valid segment times, and throws helpful errors if not.
@@ -27,7 +28,8 @@ def validate(metric):
             The function with the segment intervals are validated
     '''
     @functools.wraps(metric)
-    def metric_validated(reference_intervals, estimated_intervals, *args, **kwargs):
+    def metric_validated(reference_intervals, estimated_intervals,
+                         *args, **kwargs):
         '''Validate both reference and estimated intervals'''
         if reference_intervals.size == 0:
             warnings.warn("Reference intervals are empty.")
@@ -36,39 +38,52 @@ def validate(metric):
         for intervals in [reference_intervals, estimated_intervals]:
             util.validate_intervals(intervals)
 
-        return metric(reference_intervals, estimated_intervals, *args, **kwargs)
+        return metric(reference_intervals, estimated_intervals,
+                      *args, **kwargs)
 
     return metric_validated
 
+
 @validate
-def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, trim=False):
+def detection(reference_intervals, estimated_intervals,
+              window=0.5, beta=1.0, trim=False):
     '''Boundary detection hit-rate.
 
-    A hit is counted whenever an reference boundary is within ``window`` of a estimated
-    boundary.  Note that each boundary is matched at most once: this is achieved by computing
-    the size of a maximal matching between reference and estimated boundary points, subject
-    to the window constraint.
+    A hit is counted whenever an reference boundary is within ``window`` of a
+    estimated boundary.  Note that each boundary is matched at most once: this
+    is achieved by computing the size of a maximal matching between reference
+    and estimated boundary points, subject to the window constraint.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
+        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
         >>> # With 0.5s windowing
-        >>> P05, R05, F05 = mir_eval.boundary.detection(ref_intervals, est_intervals, window=0.5)
+        >>> P05, R05, F05 = mir_eval.boundary.detection(ref_intervals,
+                                                        est_intervals,
+                                                        window=0.5)
         >>> # With 3s windowing
-        >>> P3, R3, F3 = mir_eval.boundary.detection(ref_intervals, est_intervals, window=3)
+        >>> P3, R3, F3 = mir_eval.boundary.detection(ref_intervals,
+                                                     est_intervals,
+                                                     window=3)
         >>> # Ignoring hits for the beginning and end of track
-        >>> P, R, F = mir_eval.boundary.detection(ref_intervals, est_intervals, window=0.5, trim=True)
+        >>> P, R, F = mir_eval.boundary.detection(ref_intervals,
+                                                  est_intervals,
+                                                  window=0.5,
+                                                  trim=True)
 
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, as returned by `mir_eval.io.load_intervals`
+            reference segment intervals,
+            as returned by `mir_eval.io.load_intervals`
 
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, as returned by `mir_eval.io.load_intervals`
+            estimated segment intervals,
+            as returned by `mir_eval.io.load_intervals`
 
         - window : float > 0
-            size of the window of 'correctness' around ground-truth beats (in seconds)
+            size of the window of 'correctness' around ground-truth beats
+            (in seconds)
 
         - beta : float > 0
             weighting constant for F-measure.
@@ -101,32 +116,37 @@ def detection(reference_intervals, estimated_intervals, window=0.5, beta=1.0, tr
     if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
         return 0.0, 0.0, 0.0
 
-    matching    = util.match_events(reference_boundaries,
-                                    estimated_boundaries,
-                                    window)
+    matching = util.match_events(reference_boundaries,
+                                 estimated_boundaries,
+                                 window)
 
-    precision   = float(len(matching)) / len(estimated_boundaries)
-    recall      = float(len(matching)) / len(reference_boundaries)
+    precision = float(len(matching)) / len(estimated_boundaries)
+    recall = float(len(matching)) / len(reference_boundaries)
 
-    f_measure   = util.f_measure(precision, recall, beta=beta)
+    f_measure = util.f_measure(precision, recall, beta=beta)
 
     return precision, recall, f_measure
 
+
 @validate
 def deviation(reference_intervals, estimated_intervals, trim=False):
-    '''Compute the median deviations between reference and estimated boundary times.
+    '''Compute the median deviations between reference
+    and estimated boundary times.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('reference.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('estimate.lab')
-        >>> r_to_e, e_to_r = mir_eval.boundary.deviation(ref_intervals, est_intervals)
+        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
+        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> r_to_e, e_to_r = mir_eval.boundary.deviation(ref_intervals,
+                                                         est_intervals)
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, as returned by `mir_eval.io.load_intervals`
+            reference segment intervals,
+            as returned by `mir_eval.io.load_intervals`
 
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, as returned by `mir_eval.io.load_intervals`
+            estimated segment intervals,
+            as returned by `mir_eval.io.load_intervals`
 
         - trim : boolean
             if ``True``, the first and last intervals are ignored.
@@ -134,10 +154,12 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
 
     :returns:
         - reference_to_estimated : float
-            median time from each reference boundary to the closest estimated boundary
+            median time from each reference boundary to the
+            closest estimated boundary
 
         - estimated_to_reference : float
-            median time from each estimated boundary to the closest reference boundary
+            median time from each estimated boundary to the
+            closest reference boundary
     '''
 
     # Convert intervals to boundaries
@@ -153,7 +175,8 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
     if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
         return np.nan, np.nan
 
-    dist = np.abs( np.subtract.outer(reference_boundaries, estimated_boundaries) )
+    dist = np.abs(np.subtract.outer(reference_boundaries,
+                                    estimated_boundaries))
 
     estimated_to_reference = np.median(dist.min(axis=0))
     reference_to_estimated = np.median(dist.min(axis=1))
