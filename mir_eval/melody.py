@@ -514,9 +514,9 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
 
     cent_diff = np.abs(ref_cent - est_cent)
     correct_frames = (cent_diff[ref_voicing*est_voicing] < 50).sum()
-    overall_accuracy = (correct_frames + TN)/float(ref_cent.shape[0])
+    accuracy = (correct_frames + TN)/float(ref_cent.shape[0])
 
-    return overall_accuracy
+    return accuracy
 
 
 METRICS = collections.OrderedDict()
