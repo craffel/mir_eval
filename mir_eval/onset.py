@@ -5,11 +5,11 @@ Based in part on this script:
     https://github.com/CPJKU/onset_detection/blob/master/onset_evaluation.py
 '''
 
-import numpy as np
 import functools
 import collections
 from . import util
 import warnings
+
 
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
@@ -30,7 +30,8 @@ def validate(metric):
         '''
         Metric with input onset annotations validated
         '''
-        # If reference or estimated onsets are empty, warn because metric will be 0
+        # If reference or estimated onsets are empty, warn because metric will
+        # be 0
         if reference_onsets.size == 0:
             warnings.warn("Reference onsets are empty.")
         if estimated_onsets.size == 0:
@@ -39,6 +40,7 @@ def validate(metric):
             util.validate_events(onsets)
         return metric(reference_onsets, estimated_onsets, *args, **kwargs)
     return metric_validated
+
 
 @validate
 def f_measure(reference_onsets, estimated_onsets, window=.05):
@@ -49,7 +51,8 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     :usage:
         >>> reference_onsets = mir_eval.io.load_events('reference.txt')
         >>> estimated_onsets = mir_eval.io.load_events('estimated.txt')
-        >>> f_measure = mir_eval.onset.f_measure(reference_beats, estimated_beats)
+        >>> f_measure = mir_eval.onset.f_measure(reference_beats,
+                                                 estimated_beats)
 
     :parameters:
         - reference_onsets : np.ndarray
@@ -70,7 +73,8 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     # If either list is empty, return 0s
     if reference_onsets.size == 0 or estimated_onsets.size == 0:
         return 0., 0., 0.
-    # Compute the best-case matching between reference and estimated onset locations
+    # Compute the best-case matching between reference and estimated onset
+    # locations
     matching = util.match_events(reference_onsets,
                                  estimated_onsets,
                                  window)
