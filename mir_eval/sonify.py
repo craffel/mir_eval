@@ -5,6 +5,7 @@ All functions return a raw signal at the specified sampling rate.
 
 import numpy as np
 
+
 def clicks(times, fs, click=None, length=None):
     '''
     Returns a signal with the signal 'click' placed at each specified time
@@ -49,36 +50,38 @@ def clicks(times, fs, click=None, length=None):
         click_signal[start:end] = click
     return click_signal
 
+
 def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     '''
     Reverse synthesis of a time-frequency representation of a signal
 
     :inputs:
-        - gram : np.ndarray 
+        - gram : np.ndarray
             gram[n, m] is the magnitude of frequencies[n]
             from times[n] to times[n + 1]
-        - frequencies : np.ndarray 
+        - frequencies : np.ndarray
             array of size gram.shape[0] denoting the frequency of
             each row of gram
-        - times : np.ndarray 
+        - times : np.ndarray
             array of size gram.shape[1] denoting the start time of each
             column of gram
-        - fs : int 
+        - fs : int
             desired sampling rate of the output signal
         - function : function
-            function to use to synthesize notes, should be 2\pi-periodic
-        - length : int 
+            function to use to synthesize notes, should be 2pi-periodic
+        - length : int
             desired number of samples in the output signal,
             defaults to times[-1]*fs
     :outputs:
-        - output : np.ndarray 
+        - output : np.ndarray
             synthetized version of the piano roll
     '''
     # Default value for length
     if length is None:
         length = int(times[-1]*fs)
+
     def _fast_synthesize(frequency):
-        ''' A faster (approximte) way to synthesize a signal
+        ''' A faster (approximate) way to synthesize a signal
             synthesize a few periods then repeat that signal '''
         # Generate ten periods at this frequency
         ten_periods = int(10*fs*(1./frequency))
@@ -86,6 +89,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
         # Repeat the signal until it's of the desired length
         n_repeats = int(np.ceil(length/short_signal.shape[0]))
         return np.tile(short_signal, n_repeats)[:length]
+
     # Pre-allocate output signal
     output = np.zeros(length)
     for n, frequency in enumerate(frequencies):
