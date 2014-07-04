@@ -132,7 +132,7 @@ def _occurrence_intersection(occ_P, occ_Q):
     """Computes the intersection between two occurrences.
 
     :parameters:
-      - occ_P : list of tuples 
+      - occ_P : list of tuples
          (onset, midi) pairs representing the reference occurrence.
       - occ_Q : list
          second list of (onset, midi) tuples
@@ -159,7 +159,7 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
       - similarity_metric : str
           A string representing the metric to be used
           when computing the similarity matrix. Accepted values:
-            - "cardinality_score": 
+            - "cardinality_score":
                 Count of the intersection between occurrences.
     :returns:
       - sm : np.array
@@ -196,7 +196,7 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
 
     :params:
       - reference_patterns : list
-          The reference patterns using the format returned by 
+          The reference patterns using the format returned by
           :func:`mir_eval.input_output.load_patterns()`
       - estimated_patterns : list
           The estimated patterns in the same format
@@ -219,8 +219,8 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     k = 0                           # Number of patterns that match
 
     # If no patterns were provided, metric is zero
-    if (_n_onset_midi(reference_patterns) == 0 or
-        _n_onset_midi(estimated_patterns) == 0):
+    if _n_onset_midi(reference_patterns) == 0 or \
+       _n_onset_midi(estimated_patterns) == 0:
         return 0., 0., 0.
 
     # Find matches of the prototype patterns
@@ -257,7 +257,7 @@ def establishment_FPR(reference_patterns, estimated_patterns,
 
     :params:
       - reference_patterns : list
-           The reference patterns in the format returned by 
+           The reference patterns in the format returned by
            :func:`mir_eval.input_output.load_patterns()`
       - estimated_patterns : list
            The estimated patterns in the same format
@@ -266,7 +266,7 @@ def establishment_FPR(reference_patterns, estimated_patterns,
            A string representing the metric to be used
            when computing the similarity matrix. Accepted values:
 
-             - "cardinality_score": 
+             - "cardinality_score":
                  Count of the intersection between occurrences.
 
     :returns:
@@ -282,8 +282,8 @@ def establishment_FPR(reference_patterns, estimated_patterns,
     S = np.zeros((nP, nQ))          # Establishment matrix
 
     # If no patterns were provided, metric is zero
-    if (_n_onset_midi(reference_patterns) == 0 or
-        _n_onset_midi(estimated_patterns) == 0):
+    if _n_onset_midi(reference_patterns) == 0 or \
+       _n_onset_midi(estimated_patterns) == 0:
         return 0., 0., 0.
 
     for iP, ref_pattern in enumerate(reference_patterns):
@@ -312,7 +312,7 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
 
     :params:
        - reference_patterns : list
-           The reference patterns in the format returned by 
+           The reference patterns in the format returned by
            :func:`mir_eval.input_output.load_patterns()`
        - estimated_patterns : list
            The estimated patterns in the same format
@@ -323,7 +323,7 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
            A string representing the metric to be used
            when computing the similarity matrix. Accepted values:
 
-             - "cardinality_score": 
+             - "cardinality_score":
                  Count of the intersection between occurrences.
 
     :returns:
@@ -334,17 +334,19 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
         - recall : float
             The establishment Recall
     """
-    nP = len(reference_patterns)    # Number of elements in reference
-    nQ = len(estimated_patterns)    # Number of elements in estimation
-    O_PR = np.zeros((nP, nQ, 2))    # Occurrence matrix with Precision and
-                                    #   Recall in its last dimension
+    # Number of elements in reference
+    nP = len(reference_patterns)
+    # Number of elements in estimation
+    nQ = len(estimated_patterns)
+    # Occurrence matrix with Precision and recall in its last dimension
+    O_PR = np.zeros((nP, nQ, 2))
 
     # Index of the values that are greater than the specified threshold
     rel_idx = np.empty((0, 2), dtype=int)
 
     # If no patterns were provided, metric is zero
-    if (_n_onset_midi(reference_patterns) == 0 or
-        _n_onset_midi(estimated_patterns) == 0):
+    if _n_onset_midi(reference_patterns) == 0 or \
+       _n_onset_midi(estimated_patterns) == 0:
         return 0., 0., 0.
 
     for iP, ref_pattern in enumerate(reference_patterns):
@@ -385,9 +387,9 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
 
     :params:
       - reference_patterns : list
-           The reference patterns in the format returned by 
+           The reference patterns in the format returned by
            :func:`mir_eval.input_output.load_patterns()`
-      - estimated_patterns : list 
+      - estimated_patterns : list
            The estimated patterns in the same format
 
     :returns:
@@ -450,8 +452,8 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         return F
 
     # If no patterns were provided, metric is zero
-    if (_n_onset_midi(reference_patterns) == 0 or
-        _n_onset_midi(estimated_patterns) == 0):
+    if _n_onset_midi(reference_patterns) == 0 or \
+       _n_onset_midi(estimated_patterns) == 0:
         return 0., 0., 0.
 
     # Compute the second layer (it includes the first layer)
@@ -480,9 +482,9 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
 
     :params:
       - reference_patterns : list
-           The reference patterns in the format returned by 
+           The reference patterns in the format returned by
            :func:`mir_eval.input_output.load_patterns()`
-      - estimated_patterns : list 
+      - estimated_patterns : list
            The estimated patterns in the same format
       - n : int
            Number of patterns to consider from the estimated results, in
@@ -494,8 +496,8 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
     """
 
     # If no patterns were provided, metric is zero
-    if (_n_onset_midi(reference_patterns) == 0 or
-        _n_onset_midi(estimated_patterns) == 0):
+    if _n_onset_midi(reference_patterns) == 0 or \
+       _n_onset_midi(estimated_patterns) == 0:
         return 0., 0., 0.
 
     # Get only the first n patterns from the estimated results
@@ -523,9 +525,9 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
 
     :params:
       - reference_patterns : list
-           The reference patterns in the format returned by 
+           The reference patterns in the format returned by
            :func:`mir_eval.input_output.load_patterns()`
-      - estimated_patterns : list 
+      - estimated_patterns : list
            The estimated patterns in the same format
       - n : int
            Number of patterns to consider from the estimated results, in
@@ -537,8 +539,8 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
     """
 
     # If no patterns were provided, metric is zero
-    if (_n_onset_midi(reference_patterns) == 0 or
-        _n_onset_midi(estimated_patterns) == 0):
+    if _n_onset_midi(reference_patterns) == 0 or \
+       _n_onset_midi(estimated_patterns) == 0:
         return 0., 0., 0.
 
     # Get only the first n patterns from the estimated results
