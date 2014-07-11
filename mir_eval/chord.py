@@ -100,6 +100,8 @@ from mir_eval import util
 BITMAP_LENGTH = 12
 NO_CHORD = "N"
 NO_CHORD_ENCODED = -1, np.array([0]*BITMAP_LENGTH), -1
+X_CHORD = "X"
+X_CHORD_ENCODED = -1, np.array([-1]*BITMAP_LENGTH), -1
 # See Line 445
 STRICT_BASS_INTERVALS = False
 
@@ -234,7 +236,7 @@ QUALITIES = {
     'min7':    [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
     'minmaj7': [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
     'maj6':    [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
-    'min6':    [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+    'min6':    [1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0],
     'dim7':    [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
     'hdim7':   [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
     'maj9':    [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
@@ -249,6 +251,8 @@ QUALITIES = {
     'min13':   [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
     '13':      [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
     'b13':     [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    '1':       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    '5':       [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
     '':        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
 
@@ -466,6 +470,8 @@ def encode(chord_label, reduce_extended_chords=False):
 
     if chord_label == NO_CHORD:
         return NO_CHORD_ENCODED
+    if chord_label == X_CHORD:
+        return X_CHORD_ENCODED
     root, quality, scale_degrees, bass = split(
         chord_label, reduce_extended_chords=reduce_extended_chords)
 
