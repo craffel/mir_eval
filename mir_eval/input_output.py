@@ -112,8 +112,8 @@ def load_intervals(filename, delimiter=r'\s+', converter=None, label_prefix='__'
     if converter is None:
         converter = float
 
-    times   = []
-    labels  = []
+    times  = []
+    labels = []
 
     splitter = re.compile(delimiter)
 
@@ -124,13 +124,14 @@ def load_intervals(filename, delimiter=r'\s+', converter=None, label_prefix='__'
             if len(data) == 2:
                 times.append([converter(data[0]), converter(data[1])])
                 labels.append('%s%d' % (label_prefix, row))
-
             elif len(data) == 3:
                 times.append([converter(data[0]), converter(data[1])])
                 labels.append(data[2])
-
+            elif line == '\n':
+                continue
             else:
-                raise ValueError('parse error %s:%d:\n%s' % (filename, row, line))
+                raise ValueError("parse error in '%s' at line %d: "
+                                 "\n%s" % (filename, row, line))
 
     times = np.asarray(times)
 
