@@ -16,6 +16,7 @@ import collections
 import itertools
 import warnings
 
+
 def validate(metric):
     '''Decorator which checks that the input data to a metric
     are valid, and throws helpful errors if not.
@@ -31,7 +32,8 @@ def validate(metric):
     '''
     # Retain docstring, etc
     @functools.wraps(metric)
-    def metric_validated(reference_sources, estimated_sources, *args, **kwargs):
+    def metric_validated(reference_sources, estimated_sources,
+                         *args, **kwargs):
         '''
         Metric with input validated
         '''
@@ -42,60 +44,66 @@ def validate(metric):
             reference_sources = reference_sources[np.newaxis, :]
 
         if reference_sources.shape != estimated_sources.shape:
-            raise ValueError('The shape of estimated sources and the true sources '
-                             'should match.  reference_sources.shape = {}, '
-                             'estimated_sources = {}'.format(reference_sources.shape,
-                                                             estimated_sources.shape))
+            raise ValueError('The shape of estimated sources and the true '
+                             'sources should match.  reference_sources.shape '
+                             '= {}, estimated_sources '
+                             '= {}'.format(reference_sources.shape,
+                                           estimated_sources.shape))
 
         if reference_sources.size == 0:
-            warnings.warn("reference_sources is empty, should be of size (nsrc, nsample).  "
-                          "sdr, sir, sar, and perm will all be empty np.ndarrays")
+            warnings.warn("reference_sources is empty, should be of size "
+                          "(nsrc, nsample).  sdr, sir, sar, and perm will all "
+                          "be empty np.ndarrays")
         if estimated_sources.size == 0:
-            warnings.warn("estimated_sources is empty, should be of size (nsrc, nsample).  "
-                          "sdr, sir, sar, and perm will all be empty np.ndarrays")
+            warnings.warn("estimated_sources is empty, should be of size "
+                          "(nsrc, nsample).  sdr, sir, sar, and perm will all "
+                          "be empty np.ndarrays")
 
         return metric(reference_sources, estimated_sources, *args, **kwargs)
     return metric_validated
 
+
 @validate
 def bss_eval_sources(reference_sources, estimated_sources):
-    '''BSS_EVAL_SOURCES
+    '''
         MATLAB translation of BSS_EVAL Toolbox
 
         Ordering and measurement of the separation quality for estimated source
         signals in terms of filtered true source, interference and artifacts.
 
         The decomposition allows a time-invariant filter distortion of length
-        512, as described in Section III.B of the reference below.
+        512, as described in Section III.B of:
+
+          Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
+          measurement in blind audio source separation," IEEE Trans. on Audio,
+          Speech and Language Processing, 14(4):1462-1469, 2006.
 
     :usage:
-        >>> # reference_sources[n] should be an ndarray of samples of the n'th reference source
-        >>> # estimated_sources[n] should be the same for the n'th estimated source
-        >>> sdr, sir, sar, perm = mir_eval.separation.bss_eval_sources(reference_sources,
-                                                                       estimated_sources)
+        >>> # reference_sources[n] should be an ndarray of samples of the
+        >>> # n'th reference source
+        >>> # estimated_sources[n] should be the same for the n'th estimated
+        >>> # source
+        >>> (sdr, sir, sar,
+             perm) = mir_eval.separation.bss_eval_sources(reference_sources,
+                                                          estimated_sources)
 
     :parameters:
-        - reference_sources: ndarray
-            (nsrc, nsampl) matrix containing true sources
-        - estimated_sources: ndarray
-            (nsrc, nsampl) matrix containing estimated sources
+        - reference_sources : np.ndarray, shape=(nsrc, nsampl)
+            matrix containing true sources
+        - estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+            matrix containing estimated sources
 
     :returns:
-        - sdr: ndarray
-            (nsrc, ) vector of Signal to Distortion Ratios (SDR)
-        - sir: ndarray
-            (nsrc, ) vector of Source to Interference Ratios (SIR)
-        - sar: ndarray
-            (nsrc, ) vector of Sources to Artifacts Ratios (SAR)
-        - perm: ndarray
-            (nsrc, ) vector containing the best ordering of estimated sources in
+        - sdr : np.ndarray, shape=(nsrc,)
+            vector of Signal to Distortion Ratios (SDR)
+        - sir : np.ndarray, shape=(nsrc,)
+            vector of Source to Interference Ratios (SIR)
+        - sar : np.ndarray, shape=(nsrc,)
+            vector of Sources to Artifacts Ratios (SAR)
+        - perm : np.ndarray, shape=(nsrc,)
+            vector containing the best ordering of estimated sources in
             the mean SIR sense (estimated source number perm[j] corresponds to
             true source number j)
-
-    Reference:
-        Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
-        measurement in blind audio source separation," IEEE Trans. on Audio,
-        Speech and Language Processing, 14(4):1462-1469, 2006.
 
     '''
 
@@ -112,10 +120,11 @@ def bss_eval_sources(reference_sources, estimated_sources):
     for jest in xrange(nsrc):
         for jtrue in xrange(nsrc):
             s_true, e_spat, e_interf, e_artif = \
-                    _bss_decomp_mtifilt(reference_sources, estimated_sources[jest],
-                                        jtrue, 512)
+                _bss_decomp_mtifilt(reference_sources,
+                                    estimated_sources[jest],
+                                    jtrue, 512)
             sdr[jest, jtrue], sir[jest, jtrue], sar[jest, jtrue] = \
-                    _bss_source_crit(s_true, e_spat, e_interf, e_artif)
+                _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
     # select the best ordering
     perms = list(itertools.permutations(xrange(nsrc)))
@@ -136,14 +145,15 @@ def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
     images using multichannel time-invariant filters.
     '''
     nsampl = estimated_source.size
-    ## decomposition ##
+    # decomposition
     # true source image
     s_true = np.hstack((reference_sources[j], np.zeros(flen - 1)))
     # spatial (or filtering) distortion
     e_spat = _project(reference_sources[j, np.newaxis, :], estimated_source,
                       flen) - s_true
     # interference
-    e_interf = _project(reference_sources, estimated_source, flen) - s_true - e_spat
+    e_interf = _project(reference_sources,
+                        estimated_source, flen) - s_true - e_spat
     # artifacts
     e_artif = -s_true - e_spat - e_interf
     e_artif[:nsampl] += estimated_source
@@ -157,9 +167,10 @@ def _project(reference_sources, estimated_source, flen):
     '''
     nsrc, nsampl = reference_sources.shape
 
-    ## computing coefficients of least squares problem via FFT ##
+    # computing coefficients of least squares problem via FFT ##
     # zero padding and FFT of input data
-    reference_sources = np.hstack((reference_sources, np.zeros((nsrc, flen - 1))))
+    reference_sources = np.hstack((reference_sources,
+                                   np.zeros((nsrc, flen - 1))))
     estimated_source = np.hstack((estimated_source, np.zeros(flen - 1)))
     n_fft = int(2**np.ceil(np.log2(nsampl + flen - 1)))
     sf = np.fft.fft(reference_sources, n=n_fft, axis=1)
@@ -171,17 +182,18 @@ def _project(reference_sources, estimated_source, flen):
             ssf = sf[i] * np.conj(sf[j])
             ssf = np.real(np.fft.ifft(ssf))
             ss = toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])),
-                                       r=ssf[:flen])
+                          r=ssf[:flen])
             G[i * flen: (i+1) * flen, j * flen: (j+1) * flen] = ss
             G[j * flen: (j+1) * flen, i * flen: (i+1) * flen] = ss.T
-    # inner products between estimated_source and delayed versions of reference_sources
+    # inner products between estimated_source and delayed versions of
+    # reference_sources
     D = np.zeros(nsrc * flen)
     for i in xrange(nsrc):
         ssef = sf[i] * np.conj(sef)
         ssef = np.real(np.fft.ifft(ssef))
         D[i * flen: (i+1) * flen] = np.hstack((ssef[0], ssef[-1:-flen:-1]))
 
-    ## Computing projection ##
+    # Computing projection
     # Distortion filters
     try:
         C = np.linalg.solve(G, D).reshape(flen, nsrc, order='F')
