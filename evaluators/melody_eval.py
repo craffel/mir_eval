@@ -60,9 +60,6 @@ def evaluate(reference_file, estimated_file, hop=None):
          interpolation of the original frequency values converted to a cent
          scale.
     '''
-    # check if a hop size was specified, if not set to default
-    if hop is None:
-        hop = 0.01
     # load the data
     ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
     est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
