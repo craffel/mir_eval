@@ -90,7 +90,7 @@ into the performance and, ultimately, the behaviour of a computational system.
 '''
 
 import numpy as np
-import functools
+import decorator
 import warnings
 import collections
 
@@ -602,6 +602,7 @@ def rotate_bass_to_root(bass, chord_root):
 
 
 # --- Comparison Routines ---
+@decorator.decorator
 def validate(comparison):
     '''Decorator which checks that the input annotations to a comparison
     function look like valid chord labels.
@@ -615,7 +616,6 @@ def validate(comparison):
         - comparison_validated : function
             The function with the labels validated.
     '''
-    @functools.wraps(comparison)
     def comparison_validated(reference_labels, estimated_labels, intervals):
         '''Comparison with labels validated.'''
         N = len(reference_labels)
@@ -650,11 +650,11 @@ def validate(comparison):
     return comparison_validated
 
 
+@decorator.decorator
 def score(comparator):
     '''
     Decorator to convert a comparator into a metric function.
     '''
-    @functools.wraps(comparator)
     def metric(reference_labels, estimated_labels, intervals):
         '''
         Score wrapper for a comparator.

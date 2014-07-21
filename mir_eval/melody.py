@@ -10,11 +10,12 @@ IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 
 import numpy as np
 import scipy.interpolate
-import functools
+import decorator
 import collections
 import warnings
 
 
+@decorator.decorator
 def validate_voicing(metric):
     '''Decorator which checks that voicing inputs to a metric
     are in the correct format.
@@ -29,7 +30,6 @@ def validate_voicing(metric):
             The function with the beat times validated
     '''
     # Retain docstring, etc
-    @functools.wraps(metric)
     def metric_validated(ref_voicing, est_voicing, *args, **kwargs):
         '''
         Metric with voicing arrays validated.
@@ -55,6 +55,7 @@ def validate_voicing(metric):
     return metric_validated
 
 
+@decorator.decorator
 def validate(metric):
     '''Decorator which checks that voicing and frequency arrays are well-formed.
     To be used in conjunction with validate_voicing
@@ -69,7 +70,6 @@ def validate(metric):
             The function with the beat times validated
     '''
     # Retain docstring, etc
-    @functools.wraps(metric)
     def metric_validated(ref_voicing,
                          est_voicing,
                          ref_cent,

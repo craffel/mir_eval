@@ -78,7 +78,7 @@ Written by Oriol Nieto (oriol@nyu.edu), 2014
 """
 
 
-import functools
+import decorator
 import numpy as np
 from . import util
 import warnings
@@ -90,6 +90,7 @@ def _n_onset_midi(patterns):
     return len([o_m for pat in patterns for occ in pat for o_m in occ])
 
 
+@decorator.decorator
 def validate(metric):
     """Decorator which checks that the input annotations to a metric
     look like valid pattern lists, and throws helpful errors if not.
@@ -104,7 +105,6 @@ def validate(metric):
             The function with the pattern lists validated.
     """
     # Retain docstring, etc
-    @functools.wraps(metric)
     def metric_validated(reference_patterns, estimated_patterns, *args,
                          **kwargs):
         """ Metric with input pattern annotations validated.

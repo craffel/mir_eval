@@ -11,12 +11,13 @@ Source separation evaluation:
 import numpy as np
 from scipy.linalg import toeplitz
 from scipy.signal import fftconvolve
-import functools
+import decorator
 import collections
 import itertools
 import warnings
 
 
+@decorator.decorator
 def validate(metric):
     '''Decorator which checks that the input data to a metric
     are valid, and throws helpful errors if not.
@@ -31,7 +32,6 @@ def validate(metric):
             The function with the onset locations validated
     '''
     # Retain docstring, etc
-    @functools.wraps(metric)
     def metric_validated(reference_sources, estimated_sources,
                          *args, **kwargs):
         '''

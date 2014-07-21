@@ -13,7 +13,7 @@ See also the Beat Evaluation Toolbox:
 '''
 
 import numpy as np
-import functools
+import decorator
 import collections
 from . import util
 import warnings
@@ -36,6 +36,8 @@ def trim_beats(beats, min_beat_time=5.):
     return beats[beats >= min_beat_time]
 
 
+# Retain docstring, etc
+@decorator.decorator
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
     look like valid beat time arrays, and throws helpful errors if not.
@@ -49,8 +51,6 @@ def validate(metric):
         - metric_validated : function
             The function with the beat times validated
     '''
-    # Retain docstring, etc
-    @functools.wraps(metric)
     def metric_validated(reference_beats, estimated_beats, *args, **kwargs):
         '''
         Metric with input beat annotations validated

@@ -8,7 +8,7 @@
         - normalized conditional entropy
 '''
 
-import functools
+import decorator
 import numpy as np
 import scipy.stats
 import sklearn.metrics.cluster as skmetrics
@@ -18,6 +18,7 @@ import warnings
 from . import util
 
 
+@decorator.decorator
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
     look like valid segment times, and throws helpful errors if not.
@@ -32,7 +33,6 @@ def validate(metric):
         - metric_validated : function
             The function with the segment intervals are validated
     '''
-    @functools.wraps(metric)
     def metric_validated(reference_intervals, reference_labels,
                          estimated_intervals, estimated_labels,
                          *args, **kwargs):

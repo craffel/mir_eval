@@ -5,12 +5,13 @@ Based in part on this script:
     https://github.com/CPJKU/onset_detection/blob/master/onset_evaluation.py
 '''
 
-import functools
+import decorator
 import collections
 from . import util
 import warnings
 
 
+@decorator.decorator
 def validate(metric):
     '''Decorator which checks that the input annotations to a metric
     look like valid onset time arrays, and throws helpful errors if not.
@@ -25,7 +26,6 @@ def validate(metric):
             The function with the onset locations validated
     '''
     # Retain docstring, etc
-    @functools.wraps(metric)
     def metric_validated(reference_onsets, estimated_onsets, *args, **kwargs):
         '''
         Metric with input onset annotations validated
