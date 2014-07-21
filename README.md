@@ -9,3 +9,5 @@ Dependencies:
 * [Scipy/Numpy](http://www.scipy.org/)
 
 * [Scikit-learn](http://scikit-learn.org/) for segmentation metrics
+
+* [decorator](https://pypi.python.org/pypi/decorator)
