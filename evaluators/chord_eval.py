@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''Compute chord evaluation metrics
 
 
