@@ -14,6 +14,7 @@ from collections import OrderedDict
 
 import mir_eval
 
+
 def evaluate(reference_file, estimated_file):
     '''Load data and perform the evaluation'''
 
@@ -32,26 +33,29 @@ def evaluate(reference_file, estimated_file):
 
     return scores
 
+
 def print_evaluation(estimated_file, scores):
     # And print them
     print os.path.basename(estimated_file)
     for key, value in scores.iteritems():
-        print '\t{} : {:.3f}'.format(key, value)
+        print '\t%11s:\t%0.3f' % (key, value)
 
     pass
+
 
 def process_arguments():
     '''Argparse function to get the program parameters'''
 
-    parser = argparse.ArgumentParser(description='mir_eval onset detection evaluation')
+    parser = argparse.ArgumentParser(description='mir_eval onset detection '
+                                                 'evaluation')
 
-    parser.add_argument(    'reference_file',
-                            action      =   'store',
-                            help        =   'path to the reference annotation file')
+    parser.add_argument('reference_file',
+                        action='store',
+                        help='path to the reference annotation file')
 
-    parser.add_argument(    'estimated_file',
-                            action      =   'store',
-                            help        =   'path to the estimated annotation file')
+    parser.add_argument('estimated_file',
+                        action='store',
+                        help='path to the estimated annotation file')
 
     return vars(parser.parse_args(sys.argv[1:]))
 
