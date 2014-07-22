@@ -18,6 +18,7 @@ import numpy as np
 
 import mir_eval
 
+
 def load_wav(path):
     ''' Wrapper around scipy.io.wavfile for reading a wav '''
     fs, audio_data = scipy.io.wavfile.read(path)
@@ -27,6 +28,7 @@ def load_wav(path):
     assert audio_data.ndim == 1
     return audio_data, fs
 
+
 def evaluate(reference_directory, estimated_directory):
     '''Load data and perform the evaluation'''
 
@@ -34,14 +36,16 @@ def evaluate(reference_directory, estimated_directory):
     estimated_data = []
     global_fs = None
     # Load in each reference file in the supplied dir
-    for reference_file in glob.glob(os.path.join(reference_directory, '*.wav')):
+    for reference_file in glob.glob(os.path.join(reference_directory,
+                                                 '*.wav')):
         audio_data, fs = load_wav(reference_file)
         # Make sure fs is the same for all files
         assert (global_fs is None or fs == global_fs)
         global_fs = fs
         reference_data.append(audio_data)
 
-    for estimated_file in glob.glob(os.path.join(estimated_directory, '*.wav')):
+    for estimated_file in glob.glob(os.path.join(estimated_directory,
+                                                 '*.wav')):
         audio_data, fs = load_wav(estimated_file)
         assert (global_fs is None or fs == global_fs)
         global_fs = fs
@@ -62,6 +66,7 @@ def evaluate(reference_directory, estimated_directory):
 
     return scores
 
+
 def print_evaluation(estimated_file, scores):
     # And print them
     print os.path.basename(estimated_file)
@@ -70,18 +75,22 @@ def print_evaluation(estimated_file, scores):
 
     pass
 
+
 def process_arguments():
     '''Argparse function to get the program parameters'''
 
-    parser = argparse.ArgumentParser(description='mir_eval source separation evaluation')
+    parser = argparse.ArgumentParser(description='mir_eval source separation '
+                                                 'evaluation')
 
     parser.add_argument('reference_directory',
-                        action = 'store',
-                        help = 'path to directory containing reference source .wav files')
+                        action='store',
+                        help='path to directory containing reference source '
+                               '.wav files')
 
     parser.add_argument('estimated_directory',
-                        action = 'store',
-                        help = 'path to directory containing estimated source .wav files')
+                        action='store',
+                        help='path to directory containing estimated source '
+                             '.wav files')
 
     return vars(parser.parse_args(sys.argv[1:]))
 
