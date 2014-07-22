@@ -25,6 +25,5 @@ setup(
         'numpy >= 1.7.0',
         'scipy',
         'scikit-learn',
-        'decorator',
     ],
 )
