@@ -7,44 +7,33 @@
 '''
 
 import numpy as np
-import decorator
 import collections
 import warnings
 
 from . import util
 
 
-@decorator.decorator
-def validate(metric):
-    '''Decorator which checks that the input annotations to a metric
-    look like valid segment times, and throws helpful errors if not.
+def validate(reference_intervals, estimated_intervals, *args, **kwargs):
+    '''Checks that the input annotations to a metric look like valid segment
+    times, and throws helpful errors if not.
 
     :parameters:
-        - metric : function
-            Evaluation metric function.  First two arguments must be
-            reference_intervals and estimated_intervals.
+        - reference_intervals : np.ndarray, shape=(n, 2)
+            reference segment intervals,
+            as returned by `mir_eval.io.load_intervals`
 
-    :returns:
-        - metric_validated : function
-            The function with the segment intervals are validated
+        - estimated_intervals : np.ndarray, shape=(m, 2)
+            estimated segment intervals,
+            as returned by `mir_eval.io.load_intervals`
     '''
-    def metric_validated(reference_intervals, estimated_intervals,
-                         *args, **kwargs):
-        '''Validate both reference and estimated intervals'''
-        if reference_intervals.size == 0:
-            warnings.warn("Reference intervals are empty.")
-        if estimated_intervals.size == 0:
-            warnings.warn("Estimated intervals are empty.")
-        for intervals in [reference_intervals, estimated_intervals]:
-            util.validate_intervals(intervals)
-
-        return metric(reference_intervals, estimated_intervals,
-                      *args, **kwargs)
-
-    return metric_validated
+    if reference_intervals.size == 0:
+        warnings.warn("Reference intervals are empty.")
+    if estimated_intervals.size == 0:
+        warnings.warn("Estimated intervals are empty.")
+    for intervals in [reference_intervals, estimated_intervals]:
+        util.validate_intervals(intervals)
 
 
-@validate
 def detection(reference_intervals, estimated_intervals,
               window=0.5, beta=1.0, trim=False):
     '''Boundary detection hit-rate.
@@ -103,6 +92,8 @@ def detection(reference_intervals, estimated_intervals,
             F-measure (weighted harmonic mean of ``precision`` and ``recall``)
     '''
 
+    validate(reference_intervals, estimated_intervals)
+
     # Convert intervals to boundaries
     reference_boundaries = util.intervals_to_boundaries(reference_intervals)
     estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)
@@ -128,7 +119,6 @@ def detection(reference_intervals, estimated_intervals,
     return precision, recall, f_measure
 
 
-@validate
 def deviation(reference_intervals, estimated_intervals, trim=False):
     '''Compute the median deviations between reference
     and estimated boundary times.
@@ -161,6 +151,8 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
             median time from each estimated boundary to the
             closest reference boundary
     '''
+
+    validate(reference_intervals, estimated_intervals)
 
     # Convert intervals to boundaries
     reference_boundaries = util.intervals_to_boundaries(reference_intervals)

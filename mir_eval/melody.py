@@ -10,86 +10,61 @@ IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 
 import numpy as np
 import scipy.interpolate
-import decorator
 import collections
 import warnings
 
 
-@decorator.decorator
-def validate_voicing(metric):
-    '''Decorator which checks that voicing inputs to a metric
-    are in the correct format.
+def validate_voicing(ref_voicing, est_voicing):
+    '''Checks that voicing inputs to a metric are in the correct format.
 
     :parameters:
-        - metric : function
-            Evaluation metric function.  First two arguments must be
-            ref_voicing and est_voicing.
-
-    :returns:
-        - metric_validated : function
-            The function with the beat times validated
+        - ref_voicing : np.ndarray
+            Reference boolean voicing array
+        - est_voicing : np.ndarray
+            Estimated boolean voicing array
     '''
-    # Retain docstring, etc
-    def metric_validated(ref_voicing, est_voicing, *args, **kwargs):
-        '''
-        Metric with voicing arrays validated.
-        '''
-        if ref_voicing.size == 0:
-            warnings.warn("Reference voicing array is empty.")
-        if est_voicing.size == 0:
-            warnings.warn("Estimated voicing array is empty.")
-        if ref_voicing.sum() == 0:
-            warnings.warn("Reference melody has no voiced frames.")
-        if est_voicing.sum() == 0:
-            warnings.warn("Estimated melody has no voiced frames.")
-        # Make sure they're the same length
-        if ref_voicing.shape[0] != est_voicing.shape[0]:
-            raise ValueError('Reference and estimated voicing arrays should '
-                             'be the same length.')
-        for voicing in [ref_voicing, est_voicing]:
-            # Make sure they're (effectively) boolean
-            if np.logical_and(voicing != 0, voicing != 1).any():
-                raise ValueError('Voicing arrays must be boolean.')
-        return metric(ref_voicing.astype(bool), est_voicing.astype(bool),
-                      *args, **kwargs)
-    return metric_validated
+    if ref_voicing.size == 0:
+        warnings.warn("Reference voicing array is empty.")
+    if est_voicing.size == 0:
+        warnings.warn("Estimated voicing array is empty.")
+    if ref_voicing.sum() == 0:
+        warnings.warn("Reference melody has no voiced frames.")
+    if est_voicing.sum() == 0:
+        warnings.warn("Estimated melody has no voiced frames.")
+    # Make sure they're the same length
+    if ref_voicing.shape[0] != est_voicing.shape[0]:
+        raise ValueError('Reference and estimated voicing arrays should '
+                         'be the same length.')
+    for voicing in [ref_voicing, est_voicing]:
+        # Make sure they're (effectively) boolean
+        if np.logical_and(voicing != 0, voicing != 1).any():
+            raise ValueError('Voicing arrays must be boolean.')
 
 
-@decorator.decorator
-def validate(metric):
-    '''Decorator which checks that voicing and frequency arrays are well-formed.
-    To be used in conjunction with validate_voicing
+def validate(ref_voicing, est_voicing, ref_cent, est_cent):
+    '''Checks that voicing and frequency arrays are well-formed.  To be used in
+    conjunction with validate_voicing
 
     :parameters:
-        - metric : function
-            Evaluation metric function.  First four arguments must be
-            ref_voicing, est_voicing, ref_cent, est_cent
-
-    :returns:
-        - metric_validated : function
-            The function with the beat times validated
+        - ref_voicing : np.ndarray
+            Reference boolean voicing array
+        - est_voicing : np.ndarray
+            Estimated boolean voicing array
+        - ref_cent : np.ndarray
+            Reference pitch sequence in cents
+        - est_cent : np.ndarray
+            Estimate pitch sequence in cents
     '''
-    # Retain docstring, etc
-    def metric_validated(ref_voicing,
-                         est_voicing,
-                         ref_cent,
-                         est_cent, *args, **kwargs):
-        '''
-        Metric with voicing/frequency arrays validated.
-        '''
-        if ref_cent.size == 0:
-            warnings.warn("Reference frequency array is empty.")
-        if est_cent.size == 0:
-            warnings.warn("Estimated frequency array is empty.")
-        # Make sure they're the same length
-        if ref_voicing.shape[0] != ref_cent.shape[0] or \
-           est_voicing.shape[0] != est_cent.shape[0] or \
-           ref_cent.shape[0] != est_cent.shape[0]:
-            raise ValueError('All voicing and frequency arrays must have the '
-                             'same length.')
-        return metric(ref_voicing, est_voicing,
-                      ref_cent, est_cent, *args, **kwargs)
-    return metric_validated
+    if ref_cent.size == 0:
+        warnings.warn("Reference frequency array is empty.")
+    if est_cent.size == 0:
+        warnings.warn("Estimated frequency array is empty.")
+    # Make sure they're the same length
+    if ref_voicing.shape[0] != ref_cent.shape[0] or \
+       est_voicing.shape[0] != est_cent.shape[0] or \
+       ref_cent.shape[0] != est_cent.shape[0]:
+        raise ValueError('All voicing and frequency arrays must have the '
+                         'same length.')
 
 
 def hz2cents(freq_hz, base_frequency=10.0):
@@ -294,10 +269,10 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
         est_cent = est_cent[:ref_cent.shape[0]]
         est_voicing = est_voicing[:ref_voicing.shape[0]]
 
-    return ref_voicing, est_voicing, ref_cent, est_cent
+    return (ref_voicing.astype(bool), est_voicing.astype(bool),
+            ref_cent, est_cent)
 
 
-@validate_voicing
 def voicing_measures(ref_voicing, est_voicing):
     ''' Compute the voicing recall and false alarm rates given two voicing
     indicator sequences, one as reference (truth) and the other as the estimate
@@ -328,7 +303,9 @@ def voicing_measures(ref_voicing, est_voicing):
             Voicing false alarm rate, the fraction of unvoiced frames in ref
             indicated as voiced in est
     '''
-
+    validate_voicing(ref_voicing, est_voicing)
+    ref_voicing = ref_voicing.astype(bool)
+    est_voicing = est_voicing.astype(bool)
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0:
         return 0.
@@ -363,8 +340,6 @@ def voicing_measures(ref_voicing, est_voicing):
     return vx_recall, vx_false_alm
 
 
-@validate_voicing
-@validate
 def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     ''' Compute the raw pitch accuracy given two pitch (frequency) sequences in
     cents and matching voicing indicator sequences. The first pitch and voicing
@@ -398,6 +373,10 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
             (within 50 cents).
     '''
 
+    validate_voicing(ref_voicing, est_voicing)
+    validate(ref_voicing, est_voicing, ref_cent, est_cent)
+    ref_voicing = ref_voicing.astype(bool)
+    est_voicing = est_voicing.astype(bool)
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_cent.size == 0 or est_cent.size == 0:
@@ -415,8 +394,6 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     return raw_pitch
 
 
-@validate_voicing
-@validate
 def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     ''' Compute the raw chroma accuracy given two pitch (frequency) sequences
     in cents and matching voicing indicator sequences. The first pitch and
@@ -451,6 +428,10 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
             which est_cent provides a correct frequency values (within 50
             cents), ignoring octave errors
     '''
+    validate_voicing(ref_voicing, est_voicing)
+    validate(ref_voicing, est_voicing, ref_cent, est_cent)
+    ref_voicing = ref_voicing.astype(bool)
+    est_voicing = est_voicing.astype(bool)
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_cent.size == 0 or est_cent.size == 0:
@@ -469,8 +450,6 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     return raw_chroma
 
 
-@validate_voicing
-@validate
 def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     '''
     Compute the overall accuracy given two pitch (frequency) sequences in cents
@@ -504,6 +483,10 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
             Overall accuracy, the total fraction of correctly estimates frames,
             where provides a correct frequency values (within 50 cents).
     '''
+    validate_voicing(ref_voicing, est_voicing)
+    validate(ref_voicing, est_voicing, ref_cent, est_cent)
+    ref_voicing = ref_voicing.astype(bool)
+    est_voicing = est_voicing.astype(bool)
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_cent.size == 0 or est_cent.size == 0:

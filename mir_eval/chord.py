@@ -90,7 +90,7 @@ into the performance and, ultimately, the behaviour of a computational system.
 '''
 
 import numpy as np
-import decorator
+import functools
 import warnings
 import collections
 
@@ -602,63 +602,54 @@ def rotate_bass_to_root(bass, chord_root):
 
 
 # --- Comparison Routines ---
-@decorator.decorator
-def validate(comparison):
-    '''Decorator which checks that the input annotations to a comparison
-    function look like valid chord labels.
+def validate(reference_labels, estimated_labels):
+    '''Checks that the input annotations to a comparison function look like
+    valid chord labels.
 
     :parameters:
-        - comparison : function
-            Chord label comparison function.  The two arguments must be
-            reference_labels and estimated_labels.
-
-    :returns:
-        - comparison_validated : function
-            The function with the labels validated.
+        - reference_labels : list, len=n
+            Reference chord labels to score against.
+        - estimated_labels : list, len=n
+            Estimated chord labels to score against.
     '''
-    def comparison_validated(reference_labels, estimated_labels, intervals):
-        '''Comparison with labels validated.'''
-        N = len(reference_labels)
-        M = len(estimated_labels)
-        if N != M:
-            raise ValueError(
-                "Chord comparison received different length lists: "
-                "len(reference)=%d\tlen(estimates)=%d" % (N, M))
-        for labels in [reference_labels, estimated_labels]:
-            for chord_label in labels:
-                validate_chord_label(chord_label)
-        # When either label list is empty, warn the user
-        if len(reference_labels) == 0:
-            warnings.warn('Reference labels are empty')
-        if len(estimated_labels) == 0:
-            warnings.warn('Estimated labels are empty')
-
-        # Intervals should be (n, 2) array
-        if intervals.ndim != 2 or intervals.shape[1] != 2:
-            raise ValueError('intervals should be an ndarray'
-                             ' of size (n, 2)')
-        # There should be as many intervals as labels
-        if intervals.shape[0] != N:
-            raise ValueError('intervals contains {} entries but '
-                             'len(reference_labels) = len(estimated_labels)'
-                             ' = {}'.format(intervals.shape[0], N))
-        if 0 in np.diff(np.array(intervals), axis=1):
-            warnings.warn('Zero-duration interval')
-
-        return comparison(reference_labels, estimated_labels, intervals)
-
-    return comparison_validated
+    N = len(reference_labels)
+    M = len(estimated_labels)
+    if N != M:
+        raise ValueError(
+            "Chord comparison received different length lists: "
+            "len(reference)=%d\tlen(estimates)=%d" % (N, M))
+    for labels in [reference_labels, estimated_labels]:
+        for chord_label in labels:
+            validate_chord_label(chord_label)
+    # When either label list is empty, warn the user
+    if len(reference_labels) == 0:
+        warnings.warn('Reference labels are empty')
+    if len(estimated_labels) == 0:
+        warnings.warn('Estimated labels are empty')
 
 
-@decorator.decorator
 def score(comparator):
     '''
     Decorator to convert a comparator into a metric function.
     '''
+    @functools.wraps(comparator)
     def metric(reference_labels, estimated_labels, intervals):
         '''
         Score wrapper for a comparator.
         '''
+        validate(reference_labels, estimated_labels)
+        N = len(reference_labels)
+        # Intervals should be (n, 2) array
+        if intervals.ndim != 2 or intervals.shape[1] != 2:
+            raise ValueError('intervals should be an ndarray'
+                            ' of size (n, 2)')
+        # There should be as many intervals as labels
+        if intervals.shape[0] != N:
+            raise ValueError('intervals contains {} entries but '
+                            'len(reference_labels) = len(estimated_labels)'
+                            ' = {}'.format(intervals.shape[0], N))
+        if 0 in np.diff(np.array(intervals), axis=1):
+            warnings.warn('Zero-duration interval')
         # Return 0 when no labels are given
         if len(reference_labels) == 0 or len(estimated_labels) == 0:
             return 0
@@ -685,7 +676,6 @@ def score(comparator):
     return metric
 
 
-@validate
 @score
 def thirds(reference_labels, estimated_labels):
     '''Compare chords along root & third relationships.
@@ -715,6 +705,7 @@ def thirds(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in [0.0, 1.0]
     '''
+    validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
 
@@ -723,7 +714,6 @@ def thirds(reference_labels, estimated_labels):
     return (eq_roots * eq_thirds).astype(np.float)
 
 
-@validate
 @score
 def thirds_inv(reference_labels, estimated_labels):
     '''Score chords along root, third, & bass relationships.
@@ -755,6 +745,7 @@ def thirds_inv(reference_labels, estimated_labels):
         - scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in [0.0, 1.0]
     '''
+    validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
     est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
@@ -764,7 +755,6 @@ def thirds_inv(reference_labels, estimated_labels):
     return (eq_root * eq_third * eq_bass).astype(np.float)
 
 
-@validate
 @score
 def triads(reference_labels, estimated_labels):
     '''Compare chords along triad (root & quality to #5) relationships.
@@ -794,6 +784,7 @@ def triads(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
+    validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
 
@@ -803,7 +794,6 @@ def triads(reference_labels, estimated_labels):
     return (eq_roots * eq_semitones).astype(np.float)
 
 
-@validate
 @score
 def triads_inv(reference_labels, estimated_labels):
     '''Score chords along triad (root, quality to #5, & bass) relationships.
@@ -835,6 +825,7 @@ def triads_inv(reference_labels, estimated_labels):
         - scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
+    validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
     est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
@@ -845,7 +836,6 @@ def triads_inv(reference_labels, estimated_labels):
     return (eq_roots * eq_semitones * eq_basses).astype(np.float)
 
 
-@validate
 @score
 def tetrads(reference_labels, estimated_labels):
     '''Compare chords along tetrad (root & full quality) relationships.
@@ -875,6 +865,7 @@ def tetrads(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
+    validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
 
@@ -883,7 +874,6 @@ def tetrads(reference_labels, estimated_labels):
     return (eq_roots * eq_semitones).astype(np.float)
 
 
-@validate
 @score
 def tetrads_inv(reference_labels, estimated_labels):
     '''Compare chords along seventh (root, quality) relationships.
@@ -915,6 +905,7 @@ def tetrads_inv(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
+    validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
     est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
@@ -924,7 +915,6 @@ def tetrads_inv(reference_labels, estimated_labels):
     return (eq_roots * eq_semitones * eq_basses).astype(np.float)
 
 
-@validate
 @score
 def root(reference_labels, estimated_labels):
     '''Compare chords according to roots.
@@ -956,12 +946,12 @@ def root(reference_labels, estimated_labels):
             gamut.
     '''
 
+    validate(reference_labels, estimated_labels)
     ref_roots = encode_many(reference_labels, False)[0]
     est_roots = encode_many(estimated_labels, False)[0]
     return (ref_roots == est_roots).astype(np.float)
 
 
-@validate
 @score
 def mirex(reference_labels, estimated_labels):
     '''Compare chords along MIREX rules.
@@ -991,6 +981,7 @@ def mirex(reference_labels, estimated_labels):
         - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
             Comparison scores, in {0.0, 1.0}
     '''
+    validate(reference_labels, estimated_labels)
     min_intersection = 3
     ref_data = encode_many(reference_labels, False)
     ref_chroma = rotate_bitmaps_to_roots(ref_data[1], ref_data[0])
@@ -1001,7 +992,6 @@ def mirex(reference_labels, estimated_labels):
     return (eq_chroma >= min_intersection).astype(np.float)
 
 
-@validate
 @score
 def majmin(reference_labels, estimated_labels):
     '''Compare chords along major-minor rules. Chords with qualities outside
@@ -1033,6 +1023,7 @@ def majmin(reference_labels, estimated_labels):
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
+    validate(reference_labels, estimated_labels)
     maj_semitones = np.array(QUALITIES['maj'][:8])
     min_semitones = np.array(QUALITIES['min'][:8])
 
@@ -1062,7 +1053,6 @@ def majmin(reference_labels, estimated_labels):
     return comparison_scores
 
 
-@validate
 @score
 def majmin_inv(reference_labels, estimated_labels):
     '''Compare chords along major-minor rules, with inversions. Chords with
@@ -1097,6 +1087,7 @@ def majmin_inv(reference_labels, estimated_labels):
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
+    validate(reference_labels, estimated_labels)
     maj_semitones = np.array(QUALITIES['maj'][:8])
     min_semitones = np.array(QUALITIES['min'][:8])
 
@@ -1124,7 +1115,6 @@ def majmin_inv(reference_labels, estimated_labels):
     return comparison_scores
 
 
-@validate
 @score
 def sevenths(reference_labels, estimated_labels):
     '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
@@ -1158,6 +1148,7 @@ def sevenths(reference_labels, estimated_labels):
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
+    validate(reference_labels, estimated_labels)
     seventh_qualities = ['maj', 'min', 'maj7', '7', 'min7', '']
     valid_semitones = np.array([QUALITIES[name] for name in seventh_qualities])
 
@@ -1176,7 +1167,6 @@ def sevenths(reference_labels, estimated_labels):
     return comparison_scores
 
 
-@validate
 @score
 def sevenths_inv(reference_labels, estimated_labels):
     '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
@@ -1210,6 +1200,7 @@ def sevenths_inv(reference_labels, estimated_labels):
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
+    validate(reference_labels, estimated_labels)
     seventh_qualities = ['maj', 'min', 'maj7', '7', 'min7', '']
     valid_semitones = np.array([QUALITIES[name] for name in seventh_qualities])
 

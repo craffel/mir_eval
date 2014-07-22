@@ -13,7 +13,6 @@ See also the Beat Evaluation Toolbox:
 '''
 
 import numpy as np
-import decorator
 import collections
 from . import util
 import warnings
@@ -36,35 +35,24 @@ def trim_beats(beats, min_beat_time=5.):
     return beats[beats >= min_beat_time]
 
 
-# Retain docstring, etc
-@decorator.decorator
-def validate(metric):
-    '''Decorator which checks that the input annotations to a metric
-    look like valid beat time arrays, and throws helpful errors if not.
+def validate(reference_beats, estimated_beats):
+    '''Checks that the input annotations to a metric look like valid beat time
+    arrays, and throws helpful errors if not.
 
     :parameters:
-        - metric : function
-            Evaluation metric function.  First two arguments must be
-            reference_beats and estimated_beats.
-
-    :returns:
-        - metric_validated : function
-            The function with the beat times validated
+        - reference_beats : np.ndarray
+            reference beat times, in seconds
+        - estimated_beats : np.ndarray
+            estimated beat times, in seconds
     '''
-    def metric_validated(reference_beats, estimated_beats, *args, **kwargs):
-        '''
-        Metric with input beat annotations validated
-        '''
-        # If reference or estimated beats are empty,
-        # warn because metric will be 0
-        if reference_beats.size == 0:
-            warnings.warn("Reference beats are empty.")
-        if estimated_beats.size == 0:
-            warnings.warn("Estimated beats are empty.")
-        for beats in [reference_beats, estimated_beats]:
-            util.validate_events(beats)
-        return metric(reference_beats, estimated_beats, *args, **kwargs)
-    return metric_validated
+    # If reference or estimated beats are empty,
+    # warn because metric will be 0
+    if reference_beats.size == 0:
+        warnings.warn("Reference beats are empty.")
+    if estimated_beats.size == 0:
+        warnings.warn("Estimated beats are empty.")
+    for beats in [reference_beats, estimated_beats]:
+        util.validate_events(beats)
 
 
 def _get_reference_beat_variations(reference_beats):
@@ -103,7 +91,6 @@ def _get_reference_beat_variations(reference_beats):
            reference_beats[1::2])
 
 
-@validate
 def f_measure(reference_beats,
               estimated_beats,
               f_measure_threshold=0.07):
@@ -131,6 +118,7 @@ def f_measure(reference_beats,
         - f_score : float
             The computed F-measure score
     '''
+    validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0.
@@ -144,7 +132,6 @@ def f_measure(reference_beats,
     return util.f_measure(precision, recall)
 
 
-@validate
 def cemgil(reference_beats,
            estimated_beats,
            cemgil_sigma=0.04):
@@ -174,6 +161,7 @@ def cemgil(reference_beats,
         - cemgil_max : float
             The best Cemgil score for all metrical variations
     '''
+    validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0., 0.
@@ -196,7 +184,6 @@ def cemgil(reference_beats,
     return accuracies[0], np.max(accuracies)
 
 
-@validate
 def goto(reference_beats,
          estimated_beats,
          goto_threshold=0.35,
@@ -231,6 +218,7 @@ def goto(reference_beats,
         - goto_score : float
             Either 1.0 or 0.0 if some specific criteria are met
     '''
+    validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0.
@@ -293,7 +281,6 @@ def goto(reference_beats,
     return 1.0*(goto_criteria == 3)
 
 
-@validate
 def p_score(reference_beats,
             estimated_beats,
             p_score_threshold=0.2):
@@ -322,6 +309,7 @@ def p_score(reference_beats,
         - correlation : float
             McKinney's P-score
     '''
+    validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0.
@@ -358,7 +346,6 @@ def p_score(reference_beats,
     return np.sum(train_correlation)/n_beats
 
 
-@validate
 def continuity(reference_beats,
                estimated_beats,
                continuity_phase_threshold=0.175,
@@ -397,6 +384,7 @@ def continuity(reference_beats,
         - AMLt : float
             Any metric level, total accuracy (continuity not required)
     '''
+    validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0., 0., 0., 0.
@@ -485,7 +473,6 @@ def continuity(reference_beats,
             np.max(total_accuracies))
 
 
-@validate
 def information_gain(reference_beats,
                      estimated_beats,
                      bins=41):
@@ -513,6 +500,7 @@ def information_gain(reference_beats,
         - information_gain_score : float
             Entropy of beat error histogram
     '''
+    validate(reference_beats, estimated_beats)
     # If an even number of bins is provided,
     # there will be no bin centered at zero, so warn the user.
     if not bins % 2:

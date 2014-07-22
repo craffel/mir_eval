@@ -8,7 +8,6 @@
         - normalized conditional entropy
 '''
 
-import decorator
 import numpy as np
 import scipy.stats
 import sklearn.metrics.cluster as skmetrics
@@ -18,53 +17,48 @@ import warnings
 from . import util
 
 
-@decorator.decorator
-def validate(metric):
-    '''Decorator which checks that the input annotations to a metric
-    look like valid segment times, and throws helpful errors if not.
+def validate(reference_intervals, reference_labels, estimated_intervals,
+             estimated_labels):
+    '''Checks that the input annotations to a metric look like valid segment
+    times, and throws helpful errors if not.
 
     :parameters:
-        - metric : function
-            Evaluation metric function.  First four arguments must be
-            reference_annotations, reference_labels,
-            estimated_annotations, and estimated_labels.
+        - reference_intervals : np.ndarray, shape=(n, 2)
+            reference segment intervals, as returned by
+            `mir_eval.io.load_intervals`
 
-    :returns:
-        - metric_validated : function
-            The function with the segment intervals are validated
+        - reference_labels : list, shape=(n,)
+            reference segment labels, as returned by
+            `mir_eval.io.load_intervals`
+
+        - estimated_intervals : np.ndarray, shape=(m, 2)
+            estimated segment intervals, as returned by
+            `mir_eval.io.load_intervals`
+
+        - estimated_labels : list, shape=(m,)
+            estimated segment labels, as returned by
+            `mir_eval.io.load_intervals`
     '''
-    def metric_validated(reference_intervals, reference_labels,
-                         estimated_intervals, estimated_labels,
-                         *args, **kwargs):
-        '''Validate both reference and estimated intervals'''
+    for (intervals, labels) in [(reference_intervals, reference_labels),
+                                (estimated_intervals, estimated_labels)]:
 
-        for (intervals, labels) in [(reference_intervals, reference_labels),
-                                    (estimated_intervals, estimated_labels)]:
+        util.validate_intervals(intervals)
+        if intervals.shape[0] != len(labels):
+            raise ValueError('Number of intervals does not match number '
+                             'of labels')
 
-            util.validate_intervals(intervals)
-            if intervals.shape[0] != len(labels):
-                raise ValueError('Number of intervals does not match number '
-                                 'of labels')
+        # Make sure beat times are increasing
+        if not np.allclose(intervals[0, 0], 0.0):
+            raise ValueError('Segment intervals do not start at 0')
 
-            # Make sure beat times are increasing
-            if not np.allclose(intervals[0, 0], 0.0):
-                raise ValueError('Segment intervals do not start at 0')
-
-        if reference_intervals.size == 0:
-            warnings.warn("Reference intervals are empty.")
-        if estimated_intervals.size == 0:
-            warnings.warn("Estimated intervals are empty.")
-        if not np.allclose(reference_intervals[-1, 1],
-                           estimated_intervals[-1, 1]):
-            raise ValueError('End times do not match')
-
-        return metric(reference_intervals, reference_labels,
-                      estimated_intervals, estimated_labels, *args, **kwargs)
-
-    return metric_validated
+    if reference_intervals.size == 0:
+        warnings.warn("Reference intervals are empty.")
+    if estimated_intervals.size == 0:
+        warnings.warn("Estimated intervals are empty.")
+    if not np.allclose(reference_intervals[-1, 1], estimated_intervals[-1, 1]):
+        raise ValueError('End times do not match')
 
 
-@validate
 def pairwise(reference_intervals, reference_labels,
              estimated_intervals, estimated_labels,
              frame_size=0.1, beta=1.0):
@@ -126,6 +120,8 @@ def pairwise(reference_intervals, reference_labels,
     .. seealso:: :func:`mir_eval.util.adjust_intervals`
     '''
 
+    validate(reference_intervals, reference_labels, estimated_intervals,
+             estimated_labels)
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -160,7 +156,6 @@ def pairwise(reference_intervals, reference_labels,
     return precision, recall, f_measure
 
 
-@validate
 def rand_index(reference_intervals, reference_labels,
                estimated_intervals, estimated_labels,
                frame_size=0.1, beta=1.0):
@@ -218,6 +213,8 @@ def rand_index(reference_intervals, reference_labels,
     .. seealso:: :func:`mir_eval.util.adjust_intervals`
     '''
 
+    validate(reference_intervals, reference_labels, estimated_intervals,
+             estimated_labels)
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -253,7 +250,6 @@ def rand_index(reference_intervals, reference_labels,
     return rand
 
 
-@validate
 def ari(reference_intervals, reference_labels,
         estimated_intervals, estimated_labels,
         frame_size=0.1):
@@ -295,6 +291,8 @@ def ari(reference_intervals, reference_labels,
         Segment intervals will be rounded down to the nearest multiple
         of frame_size.
     '''
+    validate(reference_intervals, reference_labels, estimated_intervals,
+             estimated_labels)
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -312,7 +310,6 @@ def ari(reference_intervals, reference_labels,
     return skmetrics.adjusted_rand_score(y_ref, y_est)
 
 
-@validate
 def mutual_information(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels,
                        frame_size=0.1):
@@ -360,6 +357,8 @@ def mutual_information(reference_intervals, reference_labels,
         Segment intervals will be rounded down to the nearest multiple
         of frame_size.
     '''
+    validate(reference_intervals, reference_labels, estimated_intervals,
+             estimated_labels)
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -386,7 +385,6 @@ def mutual_information(reference_intervals, reference_labels,
     return mutual_info, adj_mutual_info, norm_mutual_info
 
 
-@validate
 def nce(reference_intervals, reference_labels, estimated_intervals,
         estimated_labels, frame_size=0.1, beta=1.0):
     '''Frame-clustering segmentation: normalized conditional entropy
@@ -443,6 +441,8 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
         Lukashevich, H. ISMIR 2008.
     '''
 
+    validate(reference_intervals, reference_labels, estimated_intervals,
+             estimated_labels)
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,

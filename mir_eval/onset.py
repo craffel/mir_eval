@@ -5,44 +5,30 @@ Based in part on this script:
     https://github.com/CPJKU/onset_detection/blob/master/onset_evaluation.py
 '''
 
-import decorator
 import collections
 from . import util
 import warnings
 
 
-@decorator.decorator
-def validate(metric):
-    '''Decorator which checks that the input annotations to a metric
-    look like valid onset time arrays, and throws helpful errors if not.
+def validate(reference_onsets, estimated_onsets):
+    '''Checks that the input annotations to a metric look like valid onset time
+    arrays, and throws helpful errors if not.
 
     :parameters:
-        - metric : function
-            Evaluation metric function.  First two arguments must be
-            reference_onsets and estimated_onsets.
-
-    :returns:
-        - metric_validated : function
-            The function with the onset locations validated
+        - reference_onsets : np.ndarray
+            reference onset locations, in seconds
+        - estimated_onsets : np.ndarray
+            estimated onset locations, in seconds
     '''
-    # Retain docstring, etc
-    def metric_validated(reference_onsets, estimated_onsets, *args, **kwargs):
-        '''
-        Metric with input onset annotations validated
-        '''
-        # If reference or estimated onsets are empty, warn because metric will
-        # be 0
-        if reference_onsets.size == 0:
-            warnings.warn("Reference onsets are empty.")
-        if estimated_onsets.size == 0:
-            warnings.warn("Estimated onsets are empty.")
-        for onsets in [reference_onsets, estimated_onsets]:
-            util.validate_events(onsets)
-        return metric(reference_onsets, estimated_onsets, *args, **kwargs)
-    return metric_validated
+    # If reference or estimated onsets are empty, warn because metric will be 0
+    if reference_onsets.size == 0:
+        warnings.warn("Reference onsets are empty.")
+    if estimated_onsets.size == 0:
+        warnings.warn("Estimated onsets are empty.")
+    for onsets in [reference_onsets, estimated_onsets]:
+        util.validate_events(onsets)
 
 
-@validate
 def f_measure(reference_onsets, estimated_onsets, window=.05):
     '''
     Compute the F-measure of correct vs incorrectly predicted onsets.
@@ -70,6 +56,7 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
         - recall : float
             (# true positives)/(# true positives + # false negatives)
     '''
+    validate(reference_onsets, estimated_onsets)
     # If either list is empty, return 0s
     if reference_onsets.size == 0 or estimated_onsets.size == 0:
         return 0., 0., 0.
