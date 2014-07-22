@@ -76,8 +76,8 @@ def print_evaluation(estimation_file, M):
 
 def main():
     """Main function to evaluate the pattern discovery task."""
-    parser = argparse.ArgumentParser(description=
-        "mir_eval pattern discovery evaluation",
+    parser = argparse.ArgumentParser(description="mir_eval pattern discovery "
+                                                 "evaluation",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("ref_file",
                         action="store",
