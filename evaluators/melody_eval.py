@@ -76,8 +76,8 @@ def evaluate(reference_file, estimated_file, hop=None):
     # Compute metrics
     M = OrderedDict()
 
-    M['Voicing Measures'] = mir_eval.melody.voicing_measures(ref_voicing,
-                                                             est_voicing)
+    M['Voicing Recall'], M['Voicing False Alarm'] = \
+        mir_eval.melody.voicing_measures(ref_voicing, est_voicing)
     M['Raw Pitch Accuracy'] = mir_eval.melody.raw_pitch_accuracy(ref_voicing,
                                                                  est_voicing,
                                                                  ref_cent,
@@ -93,14 +93,13 @@ def evaluate(reference_file, estimated_file, hop=None):
     return M
 
 
-def print_evaluation(prediction_file, M):
+def print_evaluation(estimated_file, M):
     '''
     Pretty print the melody extraction evaluation measures
     '''
-    keys = M.keys()
-    keys.append(os.path.basename(prediction_file))
-    print '%s\t%s\t%s\t%s\t%s\t(%s)' % tuple(keys)
-    print '%.3f\t\t%.3f\t\t%.3f\t\t%.3f\t\t%.3f' % tuple(M.values())
+    print os.path.basename(estimated_file)
+    for key, value in M.iteritems():
+        print '\t%20s:\t%0.3f' % (key, value)
 
 
 def process_arguments():
@@ -131,4 +130,4 @@ if __name__ == '__main__':
     scores = evaluate(**parameters)
 
     # Print the scores
-    print_evaluation(parameters['reference_file'], scores)
+    print_evaluation(parameters['estimated_file'], scores)
