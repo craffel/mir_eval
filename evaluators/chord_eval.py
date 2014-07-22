@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''Compute chord evaluation metrics
 
 
@@ -13,9 +12,8 @@ import argparse
 import glob
 import os
 
-from collections import OrderedDict
-
 import mir_eval
+
 
 def collect_fileset(reference_dir, estimation_dir, fext='lab'):
     '''Collect the set of files for evaluation.
@@ -78,7 +76,8 @@ def main(reference_data, estimation_data, vocabularies):
     # Compute all the scores
     results = []
     for ref, est in zip(ref_files, est_files):
-        results.append(chord.evaluate_file_pair(ref, est, vocabularies))
+        results.append(mir_eval.chord.evaluate_file_pair(ref, est,
+                                                         vocabularies))
         print_evaluation(ref, results[-1])
 
     print_summary(results)
