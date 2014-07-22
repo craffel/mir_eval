@@ -13,9 +13,7 @@ Written by Oriol Nieto (oriol@nyu.edu), 2014
 """
 
 import argparse
-import logging
 import os
-import time
 from collections import OrderedDict
 
 import mir_eval
@@ -69,9 +67,9 @@ def evaluate(ref_file, est_file):
 
 def print_evaluation(estimation_file, M):
     # And print them
-    logging.info(os.path.basename(estimation_file))
+    print os.path.basename(estimation_file)
     for key, value in M.iteritems():
-        logging.info('\t%12s:\t%0.3f' % (key, value))
+        print '\t%12s:\t%0.3f' % (key, value)
 
 
 def main():
@@ -86,20 +84,12 @@ def main():
                         action="store",
                         help="Path to the estimation file.")
     args = parser.parse_args()
-    start_time = time.time()
-
-    # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
-        level=logging.INFO)
 
     # Run the evaluations
     scores = evaluate(args.ref_file, args.est_file)
 
     # Print results
     print_evaluation(args.ref_file, scores)
-
-    # Done!
-    logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
 
 
 if __name__ == '__main__':
