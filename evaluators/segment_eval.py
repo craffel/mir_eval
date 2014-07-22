@@ -37,37 +37,41 @@ def evaluate(ref_file=None, est_file=None, trim=False):
     # Now compute all the metrics
     M = OrderedDict()
     # Boundary detection
-    M['P@0.5'], M['R@0.5'], M['F@0.5'] = \
+    M['Precision@0.5'], M['Recall@0.5'], M['F-measure@0.5'] = \
         mir_eval.boundary.detection(ref_intervals, est_intervals, window=0.5,
                                     trim=trim)
 
-    M['P@3.0'], M['R@3.0'], M['F@3.0'] = \
+    M['Precision@3.0'], M['Recall@3.0'], M['F-measure@3.0'] = \
         mir_eval.boundary.detection(ref_intervals, est_intervals, window=3.0,
                                     trim=trim)
 
     # Boundary deviation
-    M['True-to-Pred'], M['Pred-to-True'] = \
+    M['Ref-to-est deviation'], M['Est-to-ref deviation'] = \
         mir_eval.boundary.deviation(ref_intervals, est_intervals, trim=trim)
 
     # Pairwise clustering
-    M['Pair-P'], M['Pair-R'], M['Pair-F'] = \
+    M['Pairwise Precision'], M['Pairwise Recall'], M['Pairwise F-measure'] = \
         mir_eval.structure.pairwise(ref_intervals, ref_labels, est_intervals,
                                     est_labels)
 
     # Rand index
-    M['RI'] = mir_eval.structure.rand_index(ref_intervals, ref_labels,
+    M['Rand Index'] = mir_eval.structure.rand_index(ref_intervals, ref_labels,
                                             est_intervals, est_labels)
     # Adjusted rand index
-    M['ARI'] = mir_eval.structure.ari(ref_intervals, ref_labels, est_intervals,
-                                      est_labels)
+    M['Adjusted Rand Index'] = mir_eval.structure.ari(ref_intervals,
+                                                      ref_labels,
+                                                      est_intervals,
+                                                      est_labels)
 
     # Mutual information metrics
-    M['MI'], M['AMI'], M['NMI'] = \
+    (M['Mutual Information'],
+     M['Adjusted Mutual Information'],
+     M['Normalized Mutual Information']) = \
         mir_eval.structure.mutual_information(ref_intervals, ref_labels,
                                               est_intervals, est_labels)
 
     # Conditional entropy metrics
-    M['S_Over'], M['S_Under'], M['S_F'] = \
+    M['NCE Over'], M['NCE Under'], M['NCE F-measure'] = \
         mir_eval.structure.nce(ref_intervals, ref_labels, est_intervals,
                                est_labels)
 
@@ -84,7 +88,7 @@ def print_evaluation(est_file, M):
     # And print them
     print os.path.basename(est_file)
     for key, value in M.iteritems():
-        print '\t%12s:\t%0.3f' % (key, value)
+        print '\t%30s:\t%0.3f' % (key, value)
 
     pass
 
