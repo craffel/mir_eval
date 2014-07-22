@@ -1276,7 +1276,7 @@ def evaluate_file_pair(reference_file, estimation_file,
     '''
 
     if vocabularies is None:
-        vocabularies = ['minmaj']
+        vocabularies = ['majmin']
 
     # load the data
     ref_intervals, ref_labels = io.load_intervals(reference_file)
