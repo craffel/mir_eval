@@ -92,7 +92,7 @@ def print_evaluation(est_file, M):
 def process_arguments():
     '''Argparse function to get the program parameters'''
 
-    parser = argparse.ArgumentParser(description='mir_eval segmentation'
+    parser = argparse.ArgumentParser(description='mir_eval segmentation '
                                                  'evaluation')
 
     parser.add_argument('-t',
@@ -100,7 +100,7 @@ def process_arguments():
                         dest='trim',
                         default=False,
                         action='store_true',
-                        help='Trim beginning and end markers from boundary'
+                        help='Trim beginning and end markers from boundary '
                              'evaluation')
 
     parser.add_argument('-o',
