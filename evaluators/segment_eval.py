@@ -79,13 +79,13 @@ def evaluate(ref_file=None, est_file=None, trim=False):
 
 
 def save_results(results, output_file):
-
+    '''Save a results dict into a json file'''
     with open(output_file, 'w') as f:
         json.dump(results, f)
 
 
 def print_evaluation(est_file, M):
-    # And print them
+    '''Print out a results dict prettily'''
     print os.path.basename(est_file)
     for key, value in M.iteritems():
         print '\t%30s:\t%0.3f' % (key, value)
