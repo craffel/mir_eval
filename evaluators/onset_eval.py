@@ -11,6 +11,7 @@ import argparse
 import sys
 import os
 from collections import OrderedDict
+import json
 
 import mir_eval
 
@@ -34,6 +35,12 @@ def evaluate(reference_file, estimated_file):
     return scores
 
 
+def save_results(results, output_file):
+    '''Save a results dict into a json file'''
+    with open(output_file, 'w') as f:
+        json.dump(results, f)
+
+
 def print_evaluation(estimated_file, scores):
     # And print them
     print os.path.basename(estimated_file)
@@ -48,6 +55,13 @@ def process_arguments():
 
     parser = argparse.ArgumentParser(description='mir_eval onset detection '
                                                  'evaluation')
+
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
 
     parser.add_argument('reference_file',
                         action='store',
@@ -64,5 +78,10 @@ if __name__ == '__main__':
     parameters = process_arguments()
 
     # Compute all the scores
-    scores = evaluate(**parameters)
+    scores = evaluate(parameters['reference_file'],
+                      parameters['estimated_file'])
     print_evaluation(parameters['estimated_file'], scores)
+
+    if parameters['output_file']:
+        print 'Saving results to: ', parameters['output_file']
+        save_results(scores, parameters['output_file'])
