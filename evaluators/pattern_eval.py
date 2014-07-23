@@ -15,6 +15,8 @@ Written by Oriol Nieto (oriol@nyu.edu), 2014
 import argparse
 import os
 from collections import OrderedDict
+import json
+import sys
 
 import mir_eval
 
@@ -65,6 +67,12 @@ def evaluate(ref_file, est_file):
     return M
 
 
+def save_results(results, output_file):
+    '''Save a results dict into a json file'''
+    with open(output_file, 'w') as f:
+        json.dump(results, f)
+
+
 def print_evaluation(estimation_file, M):
     # And print them
     print os.path.basename(estimation_file)
@@ -77,19 +85,28 @@ def main():
     parser = argparse.ArgumentParser(description="mir_eval pattern discovery "
                                                  "evaluation",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
     parser.add_argument("ref_file",
                         action="store",
                         help="Path to the reference file.")
     parser.add_argument("est_file",
                         action="store",
                         help="Path to the estimation file.")
-    args = parser.parse_args()
+    parameters = vars(parser.parse_args(sys.argv[1:]))
 
-    # Run the evaluations
-    scores = evaluate(args.ref_file, args.est_file)
+    # Compute all the scores
+    scores = evaluate(ref_file=parameters['ref_file'],
+                      est_file=parameters['est_file'])
+    print_evaluation(parameters['est_file'], scores)
 
-    # Print results
-    print_evaluation(args.ref_file, scores)
+    if parameters['output_file']:
+        print 'Saving results to: ', parameters['output_file']
+        save_results(scores, parameters['output_file'])
 
 
 if __name__ == '__main__':
