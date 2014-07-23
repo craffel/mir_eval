@@ -15,6 +15,7 @@ import scipy.io.wavfile
 import glob
 import os
 import numpy as np
+import json
 
 import mir_eval
 
@@ -60,11 +61,17 @@ def evaluate(reference_directory, estimated_directory):
 
     sdr, sir, sar, _ = mir_eval.separation.bss_eval_sources(reference_sources,
                                                             estimated_sources)
-    scores['SDR'] = sdr
-    scores['SIR'] = sir
-    scores['SAR'] = sar
+    scores['SDR'] = sdr.tolist()
+    scores['SIR'] = sir.tolist()
+    scores['SAR'] = sar.tolist()
 
     return scores
+
+
+def save_results(results, output_file):
+    '''Save a results dict into a json file'''
+    with open(output_file, 'w') as f:
+        json.dump(results, f)
 
 
 def print_evaluation(estimated_file, scores):
@@ -81,6 +88,13 @@ def process_arguments():
 
     parser = argparse.ArgumentParser(description='mir_eval source separation '
                                                  'evaluation')
+
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
 
     parser.add_argument('reference_directory',
                         action='store',
@@ -99,5 +113,10 @@ if __name__ == '__main__':
     parameters = process_arguments()
 
     # Compute all the scores
-    scores = evaluate(**parameters)
+    scores = evaluate(parameters['reference_directory'],
+                      parameters['estimated_directory'])
     print_evaluation(parameters['estimated_directory'], scores)
+
+    if parameters['output_file']:
+        print 'Saving results to: ', parameters['output_file']
+        save_results(scores, parameters['output_file'])
