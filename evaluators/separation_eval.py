@@ -59,11 +59,14 @@ def evaluate(reference_directory, estimated_directory):
     # Now compute all the metrics
     scores = OrderedDict()
 
-    sdr, sir, sar, _ = mir_eval.separation.bss_eval_sources(reference_sources,
-                                                            estimated_sources)
-    scores['SDR'] = sdr.tolist()
-    scores['SIR'] = sir.tolist()
-    scores['SAR'] = sar.tolist()
+    sdr, sir, sar, perm = \
+        mir_eval.separation.bss_eval_sources(reference_sources,
+                                             estimated_sources)
+
+    scores['Source to Distortion'] = sdr.tolist()
+    scores['Source to Interference'] = sir.tolist()
+    scores['Source to Artifact'] = sar.tolist()
+    scores['Source permutation'] = perm
 
     return scores
 
@@ -78,7 +81,8 @@ def print_evaluation(estimated_file, scores):
     # And print them
     print os.path.basename(estimated_file)
     for key, value in scores.iteritems():
-        print '\t{} : {}'.format(key, value)
+        print '\t%23s:' % key,
+        print '\t{}'.format(value)
 
     pass
 
