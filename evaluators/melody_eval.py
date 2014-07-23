@@ -19,6 +19,7 @@ IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 import argparse
 import sys
 import os
+import json
 from collections import OrderedDict
 import mir_eval
 
@@ -93,6 +94,12 @@ def evaluate(reference_file, estimated_file, hop=None):
     return M
 
 
+def save_results(results, output_file):
+    '''Save a results dict into a json file'''
+    with open(output_file, 'w') as f:
+        json.dump(results, f)
+
+
 def print_evaluation(estimated_file, M):
     '''
     Pretty print the melody extraction evaluation measures
@@ -108,6 +115,13 @@ def process_arguments():
     parser = argparse.ArgumentParser(description='mir_eval melody extraction '
                                                  'evaluation')
 
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+
     parser.add_argument('reference_file',
                         action='store',
                         help='path to the ground truth annotation')
@@ -116,8 +130,10 @@ def process_arguments():
                         action='store',
                         help='path to the estimation file')
 
-    parser.add_argument("--hop", type=float,
-                    help="hop size (in seconds) to use for the evaluation")
+    parser.add_argument("--hop",
+                        dest='hop',
+                        type=float,
+                        help="hop size (in seconds) to use for the evaluation")
 
     return vars(parser.parse_args(sys.argv[1:]))
 
@@ -127,7 +143,11 @@ if __name__ == '__main__':
     parameters = process_arguments()
 
     # Compute all the scores
-    scores = evaluate(**parameters)
-
-    # Print the scores
+    scores = evaluate(parameters['reference_file'],
+                      parameters['estimated_file'],
+                      parameters['hop'])
     print_evaluation(parameters['estimated_file'], scores)
+
+    if parameters['output_file']:
+        print 'Saving results to: ', parameters['output_file']
+        save_results(scores, parameters['output_file'])
