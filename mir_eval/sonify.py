@@ -4,6 +4,8 @@ All functions return a raw signal at the specified sampling rate.
 '''
 
 import numpy as np
+from . import util
+from . import chord
 
 
 def clicks(times, fs, click=None, length=None):
@@ -146,3 +148,35 @@ def chroma(chromagram, times, fs):
     # Compute frequencies
     frequencies = 440.0*(2.0**((notes - 69)/12.0))
     return time_frequency(gram, frequencies, times, fs)
+
+
+def chords(chord_labels, intervals, fs):
+    '''
+    Synthesizes chord labels
+
+    :parameters:
+        - chord_labels : list of str
+            List of chord label strings.
+        - intervals : np.ndarray, shape=(len(chord_labels), 2)
+            Start and end times of each chord label
+        - fs : int
+            Sampling rate to synthesize at
+    :returns:
+        - output : np.ndarray
+            Synthesized chord labels
+    '''
+    util.validate_intervals(intervals)
+    # We need to convert from intervals to label start times
+    times = intervals.flatten()
+    _, unique = np.unique(times, return_index=True)
+    # Create a new chord_labels list with 'N' for the newly created times
+    chord_labels = [x for t in zip(chord_labels, ['N']*len(chord_labels))
+                    for x in t]
+    times = times[unique]
+    chord_labels = [chord_labels[n - 1] for n in unique[1:]]
+    # Convert from labels to chroma
+    roots, interval_bitmaps, _ = chord.encode_many(chord_labels)
+    chromagram = np.array([np.roll(interval_bitmap, root)
+                           for (interval_bitmap, root)
+                           in zip(interval_bitmaps, roots)]).T
+    return chroma(chromagram, times, fs)
