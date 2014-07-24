@@ -399,9 +399,8 @@ def continuity(reference_beats,
         used_annotations = np.zeros(n_annotations)
         # Whether or not we are continuous at any given point
         beat_successes = np.zeros(n_annotations)
-        # Is this beat correct?
-        beat_success = 0
         for m in xrange(estimated_beats.shape[0]):
+            # Is this beat correct?
             beat_success = 0
             # Get differences for this beat
             beat_differences = np.abs(estimated_beats[m] - reference_beats)
