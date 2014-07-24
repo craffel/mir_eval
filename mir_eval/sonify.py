@@ -4,6 +4,8 @@ All functions return a raw signal at the specified sampling rate.
 '''
 
 import numpy as np
+from . import util
+from . import chord
 
 
 def clicks(times, fs, click=None, length=None):
@@ -87,7 +89,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
         ten_periods = int(10*fs*(1./frequency))
         short_signal = function(2*np.pi*np.arange(ten_periods)*frequency/fs)
         # Repeat the signal until it's of the desired length
-        n_repeats = int(np.ceil(length/short_signal.shape[0]))
+        n_repeats = int(np.ceil(length/float(short_signal.shape[0])))
         return np.tile(short_signal, n_repeats)[:length]
 
     # Pre-allocate output signal
@@ -95,6 +97,8 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     for n, frequency in enumerate(frequencies):
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
+        # Zero out up to first time
+        wave[:int(times[0]*fs)] = 0
         # Scale each time interval by the piano roll magnitude
         for m, (start, end) in enumerate(zip(times[:-1], times[1:])):
             wave[int(start*fs):int(end*fs)] *= gram[n, m]
@@ -103,3 +107,76 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     # Normalize
     output /= np.abs(output).max()
     return output
+
+
+def chroma(chromagram, times, fs):
+    '''
+    Reverse synthesis of a chromagram (semitone matrix)
+
+    :parameters:
+        - chromagram : np.ndarray, shape=(12, times.shape[0])
+            Chromagram matrix, where each row represents a semitone [C->Bb]
+            i.e., chromagram[3, j] is the magnitude of D# from times[j] to
+            times[j + 1]
+        - times : np.ndarray
+            The start time of each column in the chromagram
+        - fs : int
+            Sampling rate to synthesize audio data at
+
+    :returns:
+        - output : np.ndarray
+            Synthesized chromagram
+    '''
+    # We'll just use time_frequency with a Shepard tone-gram
+    # To create the Shepard tone-gram, we copy the chromagram across 7 octaves
+    n_octaves = 7
+    # starting from C2
+    base_note = 24
+    # and weight each octave by a normal distribution
+    # The normal distribution has mean 72 (one octave above middle C)
+    # and std 6 (one half octave)
+    mean = 72
+    std = 6
+    notes = np.arange(12*n_octaves) + base_note
+    shepard_weight = np.exp(-(notes - mean)**2./(2.*std**2.))
+    # Copy the chromagram matrix vertically n_octaves times
+    gram = np.tile(chromagram.T, n_octaves).T
+    # This fixes issues if the supplied chromagram is int type
+    gram = gram.astype(float)
+    # Apply Sheppard weighting
+    gram *= shepard_weight.reshape(-1, 1)
+    # Compute frequencies
+    frequencies = 440.0*(2.0**((notes - 69)/12.0))
+    return time_frequency(gram, frequencies, times, fs)
+
+
+def chords(chord_labels, intervals, fs):
+    '''
+    Synthesizes chord labels
+
+    :parameters:
+        - chord_labels : list of str
+            List of chord label strings.
+        - intervals : np.ndarray, shape=(len(chord_labels), 2)
+            Start and end times of each chord label
+        - fs : int
+            Sampling rate to synthesize at
+    :returns:
+        - output : np.ndarray
+            Synthesized chord labels
+    '''
+    util.validate_intervals(intervals)
+    # We need to convert from intervals to label start times
+    times = intervals.flatten()
+    _, unique = np.unique(times, return_index=True)
+    # Create a new chord_labels list with 'N' for the newly created times
+    chord_labels = [x for t in zip(chord_labels, ['N']*len(chord_labels))
+                    for x in t]
+    times = times[unique]
+    chord_labels = [chord_labels[n - 1] for n in unique[1:]]
+    # Convert from labels to chroma
+    roots, interval_bitmaps, _ = chord.encode_many(chord_labels)
+    chromagram = np.array([np.roll(interval_bitmap, root)
+                           for (interval_bitmap, root)
+                           in zip(interval_bitmaps, roots)]).T
+    return chroma(chromagram, times, fs)

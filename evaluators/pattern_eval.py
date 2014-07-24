@@ -13,10 +13,10 @@ Written by Oriol Nieto (oriol@nyu.edu), 2014
 """
 
 import argparse
-import logging
 import os
-import time
 from collections import OrderedDict
+import json
+import sys
 
 import mir_eval
 
@@ -67,39 +67,46 @@ def evaluate(ref_file, est_file):
     return M
 
 
+def save_results(results, output_file):
+    '''Save a results dict into a json file'''
+    with open(output_file, 'w') as f:
+        json.dump(results, f)
+
+
 def print_evaluation(estimation_file, M):
     # And print them
-    logging.info(os.path.basename(estimation_file))
+    print os.path.basename(estimation_file)
     for key, value in M.iteritems():
-        logging.info('\t%12s:\t%0.3f' % (key, value))
+        print '\t%12s:\t%0.3f' % (key, value)
 
 
 def main():
     """Main function to evaluate the pattern discovery task."""
-    parser = argparse.ArgumentParser(description=
-        "mir_eval pattern discovery evaluation",
+    parser = argparse.ArgumentParser(description="mir_eval pattern discovery "
+                                                 "evaluation",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
     parser.add_argument("ref_file",
                         action="store",
                         help="Path to the reference file.")
     parser.add_argument("est_file",
                         action="store",
                         help="Path to the estimation file.")
-    args = parser.parse_args()
-    start_time = time.time()
+    parameters = vars(parser.parse_args(sys.argv[1:]))
 
-    # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
-        level=logging.INFO)
+    # Compute all the scores
+    scores = evaluate(ref_file=parameters['ref_file'],
+                      est_file=parameters['est_file'])
+    print_evaluation(parameters['est_file'], scores)
 
-    # Run the evaluations
-    scores = evaluate(args.ref_file, args.est_file)
-
-    # Print results
-    print_evaluation(args.ref_file, scores)
-
-    # Done!
-    logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
+    if parameters['output_file']:
+        print 'Saving results to: ', parameters['output_file']
+        save_results(scores, parameters['output_file'])
 
 
 if __name__ == '__main__':

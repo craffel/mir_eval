@@ -11,59 +11,44 @@ Source separation evaluation:
 import numpy as np
 from scipy.linalg import toeplitz
 from scipy.signal import fftconvolve
-import functools
 import collections
 import itertools
 import warnings
 
 
-def validate(metric):
-    '''Decorator which checks that the input data to a metric
-    are valid, and throws helpful errors if not.
+def validate(reference_sources, estimated_sources):
+    '''Checks that the input data to a metric are valid, and throws helpful
+    errors if not.
 
     :parameters:
-        - metric : function
-            Evaluation metric function.  First two arguments must be
-            reference_sources and estimated_sources.
-
-    :returns:
-        - metric_validated : function
-            The function with the onset locations validated
+        - reference_sources : np.ndarray, shape=(nsrc, nsampl)
+            matrix containing true sources
+        - estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+            matrix containing estimated sources
     '''
-    # Retain docstring, etc
-    @functools.wraps(metric)
-    def metric_validated(reference_sources, estimated_sources,
-                         *args, **kwargs):
-        '''
-        Metric with input validated
-        '''
-        # make sure the input is of shape (nsrc, nsampl)
-        if estimated_sources.ndim == 1:
-            estimated_sources = estimated_sources[np.newaxis, :]
-        if reference_sources.ndim == 1:
-            reference_sources = reference_sources[np.newaxis, :]
+    # make sure the input is of shape (nsrc, nsampl)
+    if estimated_sources.ndim == 1:
+        estimated_sources = estimated_sources[np.newaxis, :]
+    if reference_sources.ndim == 1:
+        reference_sources = reference_sources[np.newaxis, :]
 
-        if reference_sources.shape != estimated_sources.shape:
-            raise ValueError('The shape of estimated sources and the true '
-                             'sources should match.  reference_sources.shape '
-                             '= {}, estimated_sources '
-                             '= {}'.format(reference_sources.shape,
-                                           estimated_sources.shape))
+    if reference_sources.shape != estimated_sources.shape:
+        raise ValueError('The shape of estimated sources and the true '
+                         'sources should match.  reference_sources.shape '
+                         '= {}, estimated_sources '
+                         '= {}'.format(reference_sources.shape,
+                                       estimated_sources.shape))
 
-        if reference_sources.size == 0:
-            warnings.warn("reference_sources is empty, should be of size "
-                          "(nsrc, nsample).  sdr, sir, sar, and perm will all "
-                          "be empty np.ndarrays")
-        if estimated_sources.size == 0:
-            warnings.warn("estimated_sources is empty, should be of size "
-                          "(nsrc, nsample).  sdr, sir, sar, and perm will all "
-                          "be empty np.ndarrays")
-
-        return metric(reference_sources, estimated_sources, *args, **kwargs)
-    return metric_validated
+    if reference_sources.size == 0:
+        warnings.warn("reference_sources is empty, should be of size "
+                      "(nsrc, nsample).  sdr, sir, sar, and perm will all "
+                      "be empty np.ndarrays")
+    if estimated_sources.size == 0:
+        warnings.warn("estimated_sources is empty, should be of size "
+                      "(nsrc, nsample).  sdr, sir, sar, and perm will all "
+                      "be empty np.ndarrays")
 
 
-@validate
 def bss_eval_sources(reference_sources, estimated_sources):
     '''
         MATLAB translation of BSS_EVAL Toolbox
@@ -107,6 +92,7 @@ def bss_eval_sources(reference_sources, estimated_sources):
 
     '''
 
+    validate(reference_sources, estimated_sources)
     # If empty matrices were supplied, return empty lists (special case)
     if reference_sources.size == 0 or estimated_sources.size == 0:
         return np.array([]), np.array([]), np.array([]), np.array([])

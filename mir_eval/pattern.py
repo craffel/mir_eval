@@ -78,7 +78,6 @@ Written by Oriol Nieto (oriol@nyu.edu), 2014
 """
 
 
-import functools
 import numpy as np
 from . import util
 import warnings
@@ -90,42 +89,32 @@ def _n_onset_midi(patterns):
     return len([o_m for pat in patterns for occ in pat for o_m in occ])
 
 
-def validate(metric):
-    """Decorator which checks that the input annotations to a metric
-    look like valid pattern lists, and throws helpful errors if not.
+def validate(reference_patterns, estimated_patterns):
+    """Checks that the input annotations to a metric look like valid pattern
+    lists, and throws helpful errors if not.
 
     :parameters:
-        - metric : function
-            Evaluation metric function.  First two arguments must be
-            reference_patterns and estimated_patterns.
-
-    :returns:
-        - metric_validated : function
-            The function with the pattern lists validated.
+        - reference_patterns : list
+            The reference patterns using the format returned by
+            :func:`mir_eval.input_output.load_patterns()`
+        - estimated_patterns : list
+            The estimated patterns in the same format
     """
-    # Retain docstring, etc
-    @functools.wraps(metric)
-    def metric_validated(reference_patterns, estimated_patterns, *args,
-                         **kwargs):
-        """ Metric with input pattern annotations validated.
-        """
-        # Warn if pattern lists are empty
-        if _n_onset_midi(reference_patterns) == 0:
-            warnings.warn('Reference patterns are empty.')
-        if _n_onset_midi(estimated_patterns) == 0:
-            warnings.warn('Estimated patterns are empty.')
-        for patterns in [reference_patterns, estimated_patterns]:
-            for pattern in patterns:
-                if len(pattern) <= 0:
-                    raise ValueError("Each pattern must contain at least one "
-                                     "occurrence.")
-                for occurrence in pattern:
-                    for onset_midi in occurrence:
-                        if len(onset_midi) != 2:
-                            raise ValueError("The (onset, midi) tuple must "
-                                             "contain exactly 2 elements.")
-        return metric(reference_patterns, estimated_patterns, *args, **kwargs)
-    return metric_validated
+    # Warn if pattern lists are empty
+    if _n_onset_midi(reference_patterns) == 0:
+        warnings.warn('Reference patterns are empty.')
+    if _n_onset_midi(estimated_patterns) == 0:
+        warnings.warn('Estimated patterns are empty.')
+    for patterns in [reference_patterns, estimated_patterns]:
+        for pattern in patterns:
+            if len(pattern) <= 0:
+                raise ValueError("Each pattern must contain at least one "
+                                 "occurrence.")
+            for occurrence in pattern:
+                for onset_midi in occurrence:
+                    if len(onset_midi) != 2:
+                        raise ValueError("The (onset, midi) tuple must "
+                                         "contain exactly 2 elements.")
 
 
 def _occurrence_intersection(occ_P, occ_Q):
@@ -180,7 +169,6 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
     return sm
 
 
-@validate
 def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     """Standard F1 Score, Precision and Recall.
 
@@ -214,6 +202,7 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
         - recall : float
             The standard Recall
     """
+    validate(reference_patterns, estimated_patterns)
     nP = len(reference_patterns)    # Number of patterns in the reference
     nQ = len(estimated_patterns)    # Number of patterns in the estimation
     k = 0                           # Number of patterns that match
@@ -244,7 +233,6 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     return f_measure, precision, recall
 
 
-@validate
 def establishment_FPR(reference_patterns, estimated_patterns,
                       similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
@@ -277,6 +265,7 @@ def establishment_FPR(reference_patterns, estimated_patterns,
         - recall : float
             The establishment Recall
     """
+    validate(reference_patterns, estimated_patterns)
     nP = len(reference_patterns)    # Number of elements in reference
     nQ = len(estimated_patterns)    # Number of elements in estimation
     S = np.zeros((nP, nQ))          # Establishment matrix
@@ -299,7 +288,6 @@ def establishment_FPR(reference_patterns, estimated_patterns,
     return f_measure, precision, recall
 
 
-@validate
 def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
                    similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
@@ -334,6 +322,7 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
         - recall : float
             The establishment Recall
     """
+    validate(reference_patterns, estimated_patterns)
     # Number of elements in reference
     nP = len(reference_patterns)
     # Number of elements in estimation
@@ -373,7 +362,6 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
     return f_measure, precision, recall
 
 
-@validate
 def three_layer_FPR(reference_patterns, estimated_patterns):
     """Three Layer F1 Score, Precision and Recall. As described by Meridith.
 
@@ -400,6 +388,8 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         - recall : float
             The three-layer Recall
     """
+    validate(reference_patterns, estimated_patterns)
+
     def compute_first_layer_PR(ref_occs, est_occs):
         """Computes the first layer Precision and Recall values given the
         set of occurrences in the reference and the set of occurrences in the
@@ -466,7 +456,6 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
     return f_measure_3, precision_3, recall_3
 
 
-@validate
 def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
     """First n three-layer precision.
 
@@ -495,6 +484,7 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
             The first n three-layer Precision
     """
 
+    validate(reference_patterns, estimated_patterns)
     # If no patterns were provided, metric is zero
     if _n_onset_midi(reference_patterns) == 0 or \
        _n_onset_midi(estimated_patterns) == 0:
@@ -509,7 +499,6 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
     return P    # Return the precision only
 
 
-@validate
 def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
     """Firt n target proportion establishment recall metric.
 
@@ -538,6 +527,7 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
             The first n target proportion Recall.
     """
 
+    validate(reference_patterns, estimated_patterns)
     # If no patterns were provided, metric is zero
     if _n_onset_midi(reference_patterns) == 0 or \
        _n_onset_midi(estimated_patterns) == 0:
