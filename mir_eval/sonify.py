@@ -87,7 +87,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
         ten_periods = int(10*fs*(1./frequency))
         short_signal = function(2*np.pi*np.arange(ten_periods)*frequency/fs)
         # Repeat the signal until it's of the desired length
-        n_repeats = int(np.ceil(length/short_signal.shape[0]))
+        n_repeats = int(np.ceil(length/float(short_signal.shape[0])))
         return np.tile(short_signal, n_repeats)[:length]
 
     # Pre-allocate output signal
