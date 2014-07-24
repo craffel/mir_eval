@@ -436,7 +436,7 @@ def join(chord_root, quality='', extensions=None, bass=''):
         chord_label += ":%s" % quality
     if extensions:
         chord_label += "(%s)" % ",".join(extensions)
-    if bass:
+    if bass and bass != '1':
         chord_label += "/%s" % bass
     validate_chord_label(chord_label)
     return chord_label
