@@ -139,6 +139,8 @@ def chroma(chromagram, times, fs):
     shepard_weight = np.exp(-(notes - mean)**2./(2.*std**2.))
     # Copy the chromagram matrix vertically n_octaves times
     gram = np.tile(chromagram.T, n_octaves).T
+    # This fixes issues if the supplied chromagram is int type
+    gram = gram.astype(float)
     # Apply Sheppard weighting
     gram *= shepard_weight.reshape(-1, 1)
     # Compute frequencies
