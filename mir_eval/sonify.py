@@ -103,3 +103,42 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     # Normalize
     output /= np.abs(output).max()
     return output
+
+
+def chroma(chromagram, times, fs):
+    '''
+    Reverse synthesis of a chromagram (semitone matrix)
+
+    :parameters:
+        - chromagram : np.ndarray, shape=(12, times.shape[0])
+            Chromagram matrix, where each row represents a semitone [C->Bb]
+            i.e., chromagram[3, j] is the magnitude of D# from times[j] to
+            times[j + 1]
+        - times : np.ndarray
+            The start time of each column in the chromagram
+        - fs : int
+            Sampling rate to synthesize audio data at
+
+    :returns:
+        - output : np.ndarray
+            Synthesized chromagram
+    '''
+    # We'll just use time_frequency with a Shepard tone-gram
+    # To create the Shepard tone-gram, we copy the chromagram across 7 octaves
+    n_octaves = 7
+    # starting from C2
+    base_note = 24
+    # and weight each octave by a normal distribution
+    # The normal distribution has mean 72 (one octave above middle C)
+    # and std 6 (one half octave)
+    mean = 72
+    std = 6
+    notes = np.arange(12*n_octaves) + base_note
+    shepard_weight = np.exp(-(notes - mean)**2./(2.*std**2.))
+    # Copy the chromagram matrix vertically n_octaves times
+    gram = np.tile(chromagram.T, n_octaves).T
+    # Apply Sheppard weighting
+    gram *= shepard_weight.reshape(-1, 1)
+    # Compute frequencies
+    frequencies = 440.0*(2.0**((notes - 69)/12.0))
+    return time_frequency(gram, frequencies, times, fs)
