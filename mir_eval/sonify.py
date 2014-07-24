@@ -95,6 +95,8 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     for n, frequency in enumerate(frequencies):
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
+        # Zero out up to first time
+        wave[:int(times[0]*fs)] = 0
         # Scale each time interval by the piano roll magnitude
         for m, (start, end) in enumerate(zip(times[:-1], times[1:])):
             wave[int(start*fs):int(end*fs)] *= gram[n, m]
