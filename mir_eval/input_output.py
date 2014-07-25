@@ -3,6 +3,7 @@
 import numpy as np
 import re
 import warnings
+import scipy.io.wavfile
 
 from . import util
 
@@ -295,3 +296,37 @@ def load_patterns(filename):
             pattern_list.append(pattern)
 
     return pattern_list
+
+
+def load_wav(path, mono=True):
+    '''
+    Loads a .wav file as a numpy array using scipy.io.wavfile.
+
+    :parameters:
+        - path : str
+            Path to a .wav file
+        - mono : bool
+            If the provided .wav has more than one channel, it will be
+            converted to mono if mono=True.  Defaults to True.
+
+    :returns:
+        - audio_data : np.ndarray
+            Array of audio samples, in the range [-1., 1.]
+        - fs : int
+            Sampling rate of the audio data
+    '''
+    fs, audio_data = scipy.io.wavfile.read(path)
+    # Make float in range [-1, 1]
+    if audio_data.dtype == 'int8':
+        audio_data = audio_data/float(2**8)
+    elif audio_data.dtype == 'int16':
+        audio_data = audio_data/float(2**16)
+    elif audio_data.dtype == 'int32':
+        audio_data = audio_data/float(2**24)
+    else:
+        raise ValueError('Got unexpected .wav data type '
+                         '{}'.format(audio_data.dtype))
+    # Optionally convert to mono
+    if mono and audio_data.ndim != 1:
+        audio_data = audio_data.mean(axis=1)
+    return audio_data, fs
