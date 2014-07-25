@@ -8,6 +8,75 @@ import warnings
 from . import util
 
 
+def load_delimited(filename, converters, delimiter=r'\s+'):
+    '''
+    Utility function for loading in data from an annotation file where columns
+    are delimited.  The number of columns is inferred from the length of
+    the provided converters list.
+
+    :usage:
+        >>> # Load in a one-column list of event times (floats)
+        >>> load_delimited('events.tsv', [float])
+        >>> # Load in a list of labeled events, separated by commas
+        >>> load_delimited('labeled_events.csv', [float, str], ',')
+
+    :parameters:
+         - filename : str
+            Path to the annotation file
+         - converters : list of functions
+            Each entry in column n of the file will be cast by the function
+            converters[n].
+         - delimiter : str
+            Separator regular expression.
+            By default, lines will be split by any amount of whitespace ('\s+')
+
+    :returns:
+        - columns : tuple of lists
+            Each list in this tuple corresponds to values in one of the columns
+            in the file.
+    '''
+    # Initialize list of empty lists
+    n_columns = len(converters)
+    columns = tuple(list() for _ in xrange(n_columns))
+
+    # Create re object for splitting lines
+    splitter = re.compile(delimiter)
+
+    # Note: we do io manually here for two reasons.
+    #   1. The csv module has difficulties with unicode, which may lead
+    #      to failures on certain annotation strings
+    #
+    #   2. numpy's text loader does not handle non-numeric data
+    #
+    with open(filename, 'r') as input_file:
+        for row, line in enumerate(input_file, 1):
+            # Split each line using the supplied delimiter
+            data = splitter.split(line.strip(), n_columns - 1)
+
+            # Throw a helpful error if we got an unexpected # of columns
+            if n_columns != len(data):
+                raise ValueError('Expected {} columns, got {} at '
+                                 '{}:{:d}:\n\t{}'.format(n_columns, len(data),
+                                                         filename, row, line))
+
+            for value, column, converter in zip(data, columns, converters):
+                # Try converting the value, throw a helpful error on failure
+                try:
+                    converted_value = converter(value)
+                except:
+                    raise ValueError("Couldn't convert value {} using {} "
+                                     "found at {}:{:d}:\n\t{}".format(
+                                         value, converter.__name__, filename,
+                                         row, line))
+                column.append(converted_value)
+
+    # Sane output
+    if n_columns == 1:
+        return columns[0]
+    else:
+        return columns
+
+
 def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
     r'''Import time-stamp events from an annotation file.  This is primarily
         useful for processing events which lack duration, such as beats or
