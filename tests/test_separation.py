@@ -20,7 +20,6 @@ EST_GLOB = 'data/separation/est*'
 SCORES_GLOB = 'data/separation/output*.json'
 
 
-
 def __load_wav(path):
     ''' Wrapper around scipy.io.wavfile for reading a wav '''
     fs, audio_data = scipy.io.wavfile.read(path)
@@ -28,8 +27,10 @@ def __load_wav(path):
     audio_data = audio_data/32768.0
     return audio_data.T, fs
 
+
 def __load_and_stack_wavs(directory):
-    ''' Load all wavs in a directory and stack them vertically into a matrix '''
+    ''' Load all wavs in a directory and stack them vertically into a matrix
+    '''
     stacked_audio_data = []
     global_fs = None
     for f in glob.glob(os.path.join(directory, '*.wav')):
@@ -38,6 +39,7 @@ def __load_and_stack_wavs(directory):
         global_fs = fs
         stacked_audio_data.append(audio_data)
     return np.vstack(stacked_audio_data)
+
 
 def __unit_test_separation_function(metric):
     with warnings.catch_warnings(record=True) as w:
@@ -63,6 +65,7 @@ def __regression_test_separation_function(metric, ref_f, est_f, score):
     ref_sources = __load_and_stack_wavs(ref_f)
     est_sources = __load_and_stack_wavs(est_f)
     assert np.allclose(metric(ref_sources, est_sources), score)
+
 
 def test_separation_functions():
     # Load in all files in the same order
