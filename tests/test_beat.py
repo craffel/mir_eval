@@ -55,7 +55,8 @@ def __unit_test_beat_function(metric):
     assert np.allclose(metric(beats, beats), 1)
 
 
-def __regression_test_beat_function(metric, reference_file, estimated_file, score):
+def __regression_test_beat_function(metric, reference_file, estimated_file,
+                                    score):
     # Load in an example beat annotation
     reference_beats, _ = mir_eval.io.load_events(reference_file)
     # Load in an example beat tracker output
@@ -64,7 +65,8 @@ def __regression_test_beat_function(metric, reference_file, estimated_file, scor
     reference_beats = mir_eval.beat.trim_beats(reference_beats)
     estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
     # Ensure that the score is correct
-    assert np.allclose(metric(reference_beats, estimated_beats), score, atol=A_TOL)
+    assert np.allclose(metric(reference_beats, estimated_beats), score,
+                       atol=A_TOL)
 
 
 def test_beat_functions():
