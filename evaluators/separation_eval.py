@@ -11,23 +11,12 @@ import argparse
 import sys
 import os
 from collections import OrderedDict
-import scipy.io.wavfile
 import glob
 import os
 import numpy as np
 import json
 
 import mir_eval
-
-
-def load_wav(path):
-    ''' Wrapper around scipy.io.wavfile for reading a wav '''
-    fs, audio_data = scipy.io.wavfile.read(path)
-    # Make float
-    audio_data = audio_data/32768.0
-    # Only mono is acceptable
-    assert audio_data.ndim == 1
-    return audio_data, fs
 
 
 def evaluate(reference_directory, estimated_directory):
@@ -39,7 +28,7 @@ def evaluate(reference_directory, estimated_directory):
     # Load in each reference file in the supplied dir
     for reference_file in glob.glob(os.path.join(reference_directory,
                                                  '*.wav')):
-        audio_data, fs = load_wav(reference_file)
+        audio_data, fs = mir_eval.io.load_wav(reference_file)
         # Make sure fs is the same for all files
         assert (global_fs is None or fs == global_fs)
         global_fs = fs
@@ -47,7 +36,7 @@ def evaluate(reference_directory, estimated_directory):
 
     for estimated_file in glob.glob(os.path.join(estimated_directory,
                                                  '*.wav')):
-        audio_data, fs = load_wav(estimated_file)
+        audio_data, fs = mir_eval.io.load_wav(estimated_file)
         assert (global_fs is None or fs == global_fs)
         global_fs = fs
         estimated_data.append(audio_data)
