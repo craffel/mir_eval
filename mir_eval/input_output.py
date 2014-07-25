@@ -77,75 +77,72 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
         return columns
 
 
-def load_events(filename, delimiter=r'\s+', converter=None, label_prefix='__'):
-    r'''Import time-stamp events from an annotation file.  This is primarily
-        useful for processing events which lack duration, such as beats or
-        onsets.
+def load_events(filename, delimiter=r'\s+'):
+    r'''
+    Import time-stamp events from an annotation file.  The file should
+    consist of a single column of numeric values corresponding to the event
+    times. This is primarily useful for processing events which lack duration,
+    such as beats or onsets.
 
-        The annotation file may be either of two formats:
-         - Single-column.  Each line contains a single value, corresponding to
-           the time of the annotated event.
-
-         - Double-column.  Each line contains two values, separated by
-           ``delimiter``: the first contains the time of the annotated event,
-           and the second contains its label.
-
-        :parameters:
-         - filename : str
+    :parameters:
+        - filename : str
             Path to the annotation file
 
-         - delimiter : str
+        - delimiter : str
             Separator regular expression.
             By default, lines will be split by any amount of whitespace ('\s+')
 
-         - converter : function
-            Function to convert time-stamp data into numerics.
-            Defaults to float().
-
-         - label_prefix : str
-            String to append to any synthetically generated labels
-
-        :returns:
-         - event_times : np.ndarray
+    :returns:
+        - event_times : np.ndarray
             array of event times (float)
 
-         - event_labels : list of str
-            list of corresponding event labels
-        '''
+    '''
+    # Use our universal function to load in the events
+    events = load_delimited(filename, [float], delimiter)
+    events = np.array(events)
+    # Validate them, but throw a warning in place of an error
+    try:
+        util.validate_events(events)
+    except ValueError as error:
+        warnings.warn(error.args[0])
 
-    if converter is None:
-        converter = float
+    return events
 
-    times = []
-    labels = []
 
-    splitter = re.compile(delimiter)
+def load_labeled_events(filename, delimiter=r'\s+'):
+    r'''
+    Import labeled time-stamp events from an annotation file.  The file should
+    consist of two columns; the first having numeric values corresponding to
+    the event times and the second having string labels for each event.  This
+    is primarily useful for processing labeled events which lack duration, such
+    as beats with metric beat number or onsets with an instrument label.
 
-    # Note: we do io manually here for two reasons.
-    #   1. The csv module has difficulties with unicode, which may lead
-    #      to failures on certain annotation strings
-    #
-    #   2. numpy's text loader does not handle non-numeric data
-    #
-    with open(filename, 'r') as input_file:
-        for row, line in enumerate(input_file, 1):
-            data = splitter.split(line.strip(), 1)
+    :parameters:
+        - filename : str
+            Path to the annotation file
 
-            if len(data) == 1:
-                times.append(converter(data[0]))
-                labels.append('%s%d' % (label_prefix, row))
+        - delimiter : str
+            Separator regular expression.
+            By default, lines will be split by any amount of whitespace ('\s+')
 
-            elif len(data) == 2:
-                times.append(converter(data[0]))
-                labels.append(data[1])
+    :returns:
+        - event_times : np.ndarray
+            array of event times (float)
 
-            else:
-                raise ValueError('Parse error on %s:%d:\n\t%s' %
-                                 (filename, row, line))
+        - labels : list of str
+            list of labels
 
-    times = np.asarray(times)
+    '''
+    # Use our universal function to load in the events
+    events, labels = load_delimited(filename, [float, str], delimiter)
+    events = np.array(events)
+    # Validate them, but throw a warning in place of an error
+    try:
+        util.validate_events(events)
+    except ValueError as error:
+        warnings.warn(error.args[0])
 
-    return times, labels
+    return events, labels
 
 
 def load_intervals(filename, delimiter=r'\s+',
