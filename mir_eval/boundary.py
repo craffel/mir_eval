@@ -13,7 +13,7 @@ import warnings
 from . import util
 
 
-def validate(reference_intervals, estimated_intervals, *args, **kwargs):
+def validate(reference_intervals, estimated_intervals):
     '''Checks that the input annotations to a metric look like valid segment
     times, and throws helpful errors if not.
 
