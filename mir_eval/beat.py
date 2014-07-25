@@ -399,9 +399,8 @@ def continuity(reference_beats,
         used_annotations = np.zeros(n_annotations)
         # Whether or not we are continuous at any given point
         beat_successes = np.zeros(n_annotations)
-        # Is this beat correct?
-        beat_success = 0
         for m in xrange(estimated_beats.shape[0]):
+            # Is this beat correct?
             beat_success = 0
             # Get differences for this beat
             beat_differences = np.abs(estimated_beats[m] - reference_beats)
@@ -412,18 +411,44 @@ def continuity(reference_beats,
             if used_annotations[nearest] == 0:
                 # Is this the first beat or first annotation?
                 # If so, look forward.
-                if (m == 0 or nearest == 0) and \
-                   (m + 1 < estimated_beats.shape[0]):
+                if m == 0 or nearest == 0:
                     # How far is the estimated beat from the reference beat,
                     # relative to the inter-annotation-interval?
-                    reference_interval = (reference_beats[nearest + 1] -
-                                         reference_beats[nearest])
-                    phase = np.abs(min_difference/reference_interval)
+                    if nearest + 1 < reference_beats.shape[0]:
+                        reference_interval = (reference_beats[nearest + 1] -
+                                              reference_beats[nearest])
+                    else:
+                        # Special case when nearest + 1 is too large - use the
+                        # previous interval instead
+                        reference_interval = (reference_beats[nearest] -
+                                              reference_beats[nearest - 1])
+                    # Handle this special case when beats are not unique
+                    if reference_interval == 0:
+                        if min_difference == 0:
+                            phase = 1
+                        else:
+                            phase = np.inf
+                    else:
+                        phase = np.abs(min_difference/reference_interval)
                     # How close is the inter-beat-interval
                     # to the inter-annotation-interval?
-                    estimated_interval = (estimated_beats[m + 1] -
-                                          estimated_beats[m])
-                    period = np.abs(1 - estimated_interval/reference_interval)
+                    if m + 1 < estimated_beats.shape[0]:
+                        estimated_interval = (estimated_beats[m + 1] -
+                                              estimated_beats[m])
+                    else:
+                        # Special case when m + 1 is too large - use the
+                        # previous interval
+                        estimated_interval = (estimated_beats[m] -
+                                              estimated_beats[m - 1])
+                    # Handle this special case when beats are not unique
+                    if reference_interval == 0:
+                        if estimated_interval == 0:
+                            period = 0
+                        else:
+                            period = np.inf
+                    else:
+                        period = \
+                            np.abs(1 - estimated_interval/reference_interval)
                     if phase < continuity_phase_threshold and \
                        period < continuity_period_threshold:
                         # Set this annotation as used

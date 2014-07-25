@@ -687,8 +687,10 @@ def thirds(reference_labels, estimated_labels):
     '''Compare chords along root & third relationships.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -725,8 +727,10 @@ def thirds_inv(reference_labels, estimated_labels):
     '''Score chords along root, third, & bass relationships.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -766,8 +770,10 @@ def triads(reference_labels, estimated_labels):
     '''Compare chords along triad (root & quality to #5) relationships.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -805,8 +811,10 @@ def triads_inv(reference_labels, estimated_labels):
     '''Score chords along triad (root, quality to #5, & bass) relationships.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -847,8 +855,10 @@ def tetrads(reference_labels, estimated_labels):
     '''Compare chords along tetrad (root & full quality) relationships.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -885,8 +895,10 @@ def tetrads_inv(reference_labels, estimated_labels):
     '''Compare chords along seventh (root, quality) relationships.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -926,8 +938,10 @@ def root(reference_labels, estimated_labels):
     '''Compare chords according to roots.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -963,8 +977,10 @@ def mirex(reference_labels, estimated_labels):
     '''Compare chords along MIREX rules.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -1004,8 +1020,10 @@ def majmin(reference_labels, estimated_labels):
     Major/minor/no-chord are ignored.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -1066,8 +1084,10 @@ def majmin_inv(reference_labels, estimated_labels):
     exist in the triad (bass in [1, 3, 5]).
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -1127,8 +1147,10 @@ def sevenths(reference_labels, estimated_labels):
     outside [maj, maj7, 7, min, min7, N] are ignored.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -1179,8 +1201,10 @@ def sevenths_inv(reference_labels, estimated_labels):
     outside [maj, maj7, 7, min, min7, N] are ignored.
 
     :usage:
-        >>> ref_intervals, ref_labels = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals, est_labels = mir_eval.io.load_intervals('est.lab')
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
                 est_intervals, est_labels, ref_intervals.min(),
                 ref_intervals.max(), mir_eval.chord.NO_CHORD,
@@ -1285,8 +1309,8 @@ def evaluate_file_pair(reference_file, estimation_file,
         vocabularies = ['majmin']
 
     # load the data
-    ref_intervals, ref_labels = io.load_intervals(reference_file)
-    est_intervals, est_labels = io.load_intervals(estimation_file)
+    ref_intervals, ref_labels = io.load_labeled_intervals(reference_file)
+    est_intervals, est_labels = io.load_labeled_intervals(estimation_file)
 
     if boundary_mode == 'intersect':
         t_min = max([ref_intervals.min(), est_intervals.min()])

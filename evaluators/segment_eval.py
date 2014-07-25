@@ -22,8 +22,8 @@ def evaluate(ref_file=None, est_file=None, trim=False):
     '''Load data and perform the evaluation'''
 
     # load the data
-    ref_intervals, ref_labels = mir_eval.io.load_intervals(ref_file)
-    est_intervals, est_labels = mir_eval.io.load_intervals(est_file)
+    ref_intervals, ref_labels = mir_eval.io.load_labeled_intervals(ref_file)
+    est_intervals, est_labels = mir_eval.io.load_labeled_intervals(est_file)
 
     # Adjust timespan of estimations relative to ground truth
     ref_intervals, ref_labels = \
