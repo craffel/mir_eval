@@ -13,7 +13,7 @@ import warnings
 from . import util
 
 
-def validate(reference_intervals, estimated_intervals):
+def validate(reference_intervals, estimated_intervals, trim):
     '''Checks that the input annotations to a metric look like valid segment
     times, and throws helpful errors if not.
 
@@ -25,11 +25,24 @@ def validate(reference_intervals, estimated_intervals):
         - estimated_intervals : np.ndarray, shape=(m, 2)
             estimated segment intervals,
             as returned by `mir_eval.io.load_intervals`
+
+        - trim : bool
+            will the start and end events be trimmed?
     '''
-    if reference_intervals.size == 0:
+
+    if trim:
+        # If we're trimming, then we need at least 2 intervals
+        min_size = 2
+    else:
+        # If we're not trimming, then we only need one interval
+        min_size = 1
+
+    if len(reference_intervals) < min_size:
         warnings.warn("Reference intervals are empty.")
-    if estimated_intervals.size == 0:
+
+    if len(estimated_intervals) < min_size:
         warnings.warn("Estimated intervals are empty.")
+
     for intervals in [reference_intervals, estimated_intervals]:
         util.validate_intervals(intervals)
 
@@ -92,7 +105,7 @@ def detection(reference_intervals, estimated_intervals,
             F-measure (weighted harmonic mean of ``precision`` and ``recall``)
     '''
 
-    validate(reference_intervals, estimated_intervals)
+    validate(reference_intervals, estimated_intervals, trim)
 
     # Convert intervals to boundaries
     reference_boundaries = util.intervals_to_boundaries(reference_intervals)
@@ -152,7 +165,7 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
             closest reference boundary
     '''
 
-    validate(reference_intervals, estimated_intervals)
+    validate(reference_intervals, estimated_intervals, trim)
 
     # Convert intervals to boundaries
     reference_boundaries = util.intervals_to_boundaries(reference_intervals)
