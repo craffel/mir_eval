@@ -164,7 +164,7 @@ def load_intervals(filename, delimiter=r'\s+'):
     # Use our universal function to load in the events
     starts, ends = load_delimited(filename, [float, float], delimiter)
     # Stack into an interval matrix
-    intervals = np.array([starts, ends])
+    intervals = np.array([starts, ends]).T
     # Validate them, but throw a warning in place of an error
     try:
         util.validate_intervals(intervals)
@@ -199,7 +199,7 @@ def load_labeled_intervals(filename, delimiter=r'\s+'):
     starts, ends, labels = load_delimited(filename, [float, float, str],
                                           delimiter)
     # Stack into an interval matrix
-    intervals = np.array([starts, ends])
+    intervals = np.array([starts, ends]).T
     # Validate them, but throw a warning in place of an error
     try:
         util.validate_intervals(intervals)
