@@ -58,9 +58,9 @@ def __unit_test_beat_function(metric):
 def __regression_test_beat_function(metric, reference_file, estimated_file,
                                     score):
     # Load in an example beat annotation
-    reference_beats, _ = mir_eval.io.load_events(reference_file)
+    reference_beats = mir_eval.io.load_events(reference_file)
     # Load in an example beat tracker output
-    estimated_beats, _ = mir_eval.io.load_events(estimated_file)
+    estimated_beats = mir_eval.io.load_events(estimated_file)
     # Trim the first 5 seconds off
     reference_beats = mir_eval.beat.trim_beats(reference_beats)
     estimated_beats = mir_eval.beat.trim_beats(estimated_beats)

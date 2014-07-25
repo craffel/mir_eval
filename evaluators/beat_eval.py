@@ -23,8 +23,8 @@ def evaluate(reference_file=None, estimated_file=None):
     '''Load data and perform the evaluation'''
 
     # load the data
-    reference_beats, reference_labels = mir_eval.io.load_events(reference_file)
-    estimated_beats, estimated_labels = mir_eval.io.load_events(estimated_file)
+    reference_beats = mir_eval.io.load_events(reference_file)
+    estimated_beats = mir_eval.io.load_events(estimated_file)
 
     # Now compute all the metrics
 

@@ -20,8 +20,8 @@ def evaluate(reference_file, estimated_file):
     '''Load data and perform the evaluation'''
 
     # load the data
-    reference_onsets, _ = mir_eval.io.load_events(reference_file)
-    estimated_onsets, _ = mir_eval.io.load_events(estimated_file)
+    reference_onsets = mir_eval.io.load_events(reference_file)
+    estimated_onsets = mir_eval.io.load_events(estimated_file)
 
     # Now compute all the metrics
     scores = OrderedDict()

@@ -16,6 +16,7 @@ REF_GLOB = 'data/onset/ref*.txt'
 EST_GLOB = 'data/onset/est*.txt'
 SCORES_GLOB = 'data/onset/output*.json'
 
+
 def __unit_test_onset_function(metric):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
@@ -49,9 +50,9 @@ def __unit_test_onset_function(metric):
 def __regression_test_onset_function(metric, reference_file, estimated_file,
                                      score):
     # Load in an example onset annotation
-    reference_onsets, _ = mir_eval.io.load_events(reference_file)
+    reference_onsets = mir_eval.io.load_events(reference_file)
     # Load in an example onset tracker output
-    estimated_onsets, _ = mir_eval.io.load_events(estimated_file)
+    estimated_onsets = mir_eval.io.load_events(estimated_file)
     # Ensure that the score is correct
     assert np.allclose(metric(reference_onsets, estimated_onsets), score,
                        atol=A_TOL)
