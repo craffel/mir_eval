@@ -8,7 +8,6 @@ from mir_eval numerically match.
 
 import numpy as np
 import mir_eval
-import scipy.io.wavfile
 import glob
 import nose.tools
 import json
@@ -20,21 +19,13 @@ EST_GLOB = 'data/separation/est*'
 SCORES_GLOB = 'data/separation/output*.json'
 
 
-def __load_wav(path):
-    ''' Wrapper around scipy.io.wavfile for reading a wav '''
-    fs, audio_data = scipy.io.wavfile.read(path)
-    # Make float
-    audio_data = audio_data/32768.0
-    return audio_data.T, fs
-
-
 def __load_and_stack_wavs(directory):
     ''' Load all wavs in a directory and stack them vertically into a matrix
     '''
     stacked_audio_data = []
     global_fs = None
     for f in glob.glob(os.path.join(directory, '*.wav')):
-        audio_data, fs = __load_wav(f)
+        audio_data, fs = mir_eval.io.load_wav(f)
         assert (global_fs is None or fs == global_fs)
         global_fs = fs
         stacked_audio_data.append(audio_data)
