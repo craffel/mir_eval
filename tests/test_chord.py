@@ -208,9 +208,11 @@ def __check_not_comparable(metric, ref_label, est_label):
 
 def __regression_test_one_file(metric, reference_file, estimated_file, score):
     # Load in an example chord
-    ref_intervals, ref_labels = mir_eval.io.load_intervals(reference_file)
+    (ref_intervals,
+     ref_labels) = mir_eval.io.load_labeled_intervals(reference_file)
     # Load in an example estimated chord labeling
-    est_intervals, est_labels = mir_eval.io.load_intervals(estimated_file)
+    (est_intervals,
+     est_labels) = mir_eval.io.load_labeled_intervals(estimated_file)
     # Intersect boundaries
     t_min = max([ref_intervals.min(), est_intervals.min()])
     t_max = min([ref_intervals.max(), est_intervals.max()])
