@@ -46,13 +46,15 @@ def __unit_test_onset_function(metric):
     assert np.allclose(metric(onsets, onsets), 1)
 
 
-def __regression_test_onset_function(metric, reference_file, estimated_file, score):
+def __regression_test_onset_function(metric, reference_file, estimated_file,
+                                     score):
     # Load in an example onset annotation
     reference_onsets, _ = mir_eval.io.load_events(reference_file)
     # Load in an example onset tracker output
     estimated_onsets, _ = mir_eval.io.load_events(estimated_file)
     # Ensure that the score is correct
-    assert np.allclose(metric(reference_onsets, estimated_onsets), score, atol=A_TOL)
+    assert np.allclose(metric(reference_onsets, estimated_onsets), score,
+                       atol=A_TOL)
 
 
 def test_onset_functions():
