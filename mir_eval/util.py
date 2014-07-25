@@ -43,6 +43,24 @@ def index_labels(labels, case_sensitive=False):
     return indices, index_to_label
 
 
+def generate_labels(items, prefix='__'):
+    '''
+    Given an array of items (e.g. events, intervals), create a synthetic label
+    for each event of the form '(label prefix)(item number)'
+
+    :parameters:
+        - items : list-like
+            A list or array of events or intervals
+        - prefix : str
+            This prefix will be prepended to all synthetically generated labels
+
+    :returns:
+        - labels : list of str
+            Synthetically generated labels
+    '''
+    return ['{}{}'.format(prefix, n) for n in xrange(len(items))]
+
+
 def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
                          fill_value=None):
     '''Convert an array of labeled time intervals to annotated samples.
