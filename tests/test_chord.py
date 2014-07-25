@@ -16,6 +16,7 @@ REF_GLOB = 'data/chord/ref*.lab'
 EST_GLOB = 'data/chord/est*.lab'
 SCORES_GLOB = 'data/chord/output*.json'
 
+
 def __check_valid(function, parameters, result):
     ''' Helper function for checking the output of a function '''
     assert function(*parameters) == result
@@ -184,7 +185,8 @@ def test_encode_many():
 
 
 def __check_one_metric(metric, ref_label, est_label, score):
-    ''' Checks that a metric function produces score given ref_label and est_label '''
+    ''' Checks that a metric function produces score given ref_label and
+    est_label '''
     # We provide a dummy interval.  We're just checking one pair
     # of labels at a time.
     assert metric([ref_label], [est_label], np.array([[0, 1]])) == score
@@ -202,6 +204,7 @@ def __check_not_comparable(metric, ref_label, est_label):
                                       "to estimated chords, returning 0.")
         # And confirm that the metric is 0
         assert np.allclose(score, 0)
+
 
 def __regression_test_one_file(metric, reference_file, estimated_file, score):
     # Load in an example chord
@@ -221,7 +224,9 @@ def __regression_test_one_file(metric, reference_file, estimated_file, score):
     intervals, ref_labels, est_labels = mir_eval.util.merge_labeled_intervals(
         ref_intervals, ref_labels, est_intervals, est_labels)
     # Ensure that the score is correct
-    assert np.allclose(metric(ref_labels, est_labels, intervals), score, atol=A_TOL)
+    assert np.allclose(metric(ref_labels, est_labels, intervals), score,
+                       atol=A_TOL)
+
 
 def __regression_test_chord_function(metric_name):
     # Load in all files in the same order
@@ -386,6 +391,7 @@ def test_sevenths():
     for test in __regression_test_chord_function('sevenths'):
         yield test
 
+
 def test_sevenths_inv():
     ref_labels = ['C:maj7/5', 'G:min',    'C:7/5', 'C:min7/b7']
     est_labels = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:min7/b7']
@@ -395,7 +401,8 @@ def test_sevenths_inv():
         yield (__check_one_metric, mir_eval.chord.sevenths_inv,
                ref_label, est_label, score)
 
-    yield (__check_not_comparable, mir_eval.chord.sevenths_inv, 'C:dim7/b3', 'C:dim7/b3')
+    yield (__check_not_comparable, mir_eval.chord.sevenths_inv, 'C:dim7/b3',
+           'C:dim7/b3')
 
     for test in __regression_test_chord_function('sevenths-inv'):
         yield test
