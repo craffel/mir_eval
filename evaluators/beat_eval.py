@@ -24,7 +24,9 @@ def evaluate(reference_file=None, estimated_file=None):
 
     # load the data
     reference_beats = mir_eval.io.load_events(reference_file)
+    reference_beats = mir_eval.beat.trim_beats(reference_beats)
     estimated_beats = mir_eval.io.load_events(estimated_file)
+    estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
 
     # Now compute all the metrics
 
