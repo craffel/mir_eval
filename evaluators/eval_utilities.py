@@ -27,4 +27,4 @@ def print_evaluation(results):
     '''
     max_len = max([len(key) for key in results])
     for key, value in results.iteritems():
-        print '\t{:<{}} :\t{:.3f}'.format(key, max_len, value)
+        print '\t{:>{}} : {:.3f}'.format(key, max_len, value)
