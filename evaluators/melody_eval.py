@@ -19,8 +19,9 @@ IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 import argparse
 import sys
 import os
-import json
 from collections import OrderedDict
+import eval_utilities
+
 import mir_eval
 
 
@@ -94,21 +95,6 @@ def evaluate(reference_file, estimated_file, hop=None):
     return M
 
 
-def save_results(results, output_file):
-    '''Save a results dict into a json file'''
-    with open(output_file, 'w') as f:
-        json.dump(results, f)
-
-
-def print_evaluation(estimated_file, M):
-    '''
-    Pretty print the melody extraction evaluation measures
-    '''
-    print os.path.basename(estimated_file)
-    for key, value in M.iteritems():
-        print '\t%20s:\t%0.3f' % (key, value)
-
-
 def process_arguments():
     '''Argparse function to get the program parameters'''
 
@@ -146,8 +132,9 @@ if __name__ == '__main__':
     scores = evaluate(parameters['reference_file'],
                       parameters['estimated_file'],
                       parameters['hop'])
-    print_evaluation(parameters['estimated_file'], scores)
+    print os.path.basename(parameters['estimated_file'])
+    eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
         print 'Saving results to: ', parameters['output_file']
-        save_results(scores, parameters['output_file'])
+        eval_utilities.save_results(scores, parameters['output_file'])

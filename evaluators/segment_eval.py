@@ -12,8 +12,8 @@ Usage:
 import argparse
 import sys
 import os
-import json
 from collections import OrderedDict
+import eval_utilities
 
 import mir_eval
 
@@ -78,21 +78,6 @@ def evaluate(ref_file=None, est_file=None, trim=False):
     return M
 
 
-def save_results(results, output_file):
-    '''Save a results dict into a json file'''
-    with open(output_file, 'w') as f:
-        json.dump(results, f)
-
-
-def print_evaluation(est_file, M):
-    '''Print out a results dict prettily'''
-    print os.path.basename(est_file)
-    for key, value in M.iteritems():
-        print '\t%30s:\t%0.3f' % (key, value)
-
-    pass
-
-
 def process_arguments():
     '''Argparse function to get the program parameters'''
 
@@ -133,8 +118,9 @@ if __name__ == '__main__':
     scores = evaluate(ref_file=parameters['reference_file'],
                       est_file=parameters['estimated_file'],
                       trim=parameters['trim'])
-    print_evaluation(parameters['estimated_file'], scores)
+    print os.path.basename(parameters['estimated_file'])
+    eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
         print 'Saving results to: ', parameters['output_file']
-        save_results(scores, parameters['output_file'])
+        eval_utilities.save_results(scores, parameters['output_file'])
