@@ -91,18 +91,18 @@ def main():
                         type=str,
                         action='store',
                         help='Store results in json format')
-    parser.add_argument("ref_file",
+    parser.add_argument("reference_file",
                         action="store",
                         help="Path to the reference file.")
-    parser.add_argument("est_file",
+    parser.add_argument("estimated_file",
                         action="store",
                         help="Path to the estimation file.")
     parameters = vars(parser.parse_args(sys.argv[1:]))
 
     # Compute all the scores
-    scores = evaluate(ref_file=parameters['ref_file'],
-                      est_file=parameters['est_file'])
-    print_evaluation(parameters['est_file'], scores)
+    scores = evaluate(ref_file=parameters['reference_file'],
+                      est_file=parameters['estimated_file'])
+    print_evaluation(parameters['estimated_file'], scores)
 
     if parameters['output_file']:
         print 'Saving results to: ', parameters['output_file']
