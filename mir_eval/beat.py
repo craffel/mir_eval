@@ -1,5 +1,5 @@
 '''
-A variety of evaluation techniques for determining a beat tracker's accuracy
+A variety of evaluation techniques for determining a beat tracker's accuracy.
 
 Based on the methods described in:
     Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
@@ -69,7 +69,7 @@ def _get_reference_beat_variations(reference_beats):
         - off_beat : np.ndarray
             180 degrees out of phase from the original beat locations
         - double : np.ndarray
-            Beats at 1/2 the original tempo
+            Beats at 2x the original tempo
         - half_odd : np.ndarray
             Half tempo, odd beats
         - half_even : np.ndarray
@@ -117,6 +117,15 @@ def f_measure(reference_beats,
     :returns:
         - f_score : float
             The computed F-measure score
+
+    :references:
+        .. [1] Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
+               "Evaluation Methods for Musical Audio Beat Tracking Algorithms",
+               Queen Mary University of London Technical Report C4DM-TR-09-06
+               London, United Kingdom, 8 October 2009.
+        .. [2] S. Dixon, "Onset detection revisited," in Proceedings of 9th
+               International Conference on Digital Audio Effects (DAFx),
+               Montreal, Canada, 2006, pp. 133–137.
     '''
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
@@ -160,6 +169,16 @@ def cemgil(reference_beats,
             Cemgil's score for the original reference beats
         - cemgil_max : float
             The best Cemgil score for all metrical variations
+
+    :references:
+        .. [1] Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
+               "Evaluation Methods for Musical Audio Beat Tracking Algorithms",
+               Queen Mary University of London Technical Report C4DM-TR-09-06
+               London, United Kingdom, 8 October 2009.
+        .. [2] A. T. Cemgil, B. Kappen, P. Desain, and H. Honing, "On tempo
+               tracking: Tempogram representation and Kalman filtering,"
+               Journal Of New Music Research, vol. 28, no. 4, pp. 259–273,
+               2001.
     '''
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
@@ -211,12 +230,21 @@ def goto(reference_beats,
             The mean of the beat errors in the continuously correct
             track must be less than this, default 0.2
         - goto_sigma : float
-            The std of the beat errors in the continuously
-            correct track must be less than this, default 0.2
+            The std of the beat errors in the continuously correct track must
+            be less than this, default 0.2
 
     :returns:
         - goto_score : float
             Either 1.0 or 0.0 if some specific criteria are met
+
+    :references:
+        .. [1] Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
+               "Evaluation Methods for Musical Audio Beat Tracking Algorithms",
+               Queen Mary University of London Technical Report C4DM-TR-09-06
+               London, United Kingdom, 8 October 2009.
+        .. [2] M. Goto and Y. Muraoka, "Issues in evaluating beat tracking
+               systems," in Working Notes of the IJCAI-97 Workshop on Issues in
+               AI and Music - Evaluation and Assessment, 1997, pp. 9–16.
     '''
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
@@ -308,6 +336,16 @@ def p_score(reference_beats,
     :returns:
         - correlation : float
             McKinney's P-score
+
+    :references:
+        .. [1] Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
+               "Evaluation Methods for Musical Audio Beat Tracking Algorithms",
+               Queen Mary University of London Technical Report C4DM-TR-09-06
+               London, United Kingdom, 8 October 2009.
+        .. [2] M. F. McKinney, D. Moelants, M. E. P. Davies, and A. Klapuri,
+               "Evaluation of audio beat tracking and music tempo extraction
+               algorithms," Journal of New Music Research, vol. 36, no. 1, pp.
+               1–16, 2007.
     '''
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
@@ -383,6 +421,18 @@ def continuity(reference_beats,
             Any metric level, continuous accuracy
         - AMLt : float
             Any metric level, total accuracy (continuity not required)
+
+    :references:
+        .. [1] Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
+               "Evaluation Methods for Musical Audio Beat Tracking Algorithms",
+               Queen Mary University of London Technical Report C4DM-TR-09-06
+               London, United Kingdom, 8 October 2009.
+        .. [2] S. Hainsworth, "Techniques for the automated analysis of musical
+               audio," Ph.D. dissertation, Department of Engineering, Cambridge
+               University, 2004.
+        .. [3] A. P. Klapuri, A. Eronen, and J. Astola, "Analysis of the meter
+               of acoustic musical signals," IEEE Transactions on Audio, Speech
+               and Language Processing, vol. 14, no. 1, pp. 342–355, 2006.
     '''
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
@@ -524,6 +574,12 @@ def information_gain(reference_beats,
     :returns:
         - information_gain_score : float
             Entropy of beat error histogram
+
+    :references:
+        .. [1] Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
+               "Evaluation Methods for Musical Audio Beat Tracking Algorithms",
+               Queen Mary University of London Technical Report C4DM-TR-09-06
+               London, United Kingdom, 8 October 2009.
     '''
     validate(reference_beats, estimated_beats)
     # If an even number of bins is provided,
