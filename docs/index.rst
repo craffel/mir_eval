@@ -38,14 +38,6 @@ mir_eval.chord
    :show-inheritance:
    :member-order: bysource
 
-mir_eval.mm_chord
------------------
-.. automodule:: mir_eval.mm_chord
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
-
 mir_eval.input_output
 ---------------------
 .. automodule:: mir_eval.input_output
