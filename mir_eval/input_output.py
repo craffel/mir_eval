@@ -1,4 +1,6 @@
-"""Annotation input/output functions"""
+"""
+Functions for loading in annotations from files in different formats.
+"""
 
 import numpy as np
 import re
@@ -16,7 +18,7 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
 
     :usage:
         >>> # Load in a one-column list of event times (floats)
-        >>> load_delimited('events.tsv', [float])
+        >>> load_delimited('events.txt', [float])
         >>> # Load in a list of labeled events, separated by commas
         >>> load_delimited('labeled_events.csv', [float, str], ',')
 
@@ -95,7 +97,6 @@ def load_events(filename, delimiter=r'\s+'):
     :returns:
         - event_times : np.ndarray
             array of event times (float)
-
     '''
     # Use our universal function to load in the events
     events = load_delimited(filename, [float], delimiter)
@@ -252,7 +253,7 @@ def load_patterns(filename):
 
     :returns:
        - pattern_list : list
-           the list of patterns, containing all their occurrences,
+           The list of patterns, containing all their occurrences,
            using the following format::
 
              pattern_list = [pattern1, ..., patternN]
@@ -311,7 +312,7 @@ def load_wav(path, mono=True):
 
     :returns:
         - audio_data : np.ndarray
-            Array of audio samples, in the range [-1., 1.]
+            Array of audio samples, normalized to the range [-1., 1.]
         - fs : int
             Sampling rate of the audio data
     '''
