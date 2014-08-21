@@ -38,9 +38,9 @@ mir_eval.chord
    :show-inheritance:
    :member-order: bysource
 
-mir_eval.input_output
+mir_eval.io
 ---------------------
-.. automodule:: mir_eval.input_output
+.. automodule:: mir_eval.io
    :members:
    :undoc-members:
    :show-inheritance:

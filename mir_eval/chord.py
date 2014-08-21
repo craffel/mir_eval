@@ -94,7 +94,7 @@ import functools
 import warnings
 import collections
 
-from mir_eval import input_output as io
+from mir_eval import io
 from mir_eval import util
 
 BITMAP_LENGTH = 12

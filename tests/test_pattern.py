@@ -43,19 +43,19 @@ Written by Oriol Nieto (oriol@nyu.edu), 2014
 
 import pickle
 import unittest
-from mir_eval import pattern, input_output
+from mir_eval import pattern, io
 
 
 class PatternTests(unittest.TestCase):
 
     def setUp(self):
-        self.ref_P = input_output.load_patterns(
+        self.ref_P = io.load_patterns(
             "data/pattern/reference-poly.txt")
-        self.est_P = input_output.load_patterns(
+        self.est_P = io.load_patterns(
             "data/pattern/estimate-poly.txt")
-        self.ref2_P = input_output.load_patterns(
+        self.ref2_P = io.load_patterns(
             "data/pattern/reference2-poly.txt")
-        self.est2_P = input_output.load_patterns(
+        self.est2_P = io.load_patterns(
             "data/pattern/estimate2-poly.txt")
         self.delta = 1e-4
         self.results = pickle.load(open("data/pattern/results.pk"))
@@ -64,7 +64,7 @@ class PatternTests(unittest.TestCase):
         pass
 
     def test_load_pattern(self):
-        P = input_output.load_patterns("data/pattern/estimate-mono.txt")
+        P = io.load_patterns("data/pattern/estimate-mono.txt")
         self.assertEqual(len(P), 2)
         self.assertEqual(len(P[0]), 2)
         self.assertEqual(len(P[0][0]), 15)

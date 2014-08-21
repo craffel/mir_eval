@@ -68,8 +68,8 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
-            :func:``mir_eval.io.load_intervals()`` or
-            :func:``mir_eval.io.load_labeled.intervals()``.
+            :func:`mir_eval.io.load_intervals()` or
+            :func:`mir_eval.io.load_labeled.intervals()`.
             The *i* th interval spans time ``intervals[i, 0]`` to
             ``intervals[i, 1]``.
 
@@ -115,7 +115,7 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
-            :func:``mir_eval.input_output.load_intervals()``.
+            :func:``mir_eval.io.load_intervals()``.
             The *i* th interval spans time ``intervals[i, 0]`` to
             ``intervals[i, 1]``.
 
