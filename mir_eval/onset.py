@@ -1,5 +1,6 @@
 '''
 Basic metrics for evaluating onset detection systems.
+
 Based in part on this script:
 
     https://github.com/CPJKU/onset_detection/blob/master/onset_evaluation.py
@@ -11,7 +12,8 @@ import warnings
 
 
 def validate(reference_onsets, estimated_onsets):
-    '''Checks that the input annotations to a metric look like valid onset time
+    '''
+    Checks that the input annotations to a metric look like valid onset time
     arrays, and throws helpful errors if not.
 
     :parameters:
@@ -37,8 +39,8 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     :usage:
         >>> reference_onsets = mir_eval.io.load_events('reference.txt')
         >>> estimated_onsets = mir_eval.io.load_events('estimated.txt')
-        >>> f_measure = mir_eval.onset.f_measure(reference_beats,
-                                                 estimated_beats)
+        >>> F, P, R = mir_eval.onset.f_measure(reference_onsets,
+                                               estimated_onsets)
 
     :parameters:
         - reference_onsets : np.ndarray
@@ -46,7 +48,7 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
         - estimated_onsets : np.ndarray
             estimated onset locations, in seconds
         - window : float
-            Window size, in seconds, default 0.05
+            Window size, in seconds
 
     :returns:
         - f_measure : float
@@ -62,9 +64,7 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
         return 0., 0., 0.
     # Compute the best-case matching between reference and estimated onset
     # locations
-    matching = util.match_events(reference_onsets,
-                                 estimated_onsets,
-                                 window)
+    matching = util.match_events(reference_onsets, estimated_onsets, window)
 
     precision = float(len(matching))/len(estimated_onsets)
     recall = float(len(matching))/len(reference_onsets)
