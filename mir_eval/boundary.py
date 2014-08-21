@@ -19,14 +19,14 @@ def validate(reference_intervals, estimated_intervals, trim):
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, as returned by
-            `mir_eval.io.load_intervals` or
-            `mir_eval.io.load_labeled_intervals`.
+            reference segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
 
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, as returned by
-            `mir_eval.io.load_intervals` or
-            `mir_eval.io.load_labeled_intervals`.
+            estimated segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
 
         - trim : bool
             will the start and end events be trimmed?
@@ -78,14 +78,14 @@ def detection(reference_intervals, estimated_intervals,
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, as returned by
-            `mir_eval.io.load_intervals` or
-            `mir_eval.io.load_labeled_intervals`.
+            reference segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
 
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, as returned by
-            `mir_eval.io.load_intervals` or
-            `mir_eval.io.load_labeled_intervals`.
+            estimated segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
 
         - window : float > 0
             size of the window of 'correctness' around ground-truth beats
@@ -148,14 +148,14 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, as returned by
-            `mir_eval.io.load_intervals` or
-            `mir_eval.io.load_labeled_intervals`.
+            reference segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
 
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, as returned by
-            `mir_eval.io.load_intervals` or
-            `mir_eval.io.load_labeled_intervals`.
+            estimated segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
 
         - trim : boolean
             if ``True``, the first and last intervals are ignored.
