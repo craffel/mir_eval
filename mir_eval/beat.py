@@ -125,7 +125,7 @@ def f_measure(reference_beats,
                London, United Kingdom, 8 October 2009.
         .. [2] S. Dixon, "Onset detection revisited," in Proceedings of 9th
                International Conference on Digital Audio Effects (DAFx),
-               Montreal, Canada, 2006, pp. 133–137.
+               Montreal, Canada, 2006, pp. 133-137.
     '''
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
@@ -177,7 +177,7 @@ def cemgil(reference_beats,
                London, United Kingdom, 8 October 2009.
         .. [2] A. T. Cemgil, B. Kappen, P. Desain, and H. Honing, "On tempo
                tracking: Tempogram representation and Kalman filtering,"
-               Journal Of New Music Research, vol. 28, no. 4, pp. 259–273,
+               Journal Of New Music Research, vol. 28, no. 4, pp. 259-273,
                2001.
     '''
     validate(reference_beats, estimated_beats)
@@ -244,7 +244,7 @@ def goto(reference_beats,
                London, United Kingdom, 8 October 2009.
         .. [2] M. Goto and Y. Muraoka, "Issues in evaluating beat tracking
                systems," in Working Notes of the IJCAI-97 Workshop on Issues in
-               AI and Music - Evaluation and Assessment, 1997, pp. 9–16.
+               AI and Music - Evaluation and Assessment, 1997, pp. 9-16.
     '''
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
@@ -345,7 +345,7 @@ def p_score(reference_beats,
         .. [2] M. F. McKinney, D. Moelants, M. E. P. Davies, and A. Klapuri,
                "Evaluation of audio beat tracking and music tempo extraction
                algorithms," Journal of New Music Research, vol. 36, no. 1, pp.
-               1–16, 2007.
+               1-16, 2007.
     '''
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
@@ -432,7 +432,7 @@ def continuity(reference_beats,
                University, 2004.
         .. [3] A. P. Klapuri, A. Eronen, and J. Astola, "Analysis of the meter
                of acoustic musical signals," IEEE Transactions on Audio, Speech
-               and Language Processing, vol. 14, no. 1, pp. 342–355, 2006.
+               and Language Processing, vol. 14, no. 1, pp. 342-355, 2006.
     '''
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
@@ -662,6 +662,7 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     raw_bin_values[raw_bin_values == 0] = 1
     # Calculate entropy
     return -np.sum(raw_bin_values * np.log2(raw_bin_values))
+
 
 # Create a dictionary which maps the name of each metric
 # to the function used to compute it
