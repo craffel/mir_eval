@@ -8,4 +8,3 @@ Dependencies:
 
 * [Scipy/Numpy](http://www.scipy.org/)
 
-* [Scikit-learn](http://scikit-learn.org/) for segmentation metrics

@@ -24,6 +24,5 @@ setup(
     install_requires=[
         'numpy >= 1.7.0',
         'scipy',
-        'scikit-learn',
     ],
 )
