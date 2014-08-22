@@ -10,7 +10,9 @@
 
 import numpy as np
 import scipy.stats
-import sklearn.metrics.cluster as skmetrics
+import scipy.sparse
+import scipy.misc
+import scipy.special
 import collections
 import warnings
 
@@ -256,6 +258,80 @@ def rand_index(reference_intervals, reference_labels,
     return rand
 
 
+def _contingency_matrix(reference_indices, estimated_indices):
+    '''
+    Computes the contingency matrix of a true labeling vs an estimated one.
+
+    :parameters:
+        - reference_indices : np.ndarray
+            Array of reference indices
+
+        - estimated_indices : np.ndarray
+            Array of estimated indices
+
+    :returns:
+        - contingency_matrix : np.ndarray
+            Contingency matrix, shape=(#reference indices, #estimated indices)
+
+    .. note:: Based on sklearn.metrics.cluster.contingency_matrix
+    '''
+    ref_classes, ref_class_idx = np.unique(reference_indices,
+                                           return_inverse=True)
+    est_classes, est_class_idx = np.unique(estimated_indices,
+                                           return_inverse=True)
+    n_ref_classes = ref_classes.shape[0]
+    n_est_classes = est_classes.shape[0]
+    # Using coo_matrix is faster than histogram2d
+    return scipy.sparse.coo_matrix((np.ones(ref_class_idx.shape[0]),
+                                    (ref_class_idx, est_class_idx)),
+                                   shape=(n_ref_classes, n_est_classes),
+                                   dtype=np.int).toarray()
+
+
+def _adjusted_rand_index(reference_indices, estimated_indices):
+    '''
+    Compute the Rand index, adjusted for change.
+
+    :parameters:
+        - reference_indices : np.ndarray
+            Array of reference indices
+
+        - estimated_indices : np.ndarray
+            Array of estimated indices
+
+    :returns:
+        - ari : float
+            Adjusted Rand index
+
+    .. note:: Based on sklearn.metrics.cluster.adjusted_rand_score
+    '''
+    n_samples = len(reference_indices)
+    ref_classes = np.unique(reference_indices)
+    est_classes = np.unique(estimated_indices)
+    # Special limit cases: no clustering since the data is not split;
+    # or trivial clustering where each document is assigned a unique cluster.
+    # These are perfect matches hence return 1.0.
+    if (ref_classes.shape[0] == est_classes.shape[0] == 1
+            or ref_classes.shape[0] == est_classes.shape[0] == 0
+            or (ref_classes.shape[0] == est_classes.shape[0] ==
+                len(reference_indices))):
+        return 1.0
+
+    contingency = _contingency_matrix(reference_indices, estimated_indices)
+
+    # Compute the ARI using the contingency data
+    sum_comb_c = sum(scipy.misc.comb(n_c, 2, exact=1) for n_c in
+                     contingency.sum(axis=1))
+    sum_comb_k = sum(scipy.misc.comb(n_k, 2, exact=1) for n_k in
+                     contingency.sum(axis=0))
+
+    sum_comb = sum((scipy.misc.comb(n_ij, 2, exact=1) for n_ij in
+                    contingency.flatten()))
+    prod_comb = (sum_comb_c * sum_comb_k)/float(scipy.misc.comb(n_samples, 2))
+    mean_comb = (sum_comb_k + sum_comb_c)/2.
+    return ((sum_comb - prod_comb)/(mean_comb - prod_comb))
+
+
 def ari(reference_intervals, reference_labels,
         estimated_intervals, estimated_labels,
         frame_size=0.1):
@@ -326,7 +402,211 @@ def ari(reference_intervals, reference_labels,
 
     y_est = util.index_labels(y_est)[0]
 
-    return skmetrics.adjusted_rand_score(y_ref, y_est)
+    return _adjusted_rand_index(y_ref, y_est)
+
+
+def _mutual_info_score(reference_indices, estimated_indices, contingency=None):
+    '''
+    Compute the mutual information between two sequence labelings.
+
+    :parameters:
+        - reference_indices : np.ndarray
+            Array of reference indices
+
+        - estimated_indices : np.ndarray
+            Array of estimated indices
+
+        - contingency : np.ndarray
+            Pre-computed contingency matrix.  If None, one will be computed.
+
+    :returns:
+        - mi : float
+            Mutual information
+
+    .. note:: Based on sklearn.metrics.cluster.mutual_info_score
+    '''
+    if contingency is None:
+        contingency = _contingency_matrix(reference_indices,
+                                          estimated_indices).astype(float)
+    contingency_sum = np.sum(contingency)
+    pi = np.sum(contingency, axis=1)
+    pj = np.sum(contingency, axis=0)
+    outer = np.outer(pi, pj)
+    nnz = contingency != 0.0
+    # normalized contingency
+    contingency_nm = contingency[nnz]
+    log_contingency_nm = np.log(contingency_nm)
+    contingency_nm /= contingency_sum
+    # log(a / b) should be calculated as log(a) - log(b) for
+    # possible loss of precision
+    log_outer = -np.log(outer[nnz]) + np.log(pi.sum()) + np.log(pj.sum())
+    mi = (contingency_nm * (log_contingency_nm - np.log(contingency_sum))
+          + contingency_nm * log_outer)
+    return mi.sum()
+
+
+def _entropy(labels):
+    '''
+    Calculates the entropy for a labeling.
+
+    :parameters:
+        - labels : list-like
+            List of labels.
+
+    :returns:
+        - entropy : float
+            Entropy of the labeling.
+
+    .. note:: Based on sklearn.metrics.cluster.entropy
+    '''
+    if len(labels) == 0:
+        return 1.0
+    label_idx = np.unique(labels, return_inverse=True)[1]
+    pi = np.bincount(label_idx).astype(np.float)
+    pi = pi[pi > 0]
+    pi_sum = np.sum(pi)
+    # log(a / b) should be calculated as log(a) - log(b) for
+    # possible loss of precision
+    return -np.sum((pi / pi_sum) * (np.log(pi) - np.log(pi_sum)))
+
+
+def _expected_mutual_information(contingency, n_samples):
+    '''
+    Calculate the expected mutual information for two labelings.
+
+    :parameters:
+        - contingency : np.ndarray
+            Contingency matrix.
+        - n_samples : int
+            Number of label samples
+
+    :returns:
+        - emi : float
+            Expected mutual information score
+
+    .. note:: Based on sklearn.metrics.cluster.expected_mutual_information
+    '''
+    R, C = contingency.shape
+    N = float(n_samples)
+    a = np.sum(contingency, axis=1).astype(np.int32)
+    b = np.sum(contingency, axis=0).astype(np.int32)
+    # There are three major terms to the EMI equation, which are multiplied to
+    # and then summed over varying nij values.
+    # While nijs[0] will never be used, having it simplifies the indexing.
+    nijs = np.arange(0, max(np.max(a), np.max(b)) + 1, dtype='float')
+    # Stops divide by zero warnings. As its not used, no issue.
+    nijs[0] = 1
+    # term1 is nij / N
+    term1 = nijs / N
+    # term2 is log((N*nij) / (a * b)) == log(N * nij) - log(a * b)
+    # term2 uses the outer product
+    log_ab_outer = np.log(np.outer(a, b))
+    # term2 uses N * nij
+    log_Nnij = np.log(N * nijs)
+    # term3 is large, and involved many factorials. Calculate these in log
+    # space to stop overflows.
+    gln_a = scipy.special.gammaln(a + 1)
+    gln_b = scipy.special.gammaln(b + 1)
+    gln_Na = scipy.special.gammaln(N - a + 1)
+    gln_Nb = scipy.special.gammaln(N - b + 1)
+    gln_N = scipy.special.gammaln(N + 1)
+    gln_nij = scipy.special.gammaln(nijs + 1)
+    # start and end values for nij terms for each summation.
+    start = np.array([[v - N + w for w in b] for v in a], dtype='int')
+    start = np.maximum(start, 1)
+    end = np.minimum(np.resize(a, (C, R)).T, np.resize(b, (R, C))) + 1
+    # emi itself is a summation over the various values.
+    emi = 0
+    for i in range(R):
+        for j in range(C):
+            for nij in range(start[i, j], end[i, j]):
+                term2 = log_Nnij[nij] - log_ab_outer[i, j]
+                # Numerators are positive, denominators are negative.
+                gln = (gln_a[i] + gln_b[j] + gln_Na[i] + gln_Nb[j]
+                     - gln_N - gln_nij[nij]
+                     - scipy.special.gammaln(a[i] - nij + 1)
+                     - scipy.special.gammaln(b[j] - nij + 1)
+                     - scipy.special.gammaln(N - a[i] - b[j] + nij + 1))
+                term3 = np.exp(gln)
+                emi += (term1[nij] * term2 * term3)
+    return emi
+
+
+def _adjusted_mutual_info_score(reference_indices, estimated_indices):
+    '''
+    Compute the mutual information between two sequence labelings, adjusted for
+    chance.
+
+    :parameters:
+        - reference_indices : np.ndarray
+            Array of reference indices
+
+        - estimated_indices : np.ndarray
+            Array of estimated indices
+
+    :returns:
+        - ami : float <= 1.0
+            Mutual information
+
+    .. note:: Based on sklearn.metrics.cluster.adjusted_mutual_info_score
+    '''
+    n_samples = len(reference_indices)
+    ref_classes = np.unique(reference_indices)
+    est_classes = np.unique(estimated_indices)
+    # Special limit cases: no clustering since the data is not split.
+    # This is a perfect match hence return 1.0.
+    if (ref_classes.shape[0] == est_classes.shape[0] == 1
+            or ref_classes.shape[0] == est_classes.shape[0] == 0):
+        return 1.0
+    contingency = _contingency_matrix(reference_indices,
+                                      estimated_indices).astype(float)
+    # Calculate the MI for the two clusterings
+    mi = _mutual_info_score(reference_indices, estimated_indices,
+                           contingency=contingency)
+    # Calculate the expected value for the mutual information
+    emi = _expected_mutual_information(contingency, n_samples)
+    # Calculate entropy for each labeling
+    h_true, h_pred = _entropy(reference_indices), _entropy(estimated_indices)
+    ami = (mi - emi) / (max(h_true, h_pred) - emi)
+    return ami
+
+
+def _normalized_mutual_info_score(reference_indices, estimated_indices):
+    '''
+    Compute the mutual information between two sequence labelings, adjusted for
+    chance.
+
+    :parameters:
+        - reference_indices : np.ndarray
+            Array of reference indices
+
+        - estimated_indices : np.ndarray
+            Array of estimated indices
+
+    :returns:
+        - nmi : float <= 1.0
+            Normalized mutual information
+
+    .. note:: Based on sklearn.metrics.cluster.normalized_mutual_info_score
+    '''
+    ref_classes = np.unique(reference_indices)
+    est_classes = np.unique(estimated_indices)
+    # Special limit cases: no clustering since the data is not split.
+    # This is a perfect match hence return 1.0.
+    if (ref_classes.shape[0] == est_classes.shape[0] == 1
+            or ref_classes.shape[0] == est_classes.shape[0] == 0):
+        return 1.0
+    contingency = _contingency_matrix(reference_indices,
+                                      estimated_indices).astype(float)
+    contingency = np.array(contingency, dtype='float')
+    # Calculate the MI for the two clusterings
+    mi = _mutual_info_score(reference_indices, estimated_indices,
+                           contingency=contingency)
+    # Calculate the expected value for the mutual information
+    # Calculate entropy for each labeling
+    h_true, h_pred = _entropy(reference_indices), _entropy(estimated_indices)
+    nmi = mi / max(np.sqrt(h_true * h_pred), 1e-10)
+    return nmi
 
 
 def mutual_information(reference_intervals, reference_labels,
@@ -406,13 +686,13 @@ def mutual_information(reference_intervals, reference_labels,
     y_est = util.index_labels(y_est)[0]
 
     # Mutual information
-    mutual_info = skmetrics.mutual_info_score(y_ref, y_est)
+    mutual_info = _mutual_info_score(y_ref, y_est)
 
     # Adjusted mutual information
-    adj_mutual_info = skmetrics.adjusted_mutual_info_score(y_ref, y_est)
+    adj_mutual_info = _adjusted_mutual_info_score(y_ref, y_est)
 
     # Normalized mutual information
-    norm_mutual_info = skmetrics.normalized_mutual_info_score(y_ref, y_est)
+    norm_mutual_info = _normalized_mutual_info_score(y_ref, y_est)
 
     return mutual_info, adj_mutual_info, norm_mutual_info
 
@@ -505,7 +785,7 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     y_est = util.index_labels(y_est)[0]
 
     # Make the contingency table: shape = (n_ref, n_est)
-    contingency = skmetrics.contingency_matrix(y_ref, y_est).astype(float)
+    contingency = _contingency_matrix(y_ref, y_est).astype(float)
 
     # Normalize by the number of frames
     contingency = contingency / len(y_ref)
