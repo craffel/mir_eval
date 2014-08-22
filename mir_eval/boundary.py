@@ -59,8 +59,8 @@ def detection(reference_intervals, estimated_intervals,
     and estimated boundary points, subject to the window constraint.
 
     :usage:
-        >>> ref_intervals = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals = mir_eval.io.load_intervals('est.lab')
+        >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
         >>> # With 0.5s windowing
         >>> P05, R05, F05 = mir_eval.boundary.detection(ref_intervals,
                                                         est_intervals,
@@ -141,8 +141,8 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
     and estimated boundary times.
 
     :usage:
-        >>> ref_intervals = mir_eval.io.load_intervals('ref.lab')
-        >>> est_intervals = mir_eval.io.load_intervals('est.lab')
+        >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
         >>> r_to_e, e_to_r = mir_eval.boundary.deviation(ref_intervals,
                                                          est_intervals)
 
