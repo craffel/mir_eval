@@ -51,17 +51,14 @@ def validate(reference_sources, estimated_sources):
 
 def bss_eval_sources(reference_sources, estimated_sources):
     '''
-        MATLAB translation of BSS_EVAL Toolbox
+    MATLAB translation of BSS_EVAL Toolbox
 
-        Ordering and measurement of the separation quality for estimated source
-        signals in terms of filtered true source, interference and artifacts.
+    Ordering and measurement of the separation quality for estimated source
+    signals in terms of filtered true source, interference and artifacts.
 
-        The decomposition allows a time-invariant filter distortion of length
-        512, as described in Section III.B of:
+    The decomposition allows a time-invariant filter distortion of length
+    512, as described in Section III.B of [#vincent2006performance]_.
 
-          Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
-          measurement in blind audio source separation," IEEE Trans. on Audio,
-          Speech and Language Processing, 14(4):1462-1469, 2006.
 
     :usage:
         >>> # reference_sources[n] should be an ndarray of samples of the
@@ -90,6 +87,11 @@ def bss_eval_sources(reference_sources, estimated_sources):
             the mean SIR sense (estimated source number perm[j] corresponds to
             true source number j)
 
+    :references:
+        .. [#vincent2006performance] Emmanuel Vincent, Rémi Gribonval, and
+            Cédric Févotte, "Performance measurement in blind audio source
+            separation," IEEE Trans.  on Audio, Speech and Language Processing,
+            14(4):1462-1469, 2006.
     '''
 
     validate(reference_sources, estimated_sources)
