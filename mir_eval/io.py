@@ -23,12 +23,12 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
         >>> load_delimited('labeled_events.csv', [float, str], ',')
 
     :parameters:
-         - filename : str
+        - filename : str
             Path to the annotation file
-         - converters : list of functions
+        - converters : list of functions
             Each entry in column n of the file will be cast by the function
             converters[n].
-         - delimiter : str
+        - delimiter : str
             Separator regular expression.
             By default, lines will be split by any amount of whitespace ('\s+')
 
