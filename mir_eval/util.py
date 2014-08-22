@@ -125,6 +125,9 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
         - time_points : array_like, shape=(m,)
             Points in time to assign labels.
 
+        - fill_value : type(labels[0])
+            Object to use for the label with out-of-range time points.
+
     :returns:
         - aligned_labels : list
             Labels corresponding to the given time points.
@@ -182,23 +185,23 @@ def boundaries_to_intervals(boundaries, labels=None):
     '''Convert an array of event times into intervals
 
     :parameters:
-      - boundaries : list-like
-          List-like of event times.  These are assumed to be unique timestamps
-          in ascending order.
+        - boundaries : list-like
+            List-like of event times.  These are assumed to be unique
+            timestamps in ascending order.
 
-      - labels : None or list of str
-          Optional list of strings describing each event
+        - labels : None or list of str
+            Optional list of strings describing each event
 
     :returns:
-      - segments : np.ndarray, shape=(n_segments, 2)
-          Start and end time for each segment
+        - segments : np.ndarray, shape=(n_segments, 2)
+            Start and end time for each segment
 
-      - labels : list of str or None
-          Labels for each event.
+        - labels : list of str or None
+            Labels for each event.
 
     :raises:
-      - ValueError
-        If the input times are not unique and ascending
+        - ValueError
+            If the input times are not unique and ascending
     '''
 
     if not np.allclose(boundaries, np.unique(boundaries)):
