@@ -57,6 +57,15 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
             (# true positives)/(# true positives + # false positives)
         - recall : float
             (# true positives)/(# true positives + # false negatives)
+
+    :references:
+        .. [#] S. Dixon, "Onset detection revisited," in
+            Proceedings of 9th International Conference on Digital Audio
+            Effects (DAFx), Montreal, Canada, 2006, pp. 133-137.
+        .. [#] Sebastian Böck, Florian Krebs, and Markus Schedl. "Evaluating
+            the Online Capabilities of Onset Detection Methods", in Proceedings
+            of the 13th International Society for Music Information Retrieval
+            Conference, 2012, pp. 49-54.
     '''
     validate(reference_onsets, estimated_onsets)
     # If either list is empty, return 0s
