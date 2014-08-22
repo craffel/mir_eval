@@ -486,6 +486,42 @@ def _expected_mutual_information(contingency, n_samples):
 
     .. note:: Based on sklearn.metrics.cluster.expected_mutual_information
     '''
+
+
+def _adjusted_mutual_info_score(reference_indices, estimated_indices):
+    '''
+    Compute the mutual information between two sequence labelings, adjusted for
+    chance.
+
+    :parameters:
+        - reference_indices : np.ndarray
+            Array of reference indices
+
+        - estimated_indices : np.ndarray
+            Array of estimated indices
+
+    :returns:
+        - ami : float <= 1.0
+            Mutual information
+
+    .. note:: Based on sklearn.metrics.cluster.adjusted_mutual_info_score
+        and sklearn.metrics.cluster.expected_mutual_info_score
+    '''
+    n_samples = len(reference_indices)
+    ref_classes = np.unique(reference_indices)
+    est_classes = np.unique(estimated_indices)
+    # Special limit cases: no clustering since the data is not split.
+    # This is a perfect match hence return 1.0.
+    if (ref_classes.shape[0] == est_classes.shape[0] == 1
+            or ref_classes.shape[0] == est_classes.shape[0] == 0):
+        return 1.0
+    contingency = _contingency_matrix(reference_indices,
+                                      estimated_indices).astype(float)
+    # Calculate the MI for the two clusterings
+    mi = _mutual_info_score(reference_indices, estimated_indices,
+                           contingency=contingency)
+    # The following code is based on
+    # sklearn.metrics.cluster.expected_mutual_information
     R, C = contingency.shape
     N = float(n_samples)
     a = np.sum(contingency, axis=1).astype(np.int32)
@@ -529,42 +565,6 @@ def _expected_mutual_information(contingency, n_samples):
                      - scipy.special.gammaln(N - a[i] - b[j] + nij + 1))
                 term3 = np.exp(gln)
                 emi += (term1[nij] * term2 * term3)
-    return emi
-
-
-def _adjusted_mutual_info_score(reference_indices, estimated_indices):
-    '''
-    Compute the mutual information between two sequence labelings, adjusted for
-    chance.
-
-    :parameters:
-        - reference_indices : np.ndarray
-            Array of reference indices
-
-        - estimated_indices : np.ndarray
-            Array of estimated indices
-
-    :returns:
-        - ami : float <= 1.0
-            Mutual information
-
-    .. note:: Based on sklearn.metrics.cluster.adjusted_mutual_info_score
-    '''
-    n_samples = len(reference_indices)
-    ref_classes = np.unique(reference_indices)
-    est_classes = np.unique(estimated_indices)
-    # Special limit cases: no clustering since the data is not split.
-    # This is a perfect match hence return 1.0.
-    if (ref_classes.shape[0] == est_classes.shape[0] == 1
-            or ref_classes.shape[0] == est_classes.shape[0] == 0):
-        return 1.0
-    contingency = _contingency_matrix(reference_indices,
-                                      estimated_indices).astype(float)
-    # Calculate the MI for the two clusterings
-    mi = _mutual_info_score(reference_indices, estimated_indices,
-                           contingency=contingency)
-    # Calculate the expected value for the mutual information
-    emi = _expected_mutual_information(contingency, n_samples)
     # Calculate entropy for each labeling
     h_true, h_pred = _entropy(reference_indices), _entropy(estimated_indices)
     ami = (mi - emi) / (max(h_true, h_pred) - emi)
