@@ -2,6 +2,7 @@
 
 import numpy as np
 import os
+import inspect
 
 
 def index_labels(labels, case_sensitive=False):
@@ -647,3 +648,25 @@ def filter_labeled_intervals(intervals, labels):
             filt_intervals.append(interval)
             filt_labels.append(label)
     return np.array(filt_intervals), filt_labels
+
+
+def filter_kwargs(function, *args, **kwargs):
+    '''
+    Given a function and args and keyword args to pass to it, call the function
+    but using only the keyword arguments which it accepts.  This is equivalent
+    to redefining the function with an additional **kwargs to accept slop
+    keyword args.
+
+    :parameters:
+        - function : function
+            Function to call.  Can take in any number of args or kwargs
+    '''
+    # Get the list of function arguments
+    function_args = inspect.getargspec(function).args
+    # Construct a dict of those kwargs which appear in the function
+    filtered_kwargs = {}
+    for kwarg, value in kwargs.items():
+        if kwarg in function_args:
+            filtered_kwargs[kwarg] = value
+    # Call the function with the supplied args and the filtered kwarg dict
+    return function(*args, **filtered_kwargs)
