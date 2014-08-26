@@ -60,7 +60,7 @@ def validate_voicing(ref_voicing, est_voicing):
             raise ValueError('Voicing arrays must be boolean.')
 
 
-def validate(ref_voicing, est_voicing, ref_cent, est_cent):
+def validate(ref_voicing, ref_cent, est_voicing, est_cent):
     '''
     Checks that voicing and frequency arrays are well-formed.  To be used in
     conjunction with validate_voicing
@@ -68,10 +68,10 @@ def validate(ref_voicing, est_voicing, ref_cent, est_cent):
     :parameters:
         - ref_voicing : np.ndarray
             Reference boolean voicing array
-        - est_voicing : np.ndarray
-            Estimated boolean voicing array
         - ref_cent : np.ndarray
             Reference pitch sequence in cents
+        - est_voicing : np.ndarray
+            Estimated boolean voicing array
         - est_cent : np.ndarray
             Estimate pitch sequence in cents
     '''
@@ -247,10 +247,10 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, base_frequency=10.,
     :returns:
         - ref_voicing : np.ndarray, dtype=bool
             Resampled reference boolean voicing array
-        - est_voicing : np.ndarray, dtype=bool
-            Resampled estimated boolean voicing array
         - ref_cent : np.ndarray
             Resampled reference frequency (cent) array
+        - est_voicing : np.ndarray, dtype=bool
+            Resampled estimated boolean voicing array
         - est_cent : np.ndarray
             Resampled estimated frequency (cent) array
     '''
@@ -293,8 +293,8 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, base_frequency=10.,
         est_cent = est_cent[:ref_cent.shape[0]]
         est_voicing = est_voicing[:ref_voicing.shape[0]]
 
-    return (ref_voicing.astype(bool), est_voicing.astype(bool),
-            ref_cent, est_cent)
+    return (ref_voicing.astype(bool), ref_cent,
+            est_voicing.astype(bool), est_cent)
 
 
 def voicing_measures(ref_voicing, est_voicing):
@@ -306,8 +306,8 @@ def voicing_measures(ref_voicing, est_voicing):
     :usage:
         >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
         >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
-        >>> (ref_v, est_v,
-             ref_c, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
+        >>> (ref_v, ref_c,
+             est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
                                                              ref_freq,
                                                              est_time,
                                                              est_freq)
@@ -365,7 +365,7 @@ def voicing_measures(ref_voicing, est_voicing):
     return vx_recall, vx_false_alm
 
 
-def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
+def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
     '''
     Compute the raw pitch accuracy given two pitch (frequency) sequences in
     cents and matching voicing indicator sequences. The first pitch and voicing
@@ -375,21 +375,21 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     :usage:
         >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
         >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
-        >>> (ref_v, est_v,
-             ref_c, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
+        >>> (ref_v, ref_c,
+             est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
                                                              ref_freq,
                                                              est_time,
                                                              est_freq)
-        >>> raw_pitch = mir_eval.melody.raw_pitch_accuracy(ref_v, est_v,
-                                                           ref_c, est_c)
+        >>> raw_pitch = mir_eval.melody.raw_pitch_accuracy(ref_v, ref_c,
+                                                           est_v, est_c)
 
     :parameters:
         - ref_voicing : np.ndarray
             Reference boolean voicing array
-        - est_voicing : np.ndarray
-            Estimated boolean voicing array
         - ref_cent : np.ndarray
             Reference pitch sequence in cents
+        - est_voicing : np.ndarray
+            Estimated boolean voicing array
         - est_cent : np.ndarray
             Estimate pitch sequence in cents
 
@@ -421,7 +421,7 @@ def raw_pitch_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     return raw_pitch
 
 
-def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
+def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
     '''
     Compute the raw chroma accuracy given two pitch (frequency) sequences
     in cents and matching voicing indicator sequences. The first pitch and
@@ -431,13 +431,13 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     :usage:
         >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
         >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
-        >>> (ref_v, est_v,
-             ref_c, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
+        >>> (ref_v, ref_c,
+             est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
                                                              ref_freq,
                                                              est_time,
                                                              est_freq)
-        >>> raw_chroma = mir_eval.melody.raw_chroma_accuracy(ref_v, est_v,
-                                                             ref_c, est_c)
+        >>> raw_chroma = mir_eval.melody.raw_chroma_accuracy(ref_v, ref_c,
+                                                             est_v, est_c)
 
 
     :parameters:
@@ -478,7 +478,7 @@ def raw_chroma_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     return raw_chroma
 
 
-def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
+def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
     '''
     Compute the overall accuracy given two pitch (frequency) sequences in cents
     and matching voicing indicator sequences. The first pitch and voicing
@@ -488,13 +488,13 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     :usage:
         >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
         >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
-        >>> (ref_v, est_v,
-             ref_c, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
+        >>> (ref_v, ref_c,
+             est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
                                                              ref_freq,
                                                              est_time,
                                                              est_freq)
-        >>> overall_accuracy = mir_eval.melody.overall_accuracy(ref_v, est_v,
-                                                                ref_c, est_c)
+        >>> overall_accuracy = mir_eval.melody.overall_accuracy(ref_v, ref_c,
+                                                                est_v, est_c)
 
     :parameters:
         - ref_voicing : np.ndarray
@@ -555,8 +555,8 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
             the value is the (float) score achieved.
     '''
     # Convert to reference/estimated voicing/frequency (cent) arrays
-    (ref_voicing, est_voicing,
-     ref_cent, est_cent) = util.filter_kwargs(to_cent_voicing, ref_time,
+    (ref_voicing, ref_cent,
+     est_voicing, est_cent) = util.filter_kwargs(to_cent_voicing, ref_time,
                                               ref_freq, est_time, est_freq,
                                               **kwargs)
 
@@ -569,17 +569,17 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
                                                          est_voicing, **kwargs)
 
     scores['Raw Pitch Accuracy'] = util.filter_kwargs(raw_pitch_accuracy,
-                                                      ref_voicing, est_voicing,
-                                                      ref_cent, est_cent,
+                                                      ref_voicing, ref_cent,
+                                                      est_voicing, est_cent,
                                                       **kwargs)
 
     scores['Raw Chroma Accuracy'] = util.filter_kwargs(raw_chroma_accuracy,
-                                                       ref_voicing,
-                                                       est_voicing, ref_cent,
-                                                       est_cent, **kwargs)
+                                                       ref_voicing, ref_cent,
+                                                       est_voicing, est_cent,
+                                                       **kwargs)
 
     scores['Overall Accuracy'] = util.filter_kwargs(raw_pitch_accuracy,
-                                                    ref_voicing, est_voicing,
-                                                    ref_cent, est_cent,
+                                                    ref_voicing, ref_cent,
+                                                    est_voicing, est_cent,
                                                     **kwargs)
     return scores

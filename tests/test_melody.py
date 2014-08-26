@@ -109,17 +109,17 @@ def __unit_test_melody_function(metric):
         # And that the metric is 0
         assert np.allclose(score, 0)
         # Also test for a warning when the arrays have non-voiced content
-        metric(np.ones(10), np.zeros(10), np.arange(10), np.arange(10))
+        metric(np.ones(10), np.arange(10), np.zeros(10), np.arange(10))
         assert len(w) == 7
         assert issubclass(w[-1].category, UserWarning)
         assert str(w[-1].message) == "Estimated melody has no voiced frames."
 
     # Now test validation function - all inputs must be same length
     nose.tools.assert_raises(ValueError, metric, np.ones(10),
-                             np.ones(10), np.ones(12), np.ones(10))
+                             np.ones(12), np.ones(10), np.ones(10))
     # Voicing arrays must be bool
     nose.tools.assert_raises(ValueError, metric, np.arange(10),
-                             np.ones(10), np.arange(10), np.arange(10))
+                             np.arange(10), np.ones(10), np.arange(10))
 
 
 def __regression_test_voicing_measures(metric, reference_file, estimated_file,
@@ -130,8 +130,8 @@ def __regression_test_voicing_measures(metric, reference_file, estimated_file,
     # Load in estimated melody
     est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
     # Convert to voicing/cent arrays
-    (ref_v, est_v,
-     ref_c, est_c) = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
+    (ref_v, ref_c,
+     est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
                                                      est_time, est_freq)
     # Ensure that the score is correct
     assert np.allclose(metric(ref_v, est_v), score, atol=A_TOL)
@@ -144,11 +144,11 @@ def __regression_test_melody_function(metric, reference_file, estimated_file,
     # Load in estimated melody
     est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
     # Convert to voicing/cent arrays
-    (ref_v, est_v,
-     ref_c, est_c) = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
+    (ref_v, ref_c,
+     est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
                                                      est_time, est_freq)
     # Ensure that the score is correct
-    assert np.allclose(metric(ref_v, est_v, ref_c, est_c), score, atol=A_TOL)
+    assert np.allclose(metric(ref_v, ref_c, est_v, est_c), score, atol=A_TOL)
 
 
 def test_melody_functions():
@@ -158,7 +158,10 @@ def test_melody_functions():
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
     # Unit tests
-    for metric in mir_eval.melody.METRICS.values():
+    for metric in [mir_eval.melody.voicing_measures,
+                   mir_eval.melody.raw_pitch_accuracy,
+                   mir_eval.melody.raw_chroma_accuracy,
+                   mir_eval.melody.overall_accuracy]:
         if metric == mir_eval.melody.voicing_measures:
             yield (__unit_test_voicing_measures, metric)
         else:
@@ -167,7 +170,14 @@ def test_melody_functions():
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
             scores = json.load(f)
-        for name, metric in mir_eval.melody.METRICS.items():
+        for name, metric in zip(['Voicing Measures',
+                                 'Raw Pitch Accuracy',
+                                 'Raw Chroma Accuracy',
+                                 'Overall Accuracy'],
+                                [mir_eval.melody.voicing_measures,
+                                 mir_eval.melody.raw_pitch_accuracy,
+                                 mir_eval.melody.raw_chroma_accuracy,
+                                 mir_eval.melody.overall_accuracy]):
             if metric == mir_eval.melody.voicing_measures:
                 yield (__regression_test_voicing_measures, metric,
                        ref_f, est_f, scores[name])
