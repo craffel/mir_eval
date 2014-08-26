@@ -664,12 +664,63 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     return -np.sum(raw_bin_values * np.log2(raw_bin_values))
 
 
-# Create a dictionary which maps the name of each metric
-# to the function used to compute it
-METRICS = collections.OrderedDict()
-METRICS['F-measure'] = f_measure
-METRICS['Cemgil'] = cemgil
-METRICS['Goto'] = goto
-METRICS['P-score'] = p_score
-METRICS['Continuity'] = continuity
-METRICS['Information Gain'] = information_gain
+def evaluate(reference_beats, estimated_beats, **kwargs):
+    '''
+    Compute all metrics for the given reference and estimated annotations.
+
+    :parameters:
+        - reference_beats : np.ndarray
+            Reference beat times, in seconds
+        - estimated_beats : np.ndarray
+            Query beat times, in seconds
+        - kwargs
+            Additional keyword arguments for metric functions.
+
+    :returns:
+        - scores : dict
+            Dictionary of scores, where the key is the metric name (str) and
+            the value is the (float) score achieved.
+    '''
+
+    # Trim beat times at the beginning of the annotations
+    reference_beats = util.filter_kwargs(trim_beats, reference_beats, **kwargs)
+    estimated_beats = util.filter_kwargs(trim_beats, estimated_beats, **kwargs)
+
+    # Now compute all the metrics
+
+    scores = collections.OrderedDict()
+
+    # F-Measure
+    scores['F-measure'] = util.filter_kwargs(f_measure, reference_beats,
+                                             estimated_beats, **kwargs)
+
+    # Cemgil
+    scores['Cemgil'], scores['Cemgil Best Metric Level'] = \
+        util.filter_kwargs(cemgil, reference_beats, estimated_beats, **kwargs)
+
+    # Goto
+    # XXX:2014-01-24 12:46:31 by Brian McFee <brm2132@columbia.edu>
+    # This metric is deprecated
+    # scores['Goto'] = util.filter_kwargs(goto, reference_beats,
+    #                                     estimated_beats, **kwargs)
+
+    # P-Score
+    scores['P-score'] = util.filter_kwargs(p_score, reference_beats,
+                                           estimated_beats, **kwargs)
+
+    # Continuity metrics
+    (scores['Correct Metric Level Continuous'],
+     scores['Correct Metric Level Total'],
+     scores['Any Metric Level Continuous'],
+     scores['Any Metric Level Total']) = util.filter_kwargs(continuity,
+                                                            reference_beats,
+                                                            estimated_beats,
+                                                            **kwargs)
+
+    # Information gain
+    scores['Information gain'] = util.filter_kwargs(information_gain,
+                                                    reference_beats,
+                                                    estimated_beats,
+                                                    **kwargs)
+
+    return scores

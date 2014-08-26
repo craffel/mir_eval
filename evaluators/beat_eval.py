@@ -13,50 +13,9 @@ Usage:
 import argparse
 import sys
 import os
-from collections import OrderedDict
 import eval_utilities
 
 import mir_eval
-
-
-def evaluate(reference_file=None, estimated_file=None):
-    '''Load data and perform the evaluation'''
-
-    # load the data
-    reference_beats = mir_eval.io.load_events(reference_file)
-    reference_beats = mir_eval.beat.trim_beats(reference_beats)
-    estimated_beats = mir_eval.io.load_events(estimated_file)
-    estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
-
-    # Now compute all the metrics
-
-    M = OrderedDict()
-
-    # F-Measure
-    M['F-measure'] = mir_eval.beat.f_measure(reference_beats, estimated_beats)
-
-    # Cemgil
-    M['Cemgil'], M['Cemgil Best Metric Level'] = \
-        mir_eval.beat.cemgil(reference_beats, estimated_beats)
-
-    # Goto
-    # XXX:2014-01-24 12:46:31 by Brian McFee <brm2132@columbia.edu>
-    # This metric is deprecated
-    # M['Goto'] = mir_eval.beat.goto(reference_beats, estimated_beats)
-
-    # P-Score
-    M['P-score'] = mir_eval.beat.p_score(reference_beats, estimated_beats)
-
-    # Continuity metrics
-    (M['Correct Metric Level Continuous'], M['Correct Metric Level Total'],
-     M['Any Metric Level Continuous'], M['Any Metric Level Total']) = \
-        mir_eval.beat.continuity(reference_beats, estimated_beats)
-
-    # Information gain
-    M['Information gain'] = mir_eval.beat.information_gain(reference_beats,
-                                                           estimated_beats)
-
-    return M
 
 
 def process_arguments():
@@ -86,9 +45,11 @@ if __name__ == '__main__':
     # Get the parameters
     parameters = process_arguments()
 
+    # Load in data
+    reference_beats = mir_eval.io.load_events(parameters['reference_file'])
+    estimated_beats = mir_eval.io.load_events(parameters['estimated_file'])
     # Compute all the scores
-    scores = evaluate(parameters['reference_file'],
-                      parameters['estimated_file'])
+    scores = mir_eval.beat.evaluate(reference_beats, estimated_beats)
     print os.path.basename(parameters['estimated_file'])
     eval_utilities.print_evaluation(scores)
 
