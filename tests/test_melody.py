@@ -4,8 +4,6 @@ Unit tests for mir_eval.melody
 '''
 
 import numpy as np
-import os
-import os
 import json
 import nose.tools
 import mir_eval
@@ -18,6 +16,7 @@ A_TOL = 1e-12
 REF_GLOB = 'data/melody/ref*.txt'
 EST_GLOB = 'data/melody/est*.txt'
 SCORES_GLOB = 'data/melody/output*.json'
+
 
 def test_hz2cents():
     # Unit test some simple values
@@ -45,6 +44,7 @@ def test_constant_hop_timebase():
     res_times = mir_eval.melody.constant_hop_timebase(hop, end_time)
     assert np.allclose(res_times, expected_times)
 
+
 def test_resample_melody_series():
     # Check for a small example including a zero transition
     times = np.arange(4)/35.0
@@ -53,14 +53,17 @@ def test_resample_melody_series():
     times_new = np.linspace(0, .08, 9)
     expected_cents = np.array([2., 2., 2., 0., 0., 0., -.8, -.1, .6])
     expected_voicing = np.array([1, 1, 1, 0, 0, 0, 1, 1, 1])
-    res_cents, res_voicing = mir_eval.melody.resample_melody_series(
-                                 times, cents, voicing, times_new)
+    (res_cents,
+     res_voicing) = mir_eval.melody.resample_melody_series(times, cents,
+                                                           voicing, times_new)
     assert np.allclose(res_cents, expected_cents)
     assert np.allclose(res_voicing, expected_voicing)
+
 
 def test_to_cent_voicing():
     # TODO: Write a simple test for this.  May require pre-computed data.
     pass
+
 
 def __unit_test_voicing_measures(metric):
     # We need a special test for voicing_measures because it only takes 2 args
@@ -70,10 +73,11 @@ def __unit_test_voicing_measures(metric):
         score = metric(np.array([]), np.array([]))
         assert len(w) == 4
         assert np.all([issubclass(wrn.category, UserWarning) for wrn in w])
-        assert [str(wrn.message) for wrn in w] == ["Reference voicing array is empty.",
-                                                   "Estimated voicing array is empty.",
-                                                   "Reference melody has no voiced frames.",
-                                                   "Estimated melody has no voiced frames."]
+        assert [str(wrn.message)
+                for wrn in w] == ["Reference voicing array is empty.",
+                                  "Estimated voicing array is empty.",
+                                  "Reference melody has no voiced frames.",
+                                  "Estimated melody has no voiced frames."]
         # And that the metric is 0
         assert np.allclose(score, 0)
         # Also test for a warning when the arrays have non-voiced content
@@ -81,7 +85,6 @@ def __unit_test_voicing_measures(metric):
         assert len(w) == 5
         assert issubclass(w[-1].category, UserWarning)
         assert str(w[-1].message) == "Estimated melody has no voiced frames."
-
 
     # Now test validation function - voicing arrays must be the same size
     nose.tools.assert_raises(ValueError, metric, np.ones(10), np.ones(12))
@@ -96,12 +99,13 @@ def __unit_test_melody_function(metric):
         score = metric(np.array([]), np.array([]), np.array([]), np.array([]))
         assert len(w) == 6
         assert np.all([issubclass(wrn.category, UserWarning) for wrn in w])
-        assert [str(wrn.message) for wrn in w] == ["Reference voicing array is empty.",
-                                                   "Estimated voicing array is empty.",
-                                                   "Reference melody has no voiced frames.",
-                                                   "Estimated melody has no voiced frames.",
-                                                   "Reference frequency array is empty.",
-                                                   "Estimated frequency array is empty."]
+        assert [str(wrn.message)
+                for wrn in w] == ["Reference voicing array is empty.",
+                                  "Estimated voicing array is empty.",
+                                  "Reference melody has no voiced frames.",
+                                  "Estimated melody has no voiced frames.",
+                                  "Reference frequency array is empty.",
+                                  "Estimated frequency array is empty."]
         # And that the metric is 0
         assert np.allclose(score, 0)
         # Also test for a warning when the arrays have non-voiced content
@@ -109,7 +113,6 @@ def __unit_test_melody_function(metric):
         assert len(w) == 7
         assert issubclass(w[-1].category, UserWarning)
         assert str(w[-1].message) == "Estimated melody has no voiced frames."
-
 
     # Now test validation function - all inputs must be same length
     nose.tools.assert_raises(ValueError, metric, np.ones(10),
@@ -119,29 +122,33 @@ def __unit_test_melody_function(metric):
                              np.ones(10), np.arange(10), np.arange(10))
 
 
-def __regression_test_voicing_measures(metric, reference_file, estimated_file, score):
+def __regression_test_voicing_measures(metric, reference_file, estimated_file,
+                                       score):
     # Need a separate function because the call structure is different
     # Load in reference melody
     ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
     # Load in estimated melody
     est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
     # Convert to voicing/cent arrays
-    ref_v, est_v, ref_c, est_c = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
-                                                                 est_time, est_freq)
+    (ref_v, est_v,
+     ref_c, est_c) = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
+                                                     est_time, est_freq)
     # Ensure that the score is correct
     assert np.allclose(metric(ref_v, est_v), score, atol=A_TOL)
 
-def __regression_test_melody_function(metric, reference_file, estimated_file, score):
+
+def __regression_test_melody_function(metric, reference_file, estimated_file,
+                                      score):
     # Load in reference melody
     ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
     # Load in estimated melody
     est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
     # Convert to voicing/cent arrays
-    ref_v, est_v, ref_c, est_c = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
-                                                                 est_time, est_freq)
+    (ref_v, est_v,
+     ref_c, est_c) = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
+                                                     est_time, est_freq)
     # Ensure that the score is correct
     assert np.allclose(metric(ref_v, est_v, ref_c, est_c), score, atol=A_TOL)
-
 
 
 def test_melody_functions():
