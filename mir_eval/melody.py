@@ -6,12 +6,30 @@ For a detailed explanation of the measures please refer to:
 J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody Extraction
 from Polyphonic Music Signals: Approaches, Applications and Challenges",
 IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
+
+Conventions
+-----------
+
+Melody annotations are assumed to be given in the format of a sequence of
+frequency values which are accompanied by a sequence of times denoting when
+each frequency value occurs.  In reference melody time series, a frequency
+value of 0 denotes "unvoiced".  In estimated melody time series, unvoiced
+frames can be indicated either by 0 Hz or by a negative Hz value - negative
+values represent the algorithm's pitch estimate for frames it has determined as
+unvoiced, in case they are in fact voiced.
+
+Metrics are computed using a sequence of reference and estimated pitches in
+cents and boolean voicing arrays, both of which are sampled to the same
+timebase.  The function :func:`mir_eval.melody.to_cent_voicing`.  By default,
+the convention is to resample the estimated melody time series to the reference
+melody time series' timebase.
 '''
 
 import numpy as np
 import scipy.interpolate
 import collections
 import warnings
+from . import util
 
 
 def validate_voicing(ref_voicing, est_voicing):
@@ -198,7 +216,8 @@ def resample_melody_series(times, frequencies, voicing,
     return frequencies_resampled, voicing_resampled.astype(np.bool)
 
 
-def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
+def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, base_frequency=10.,
+                    hop=None, kind='linear'):
     '''
     Converts reference and estimated time/frequency (Hz) annotations to sampled
     frequency (cent)/voicing arrays.
@@ -235,10 +254,6 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, **kwargs):
         - est_cent : np.ndarray
             Resampled estimated frequency (cent) array
     '''
-    # Set default kwargs parameters
-    base_frequency = kwargs.get('base_frequency', 10.)
-    hop = kwargs.get('hop', None)
-    kind = kwargs.get('kind', 'linear')
     # Check if missing sample at time 0 and if so add one
     if ref_time[0] > 0:
         ref_time = np.insert(ref_time, 0, 0)
@@ -515,8 +530,56 @@ def overall_accuracy(ref_voicing, est_voicing, ref_cent, est_cent):
     return accuracy
 
 
-METRICS = collections.OrderedDict()
-METRICS['Voicing Measures'] = voicing_measures
-METRICS['Raw Pitch Accuracy'] = raw_pitch_accuracy
-METRICS['Raw Chroma Accuracy'] = raw_chroma_accuracy
-METRICS['Overall Accuracy'] = overall_accuracy
+def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
+    '''
+    Evaluate two melody (predominant f0) transcriptions, where the first is
+    treated as the reference (ground truth) and the second as the estimate to
+    be evaluated (prediction).
+
+    :parameters:
+        - ref_time : np.ndarray
+            Time of each reference frequency value
+        - ref_freq : np.ndarray
+            Array of reference frequency values
+        - est_time : np.ndarray
+            Time of each estimated frequency value
+        - est_freq : np.ndarray
+            Array of estimated frequency values
+        - kwargs
+            Additional keyword arguments which will be passed to the
+            appropriate metric or preprocessing functions.
+
+    :returns:
+        - scores : dict
+            Dictionary of scores, where the key is the metric name (str) and
+            the value is the (float) score achieved.
+    '''
+    # Convert to reference/estimated voicing/frequency (cent) arrays
+    (ref_voicing, est_voicing,
+     ref_cent, est_cent) = util.filter_kwargs(to_cent_voicing, ref_time,
+                                              ref_freq, est_time, est_freq,
+                                              **kwargs)
+
+    # Compute metrics
+    scores = collections.OrderedDict()
+
+    (scores['Voicing Recall'],
+     scores['Voicing False Alarm']) = util.filter_kwargs(voicing_measures,
+                                                         ref_voicing,
+                                                         est_voicing, **kwargs)
+
+    scores['Raw Pitch Accuracy'] = util.filter_kwargs(raw_pitch_accuracy,
+                                                      ref_voicing, est_voicing,
+                                                      ref_cent, est_cent,
+                                                      **kwargs)
+
+    scores['Raw Chroma Accuracy'] = util.filter_kwargs(raw_chroma_accuracy,
+                                                       ref_voicing,
+                                                       est_voicing, ref_cent,
+                                                       est_cent, **kwargs)
+
+    scores['Overall Accuracy'] = util.filter_kwargs(raw_pitch_accuracy,
+                                                    ref_voicing, est_voicing,
+                                                    ref_cent, est_cent,
+                                                    **kwargs)
+    return scores
