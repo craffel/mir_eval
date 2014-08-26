@@ -674,7 +674,8 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
         - estimated_beats : np.ndarray
             Query beat times, in seconds
         - kwargs
-            Additional keyword arguments for metric functions.
+            Additional keyword arguments which will be passed to the
+            appropriate metric functions.
 
     :returns:
         - scores : dict
