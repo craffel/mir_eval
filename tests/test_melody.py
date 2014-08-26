@@ -158,10 +158,7 @@ def test_melody_functions():
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
     # Unit tests
-    for metric in [mir_eval.melody.voicing_measures,
-                   mir_eval.melody.raw_pitch_accuracy,
-                   mir_eval.melody.raw_chroma_accuracy,
-                   mir_eval.melody.overall_accuracy]:
+    for metric in mir_eval.melody.METRICS.values():
         if metric == mir_eval.melody.voicing_measures:
             yield (__unit_test_voicing_measures, metric)
         else:
@@ -170,14 +167,7 @@ def test_melody_functions():
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
             scores = json.load(f)
-        for name, metric in zip(['Voicing Measures',
-                                 'Raw Pitch Accuracy',
-                                 'Raw Chroma Accuracy',
-                                 'Overall Accuracy'],
-                                [mir_eval.melody.voicing_measures,
-                                 mir_eval.melody.raw_pitch_accuracy,
-                                 mir_eval.melody.raw_chroma_accuracy,
-                                 mir_eval.melody.overall_accuracy]):
+        for name, metric in mir_eval.melody.METRICS.items():
             if metric == mir_eval.melody.voicing_measures:
                 yield (__regression_test_voicing_measures, metric,
                        ref_f, est_f, scores[name])

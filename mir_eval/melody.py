@@ -583,3 +583,10 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
                                                     est_voicing, est_cent,
                                                     **kwargs)
     return scores
+
+
+METRICS = collections.OrderedDict()
+METRICS['Voicing Measures'] = voicing_measures
+METRICS['Raw Pitch Accuracy'] = raw_pitch_accuracy
+METRICS['Raw Chroma Accuracy'] = raw_chroma_accuracy
+METRICS['Overall Accuracy'] = overall_accuracy
