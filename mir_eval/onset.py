@@ -80,6 +80,35 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     # Compute F-measure and return all statistics
     return util.f_measure(precision, recall), precision, recall
 
+
+def evaluate(reference_onsets, estimated_onsets, **kwargs):
+    '''
+    Compute all metrics for the given reference and estimated annotations.
+
+    :parameters:
+        - reference_onsets : np.ndarray
+            reference onset locations, in seconds
+        - estimated_onsets : np.ndarray
+            estimated onset locations, in seconds
+        - kwargs
+            Additional keyword arguments which will be passed to the
+            appropriate metric or preprocessing functions.
+
+    :returns:
+        - scores : dict
+            Dictionary of scores, where the key is the metric name (str) and
+            the value is the (float) score achieved.
+    '''
+    # Compute all metrics
+    scores = collections.OrderedDict()
+
+    (scores['F-measure'],
+     scores['Precision'],
+     scores['Recall']) = util.filter_kwargs(f_measure, reference_onsets,
+                                            estimated_onsets, **kwargs)
+
+    return scores
+
 # Create a dictionary which maps the name of each metric
 # to the function used to compute it
 METRICS = collections.OrderedDict()

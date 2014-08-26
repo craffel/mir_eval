@@ -10,29 +10,9 @@ Usage:
 import argparse
 import sys
 import os
-from collections import OrderedDict
 import eval_utilities
 
 import mir_eval
-
-
-def evaluate(reference_file, estimated_file):
-    '''Load data and perform the evaluation'''
-
-    # load the data
-    reference_onsets = mir_eval.io.load_events(reference_file)
-    estimated_onsets = mir_eval.io.load_events(estimated_file)
-
-    # Now compute all the metrics
-    scores = OrderedDict()
-
-    f_measure, precision, recall = mir_eval.onset.f_measure(reference_onsets,
-                                                            estimated_onsets)
-    scores['F-measure'] = f_measure
-    scores['Precision'] = precision
-    scores['Recall'] = recall
-
-    return scores
 
 
 def process_arguments():
@@ -62,9 +42,12 @@ if __name__ == '__main__':
     # Get the parameters
     parameters = process_arguments()
 
+    # Load in data
+    reference_onsets = mir_eval.io.load_events(parameters['reference_file'])
+    estimated_onsets = mir_eval.io.load_events(parameters['estimated_file'])
+
     # Compute all the scores
-    scores = evaluate(parameters['reference_file'],
-                      parameters['estimated_file'])
+    scores = mir_eval.onset.evaluate(reference_onsets, estimated_onsets)
     print os.path.basename(parameters['estimated_file'])
     eval_utilities.print_evaluation(scores)
 
