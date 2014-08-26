@@ -675,7 +675,7 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
             Query beat times, in seconds
         - kwargs
             Additional keyword arguments which will be passed to the
-            appropriate metric functions.
+            appropriate metric or preprocessing functions.
 
     :returns:
         - scores : dict
