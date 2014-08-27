@@ -700,10 +700,8 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
         util.filter_kwargs(cemgil, reference_beats, estimated_beats, **kwargs)
 
     # Goto
-    # XXX:2014-01-24 12:46:31 by Brian McFee <brm2132@columbia.edu>
-    # This metric is deprecated
-    # scores['Goto'] = util.filter_kwargs(goto, reference_beats,
-    #                                     estimated_beats, **kwargs)
+    scores['Goto'] = util.filter_kwargs(goto, reference_beats,
+                                        estimated_beats, **kwargs)
 
     # P-Score
     scores['P-score'] = util.filter_kwargs(p_score, reference_beats,
