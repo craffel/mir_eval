@@ -401,7 +401,7 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
     '''
 
     validate_voicing(ref_voicing, est_voicing)
-    validate(ref_voicing, est_voicing, ref_cent, est_cent)
+    validate(ref_voicing, ref_cent, est_voicing, est_cent)
     ref_voicing = ref_voicing.astype(bool)
     est_voicing = est_voicing.astype(bool)
     # When input arrays are empty, return 0 by special case
@@ -457,7 +457,7 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
             cents), ignoring octave errors
     '''
     validate_voicing(ref_voicing, est_voicing)
-    validate(ref_voicing, est_voicing, ref_cent, est_cent)
+    validate(ref_voicing, ref_cent, est_voicing, est_cent)
     ref_voicing = ref_voicing.astype(bool)
     est_voicing = est_voicing.astype(bool)
     # When input arrays are empty, return 0 by special case
@@ -512,7 +512,7 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
             where provides a correct frequency values (within 50 cents).
     '''
     validate_voicing(ref_voicing, est_voicing)
-    validate(ref_voicing, est_voicing, ref_cent, est_cent)
+    validate(ref_voicing, ref_cent, est_voicing, est_cent)
     ref_voicing = ref_voicing.astype(bool)
     est_voicing = est_voicing.astype(bool)
     # When input arrays are empty, return 0 by special case
