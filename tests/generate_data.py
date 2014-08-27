@@ -3,6 +3,20 @@
 Generate data for regression tests.
 This is a pretty specialized file and should probably only be used if you know
 what you're doing.
+It expects the following directory structure for data:
+    Each task has its own folder in the data directory.
+    In each task folder, there are a bunch of file pairs for annotations.
+    The reference annotation is ref*.txt, estimated is est*.txt.
+    So, e.g., we expect to find data/beat/ref00.txt and data/beat/est00.txt.
+    The resulting scores dict from the corresponding task will be written to
+    output*.json.
+    So, from the example above it would be written to data/beat/output00.json
+
+To use this script, run it as a command-line program:
+    ./generate_data.py task1 task2...
+task1, task2, etc. are the tasks you'd like to generate data for.
+So, for example, if you'd like to generate data for onset and melody,run
+    ./generate_data.py onset melody
 '''
 
 import mir_eval
@@ -50,17 +64,22 @@ if __name__ == '__main__':
                         'data/segment/{}*.lab')
     tasks['separation'] = (mir_eval.separation, load_separation_data,
                            'data/separation/{}*')
+    # Get task keys from argv
     for task in sys.argv[1:]:
         print 'Generating data for {}'.format(task)
         submodule, loader, data_glob = tasks[task]
+        # Cycle through annotation file pairs
         for ref_file, est_file in zip(glob.glob(data_glob.format('ref')),
                                       glob.glob(data_glob.format('est'))):
+            # Use the loader to load in data
             ref_data = loader(ref_file)
             est_data = loader(est_file)
+            # Some loaders return tuples, others don't
             if type(ref_data) == tuple:
                 scores = submodule.evaluate(*(ref_data + est_data))
             else:
                 scores = submodule.evaluate(ref_data, est_data)
+            # Write out the resulting scores dict
             output_file = ref_file.replace('ref', 'output')
             output_file = os.path.splitext(output_file)[0] + '.json'
             with open(output_file, 'w') as f:
