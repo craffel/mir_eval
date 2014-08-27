@@ -572,12 +572,15 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
                            **kwargs)
 
     # Occurrence scores
+    # Force these values for thresh
+    kwargs['thresh'] = .5
     scores['F_occ.5'], scores['P_occ.5'], scores['R_occ.5'] = \
         util.filter_kwargs(occurrence_FPR, ref_patterns, est_patterns,
-                           thres=.5, **kwargs)
+                           **kwargs)
+    kwargs['thresh'] = .75
     scores['F_occ.75'], scores['P_occ.75'], scores['R_occ.75'] = \
         util.filter_kwargs(occurrence_FPR, ref_patterns, est_patterns,
-                           thres=.75, **kwargs)
+                           **kwargs)
 
     # Three-layer scores
     scores['F_3'], scores['P_3'], scores['R_3'] = \
@@ -585,11 +588,14 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
                            **kwargs)
 
     # First Five Patterns scores
+    # Set default value of n
+    if 'n' not in kwargs:
+        kwargs['n'] = 5
     scores['FFP'] = util.filter_kwargs(first_n_three_layer_P, ref_patterns,
-                                       est_patterns, n=5, **kwargs)
+                                       est_patterns, **kwargs)
     scores['FFTP_est'] = \
         util.filter_kwargs(first_n_target_proportion_R, ref_patterns,
-                           est_patterns, n=5, **kwargs)
+                           est_patterns, **kwargs)
 
     return scores
 
