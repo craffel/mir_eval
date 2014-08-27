@@ -13,6 +13,7 @@ from scipy.signal import fftconvolve
 import collections
 import itertools
 import warnings
+from . import util
 
 
 def validate(reference_sources, estimated_sources):
@@ -204,6 +205,40 @@ def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
     sir = 10 * np.log10(np.sum(s_filt**2) / np.sum(e_interf**2))
     sar = 10 * np.log10(np.sum((s_filt + e_interf)**2) / np.sum(e_artif**2))
     return (sdr, sir, sar)
+
+
+def evaluate(reference_sources, estimated_sources, **kwargs):
+    '''
+    Compute all metrics for the given reference and estimated annotations.
+
+    :parameters:
+        - reference_sources : np.ndarray, shape=(nsrc, nsampl)
+            matrix containing true sources
+        - estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+            matrix containing estimated sources
+        - kwargs
+            Additional keyword arguments which will be passed to the
+            appropriate metric or preprocessing functions.
+
+    :returns:
+        - scores : dict
+            Dictionary of scores, where the key is the metric name (str) and
+            the value is the (float) score achieved.
+    '''
+    # Compute all the metrics
+    scores = collections.OrderedDict()
+
+    sdr, sir, sar, perm = util.filter_kwargs(bss_eval_sources,
+                                             reference_sources,
+                                             estimated_sources, **kwargs)
+
+    scores['Source to Distortion'] = sdr.tolist()
+    scores['Source to Interference'] = sir.tolist()
+    scores['Source to Artifact'] = sar.tolist()
+    scores['Source permutation'] = perm
+
+    return scores
+
 
 # Create a dictionary which maps the name of each metric
 # to the function used to compute it

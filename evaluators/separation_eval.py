@@ -10,54 +10,12 @@ Usage:
 import argparse
 import sys
 import os
-from collections import OrderedDict
 import glob
 import os
 import numpy as np
 import eval_utilities
 
 import mir_eval
-
-
-def evaluate(reference_directory, estimated_directory):
-    '''Load data and perform the evaluation'''
-
-    reference_data = []
-    estimated_data = []
-    global_fs = None
-    # Load in each reference file in the supplied dir
-    for reference_file in glob.glob(os.path.join(reference_directory,
-                                                 '*.wav')):
-        audio_data, fs = mir_eval.io.load_wav(reference_file)
-        # Make sure fs is the same for all files
-        assert (global_fs is None or fs == global_fs)
-        global_fs = fs
-        reference_data.append(audio_data)
-
-    for estimated_file in glob.glob(os.path.join(estimated_directory,
-                                                 '*.wav')):
-        audio_data, fs = mir_eval.io.load_wav(estimated_file)
-        assert (global_fs is None or fs == global_fs)
-        global_fs = fs
-        estimated_data.append(audio_data)
-
-    # Turn list of audio data arrays into nsrc x nsample arrays
-    reference_sources = np.vstack(reference_data)
-    estimated_sources = np.vstack(estimated_data)
-
-    # Now compute all the metrics
-    scores = OrderedDict()
-
-    sdr, sir, sar, perm = \
-        mir_eval.separation.bss_eval_sources(reference_sources,
-                                             estimated_sources)
-
-    scores['Source to Distortion'] = sdr.tolist()
-    scores['Source to Interference'] = sir.tolist()
-    scores['Source to Artifact'] = sar.tolist()
-    scores['Source permutation'] = perm
-
-    return scores
 
 
 def process_arguments():
@@ -89,10 +47,32 @@ if __name__ == '__main__':
     # Get the parameters
     parameters = process_arguments()
 
+    reference_data = []
+    estimated_data = []
+    global_fs = None
+    reference_glob = os.path.join(parameters['reference_directory'], '*.wav')
+    # Load in each reference file in the supplied dir
+    for reference_file in glob.glob(reference_glob):
+        audio_data, fs = mir_eval.io.load_wav(reference_file)
+        # Make sure fs is the same for all files
+        assert (global_fs is None or fs == global_fs)
+        global_fs = fs
+        reference_data.append(audio_data)
+
+    estimated_glob = os.path.join(parameters['estimated_directory'], '*.wav')
+    for estimated_file in glob.glob(estimated_glob):
+        audio_data, fs = mir_eval.io.load_wav(estimated_file)
+        assert (global_fs is None or fs == global_fs)
+        global_fs = fs
+        estimated_data.append(audio_data)
+
+    # Turn list of audio data arrays into nsrc x nsample arrays
+    reference_sources = np.vstack(reference_data)
+    estimated_sources = np.vstack(estimated_data)
+
     # Compute all the scores
-    scores = evaluate(parameters['reference_directory'],
-                      parameters['estimated_directory'])
-    print os.path.basename(parameters['estimated_file'])
+    scores = mir_eval.separation.evaluate(reference_sources, estimated_sources)
+    print os.path.basename(parameters['estimated_directory'])
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
