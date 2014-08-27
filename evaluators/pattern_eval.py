@@ -14,57 +14,10 @@ Written by Oriol Nieto (oriol@nyu.edu), 2014
 
 import argparse
 import os
-from collections import OrderedDict
 import sys
 import eval_utilities
 
 import mir_eval
-
-
-def evaluate(ref_file, est_file):
-    """Load data and perform the evaluation.
-
-    :param ref_file: Path to the reference file.
-    :type ref_file: str
-    :param est_file: Path to the estimation file.
-    :type est_file: str
-    :returns:
-        - M: dict
-            Results contained in an ordered dictionary.
-    """
-    # load the data
-    ref_patterns = mir_eval.io.load_patterns(ref_file)
-    est_patterns = mir_eval.io.load_patterns(est_file)
-
-    # Now compute all the metrics
-    M = OrderedDict()
-
-    # Standard scores
-    M['F'], M['P'], M['R'] = \
-        mir_eval.pattern.standard_FPR(ref_patterns, est_patterns)
-
-    # Establishment scores
-    M['F_est'], M['P_est'], M['R_est'] = \
-        mir_eval.pattern.establishment_FPR(ref_patterns, est_patterns)
-
-    # Occurrence scores
-    M['F_occ.5'], M['P_occ.5'], M['R_occ.5'] = \
-        mir_eval.pattern.occurrence_FPR(ref_patterns, est_patterns, thres=.5)
-    M['F_occ.75'], M['P_occ.75'], M['R_occ.75'] = \
-        mir_eval.pattern.occurrence_FPR(ref_patterns, est_patterns, thres=.75)
-
-    # Three-layer scores
-    M['F_3'], M['P_3'], M['R_3'] = \
-        mir_eval.pattern.three_layer_FPR(ref_patterns, est_patterns)
-
-    # First Five Patterns scores
-    M['FFP'] = mir_eval.pattern.first_n_three_layer_P(ref_patterns,
-                                                      est_patterns, n=5)
-    M['FFTP_est'] = mir_eval.pattern.first_n_target_proportion_R(ref_patterns,
-                                                                 est_patterns,
-                                                                 n=5)
-
-    return M
 
 
 def main():
@@ -86,9 +39,12 @@ def main():
                         help="Path to the estimation file.")
     parameters = vars(parser.parse_args(sys.argv[1:]))
 
+    # Load in data
+    ref_patterns = mir_eval.io.load_patterns(parameters['reference_file'])
+    est_patterns = mir_eval.io.load_patterns(parameters['estimated_file'])
+
     # Compute all the scores
-    scores = evaluate(ref_file=parameters['reference_file'],
-                      est_file=parameters['estimated_file'])
+    scores = mir_eval.pattern.evaluate(ref_patterns, est_patterns)
     print os.path.basename(parameters['estimated_file'])
     eval_utilities.print_evaluation(scores)
 

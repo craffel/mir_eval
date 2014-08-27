@@ -538,6 +538,62 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
     F, P, R = establishment_FPR(reference_patterns, fn_est_patterns)
     return R
 
+
+def evaluate(ref_patterns, est_patterns, **kwargs):
+    '''
+    Load data and perform the evaluation.
+
+    :params:
+        - ref_patterns : list
+            The reference patterns in the format returned by
+            :func:`mir_eval.io.load_patterns()`
+        - est_patterns : list
+            The estimated patterns in the same format
+        - kwargs
+            Additional keyword arguments which will be passed to the
+            appropriate metric or preprocessing functions.
+
+    :returns:
+        - scores : dict
+            Dictionary of scores, where the key is the metric name (str) and
+            the value is the (float) score achieved.
+    '''
+
+    # Now compute all the metrics
+    scores = collections.OrderedDict()
+
+    # Standard scores
+    scores['F'], scores['P'], scores['R'] = \
+        util.filter_kwargs(standard_FPR, ref_patterns, est_patterns, **kwargs)
+
+    # Establishment scores
+    scores['F_est'], scores['P_est'], scores['R_est'] = \
+        util.filter_kwargs(establishment_FPR, ref_patterns, est_patterns,
+                           **kwargs)
+
+    # Occurrence scores
+    scores['F_occ.5'], scores['P_occ.5'], scores['R_occ.5'] = \
+        util.filter_kwargs(occurrence_FPR, ref_patterns, est_patterns,
+                           thres=.5, **kwargs)
+    scores['F_occ.75'], scores['P_occ.75'], scores['R_occ.75'] = \
+        util.filter_kwargs(occurrence_FPR, ref_patterns, est_patterns,
+                           thres=.75, **kwargs)
+
+    # Three-layer scores
+    scores['F_3'], scores['P_3'], scores['R_3'] = \
+        util.filter_kwargs(three_layer_FPR, ref_patterns, est_patterns,
+                           **kwargs)
+
+    # First Five Patterns scores
+    scores['FFP'] = util.filter_kwargs(first_n_three_layer_P, ref_patterns,
+                                       est_patterns, n=5, **kwargs)
+    scores['FFTP_est'] = \
+        util.filter_kwargs(first_n_target_proportion_R, ref_patterns,
+                           est_patterns, n=5, **kwargs)
+
+    return scores
+
+
 METRICS = collections.OrderedDict()
 METRICS['standard_FPR'] = standard_FPR
 METRICS['establishment_FPR'] = establishment_FPR
