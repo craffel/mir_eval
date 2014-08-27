@@ -979,6 +979,96 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     return score_over, score_under, f_measure
 
 
+def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
+    '''
+    Compute all metrics for the given reference and estimated annotations.
+
+    :parameters:
+        - reference_intervals : np.ndarray, shape=(n, 2)
+            reference segment intervals, in the format returned by
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - reference_labels : list, shape=(n,)
+            reference segment labels, in the format returned by
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - estimated_intervals : np.ndarray, shape=(m, 2)
+            estimated segment intervals, in the format returned by
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - estimated_labels : list, shape=(m,)
+            estimated segment labels, in the format returned by
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - kwargs
+            Additional keyword arguments which will be passed to the
+            appropriate metric or preprocessing functions.
+
+    :returns:
+        - scores : dict
+            Dictionary of scores, where the key is the metric name (str) and
+            the value is the (float) score achieved.
+    '''
+
+    # Adjust timespan of estimations relative to ground truth
+    ref_intervals, ref_labels = \
+        util.adjust_intervals(ref_intervals, labels=ref_labels, t_min=0.0)
+
+    est_intervals, est_labels = \
+        util.adjust_intervals(est_intervals, labels=est_labels, t_min=0.0,
+                              t_max=ref_intervals[-1, -1])
+
+    # Now compute all the metrics
+    scores = collections.OrderedDict()
+
+    # Boundary detection
+    # Force these values for window
+    kwargs['window'] = .5
+    scores['Precision@0.5'], scores['Recall@0.5'], scores['F-measure@0.5'] = \
+        util.filter_kwargs(detection, ref_intervals, est_intervals, **kwargs)
+
+    kwargs['window'] = 3.0
+    scores['Precision@3.0'], scores['Recall@3.0'], scores['F-measure@3.0'] = \
+        util.filter_kwargs(detection, ref_intervals, est_intervals, **kwargs)
+
+    # Boundary deviation
+    scores['Ref-to-est deviation'], scores['Est-to-ref deviation'] = \
+        util.filter_kwargs(deviation, ref_intervals, est_intervals, **kwargs)
+
+    # Pairwise clustering
+    (scores['Pairwise Precision'],
+     scores['Pairwise Recall'],
+     scores['Pairwise F-measure']) = util.filter_kwargs(pairwise,
+                                                        ref_intervals,
+                                                        ref_labels,
+                                                        est_intervals,
+                                                        est_labels, **kwargs)
+
+    # Rand index
+    scores['Rand Index'] = util.filter_kwargs(rand_index, ref_intervals,
+                                              ref_labels, est_intervals,
+                                              est_labels, **kwargs)
+    # Adjusted rand index
+    scores['Adjusted Rand Index'] = util.filter_kwargs(ari, ref_intervals,
+                                                       ref_labels,
+                                                       est_intervals,
+                                                       est_labels, **kwargs)
+
+    # Mutual information metrics
+    (scores['Mutual Information'],
+     scores['Adjusted Mutual Information'],
+     scores['Normalized Mutual Information']) = \
+        util.filter_kwargs(mutual_information, ref_intervals, ref_labels,
+                           est_intervals, est_labels, **kwargs)
+
+    # Conditional entropy metrics
+    scores['NCE Over'], scores['NCE Under'], scores['NCE F-measure'] = \
+        util.filter_kwargs(nce, ref_intervals, ref_labels, est_intervals,
+                           est_labels, **kwargs)
+
+    return scores
+
+
 # Create an ordered dict mapping metric names to functions
 METRICS = collections.OrderedDict()
 METRICS['detection'] = detection

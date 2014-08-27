@@ -12,68 +12,9 @@ Usage:
 import argparse
 import sys
 import os
-from collections import OrderedDict
 import eval_utilities
 
 import mir_eval
-
-
-def evaluate(ref_file=None, est_file=None, trim=False):
-    '''Load data and perform the evaluation'''
-
-    # load the data
-    ref_intervals, ref_labels = mir_eval.io.load_labeled_intervals(ref_file)
-    est_intervals, est_labels = mir_eval.io.load_labeled_intervals(est_file)
-
-    # Adjust timespan of estimations relative to ground truth
-    ref_intervals, ref_labels = \
-        mir_eval.util.adjust_intervals(ref_intervals, labels=ref_labels,
-                                       t_min=0.0)
-
-    est_intervals, est_labels = \
-        mir_eval.util.adjust_intervals(est_intervals, labels=est_labels,
-                                       t_min=0.0, t_max=ref_intervals[-1, -1])
-
-    # Now compute all the metrics
-    M = OrderedDict()
-    # Boundary detection
-    M['Precision@0.5'], M['Recall@0.5'], M['F-measure@0.5'] = \
-        mir_eval.segment.detection(ref_intervals, est_intervals, window=0.5,
-                                   trim=trim)
-
-    M['Precision@3.0'], M['Recall@3.0'], M['F-measure@3.0'] = \
-        mir_eval.segment.detection(ref_intervals, est_intervals, window=3.0,
-                                   trim=trim)
-
-    # Boundary deviation
-    M['Ref-to-est deviation'], M['Est-to-ref deviation'] = \
-        mir_eval.segment.deviation(ref_intervals, est_intervals, trim=trim)
-
-    # Pairwise clustering
-    M['Pairwise Precision'], M['Pairwise Recall'], M['Pairwise F-measure'] = \
-        mir_eval.segment.pairwise(ref_intervals, ref_labels, est_intervals,
-                                  est_labels)
-
-    # Rand index
-    M['Rand Index'] = mir_eval.segment.rand_index(ref_intervals, ref_labels,
-                                                  est_intervals, est_labels)
-    # Adjusted rand index
-    M['Adjusted Rand Index'] = mir_eval.segment.ari(ref_intervals, ref_labels,
-                                                    est_intervals, est_labels)
-
-    # Mutual information metrics
-    (M['Mutual Information'],
-     M['Adjusted Mutual Information'],
-     M['Normalized Mutual Information']) = \
-        mir_eval.segment.mutual_information(ref_intervals, ref_labels,
-                                            est_intervals, est_labels)
-
-    # Conditional entropy metrics
-    M['NCE Over'], M['NCE Under'], M['NCE F-measure'] = \
-        mir_eval.segment.nce(ref_intervals, ref_labels, est_intervals,
-                             est_labels)
-
-    return M
 
 
 def process_arguments():
@@ -112,10 +53,16 @@ if __name__ == '__main__':
     # Get the parameters
     parameters = process_arguments()
 
+    # load the data
+    ref_file = parameters['reference_file']
+    est_file = parameters['estimated_file']
+    ref_intervals, ref_labels = mir_eval.io.load_labeled_intervals(ref_file)
+    est_intervals, est_labels = mir_eval.io.load_labeled_intervals(est_file)
+
     # Compute all the scores
-    scores = evaluate(ref_file=parameters['reference_file'],
-                      est_file=parameters['estimated_file'],
-                      trim=parameters['trim'])
+    scores = mir_eval.segment.evaluate(ref_intervals, ref_labels,
+                                       est_intervals, est_labels,
+                                       trim=parameters['trim'])
     print os.path.basename(parameters['estimated_file'])
     eval_utilities.print_evaluation(scores)
 
