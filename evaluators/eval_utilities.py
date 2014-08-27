@@ -27,4 +27,7 @@ def print_evaluation(results):
     '''
     max_len = max([len(key) for key in results])
     for key, value in results.iteritems():
-        print '\t{:>{}} : {:.3f}'.format(key, max_len, value)
+        if type(value) == float:
+            print '\t{:>{}} : {:.3f}'.format(key, max_len, value)
+        else:
+            print '\t{:>{}} : {}'.format(key, max_len, value)
