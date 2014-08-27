@@ -1,5 +1,5 @@
 '''
-Unit tests for mir_eval.structure and mir_eval.boundary
+Unit tests for mir_eval.segment
 '''
 
 import numpy as np
@@ -32,7 +32,7 @@ def generate_data():
         yield ref_t, ref_l, est_t, est_l, scores
 
 
-def test_boundary_detection():
+def test_detection():
 
     def __test_detection(_window, _ref_t, _est_t):
         _ref_t = mir_eval.util.adjust_intervals(_ref_t, t_min=0.0)[0]
@@ -40,8 +40,7 @@ def test_boundary_detection():
                                                 t_max=_ref_t.max())[0]
         (precision,
          recall,
-         fmeasure) = mir_eval.boundary.detection(_ref_t, _est_t,
-                                                 window=_window)
+         fmeasure) = mir_eval.segment.detection(_ref_t, _est_t, window=_window)
 
         print precision, recall, fmeasure
         print (scores['P@%0.1f' % _window], scores['R@%0.1f' % _window],
@@ -62,12 +61,12 @@ def test_boundary_detection():
     pass
 
 
-def test_boundary_deviation():
+def test_deviation():
     def __test_deviation(_ref_t, _est_t):
         _ref_t = mir_eval.util.adjust_intervals(_ref_t, t_min=0.0)[0]
         _est_t = mir_eval.util.adjust_intervals(_est_t, t_min=0.0,
                                                 t_max=_ref_t.max())[0]
-        t_to_p, p_to_t = mir_eval.boundary.deviation(_ref_t, _est_t)
+        t_to_p, p_to_t = mir_eval.segment.deviation(_ref_t, _est_t)
 
         print t_to_p, p_to_t
         print scores['True-to-Pred'], scores['Pred-to-True']
@@ -84,7 +83,7 @@ def test_boundary_deviation():
     pass
 
 
-def test_structure_pairwise():
+def test_pairwise():
 
     def __test_pairwise(_ref_t, _ref_l, _est_t, _est_l):
         _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l,
@@ -93,10 +92,8 @@ def test_structure_pairwise():
                                                         t_min=0.0,
                                                         t_max=_ref_t.max())
 
-        precision, recall, fmeasure = mir_eval.structure.pairwise(_ref_t,
-                                                                  _ref_l,
-                                                                  _est_t,
-                                                                  _est_l)
+        precision, recall, fmeasure = mir_eval.segment.pairwise(_ref_t, _ref_l,
+                                                                _est_t, _est_l)
 
         print precision, recall, fmeasure
         print scores['Pair-P'], scores['Pair-R'], scores['Pair-F']
@@ -114,7 +111,7 @@ def test_structure_pairwise():
     pass
 
 
-def test_structure_rand():
+def test_rand():
     def __test_rand(_ref_t, _ref_l, _est_t, _est_l):
         _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l,
                                                         t_min=0.0)
@@ -122,7 +119,7 @@ def test_structure_rand():
                                                         t_min=0.0,
                                                         t_max=_ref_t.max())
 
-        ri = mir_eval.structure.rand_index(_ref_t, _ref_l, _est_t, _est_l)
+        ri = mir_eval.segment.rand_index(_ref_t, _ref_l, _est_t, _est_l)
 
         print ri
         print scores['RI']
@@ -136,7 +133,7 @@ def test_structure_rand():
                                                         t_min=0.0,
                                                         t_max=_ref_t.max())
 
-        ari = mir_eval.structure.ari(_ref_t, _ref_l, _est_t, _est_l)
+        ari = mir_eval.segment.ari(_ref_t, _ref_l, _est_t, _est_l)
 
         print ari
         print scores['ARI']
@@ -152,7 +149,7 @@ def test_structure_rand():
     pass
 
 
-def test_structure_mutual_information():
+def test_mutual_information():
     def __test_mutual_information(_ref_t, _ref_l, _est_t, _est_l):
         _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l,
                                                         t_min=0.0)
@@ -160,8 +157,8 @@ def test_structure_mutual_information():
                                                         t_min=0.0,
                                                         t_max=_ref_t.max())
 
-        mi, ami, nmi = mir_eval.structure.mutual_information(_ref_t, _ref_l,
-                                                             _est_t, _est_l)
+        mi, ami, nmi = mir_eval.segment.mutual_information(_ref_t, _ref_l,
+                                                           _est_t, _est_l)
 
         print mi, ami, nmi
         print scores['MI'], scores['AMI'], scores['NMI']
@@ -178,7 +175,7 @@ def test_structure_mutual_information():
     pass
 
 
-def test_structure_entropy():
+def test_entropy():
     def __test_entropy(_ref_t, _ref_l, _est_t, _est_l):
         _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l,
                                                         t_min=0.0)
@@ -186,8 +183,8 @@ def test_structure_entropy():
                                                         t_min=0.0,
                                                         t_max=_ref_t.max())
 
-        s_over, s_under, s_f = mir_eval.structure.nce(_ref_t, _ref_l, _est_t,
-                                                      _est_l)
+        s_over, s_under, s_f = mir_eval.segment.nce(_ref_t, _ref_l, _est_t,
+                                                    _est_l)
 
         print s_over, s_under, s_f
         print scores['S_Over'], scores['S_Under'], scores['S_F']

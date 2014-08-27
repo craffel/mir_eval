@@ -19,10 +19,48 @@ import warnings
 from . import util
 
 
-def validate(reference_intervals, reference_labels, estimated_intervals,
-             estimated_labels):
-    '''Checks that the input annotations to a metric look like valid segment
-    times, and throws helpful errors if not.
+def validate_boundary(reference_intervals, estimated_intervals, trim):
+    '''Checks that the input annotations to a segment boundary estimation
+    metric (i.e. one that only takes in segment intervals) look like valid
+    segment times, and throws helpful errors if not.
+
+    :parameters:
+        - reference_intervals : np.ndarray, shape=(n, 2)
+            reference segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - estimated_intervals : np.ndarray, shape=(m, 2)
+            estimated segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - trim : bool
+            will the start and end events be trimmed?
+    '''
+
+    if trim:
+        # If we're trimming, then we need at least 2 intervals
+        min_size = 2
+    else:
+        # If we're not trimming, then we only need one interval
+        min_size = 1
+
+    if len(reference_intervals) < min_size:
+        warnings.warn("Reference intervals are empty.")
+
+    if len(estimated_intervals) < min_size:
+        warnings.warn("Estimated intervals are empty.")
+
+    for intervals in [reference_intervals, estimated_intervals]:
+        util.validate_intervals(intervals)
+
+
+def validate_structure(reference_intervals, reference_labels,
+                       estimated_intervals, estimated_labels):
+    '''Checks that the input annotations to a structure estimation metric (i.e.
+    one that takes in both segment boundaries and their labels) look like valid
+    segment times and labels, and throws helpful errors if not.
 
     :parameters:
         - reference_intervals : np.ndarray, shape=(n, 2)
@@ -59,6 +97,152 @@ def validate(reference_intervals, reference_labels, estimated_intervals,
         warnings.warn("Estimated intervals are empty.")
     if not np.allclose(reference_intervals[-1, 1], estimated_intervals[-1, 1]):
         raise ValueError('End times do not match')
+
+
+def detection(reference_intervals, estimated_intervals,
+              window=0.5, beta=1.0, trim=False):
+    '''Boundary detection hit-rate.
+
+    A hit is counted whenever an reference boundary is within ``window`` of a
+    estimated boundary.  Note that each boundary is matched at most once: this
+    is achieved by computing the size of a maximal matching between reference
+    and estimated boundary points, subject to the window constraint.
+
+    :usage:
+        >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
+        >>> # With 0.5s windowing
+        >>> P05, R05, F05 = mir_eval.boundary.detection(ref_intervals,
+                                                        est_intervals,
+                                                        window=0.5)
+        >>> # With 3s windowing
+        >>> P3, R3, F3 = mir_eval.boundary.detection(ref_intervals,
+                                                     est_intervals,
+                                                     window=3)
+        >>> # Ignoring hits for the beginning and end of track
+        >>> P, R, F = mir_eval.boundary.detection(ref_intervals,
+                                                  est_intervals,
+                                                  window=0.5,
+                                                  trim=True)
+
+
+    :parameters:
+        - reference_intervals : np.ndarray, shape=(n, 2)
+            reference segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - estimated_intervals : np.ndarray, shape=(m, 2)
+            estimated segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - window : float > 0
+            size of the window of 'correctness' around ground-truth beats
+            (in seconds)
+
+        - beta : float > 0
+            weighting constant for F-measure.
+
+        - trim : boolean
+            if ``True``, the first and last boundary times are ignored.
+            Typically, these denote start (0) and end-markers.
+
+    :returns:
+        - precision : float
+            precision of estimated predictions
+
+        - recall : float
+            recall of reference reference boundaries
+
+        - f_measure : float
+            F-measure (weighted harmonic mean of ``precision`` and ``recall``)
+    '''
+
+    validate_boundary(reference_intervals, estimated_intervals, trim)
+
+    # Convert intervals to boundaries
+    reference_boundaries = util.intervals_to_boundaries(reference_intervals)
+    estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)
+
+    # Suppress the first and last intervals
+    if trim:
+        reference_boundaries = reference_boundaries[1:-1]
+        estimated_boundaries = estimated_boundaries[1:-1]
+
+    # If we have no boundaries, we get no score.
+    if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
+        return 0.0, 0.0, 0.0
+
+    matching = util.match_events(reference_boundaries,
+                                 estimated_boundaries,
+                                 window)
+
+    precision = float(len(matching)) / len(estimated_boundaries)
+    recall = float(len(matching)) / len(reference_boundaries)
+
+    f_measure = util.f_measure(precision, recall, beta=beta)
+
+    return precision, recall, f_measure
+
+
+def deviation(reference_intervals, estimated_intervals, trim=False):
+    '''Compute the median deviations between reference
+    and estimated boundary times.
+
+    :usage:
+        >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
+        >>> r_to_e, e_to_r = mir_eval.boundary.deviation(ref_intervals,
+                                                         est_intervals)
+
+    :parameters:
+        - reference_intervals : np.ndarray, shape=(n, 2)
+            reference segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - estimated_intervals : np.ndarray, shape=(m, 2)
+            estimated segment intervals, in the format returned by
+            :func:`mir_eval.io.load_intervals` or
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - trim : boolean
+            if ``True``, the first and last intervals are ignored.
+            Typically, these denote start (0.0) and end-of-track markers.
+
+    :returns:
+        - reference_to_estimated : float
+            median time from each reference boundary to the
+            closest estimated boundary
+
+        - estimated_to_reference : float
+            median time from each estimated boundary to the
+            closest reference boundary
+    '''
+
+    validate_boundary(reference_intervals, estimated_intervals, trim)
+
+    # Convert intervals to boundaries
+    reference_boundaries = util.intervals_to_boundaries(reference_intervals)
+    estimated_boundaries = util.intervals_to_boundaries(estimated_intervals)
+
+    # Suppress the first and last intervals
+    if trim:
+        reference_boundaries = reference_boundaries[1:-1]
+        estimated_boundaries = estimated_boundaries[1:-1]
+
+    # If we have no boundaries, we get no score.
+    if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
+        return np.nan, np.nan
+
+    dist = np.abs(np.subtract.outer(reference_boundaries,
+                                    estimated_boundaries))
+
+    estimated_to_reference = np.median(dist.min(axis=0))
+    reference_to_estimated = np.median(dist.min(axis=1))
+
+    return reference_to_estimated, estimated_to_reference
 
 
 def pairwise(reference_intervals, reference_labels,
@@ -125,8 +309,8 @@ def pairwise(reference_intervals, reference_labels,
     .. seealso:: :func:`mir_eval.util.adjust_intervals`
     '''
 
-    validate(reference_intervals, reference_labels, estimated_intervals,
-             estimated_labels)
+    validate_structure(reference_intervals, reference_labels,
+                       estimated_intervals, estimated_labels)
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -221,8 +405,8 @@ def rand_index(reference_intervals, reference_labels,
     .. seealso:: :func:`mir_eval.util.adjust_intervals`
     '''
 
-    validate(reference_intervals, reference_labels, estimated_intervals,
-             estimated_labels)
+    validate_structure(reference_intervals, reference_labels,
+                       estimated_intervals, estimated_labels)
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -386,8 +570,8 @@ def ari(reference_intervals, reference_labels,
         Segment intervals will be rounded down to the nearest multiple
         of frame_size.
     '''
-    validate(reference_intervals, reference_labels, estimated_intervals,
-             estimated_labels)
+    validate_structure(reference_intervals, reference_labels,
+                       estimated_intervals, estimated_labels)
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -468,24 +652,6 @@ def _entropy(labels):
     # log(a / b) should be calculated as log(a) - log(b) for
     # possible loss of precision
     return -np.sum((pi / pi_sum) * (np.log(pi) - np.log(pi_sum)))
-
-
-def _expected_mutual_information(contingency, n_samples):
-    '''
-    Calculate the expected mutual information for two labelings.
-
-    :parameters:
-        - contingency : np.ndarray
-            Contingency matrix.
-        - n_samples : int
-            Number of label samples
-
-    :returns:
-        - emi : float
-            Expected mutual information score
-
-    .. note:: Based on sklearn.metrics.cluster.expected_mutual_information
-    '''
 
 
 def _adjusted_mutual_info_score(reference_indices, estimated_indices):
@@ -669,8 +835,8 @@ def mutual_information(reference_intervals, reference_labels,
         Segment intervals will be rounded down to the nearest multiple
         of frame_size.
     '''
-    validate(reference_intervals, reference_labels, estimated_intervals,
-             estimated_labels)
+    validate_structure(reference_intervals, reference_labels,
+                       estimated_intervals, estimated_labels)
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -768,8 +934,8 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
             2007, pp. 375-380.
     '''
 
-    validate(reference_intervals, reference_labels, estimated_intervals,
-             estimated_labels)
+    validate_structure(reference_intervals, reference_labels,
+                       estimated_intervals, estimated_labels)
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -815,6 +981,8 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
 
 # Create an ordered dict mapping metric names to functions
 METRICS = collections.OrderedDict()
+METRICS['detection'] = detection
+METRICS['deviation'] = deviation
 METRICS['pairwise'] = pairwise
 METRICS['ARI'] = ari
 METRICS['MI'] = mutual_information

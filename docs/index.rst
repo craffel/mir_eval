@@ -22,14 +22,6 @@ mir_eval.beat
    :show-inheritance:
    :member-order: bysource
 
-mir_eval.boundary
------------------
-.. automodule:: mir_eval.boundary
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
-
 mir_eval.chord
 --------------
 .. automodule:: mir_eval.chord
@@ -70,6 +62,14 @@ mir_eval.pattern
    :show-inheritance:
    :member-order: bysource
 
+mir_eval.segment
+------------------
+.. automodule:: mir_eval.segment
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+
 mir_eval.separation
 -------------------
 .. automodule:: mir_eval.separation
@@ -81,14 +81,6 @@ mir_eval.separation
 mir_eval.sonify
 ---------------
 .. automodule:: mir_eval.sonify
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
-
-mir_eval.structure
-------------------
-.. automodule:: mir_eval.structure
    :members:
    :undoc-members:
    :show-inheritance:

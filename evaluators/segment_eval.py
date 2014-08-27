@@ -38,42 +38,40 @@ def evaluate(ref_file=None, est_file=None, trim=False):
     M = OrderedDict()
     # Boundary detection
     M['Precision@0.5'], M['Recall@0.5'], M['F-measure@0.5'] = \
-        mir_eval.boundary.detection(ref_intervals, est_intervals, window=0.5,
-                                    trim=trim)
+        mir_eval.segment.detection(ref_intervals, est_intervals, window=0.5,
+                                   trim=trim)
 
     M['Precision@3.0'], M['Recall@3.0'], M['F-measure@3.0'] = \
-        mir_eval.boundary.detection(ref_intervals, est_intervals, window=3.0,
-                                    trim=trim)
+        mir_eval.segment.detection(ref_intervals, est_intervals, window=3.0,
+                                   trim=trim)
 
     # Boundary deviation
     M['Ref-to-est deviation'], M['Est-to-ref deviation'] = \
-        mir_eval.boundary.deviation(ref_intervals, est_intervals, trim=trim)
+        mir_eval.segment.deviation(ref_intervals, est_intervals, trim=trim)
 
     # Pairwise clustering
     M['Pairwise Precision'], M['Pairwise Recall'], M['Pairwise F-measure'] = \
-        mir_eval.structure.pairwise(ref_intervals, ref_labels, est_intervals,
-                                    est_labels)
+        mir_eval.segment.pairwise(ref_intervals, ref_labels, est_intervals,
+                                  est_labels)
 
     # Rand index
-    M['Rand Index'] = mir_eval.structure.rand_index(ref_intervals, ref_labels,
-                                            est_intervals, est_labels)
+    M['Rand Index'] = mir_eval.segment.rand_index(ref_intervals, ref_labels,
+                                                  est_intervals, est_labels)
     # Adjusted rand index
-    M['Adjusted Rand Index'] = mir_eval.structure.ari(ref_intervals,
-                                                      ref_labels,
-                                                      est_intervals,
-                                                      est_labels)
+    M['Adjusted Rand Index'] = mir_eval.segment.ari(ref_intervals, ref_labels,
+                                                    est_intervals, est_labels)
 
     # Mutual information metrics
     (M['Mutual Information'],
      M['Adjusted Mutual Information'],
      M['Normalized Mutual Information']) = \
-        mir_eval.structure.mutual_information(ref_intervals, ref_labels,
-                                              est_intervals, est_labels)
+        mir_eval.segment.mutual_information(ref_intervals, ref_labels,
+                                            est_intervals, est_labels)
 
     # Conditional entropy metrics
     M['NCE Over'], M['NCE Under'], M['NCE F-measure'] = \
-        mir_eval.structure.nce(ref_intervals, ref_labels, est_intervals,
-                               est_labels)
+        mir_eval.segment.nce(ref_intervals, ref_labels, est_intervals,
+                             est_labels)
 
     return M
 
