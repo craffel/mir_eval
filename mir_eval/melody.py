@@ -578,7 +578,7 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
                                                        est_voicing, est_cent,
                                                        **kwargs)
 
-    scores['Overall Accuracy'] = util.filter_kwargs(raw_pitch_accuracy,
+    scores['Overall Accuracy'] = util.filter_kwargs(overall_accuracy,
                                                     ref_voicing, ref_cent,
                                                     est_voicing, est_cent,
                                                     **kwargs)
