@@ -80,5 +80,6 @@ def test_beat_functions():
         scores = mir_eval.beat.evaluate(reference_beats, estimated_beats)
         # Compare them
         for metric in scores:
+            # This is a simple hack to make nosetest's messages more useful
             yield (__check_score, sco_f, metric, scores[metric],
                    expected_scores[metric])
