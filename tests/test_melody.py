@@ -122,33 +122,8 @@ def __unit_test_melody_function(metric):
                              np.arange(10), np.ones(10), np.arange(10))
 
 
-def __regression_test_voicing_measures(metric, reference_file, estimated_file,
-                                       score):
-    # Need a separate function because the call structure is different
-    # Load in reference melody
-    ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
-    # Load in estimated melody
-    est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
-    # Convert to voicing/cent arrays
-    (ref_v, ref_c,
-     est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
-                                                     est_time, est_freq)
-    # Ensure that the score is correct
-    assert np.allclose(metric(ref_v, est_v), score, atol=A_TOL)
-
-
-def __regression_test_melody_function(metric, reference_file, estimated_file,
-                                      score):
-    # Load in reference melody
-    ref_time, ref_freq = mir_eval.io.load_time_series(reference_file)
-    # Load in estimated melody
-    est_time, est_freq = mir_eval.io.load_time_series(estimated_file)
-    # Convert to voicing/cent arrays
-    (ref_v, ref_c,
-     est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time, ref_freq,
-                                                     est_time, est_freq)
-    # Ensure that the score is correct
-    assert np.allclose(metric(ref_v, ref_c, est_v, est_c), score, atol=A_TOL)
+def __check_score(sco_f, metric, score, expected_score):
+    assert np.allclose(score, expected_score, atol=A_TOL)
 
 
 def test_melody_functions():
@@ -166,11 +141,14 @@ def test_melody_functions():
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
-            scores = json.load(f)
-        for name, metric in mir_eval.melody.METRICS.items():
-            if metric == mir_eval.melody.voicing_measures:
-                yield (__regression_test_voicing_measures, metric,
-                       ref_f, est_f, scores[name])
-            else:
-                yield (__regression_test_melody_function, metric,
-                       ref_f, est_f, scores[name])
+            expected_scores = json.load(f)
+        # Load in reference melody
+        ref_time, ref_freq = mir_eval.io.load_time_series(ref_f)
+        # Load in estimated melody
+        est_time, est_freq = mir_eval.io.load_time_series(est_f)
+        scores = mir_eval.melody.evaluate(ref_time, ref_freq, est_time,
+                                          est_freq)
+        for metric in scores:
+            # This is a simple hack to make nosetest's messages more useful
+            yield (__check_score, sco_f, metric, scores[metric],
+                   expected_scores[metric])
