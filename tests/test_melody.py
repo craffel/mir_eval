@@ -133,7 +133,10 @@ def test_melody_functions():
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
     # Unit tests
-    for metric in mir_eval.melody.METRICS.values():
+    for metric in [mir_eval.melody.voicing_measures,
+                   mir_eval.melody.raw_pitch_accuracy,
+                   mir_eval.melody.raw_chroma_accuracy,
+                   mir_eval.melody.overall_accuracy]:
         if metric == mir_eval.melody.voicing_measures:
             yield (__unit_test_voicing_measures, metric)
         else:

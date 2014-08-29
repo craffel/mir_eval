@@ -66,7 +66,12 @@ def test_beat_functions():
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
     # Unit tests
-    for metric in mir_eval.beat.METRICS.values():
+    for metric in [mir_eval.beat.f_measure,
+                   mir_eval.beat.cemgil,
+                   mir_eval.beat.goto,
+                   mir_eval.beat.p_score,
+                   mir_eval.beat.continuity,
+                   mir_eval.beat.information_gain]:
         yield (__unit_test_beat_function, metric)
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):

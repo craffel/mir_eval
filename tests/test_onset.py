@@ -58,7 +58,7 @@ def test_onset_functions():
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
     # Unit tests
-    for metric in mir_eval.onset.METRICS.values():
+    for metric in [mir_eval.onset.f_measure]:
         yield (__unit_test_onset_function, metric)
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
