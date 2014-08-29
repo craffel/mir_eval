@@ -47,15 +47,8 @@ def __unit_test_onset_function(metric):
     assert np.allclose(metric(onsets, onsets), 1)
 
 
-def __regression_test_onset_function(metric, reference_file, estimated_file,
-                                     score):
-    # Load in an example onset annotation
-    reference_onsets = mir_eval.io.load_events(reference_file)
-    # Load in an example onset tracker output
-    estimated_onsets = mir_eval.io.load_events(estimated_file)
-    # Ensure that the score is correct
-    assert np.allclose(metric(reference_onsets, estimated_onsets), score,
-                       atol=A_TOL)
+def __check_score(sco_f, metric, score, expected_score):
+    assert np.allclose(score, expected_score, atol=A_TOL)
 
 
 def test_onset_functions():
@@ -70,7 +63,15 @@ def test_onset_functions():
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
-            scores = json.load(f)
-        for name, metric in mir_eval.onset.METRICS.items():
-            yield (__regression_test_onset_function, metric,
-                   ref_f, est_f, scores[name])
+            expected_scores = json.load(f)
+        # Load in an example onset annotation
+        reference_onsets = mir_eval.io.load_events(ref_f)
+        # Load in an example onset tracker output
+        estimated_onsets = mir_eval.io.load_events(est_f)
+        # Compute scores
+        scores = mir_eval.onset.evaluate(reference_onsets, estimated_onsets)
+        # Compare them
+        for metric in scores:
+            # This is a simple hack to make nosetest's messages more useful
+            yield (__check_score, sco_f, metric, scores[metric],
+                   expected_scores[metric])
