@@ -61,7 +61,27 @@ def test_resample_melody_series():
 
 
 def test_to_cent_voicing():
-    # TODO: Write a simple test for this.  May require pre-computed data.
+    # We'll just test a few values from one of the test annotations
+    ref_file = list(glob.glob(REF_GLOB))[0]
+    ref_time, ref_freq = mir_eval.io.load_time_series(ref_file)
+    est_file = list(glob.glob(EST_GLOB))[0]
+    est_time, est_freq = mir_eval.io.load_time_series(est_file)
+    ref_v, ref_c, est_v, est_c = mir_eval.melody.to_cent_voicing(ref_time,
+                                                                 ref_freq,
+                                                                 est_time,
+                                                                 est_freq)
+    # Expected values
+    test_range = np.arange(220, 225)
+    expected_ref_v = np.array([False, False, False, True, True])
+    expected_ref_c = np.array([0., 0., 0., 6056.8837818916609,
+                               6028.5504583021921])
+    expected_est_v = np.array([False]*5)
+    expected_est_c = np.array([5351.3179423647571]*5)
+    assert np.allclose(ref_v[test_range], expected_ref_v)
+    assert np.allclose(ref_c[test_range], expected_ref_c)
+    assert np.allclose(est_v[test_range], expected_est_v)
+    assert np.allclose(est_c[test_range], expected_est_c)
+
     pass
 
 
