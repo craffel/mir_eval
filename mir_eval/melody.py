@@ -447,10 +447,10 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     :parameters:
         - ref_voicing : np.ndarray
             Reference boolean voicing array
-        - est_voicing : np.ndarray
-            Estimated boolean voicing array
         - ref_cent : np.ndarray
             Reference pitch sequence in cents
+        - est_voicing : np.ndarray
+            Estimated boolean voicing array
         - est_cent : np.ndarray
             Estimate pitch sequence in cents
         - cent_tolerance : float
@@ -506,10 +506,10 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     :parameters:
         - ref_voicing : np.ndarray
             Reference boolean voicing array
-        - est_voicing : np.ndarray
-            Estimated boolean voicing array
         - ref_cent : np.ndarray
             Reference pitch sequence in cents
+        - est_voicing : np.ndarray
+            Estimated boolean voicing array
         - est_cent : np.ndarray
             Estimate pitch sequence in cents
         - cent_tolerance : float
