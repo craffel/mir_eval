@@ -365,7 +365,8 @@ def voicing_measures(ref_voicing, est_voicing):
     return vx_recall, vx_false_alm
 
 
-def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
+def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
+                       cent_tolerance=50):
     '''
     Compute the raw pitch accuracy given two pitch (frequency) sequences in
     cents and matching voicing indicator sequences. The first pitch and voicing
@@ -392,12 +393,14 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
             Estimated boolean voicing array
         - est_cent : np.ndarray
             Estimate pitch sequence in cents
+        - cent_tolerance : float
+            Maximum absolute deviation for a cent value to be considerd correct
 
     :returns:
         - raw_pitch : float
             Raw pitch accuracy, the fraction of voiced frames in ref_cent for
             which est_cent provides a correct frequency values
-            (within 50 cents).
+            (within cent_tolerance cents).
     '''
 
     validate_voicing(ref_voicing, est_voicing)
@@ -413,15 +416,16 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
         return 0.
 
     # Raw pitch = the number of voiced frames in the reference for which the
-    # estimate provides a correct frequency value (within 50 cents).
+    # estimate provides a correct frequency value (within cent_tolerance cents)
     # NB: voicing estimation is ignored in this measure
-    cent_diff = np.abs(ref_cent - est_cent)
-    raw_pitch = (cent_diff[ref_voicing] < 50).sum()/float(ref_voicing.sum())
+    frame_correct = (np.abs(ref_cent - est_cent)[ref_voicing] < cent_tolerance)
+    raw_pitch = (frame_correct).sum()/float(ref_voicing.sum())
 
     return raw_pitch
 
 
-def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
+def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
+                        cent_tolerance=50):
     '''
     Compute the raw chroma accuracy given two pitch (frequency) sequences
     in cents and matching voicing indicator sequences. The first pitch and
@@ -449,12 +453,14 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
             Reference pitch sequence in cents
         - est_cent : np.ndarray
             Estimate pitch sequence in cents
+        - cent_tolerance : float
+            Maximum absolute deviation for a cent value to be considerd correct
 
     :returns:
         - raw_chroma : float
             Raw chroma accuracy, the fraction of voiced frames in ref_cent for
-            which est_cent provides a correct frequency values (within 50
-            cents), ignoring octave errors
+            which est_cent provides a correct frequency values (within
+            cent_tolerance cents), ignoring octave errors
     '''
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_cent, est_voicing, est_cent)
@@ -472,13 +478,14 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
     # Raw chroma = same as raw pitch except that octave errors are ignored.
     cent_diff = np.abs(ref_cent - est_cent)
     octave = 1200*np.floor(cent_diff/1200.0 + 0.5)
-    cent_diff_chroma = np.abs(cent_diff - octave)
+    frame_correct = (np.abs(cent_diff - octave)[ref_voicing] < cent_tolerance)
     n_voiced = float(ref_voicing.sum())
-    raw_chroma = (cent_diff_chroma[ref_voicing] < 50).sum()/n_voiced
+    raw_chroma = (frame_correct).sum()/n_voiced
     return raw_chroma
 
 
-def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
+def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
+                     cent_tolerance=50):
     '''
     Compute the overall accuracy given two pitch (frequency) sequences in cents
     and matching voicing indicator sequences. The first pitch and voicing
@@ -505,11 +512,14 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
             Reference pitch sequence in cents
         - est_cent : np.ndarray
             Estimate pitch sequence in cents
+        - cent_tolerance : float
+            Maximum absolute deviation for a cent value to be considerd correct
 
     :returns:
         - overall_accuracy : float
             Overall accuracy, the total fraction of correctly estimates frames,
-            where provides a correct frequency values (within 50 cents).
+            where provides a correct frequency values (within cent_tolerance
+            cents).
     '''
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_cent, est_voicing, est_cent)
@@ -524,8 +534,8 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent):
     TN = ((ref_voicing == 0)*(est_voicing == 0)).sum()
 
     cent_diff = np.abs(ref_cent - est_cent)
-    correct_frames = (cent_diff[ref_voicing*est_voicing] < 50).sum()
-    accuracy = (correct_frames + TN)/float(ref_cent.shape[0])
+    frame_correct = (cent_diff[ref_voicing*est_voicing] < cent_tolerance)
+    accuracy = (frame_correct.sum() + TN)/float(ref_cent.shape[0])
 
     return accuracy
 
