@@ -262,6 +262,16 @@ def adjust_intervals(intervals,
             List of labels for new_labels
     '''
 
+    # When supplied intervals are empty and t_max and t_min are supplied,
+    # create one interval from t_min to t_max with the label start_label
+    if t_min is not None and t_max is not None and intervals.size == 0:
+        return np.array([[t_min, t_max]]), [start_label]
+    # When intervals are empty and either t_min or t_max are not supplied,
+    # we can't append new intervals
+    elif (t_min is None or t_max is None) and intervals.size == 0:
+        raise ValueError("Supplied intervals are empty, can't append new"
+                         " intervals")
+
     if t_min is not None:
         # Find the intervals that end at or after t_min
         first_idx = np.argwhere(intervals[:, 1] >= t_min)
