@@ -357,6 +357,16 @@ def voicing_measures(ref_voicing, est_voicing):
     :raises:
         - ValueError
             Thrown when the provided annotations are not valid.
+
+    :references:
+        .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
+            Extraction from Polyphonic Music Signals: Approaches, Applications
+            and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
+            Mar. 2014.
+        .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
+            Streich, and B. Ong. "Melody transcription from music audio:
+            Approaches and evaluation", IEEE Transactions on Audio, Speech, and
+            Language Processing, 15(4):1247-1256, 2007.
     '''
     validate_voicing(ref_voicing, est_voicing)
     ref_voicing = ref_voicing.astype(bool)
@@ -435,6 +445,16 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     :raises:
         - ValueError
             Thrown when the provided annotations are not valid.
+
+    :references:
+        .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
+            Extraction from Polyphonic Music Signals: Approaches, Applications
+            and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
+            Mar. 2014.
+        .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
+            Streich, and B. Ong. "Melody transcription from music audio:
+            Approaches and evaluation", IEEE Transactions on Audio, Speech, and
+            Language Processing, 15(4):1247-1256, 2007.
     '''
 
     validate_voicing(ref_voicing, est_voicing)
@@ -495,6 +515,16 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
             Raw chroma accuracy, the fraction of voiced frames in ref_cent for
             which est_cent provides a correct frequency values (within
             cent_tolerance cents), ignoring octave errors
+
+    :references:
+        .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
+            Extraction from Polyphonic Music Signals: Approaches, Applications
+            and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
+            Mar. 2014.
+        .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
+            Streich, and B. Ong. "Melody transcription from music audio:
+            Approaches and evaluation", IEEE Transactions on Audio, Speech, and
+            Language Processing, 15(4):1247-1256, 2007.
     '''
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_cent, est_voicing, est_cent)
@@ -558,6 +588,16 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     :raises:
         - ValueError
             Thrown when the provided annotations are not valid.
+
+    :references:
+        .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
+            Extraction from Polyphonic Music Signals: Approaches, Applications
+            and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
+            Mar. 2014.
+        .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
+            Streich, and B. Ong. "Melody transcription from music audio:
+            Approaches and evaluation", IEEE Transactions on Audio, Speech, and
+            Language Processing, 15(4):1247-1256, 2007.
     '''
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_cent, est_voicing, est_cent)
