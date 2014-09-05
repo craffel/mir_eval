@@ -36,6 +36,10 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
         - columns : tuple of lists
             Each list in this tuple corresponds to values in one of the columns
             in the file.
+
+    :raises:
+        - ValueError
+            Thrown when the provided file is not in the specified format
     '''
     # Initialize list of empty lists
     n_columns = len(converters)
