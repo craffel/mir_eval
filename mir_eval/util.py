@@ -664,7 +664,7 @@ def filter_kwargs(function, *args, **kwargs):
     '''
     Given a function and args and keyword args to pass to it, call the function
     but using only the keyword arguments which it accepts.  This is equivalent
-    to redefining the function with an additional **kwargs to accept slop
+    to redefining the function with an additional \*\*kwargs to accept slop
     keyword args.
 
     :parameters:
