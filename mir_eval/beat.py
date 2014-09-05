@@ -723,13 +723,3 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
                                                     **kwargs)
 
     return scores
-
-# Create a dictionary which maps the name of each metric
-# to the function used to compute it
-METRICS = collections.OrderedDict()
-METRICS['F-measure'] = f_measure
-METRICS['Cemgil'] = cemgil
-METRICS['Goto'] = goto
-METRICS['P-score'] = p_score
-METRICS['Continuity'] = continuity
-METRICS['Information Gain'] = information_gain

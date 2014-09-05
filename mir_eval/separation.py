@@ -238,9 +238,3 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
     scores['Source permutation'] = perm
 
     return scores
-
-
-# Create a dictionary which maps the name of each metric
-# to the function used to compute it
-METRICS = collections.OrderedDict()
-METRICS['bss_eval_sources'] = bss_eval_sources

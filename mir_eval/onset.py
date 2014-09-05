@@ -108,8 +108,3 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
                                             estimated_onsets, **kwargs)
 
     return scores
-
-# Create a dictionary which maps the name of each metric
-# to the function used to compute it
-METRICS = collections.OrderedDict()
-METRICS['F-measure'] = f_measure

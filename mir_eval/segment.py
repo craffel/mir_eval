@@ -1102,13 +1102,3 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
                            est_labels, **kwargs)
 
     return scores
-
-
-# Create an ordered dict mapping metric names to functions
-METRICS = collections.OrderedDict()
-METRICS['detection'] = detection
-METRICS['deviation'] = deviation
-METRICS['pairwise'] = pairwise
-METRICS['ARI'] = ari
-METRICS['MI'] = mutual_information
-METRICS['NCE'] = nce
