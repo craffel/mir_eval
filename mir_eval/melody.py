@@ -1,28 +1,54 @@
 # CREATED:2014-03-07 by Justin Salamon <justin.salamon@nyu.edu>
 '''
-Melody extraction evaluation, based on the protocols used in MIREX since 2005.
+Melody extraction algorithms aim to produce a sequence of frequency values
+corresponding to the pitch of the dominant melody from a musical
+recording.  For evaluation, an estimated pitch series is evaluated against a
+reference based on whether the voicing (melody present or not) and the pitch
+is correct (within some tolerance).
 
 For a detailed explanation of the measures please refer to:
-J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody Extraction
-from Polyphonic Music Signals: Approaches, Applications and Challenges",
-IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
+    J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody Extraction
+    from Polyphonic Music Signals: Approaches, Applications and Challenges",
+    IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 
 Conventions
 -----------
 
-Melody annotations are assumed to be given in the format of a sequence of
-frequency values which are accompanied by a sequence of times denoting when
-each frequency value occurs.  In reference melody time series, a frequency
-value of 0 denotes "unvoiced".  In estimated melody time series, unvoiced
+Melody annotations are assumed to be given in the format of a 1d array of
+frequency values which are accompanied by a 1d array of times denoting when
+each frequency value occurs.  In a reference melody time series, a frequency
+value of 0 denotes "unvoiced".  In a estimated melody time series, unvoiced
 frames can be indicated either by 0 Hz or by a negative Hz value - negative
 values represent the algorithm's pitch estimate for frames it has determined as
 unvoiced, in case they are in fact voiced.
 
 Metrics are computed using a sequence of reference and estimated pitches in
 cents and boolean voicing arrays, both of which are sampled to the same
-timebase.  The function :func:`mir_eval.melody.to_cent_voicing`.  By default,
-the convention is to resample the estimated melody time series to the reference
-melody time series' timebase.
+timebase.  The function :func:`mir_eval.melody.to_cent_voicing` can be used to
+convert a sequence of estimated and reference times and frequency values in Hz
+to boolean voicing arrays and frequency arrays in the format required by the
+metric functions.  By default, the convention is to resample the estimated
+melody time series to the reference melody time series' timebase.
+
+Metrics
+-------
+
+* :func:`mir_eval.melody.voicing_measures`: Voicing measures, including the
+  recall rate (proportion of frames labeled as melody frames in the reference
+  that are estimated as melody frames) and the false alarm
+  rate (proportion of frames labeled as non-melody in the reference that are
+  mistakenly estimated as melody frames)
+* :func:`mir_eval.melody.raw_pitch_accuracy`: Raw Pitch Accuracy, which
+  computes the proportion of melody frames in the reference for which the
+  frequency is considered correct (i.e. within half a semitone of the reference
+  frequency)
+* :func:`mir_eval.melody.raw_chroma_accuracy`: Raw Chroma Accuracy, where the
+  estimated and reference frequency sequences are mapped onto a single octave
+  before computing the raw pitch accuracy
+* :func:`mir_eval.melody.overall_accuracy`: Overall Accuracy, which computes
+  the proportion of all frames correctly estimated by the algorithm, including
+  whether non-melody frames where labeled by the algorithm as non-melody
+
 '''
 
 import numpy as np
@@ -327,6 +353,10 @@ def voicing_measures(ref_voicing, est_voicing):
         - vx_false_alarm : float
             Voicing false alarm rate, the fraction of unvoiced frames in ref
             indicated as voiced in est
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
     validate_voicing(ref_voicing, est_voicing)
     ref_voicing = ref_voicing.astype(bool)
@@ -401,6 +431,10 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
             Raw pitch accuracy, the fraction of voiced frames in ref_cent for
             which est_cent provides a correct frequency values
             (within cent_tolerance cents).
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
 
     validate_voicing(ref_voicing, est_voicing)
@@ -520,6 +554,10 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
             Overall accuracy, the total fraction of correctly estimates frames,
             where provides a correct frequency values (within cent_tolerance
             cents).
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_cent, est_voicing, est_cent)
@@ -563,6 +601,10 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
         - scores : dict
             Dictionary of scores, where the key is the metric name (str) and
             the value is the (float) score achieved.
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
     # Convert to reference/estimated voicing/frequency (cent) arrays
     (ref_voicing, ref_cent,
