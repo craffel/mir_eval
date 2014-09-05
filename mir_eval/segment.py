@@ -87,16 +87,21 @@ def validate_structure(reference_intervals, reference_labels,
             raise ValueError('Number of intervals does not match number '
                              'of labels')
 
-        # Make sure beat times are increasing
-        if not np.allclose(intervals[0, 0], 0.0):
-            raise ValueError('Segment intervals do not start at 0')
+        # Check only when intervals are non-empty
+        if intervals.size > 0:
+            # Make sure intervals start at 0
+            if not np.allclose(intervals[0, 0], 0.0):
+                raise ValueError('Segment intervals do not start at 0')
 
     if reference_intervals.size == 0:
         warnings.warn("Reference intervals are empty.")
     if estimated_intervals.size == 0:
         warnings.warn("Estimated intervals are empty.")
-    if not np.allclose(reference_intervals[-1, 1], estimated_intervals[-1, 1]):
-        raise ValueError('End times do not match')
+    # Check only when intervals are non-empty
+    if reference_intervals.size > 0 and estimated_intervals.size > 0:
+        if not np.allclose(reference_intervals[-1, 1],
+                           estimated_intervals[-1, 1]):
+            raise ValueError('End times do not match')
 
 
 def detection(reference_intervals, estimated_intervals,
@@ -311,6 +316,12 @@ def pairwise(reference_intervals, reference_labels,
 
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
+
+    # Check for empty annotations.  Don't need to check labels because
+    # validate_structure makes sure they're the same size as intervals
+    if reference_intervals.size == 0 or estimated_intervals.size == 0:
+        return 0., 0., 0.
+
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -407,6 +418,12 @@ def rand_index(reference_intervals, reference_labels,
 
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
+
+    # Check for empty annotations.  Don't need to check labels because
+    # validate_structure makes sure they're the same size as intervals
+    if reference_intervals.size == 0 or estimated_intervals.size == 0:
+        return 0., 0., 0.
+
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -572,6 +589,12 @@ def ari(reference_intervals, reference_labels,
     '''
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
+
+    # Check for empty annotations.  Don't need to check labels because
+    # validate_structure makes sure they're the same size as intervals
+    if reference_intervals.size == 0 or estimated_intervals.size == 0:
+        return 0., 0., 0.
+
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -837,6 +860,12 @@ def mutual_information(reference_intervals, reference_labels,
     '''
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
+
+    # Check for empty annotations.  Don't need to check labels because
+    # validate_structure makes sure they're the same size as intervals
+    if reference_intervals.size == 0 or estimated_intervals.size == 0:
+        return 0., 0., 0.
+
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
@@ -936,6 +965,12 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
 
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
+
+    # Check for empty annotations.  Don't need to check labels because
+    # validate_structure makes sure they're the same size as intervals
+    if reference_intervals.size == 0 or estimated_intervals.size == 0:
+        return 0., 0., 0.
+
     # Generate the cluster labels
     y_ref = util.intervals_to_samples(reference_intervals,
                                       reference_labels,
