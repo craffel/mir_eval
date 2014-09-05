@@ -10,9 +10,13 @@ For help,
 
 `./task_eval.py --help`
 
-Usage of the pre-build binaries (available [here](http://labrosa.ee.columbia.edu/mir_eval/mir_eval.tar.gz)) is identical, except you must omit the `.py`, e.g.
+Usage of the pre-build binaries on a Mac (available [here](http://labrosa.ee.columbia.edu/mir_eval/mir_eval_mac.tar.gz)) is identical, except you must omit the `.py`, e.g.
 
 `./task_eval ref_file est_file arguments`
+
+And on Windows (available [here](http://labrosa.ee.columbia.edu/mir_eval/mir_eval_mac.tar.gz)):
+
+`task_eval.exe ref_file est_file arguments`
 
 ## Creating binaries
 
