@@ -1,5 +1,10 @@
 '''
-A variety of evaluation techniques for determining a beat tracker's accuracy.
+The aim of a beat detection algorithm is to report the times at which a typical
+human listener might tap their foot to a piece of music. As a result, most
+metrics for evaluating the performance of beat tracking systems involve
+computing the error between the estimated beat times and some reference list of
+beat locations. Many metrics additionally compare the beat sequences at
+different metric levels in order to deal with the ambiguity of tempo.
 
 Based on the methods described in:
     Matthew E. P. Davies,  Norberto Degara, and Mark D. Plumbley.
@@ -9,6 +14,33 @@ Based on the methods described in:
 
 See also the Beat Evaluation Toolbox:
     https://code.soundsoftware.ac.uk/projects/beat-evaluation/
+
+Conventions
+-----------
+
+Beat times should be provided in the form of a 1-dimensional array of beat
+times in seconds in increasing order.  Typically, any beats which occur before
+5s are ignored; this can be accomplished using
+:func:`mir_eval.beat.trim_beats()`.
+
+Metrics
+-------
+
+* :func:`mir_eval.beat.f_measure`: The F-measure of the beat sequence, where an
+  estimated beat is considered correct if it is sufficiently close to a
+  reference beat
+* :func:`mir_eval.beat.cemgil`: Cemgil's score, which computes the sum of
+  Gaussian errors for each beat
+* :func:`mir_eval.beat.goto`: Goto's score, a binary score which is 1 when at
+  least 25\% of the estimated beat sequence closely matches the reference beat
+  sequence
+* :func:`mir_eval.beat.p_score`: McKinney's P-score, which computes the
+  cross-correlation of the estimated and reference beat sequences represented
+  as impulse trains
+* :func:`mir_eval.beat.continuity`: Continuity-based scores which compute the
+  proportion of the beat sequence which is continuously correct
+* :func:`mir_eval.beat.information_gain`: The Information Gain of a normalized
+  beat error histogram over a uniform distribution
 
 '''
 
@@ -118,6 +150,10 @@ def f_measure(reference_beats,
         - f_score : float
             The computed F-measure score
 
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
+
     :references:
         .. [#] Matthew E. P. Davies,  Norberto Degara, and
             Mark D. Plumbley.  "Evaluation Methods for Musical Audio Beat
@@ -169,6 +205,10 @@ def cemgil(reference_beats,
             Cemgil's score for the original reference beats
         - cemgil_max : float
             The best Cemgil score for all metrical variations
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
 
     :references:
         .. [#] Matthew E. P. Davies,  Norberto Degara, and
@@ -235,6 +275,10 @@ def goto(reference_beats,
     :returns:
         - goto_score : float
             Either 1.0 or 0.0 if some specific criteria are met
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
 
     :references:
         .. [#] Matthew E. P. Davies,  Norberto Degara, and
@@ -336,6 +380,10 @@ def p_score(reference_beats,
         - correlation : float
             McKinney's P-score
 
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
+
     :references:
         .. [#] Matthew E. P. Davies,  Norberto Degara, and
             Mark D. Plumbley.  "Evaluation Methods for Musical Audio Beat
@@ -420,6 +468,10 @@ def continuity(reference_beats,
             Any metric level, continuous accuracy
         - AMLt : float
             Any metric level, total accuracy (continuity not required)
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
 
     :references:
         .. [#] Matthew E. P. Davies,  Norberto Degara, and
@@ -575,6 +627,10 @@ def information_gain(reference_beats,
         - information_gain_score : float
             Entropy of beat error histogram
 
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
+
     :references:
         .. [#] Matthew E. P. Davies,  Norberto Degara, and
             Mark D. Plumbley.  "Evaluation Methods for Musical Audio Beat
@@ -681,6 +737,10 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
         - scores : dict
             Dictionary of scores, where the key is the metric name (str) and
             the value is the (float) score achieved.
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
 
     # Trim beat times at the beginning of the annotations
