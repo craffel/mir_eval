@@ -19,8 +19,8 @@ Metrics
 -------
 
 * :func:`mir_eval.onset.f_measure`: Precision, Recall, and F-measure scores
-based on the number of esimated onsets which are sufficiently close to
-reference onsets.
+  based on the number of esimated onsets which are sufficiently close to
+  reference onsets.
 '''
 
 import collections
