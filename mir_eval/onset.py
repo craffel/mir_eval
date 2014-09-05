@@ -1,9 +1,26 @@
 '''
-Basic metrics for evaluating onset detection systems.
+The goal of an onset detection algorithm is to automatically determine when
+notes are played in a piece of music.  The primary method used to evaluate
+onset detectors is to first determine which estimated onsets are "correct",
+where correctness is defined as being within a small window of a reference
+onset.
 
 Based in part on this script:
 
     https://github.com/CPJKU/onset_detection/blob/master/onset_evaluation.py
+
+Conventions
+-----------
+
+Onsets should be provided in the form of a 1-dimensional array of onset
+times in seconds in increasing order.
+
+Metrics
+-------
+
+* :func:`mir_eval.onset.f_measure`: Precision, Recall, and F-measure scores
+based on the number of esimated onsets which are sufficiently close to
+reference onsets.
 '''
 
 import collections
@@ -57,6 +74,10 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
             (# true positives)/(# true positives + # false positives)
         - recall : float
             (# true positives)/(# true positives + # false negatives)
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
 
     :references:
         .. [#] S. Dixon, "Onset detection revisited," in
