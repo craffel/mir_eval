@@ -67,6 +67,10 @@ def validate_voicing(ref_voicing, est_voicing):
             Reference boolean voicing array
         - est_voicing : np.ndarray
             Estimated boolean voicing array
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
     if ref_voicing.size == 0:
         warnings.warn("Reference voicing array is empty.")
@@ -100,6 +104,10 @@ def validate(ref_voicing, ref_cent, est_voicing, est_cent):
             Estimated boolean voicing array
         - est_cent : np.ndarray
             Estimate pitch sequence in cents
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
     if ref_cent.size == 0:
         warnings.warn("Reference frequency array is empty.")

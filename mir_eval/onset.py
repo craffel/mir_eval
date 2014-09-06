@@ -38,6 +38,10 @@ def validate(reference_onsets, estimated_onsets):
             reference onset locations, in seconds
         - estimated_onsets : np.ndarray
             estimated onset locations, in seconds
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
     # If reference or estimated onsets are empty, warn because metric will be 0
     if reference_onsets.size == 0:

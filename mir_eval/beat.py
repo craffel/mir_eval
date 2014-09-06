@@ -76,6 +76,10 @@ def validate(reference_beats, estimated_beats):
             reference beat times, in seconds
         - estimated_beats : np.ndarray
             estimated beat times, in seconds
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
     # If reference or estimated beats are empty,
     # warn because metric will be 0
