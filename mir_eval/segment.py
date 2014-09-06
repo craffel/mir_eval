@@ -1,11 +1,48 @@
 # CREATED:2013-08-13 12:02:42 by Brian McFee <brm2132@columbia.edu>
-'''Structural segmentation evaluation, following the protocols of MIREX2012.
+'''
+Evaluation criteria for structural segmentation fall into two categories:
+boundary annotation and structural annotation.  Boundary annotation is the task
+of predicting the times at which structural changes occur, such as when a verse
+transitions to a refrain.  Metrics for boundary annotation compare estimated
+segment boundaries to reference boundaries.  Structural annotation is the task
+of assigning labels to detected segments.  The estimated labels may be
+arbitrary strings - such as A, B, C, - and they need not describe functional
+concepts.  Metrics for structural annotation are similar to those use for
+clustering data.
 
-   Frame clustering metrics:
-        - pairwise classification
-        - adjusted rand index
-        - mutual information
-        - normalized conditional entropy
+Conventions
+-----------
+
+Both boundary and structural annotation metrics require two dimensional arrays
+with two columns, one for boundary start times and one for boundary end times.
+Structural annotation further require lists of reference and estimated segment
+labels which must have a length which is equal to the number of rows in the
+corresponding list of boundary edges.  In both tasks, we assume that
+annotations express a partitioning of the track into intervals.  The function
+:func:`mir_eval.util.adjust_intervals` can be used to pad or crop the segment
+boundaries to span the duration of the entire track.
+
+
+Metrics
+-------
+
+* :func:`mir_eval.segment.detection`: An estimated boundary is considered
+  correct if it falls within a window around a reference boundary
+* :func:`mir_eval.segment.deviation`: Computes the median absolute time
+  difference from a reference boundary to its nearest estimated boundary, and
+  vice versa
+* :func:`mir_eval.segment.pairwise`: For classifying pairs of sampled time
+  instants as belonging to the same structural component
+* :func:`mir_eval.segment.rand_index`: Clusters reference and estimated
+  annotations and compares them by the Rand Index
+* :func:`mir_eval.segment.ari`: Computes the Rand index, adjusted for chance
+* :func:`mir_eval.segment.nce`: Interprets sampled reference and estimated
+  labels as samples of random variables $Y_R, Y_E$ from which the conditional
+  entropy of $Y_R$ given $Y_E$ (Under-Segmentation) and $Y_E$ given $Y_R$
+  (Over-Segmentation) are estimated
+* :func:`mir_eval.segment.mutual_information`: Computes the standard,
+  normalized, and adjusted mutual information of sampled reference and
+  estimated segments
 '''
 
 import numpy as np
@@ -37,6 +74,10 @@ def validate_boundary(reference_intervals, estimated_intervals, trim):
 
         - trim : bool
             will the start and end events be trimmed?
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
 
     if trim:
@@ -78,6 +119,10 @@ def validate_structure(reference_intervals, reference_labels,
         - estimated_labels : list, shape=(m,)
             estimated segment labels, in the format returned by
             :func:`mir_eval.io.load_labeled_intervals`.
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
     for (intervals, labels) in [(reference_intervals, reference_labels),
                                 (estimated_intervals, estimated_labels)]:
@@ -162,6 +207,17 @@ def detection(reference_intervals, estimated_intervals,
 
         - f_measure : float
             F-measure (weighted harmonic mean of ``precision`` and ``recall``)
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
+
+    :references:
+        .. [#] D. Turnbull, G. Lanckriet, E. Pampalk, and M. Goto. A supervised
+            approach for detecting boundaries in music using difference
+            features and boosting. In Proceedings of the 8th International
+            Society for Music Information Retrieval Conference (ISMIR), pages
+            51–54, 2007.
     '''
 
     validate_boundary(reference_intervals, estimated_intervals, trim)
@@ -224,6 +280,17 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
         - estimated_to_reference : float
             median time from each estimated boundary to the
             closest reference boundary
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
+
+    :references:
+        .. [#] D. Turnbull, G. Lanckriet, E. Pampalk, and M. Goto. A supervised
+            approach for detecting boundaries in music using difference
+            features and boosting. In Proceedings of the 8th International
+            Society for Music Information Retrieval Conference (ISMIR), pages
+            51–54, 2007.
     '''
 
     validate_boundary(reference_intervals, estimated_intervals, trim)
@@ -308,10 +375,12 @@ def pairwise(reference_intervals, reference_labels,
 
     :raises:
         - ValueError
-            If ``reference_intervals`` and ``estimated_intervals`` do not span
-            the same time duration.
+            Thrown when the provided annotations are not valid.
 
-    .. seealso:: :func:`mir_eval.util.adjust_intervals`
+    :references:
+        .. [#] M. Levy and M. Sandler. Structural segmentation of musical audio
+            by constrained clustering. IEEE Transactions on Audio, Speech, and
+            Language Processing, 16(2):318–326, 2008.
     '''
 
     validate_structure(reference_intervals, reference_labels,
@@ -410,10 +479,12 @@ def rand_index(reference_intervals, reference_labels,
 
     :raises:
         - ValueError
-            If ``reference_intervals`` and ``estimated_intervals`` do not span
-            the same time duration.
+            Thrown when the provided annotations are not valid.
 
-    .. seealso:: :func:`mir_eval.util.adjust_intervals`
+    :references:
+        .. [#] W. M. Rand. Objective criteria for the evaluation of clustering
+            methods. Journal of the American Statistical association,
+            66(336):846–850, 1971.
     '''
 
     validate_structure(reference_intervals, reference_labels,
@@ -579,6 +650,15 @@ def ari(reference_intervals, reference_labels,
     :returns:
         - ari_score : float > 0
             Adjusted Rand index between segmentations.
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
+
+    :references:
+        .. [#] W. M. Rand. Objective criteria for the evaluation of clustering
+            methods. Journal of the American Statistical association,
+            66(336):846–850, 1971.
 
     .. note::
         It is assumed that ``intervals[-1]`` == length of song
@@ -851,6 +931,10 @@ def mutual_information(reference_intervals, reference_labels,
         - NMI : float > 0
             Normalize mutual information between segmentations
 
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
+
     .. note::
         It is assumed that `intervals[-1] == length of song`
 
@@ -956,6 +1040,10 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
         - S_F
             F-measure for (S_over, S_under)
 
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
+
     :references:
         .. [#] Hanna M. Lukashevich. "Towards Quantitative Measures of
             Evaluating Song Segmentation," in Proceedings of the 9th
@@ -1043,6 +1131,10 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
         - scores : dict
             Dictionary of scores, where the key is the metric name (str) and
             the value is the (float) score achieved.
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
     '''
 
     # Adjust timespan of estimations relative to ground truth
