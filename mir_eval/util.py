@@ -1,4 +1,7 @@
-"""Utility sub-module for mir-eval"""
+'''
+This submodule collects useful functionality required across the task
+submodules, such as preprocessing, validation, and common computations.
+'''
 
 import numpy as np
 import os
