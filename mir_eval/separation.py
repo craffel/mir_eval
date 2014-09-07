@@ -1,9 +1,35 @@
 # -*- coding: utf-8 -*-
 # CREATED: 2013-08-13 12:31:25 by Dawen Liang <dliang@ee.columbia.edu>
 '''
-Source separation evaluation:
-    BSS-EVAL -- SDR (Source-to-Distortion Ratio), SIR (Source-to-Interferences
-                Ratio), and SAR (Source-to-Artifacts Ratio)
+Source separation algorithms attempt to extract recordings of individual
+sources from a recording of a mixture of sources.  Evaluation methods for
+source separation compare the extracted sources from reference sources and
+attempt to measure the perceptual quality of the separation.
+
+Currently, only bss_eval is evaluated, as described in:
+    Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
+    measurement in blind audio source separation," IEEE Trans.  on Audio,
+    Speech and Language Processing, 14(4):1462-1469, 2006.
+
+See also the bss_eval MATLAB toolbox:
+    http://bass-db.gforge.inria.fr/bss_eval/
+
+Conventions
+-----------
+
+An audio signal is expected to be in the format of a 1-dimensional array where
+the entries are the samples of the audio signal.  When providing a group of
+estimated or reference sources, they should be provided in a 2-dimensional
+array, where the first dimension corresponds to the source number and the
+second corresponds to the samples.
+
+Metrics
+-------
+
+* :func:`mir_eval.separation.bss_eval_sources`: Computes the bss_eval metrics,
+  which optimally match the estimated sources to the reference sources and
+  measure the distortion and artifacts present in the estimated sources as well
+  as the interference between them.
 
 '''
 
@@ -86,6 +112,10 @@ def bss_eval_sources(reference_sources, estimated_sources):
             vector containing the best ordering of estimated sources in
             the mean SIR sense (estimated source number perm[j] corresponds to
             true source number j)
+
+    :raises:
+        - ValueError
+            Thrown when the provided audio data is not in the correct format.
 
     :references:
         .. [#vincent2006performance] Emmanuel Vincent, Rémi Gribonval, and
