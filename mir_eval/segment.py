@@ -217,7 +217,7 @@ def detection(reference_intervals, estimated_intervals,
             approach for detecting boundaries in music using difference
             features and boosting. In Proceedings of the 8th International
             Society for Music Information Retrieval Conference (ISMIR), pages
-            51–54, 2007.
+            51-54, 2007.
     '''
 
     validate_boundary(reference_intervals, estimated_intervals, trim)
@@ -290,7 +290,7 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
             approach for detecting boundaries in music using difference
             features and boosting. In Proceedings of the 8th International
             Society for Music Information Retrieval Conference (ISMIR), pages
-            51–54, 2007.
+            51-54, 2007.
     '''
 
     validate_boundary(reference_intervals, estimated_intervals, trim)
@@ -380,7 +380,7 @@ def pairwise(reference_intervals, reference_labels,
     :references:
         .. [#] M. Levy and M. Sandler. Structural segmentation of musical audio
             by constrained clustering. IEEE Transactions on Audio, Speech, and
-            Language Processing, 16(2):318–326, 2008.
+            Language Processing, 16(2):318-326, 2008.
     '''
 
     validate_structure(reference_intervals, reference_labels,
@@ -484,7 +484,7 @@ def rand_index(reference_intervals, reference_labels,
     :references:
         .. [#] W. M. Rand. Objective criteria for the evaluation of clustering
             methods. Journal of the American Statistical association,
-            66(336):846–850, 1971.
+            66(336):846-850, 1971.
     '''
 
     validate_structure(reference_intervals, reference_labels,
@@ -658,7 +658,7 @@ def ari(reference_intervals, reference_labels,
     :references:
         .. [#] W. M. Rand. Objective criteria for the evaluation of clustering
             methods. Journal of the American Statistical association,
-            66(336):846–850, 1971.
+            66(336):846-850, 1971.
 
     .. note::
         It is assumed that ``intervals[-1]`` == length of song
