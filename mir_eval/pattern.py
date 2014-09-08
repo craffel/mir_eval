@@ -604,10 +604,6 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
         - ValueError
             Thrown when the provided annotations are not valid.
 
-    :references:
-        .. [#] T. Collins. MIREX task: Discovery of repeated themes & sections.
-            http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_&_Sections,
-            2013.
     '''
 
     # Now compute all the metrics
