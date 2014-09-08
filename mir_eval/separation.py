@@ -119,7 +119,7 @@ def bss_eval_sources(reference_sources, estimated_sources):
 
     :references:
         .. [#vincent2006performance] Emmanuel Vincent, Rémi Gribonval, and
-            Cédric Févotte, "Performance measurement in blind audio source
+            Cedric Fevotte, "Performance measurement in blind audio source
             separation," IEEE Trans.  on Audio, Speech and Language Processing,
             14(4):1462-1469, 2006.
     '''
