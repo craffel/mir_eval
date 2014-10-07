@@ -234,9 +234,9 @@ def adjust_intervals(intervals,
     Any intervals lying partially outside the specified range will be cropped.
 
     If the specified range exceeds the span of the provided data in either
-    direction, additional intervals will be appended.  Any appended intervals
-    at the start will be given label *start_label*.  Any appended intervals at
-    the end will be given label *end_label*.
+    direction, additional intervals will be appended.  If an interval is
+    appended at the beginning, it will be given the label *start_label*; if an
+    interval is appended at the end, it will be given the label *end_label*.
 
     :parameters:
         - intervals : np.ndarray, shape=(n_events, 2)
