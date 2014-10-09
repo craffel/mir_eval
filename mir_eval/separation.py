@@ -6,9 +6,9 @@ sources from a recording of a mixture of sources.  Evaluation methods for
 source separation compare the extracted sources from reference sources and
 attempt to measure the perceptual quality of the separation.
 
-Currently, only bss_eval is evaluated, as described in:
+Currently, only bss_eval is implemented, as described in:
     Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
-    measurement in blind audio source separation," IEEE Trans.  on Audio,
+    measurement in blind audio source separation," IEEE Trans. on Audio,
     Speech and Language Processing, 14(4):1462-1469, 2006.
 
 See also the bss_eval MATLAB toolbox:
