@@ -1107,19 +1107,19 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     Compute all metrics for the given reference and estimated annotations.
 
     :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
+        - ref_intervals : np.ndarray, shape=(n, 2)
             reference segment intervals, in the format returned by
             :func:`mir_eval.io.load_labeled_intervals`.
 
-        - reference_labels : list, shape=(n,)
+        - ref_labels : list, shape=(n,)
             reference segment labels, in the format returned by
             :func:`mir_eval.io.load_labeled_intervals`.
 
-        - estimated_intervals : np.ndarray, shape=(m, 2)
+        - est_intervals : np.ndarray, shape=(m, 2)
             estimated segment intervals, in the format returned by
             :func:`mir_eval.io.load_labeled_intervals`.
 
-        - estimated_labels : list, shape=(m,)
+        - est_labels : list, shape=(m,)
             estimated segment labels, in the format returned by
             :func:`mir_eval.io.load_labeled_intervals`.
 
