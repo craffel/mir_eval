@@ -639,30 +639,6 @@ def validate_events(events, max_time=30000.):
         raise ValueError('Events should be in increasing order.')
 
 
-def filter_labeled_intervals(intervals, labels):
-    r'''Remove all invalid intervals (start >= end) and corresponding labels.
-
-    :parameters:
-        - intervals : np.ndarray
-            Array of interval times (seconds)
-
-        - labels : list
-            List of labels
-
-    :returns:
-        - filtered_intervals : np.ndarray
-            Valid interval times.
-        - filtered_labels : list
-            Corresponding filtered labels
-    '''
-    filt_intervals, filt_labels = [], []
-    for interval, label in zip(intervals, labels):
-        if interval[0] < interval[1]:
-            filt_intervals.append(interval)
-            filt_labels.append(label)
-    return np.array(filt_intervals), filt_labels
-
-
 def filter_kwargs(function, *args, **kwargs):
     '''
     Given a function and args and keyword args to pass to it, call the function
