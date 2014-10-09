@@ -1364,3 +1364,80 @@ def evaluate_file_pair(reference_file, estimation_file,
             offending_file = estimation_file
         result['_error'] = (err.chord_label, offending_file)
     return result
+
+
+def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
+    '''
+    Computes weighted accuracy for all comparison functions for the given
+    reference and estimated annotations.
+
+    :parameters:
+        - ref_intervals : np.ndarray, shape=(n, 2)
+            Reference chord intervals, in the format returned by
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - ref_labels : list, shape=(n,)
+            reference chord labels, in the format returned by
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - est_intervals : np.ndarray, shape=(m, 2)
+            estimated chord intervals, in the format returned by
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - est_labels : list, shape=(m,)
+            estimated chord labels, in the format returned by
+            :func:`mir_eval.io.load_labeled_intervals`.
+
+        - kwargs
+            Additional keyword arguments which will be passed to the
+            appropriate metric or preprocessing functions.
+
+    :returns:
+        - scores : dict
+            Dictionary of scores, where the key is the metric name (str) and
+            the value is the (float) score achieved.
+
+    :raises:
+        - ValueError
+            Thrown when the provided annotations are not valid.
+    '''
+    # Append or crop estimated intervals so their span is the same as reference
+    est_intervals, est_labels = util.adjust_intervals(
+        est_intervals, est_labels, ref_intervals.min(), ref_intervals.max(),
+        NO_CHORD, NO_CHORD)
+    # Adjust the labels so that they span the same intervals
+    intervals, ref_labels, est_labels = util.merge_labeled_intervals(
+        ref_intervals, ref_labels, est_intervals, est_labels)
+    # Convert intervals to durations (used as weights)
+    durations = util.intervals_to_durations(intervals)
+
+    # Store scores for each comparison function
+    scores = collections.OrderedDict()
+
+    scores['thirds'] = weighted_accuracy(thirds(ref_labels, est_labels),
+                                         durations)
+    scores['thirds_inv'] = weighted_accuracy(thirds_inv(ref_labels,
+                                                        est_labels), durations)
+    scores['triads'] = weighted_accuracy(triads(ref_labels, est_labels),
+                                         durations)
+    scores['triads_inv'] = weighted_accuracy(triads_inv(ref_labels,
+                                                        est_labels), durations)
+    scores['tetrads'] = weighted_accuracy(tetrads(ref_labels, est_labels),
+                                          durations)
+    scores['tetrads_inv'] = weighted_accuracy(tetrads_inv(ref_labels,
+                                                          est_labels),
+                                              durations)
+    scores['root'] = weighted_accuracy(root(ref_labels, est_labels), durations)
+    scores['mirex'] = weighted_accuracy(mirex(ref_labels, est_labels),
+                                        durations)
+    scores['majmin'] = weighted_accuracy(majmin(ref_labels, est_labels),
+                                         durations)
+    scores['majmin_inv'] = weighted_accuracy(majmin_inv(ref_labels,
+                                                        est_labels), durations)
+    scores['sevenths'] = weighted_accuracy(sevenths(ref_labels, est_labels),
+                                           durations)
+    scores['sevenths_inv'] = weighted_accuracy(sevenths_inv(ref_labels,
+                                                            est_labels),
+                                               durations)
+
+    return scores
