@@ -683,3 +683,22 @@ def filter_kwargs(function, *args, **kwargs):
             filtered_kwargs[kwarg] = value
     # Call the function with the supplied args and the filtered kwarg dict
     return function(*args, **filtered_kwargs)
+
+
+def intervals_to_durations(intervals):
+    '''
+    Converts an array of n intervals to their n durations.
+
+    :parameters:
+        - intervals : np.ndarray, shape=(n, 2)
+            An array of time intervals, as returned by
+            :func:``mir_eval.io.load_intervals()``.
+            The *i* th interval spans time ``intervals[i, 0]`` to
+            ``intervals[i, 1]``.
+
+    :returns:
+        - durations : np.ndarray, shape=(n,)
+            Array of the duration of each interval.
+    '''
+    validate_intervals(intervals)
+    return np.abs(np.diff(intervals, axis=-1)).flatten()
