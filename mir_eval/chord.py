@@ -1260,24 +1260,6 @@ def sevenths_inv(reference_labels, estimated_labels):
     return comparison_scores
 
 
-# Create an ordered dict mapping metric names to functions
-METRICS = collections.OrderedDict()
-# MIREX2013 Methods
-METRICS['root'] = root
-METRICS['majmin'] = majmin
-METRICS['majmin-inv'] = majmin_inv
-METRICS['sevenths'] = sevenths
-METRICS['sevenths-inv'] = sevenths_inv
-# Older / Other methods
-METRICS['mirex09'] = mirex
-METRICS['thirds'] = thirds
-METRICS['thirds-inv'] = thirds_inv
-METRICS['triads'] = triads
-METRICS['triads-inv'] = triads_inv
-METRICS['tetrads'] = tetrads
-METRICS['tetrads-inv'] = tetrads_inv
-
-
 def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     '''
     Computes weighted accuracy for all comparison functions for the given
