@@ -19,7 +19,7 @@ label is the chord name based on the syntax of [#harte2010towards]_.  Reference
 and estimated chord label sequences should be of the same length for comparison
 functions.  When converting the chord string into its constituent parts,
 
-* Pitch class counting starts at C, e.g. C: 0, D:2, E:4, F:5, etc.
+* Pitch class counting starts at C, e.g. C:0, D:2, E:4, F:5, etc.
 
 * Scale degree is represented as a string of the diatonic interval, relative to
   the root note, e.g. 'b6', '#5', or '7'
@@ -256,7 +256,7 @@ def quality_to_bitmap(quality):
           Chord quality name.
 
     :returns:
-      - bitmap : np.ndarray, in [0, 1]
+      - bitmap : np.ndarray
           Bitmap representation of this quality (12-dim).
 
     :raises:
@@ -441,7 +441,7 @@ def encode(chord_label, reduce_extended_chords=False):
      - chord_label : str
         Chord label to encode.
 
-     - reduce_extended_chords : bool, default=False
+     - reduce_extended_chords : bool
         Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
         extensions.
 
@@ -449,7 +449,7 @@ def encode(chord_label, reduce_extended_chords=False):
      - root_number : int
         Absolute semitone of the chord's root.
 
-     - semitone_bitmap : np.ndarray of ints, in [0, 1]
+     - semitone_bitmap : np.ndarray, dtype=int
         12-dim vector of relative semitones in the chord spelling.
 
      - bass_number : int
@@ -493,18 +493,18 @@ def encode_many(chord_labels, reduce_extended_chords=False):
      - chord_labels : list
         Set of chord labels to encode.
 
-     - reduce_extended_chords : bool, default=True
+     - reduce_extended_chords : bool
         Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
         extensions.
 
     :returns:
-     - root_number : np.ndarray of ints
+     - root_number : np.ndarray, dtype=int
         Absolute semitone of the chord's root.
 
-     - interval_bitmap : np.ndarray of ints, in [0, 1]
+     - interval_bitmap : np.ndarray, dtype=int
         12-dim vector of relative semitones in the given chord quality.
 
-     - bass_number : np.ndarray
+     - bass_number : np.ndarray, dtype=int
         Relative semitones of the chord's bass notes.
 
     :raises:
@@ -648,7 +648,7 @@ def weighted_accuracy(comparisons, weights):
 
     :parameters:
         - comparisons : np.ndarray
-            List of chord comparisons, in {0, 1, -1}
+            List of chord comparison scores, in [0, 1] or -1
         - weights : np.ndarray
             Weights (not necessarily normalized) for each comparison.
             This can be a list of interval durations
@@ -713,11 +713,9 @@ def thirds(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=float
             Comparison scores, in [0.0, 1.0]
     '''
     validate(reference_labels, estimated_labels)
@@ -754,11 +752,9 @@ def thirds_inv(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - scores : np.ndarray, shape=(n,), dtype=np.float
+        - scores : np.ndarray, shape=(n,), dtype=float
             Comparison scores, in [0.0, 1.0]
     '''
     validate(reference_labels, estimated_labels)
@@ -796,12 +792,10 @@ def triads(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
-            Comparison scores, in {0.0, 1.0}
+        - comparison_scores : np.ndarray, shape=(n,), dtype=float
+            Comparison scores, in [0.0, 1.0]
     '''
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
@@ -838,12 +832,10 @@ def triads_inv(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - scores : np.ndarray, shape=(n,), dtype=np.float
-            Comparison scores, in {0.0, 1.0}
+        - scores : np.ndarray, shape=(n,), dtype=float
+            Comparison scores, in [0.0, 1.0]
     '''
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
@@ -881,12 +873,10 @@ def tetrads(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
-            Comparison scores, in {0.0, 1.0}
+        - comparison_scores : np.ndarray, shape=(n,), dtype=float
+            Comparison scores, in [0.0, 1.0]
     '''
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
@@ -922,12 +912,10 @@ def tetrads_inv(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
-            Comparison scores, in {0.0, 1.0}
+        - comparison_scores : np.ndarray, shape=(n,), dtype=float
+            Comparison scores, in [0.0, 1.0]
     '''
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
@@ -964,11 +952,9 @@ def root(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=float
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
@@ -1004,12 +990,10 @@ def mirex(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
-            Comparison scores, in {0.0, 1.0}
+        - comparison_scores : np.ndarray, shape=(n,), dtype=float
+            Comparison scores, in [0.0, 1.0]
     '''
     validate(reference_labels, estimated_labels)
     min_intersection = 3
@@ -1048,11 +1032,9 @@ def majmin(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=float
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
@@ -1113,11 +1095,9 @@ def majmin_inv(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=float
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
@@ -1175,11 +1155,9 @@ def sevenths(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=float
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
@@ -1228,11 +1206,9 @@ def sevenths_inv(reference_labels, estimated_labels):
             Reference chord labels to score against.
         - estimated_labels : list, len=n
             Estimated chord labels to score against.
-        - intervals : np.ndarray, shape=(n, 2)
-            Start and end time of each chord label
 
     :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=np.float
+        - comparison_scores : np.ndarray, shape=(n,), dtype=float
             Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
             gamut.
     '''
