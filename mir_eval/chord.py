@@ -1,92 +1,89 @@
-r'''Functions and other supporting code for wrangling and comparing chords for
-evaluation purposes.
+r'''
+Chord estimation algorithms produce a list of intervals and labels which denote
+the chord being played over each timespan.  They are evaluated by comparing the
+estimated chord labels to some reference, usually using a mapping to a chord
+subalphabet (e.g. minor and major chords only, all triads, etc.).  There is no
+single 'right' way to compare two sequences of chord labels.  Embracing this
+reality, every conventional comparison rule is provided.  Comparisons are made
+over the different components of each chord (e.g. G:maj(6)/5): the root (G),
+the root-invariant active semitones as determined by the quality
+shorthand (maj) and scale degrees (6), and the bass interval (5).
+This submodule provides functions both for comparing a sequences of chord
+labels according to some chord subalphabet mapping and for using these
+comparisons to score a sequence of estimated chords against a reference.
+
+Conventions
+-----------
+A sequence of chord labels is represented as a list of strings, where each
+label is the chord name based on the syntax of [#harte2010towards]_.  Reference
+and estimated chord label sequences should be of the same length for comparison
+functions.  When converting the chord string into its constituent parts,
+
+* Pitch class counting starts at C, e.g. C: 0, D:2, E:4, F:5, etc.
+
+* Scale degree is represented as a string of the diatonic interval, relative to
+  the root note, e.g. 'b6', '#5', or '7'
+
+* Bass intervals are represented as strings
+
+* Chord bitmaps are positional binary vectors indicating active pitch classes
+  and may be absolute or relative depending on context in the code.
+
+If no chord is present at a given point in time, it should have the label 'N',
+which is defined in the variable `mir_eval.chord.NO_CHORD`.
+
+Metrics
+-------
+
+* :func:`mir_eval.chord.root`: Only compares the root of the chords.
+
+* :func:`mir_eval.chord.majmin`: Only compares major, minor, and "no chord"
+  labels.
+
+* :func:`mir_eval.chord.majmin_inv`: Compares major/minor chords, with
+  inversions.  The bass note must exist in the triad.
+
+* :func:`mir_eval.chord.mirex`: A estimated chord is considered correct if it
+  shares *at least* three pitch classes in common.
+
+* :func:`mir_eval.chord.thirds`: Chords are compared at the level of major or
+  minor thirds (root and third), For example, both ('A:7', 'A:maj') and
+  ('A:min', 'A:dim') are equivalent, as the third is major and minor in
+  quality, respectively.
+
+* :func:`mir_eval.chord.thirds_inv`: Same as above, with inversions (bass
+  relationships).
+
+* :func:`mir_eval.chord.triads`: Chords are considered at the level of triads
+  (major, minor, augmented, diminished, suspended), meaning that, in addition
+  to the root, the quality is only considered through #5th scale degree (for
+  augmented chords). For example, ('A:7', 'A:maj') are equivalnet, while
+  ('A:min', 'A:dim') and ('A:aug', 'A:maj') are not.
+
+* :func:`mir_eval.chord.triads_inv`: Same as above, with inversions (bass
+  relationships).
+
+* :func:`mir_eval.chord.tetrads`: Chords are considered at the level of the
+  entire quality in closed voicing, i.e. spanning only a single octave;
+  extended chords (9's, 11's and 13's) are rolled into a single octave with any
+  upper voices included as extensions. For example, ('A:7', 'A:9') are
+  equivlent but ('A:7', 'A:maj7') are not.
+
+* :func:`mir_eval.chord.tetrads_inv`: Same as above, with inversions (bass
+  relationships).
+
+* :func:`mir_eval.chord.sevenths`: Compares according to MIREX "sevenths"
+  rules; that is, only major, major seventh, seventh, minor, minor seventh and
+  no chord labels are compared.
+
+* :func:`mir_eval.chord.sevenths_inv`: Same as above, with inversions (bass
+  relationships).
 
 
-Conventions:
--------------------------------
-- Pitch class counting starts at C, e.g. C: 0, D:2, E:4, F:5, etc.
-
-
-Defintions:
--------------------------------
-- chord label: String representation of a chord name, e.g. "G:maj(4)/5"
-- scale degree: String representation of a diatonic interval, relative to the
-    root note, e.g. 'b6', '#5', or '7'
-- bass interval: String representation of the bass note's scale degree.
-- bitmap: Positional binary vector indicating active pitch classes; may be
-    absolute or relative depending on context in the code.
-
-
-A Note on Comparison Functions:
--------------------------------
-There are, for better or worse, a variety of ways that chords can be compared
-in a musically justifiable manner. While some rules may have tradition, and
-therefore inertia in their favor, there is no single 'right' way to compare
-two sequences of chord labels. Embracing this reality, several comparison
-rules are provided in the hope that this may allow for more nuanced insight
-into the performance and, ultimately, the behaviour of a computational system.
-
-- 'mirex'*
-    A estimated chord is considered correct if it shares *at least* three pitch
-    classes in common.
-
-- 'mirex-augdim'*
-    Same as above, with the difference being an estimation only needs 2 pitch
-    classes in common with the reference to be considered 'correct' for
-    augmented or diminished chords, instead of the normal 3 pitches.
-
-- 'near-exact'*
-    Chords are correct only if they are nearly identical to the level of
-    extensions, e.g. score('F#:maj(6)/5', 'F#:maj/5') = 1.0; this includes
-    enharmonic spellings, e.g. score('F#:maj', 'Gb:maj') = 0.0.
-
-- 'pitch_class'*
-    Chords are compared at the level of pitch classes. This means that
-    enharmonics and inversions are considered equal, e.g. score('F#:maj',
-    'Gb:maj') = 1.0 and score('C:maj6'=[C,E,G,A], 'A:min7'=[A,C,E,G]) = 1.0.
-
-- 'thirds'
-    Chords are compared at the level of major or minor thirds (root and third),
-    For example, both score('A:7', 'A:maj') and score('A:min', 'A:dim') equal
-    1.0, as the third is major and minor in quality, respectively.
-
-- 'thirds-inv'
-    Same as above, but sensitive to inversions.
-
-- 'triads'
-    Chords are considered at the level of triads (major, minor, augmented,
-    diminished, suspended), meaning that, in addition to the root, the quality
-    is only considered through #5th scale degree (for augmented chords). For
-    example, score('A:7', 'A:maj') = 1.0, while score('A:min', 'A:dim') and
-    score('A:aug', 'A:maj') = 0.0.
-
-- 'triads-inv'
-    Same as above, but sensitive to inversions.
-
-- 'tetrads'
-    Chords are considered at the level of the entire quality in closed voicing,
-    i.e. spanning only a single octave; extended chords (9's, 11's and 13's)
-    are rolled into a single octave with any upper voices included as
-    extensions. For example, score('A:7', 'A:9') = 1.0 and score('A:7',
-    'A:maj7') = 0.0.
-
-- 'tetrads-inv'
-    Same as above, but sensitive to inversions.
-
-- 'pitch_class-recall'*
-    Recall on pitch classes in ref/est, based on the best-guess spelling of the
-    chord given all information at hand, including extensions. For example,
-    both score("A:min(\*5)"=[A, C], "C:maj6(\*3)"=[C, G, A]) and
-    score("C:maj(\*3, \*5)"=[C], "C:min(\*b3, \*5)"=[C]) = 1.0.
-
-- 'pitch_class-precision'*
-    Precision on pitch classes in ref/est, using the same rules described in
-    pitch class recall.
-
-- 'pitch_class-f'*
-    The harmonic mean (f-measure) is computed with the above recall and
-    precision measures.
-
+:references:
+    .. [#harte2010towards] C. Harte. Towards Automatic Extraction of Harmony
+        Information from Music Signals. PhD thesis, Queen Mary University of
+        London, August 2010.
 '''
 
 import numpy as np
