@@ -94,10 +94,10 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
             list of sample times
 
         - sample_labels : list
-            array of segment labels for each generated sample
+            array of labels for each generated sample
 
     .. note::
-        Segment intervals will be rounded down to the nearest multiple
+        Intervals will be rounded down to the nearest multiple
         of *frame_size*.
     '''
 
@@ -171,15 +171,15 @@ def f_measure(precision, recall, beta=1.0):
 
 
 def intervals_to_boundaries(intervals):
-    '''Convert segment interval times into boundaries.
+    '''Convert interval times into boundaries.
 
     :parameters:
       - intervals : np.ndarray, shape=(n_events, 2)
-          Array of segment start and end-times
+          Array of interval start and end-times
 
     :returns:
       - boundaries : np.ndarray
-          Segment boundary times, including the end of the final segment
+          Interval boundary times, including the end of the final interval
     '''
 
     return np.unique(np.ravel(intervals))
@@ -197,8 +197,8 @@ def boundaries_to_intervals(boundaries, labels=None):
             Optional list of strings describing each event
 
     :returns:
-        - segments : np.ndarray, shape=(n_segments, 2)
-            Start and end time for each segment
+        - intervals : np.ndarray, shape=(n_intervals, 2)
+            Start and end time for each interval
 
         - labels : list of str or None
             Labels for each event.
@@ -240,7 +240,7 @@ def adjust_intervals(intervals,
 
     :parameters:
         - intervals : np.ndarray, shape=(n_events, 2)
-            Array of segment start and end-times
+            Array of interval start and end-times
 
         - labels : list, len=n_events or None
             List of labels
@@ -604,7 +604,7 @@ def validate_intervals(intervals):
 
     # Validate interval shape
     if intervals.ndim != 2 or intervals.shape[1] != 2:
-        raise ValueError('Segment intervals should be n-by-2 numpy ndarray, '
+        raise ValueError('Intervals should be n-by-2 numpy ndarray, '
                          'but shape={}'.format(intervals.shape))
 
     # Make sure no times are negative
