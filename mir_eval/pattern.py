@@ -585,6 +585,11 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
     '''
     Load data and perform the evaluation.
 
+    :usage:
+        >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
+        >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
+        >>> scores = mir_eval.pattern.evaluate(ref_patterns, est_patterns)
+
     :params:
         - ref_patterns : list
             The reference patterns in the format returned by
