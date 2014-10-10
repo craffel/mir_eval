@@ -728,6 +728,11 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
     '''
     Compute all metrics for the given reference and estimated annotations.
 
+    :usage:
+        >>> reference_beats = mir_eval.io.load_events('reference.txt')
+        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+        >>> scores = mir_eval.beat.evaluate(reference_beats, estimated_beats)
+
     :parameters:
         - reference_beats : np.ndarray
             Reference beat times, in seconds
