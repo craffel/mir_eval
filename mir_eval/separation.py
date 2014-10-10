@@ -241,6 +241,12 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
     '''
     Compute all metrics for the given reference and estimated annotations.
 
+    :usage:
+        >>> # reference_sources[n] should be an ndarray of samples of the
+        >>> # n'th reference source
+        >>> # estimated_sources[n] should be the same for the n'th estimated
+        >>> scores = mir_eval.separation.evaluate(reference_sources,
+                                                  estimated_sources)
     :parameters:
         - reference_sources : np.ndarray, shape=(nsrc, nsampl)
             matrix containing true sources
