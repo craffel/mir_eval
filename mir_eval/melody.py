@@ -632,6 +632,11 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
     treated as the reference (ground truth) and the second as the estimate to
     be evaluated (prediction).
 
+    :usage:
+        >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
+        >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
+        >>> scores = mir_eval.melody.evaluate(ref_time, ref_freq,
+                                              est_time, est_freq)
     :parameters:
         - ref_time : np.ndarray
             Time of each reference frequency value
