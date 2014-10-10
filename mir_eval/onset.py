@@ -110,6 +110,12 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
     '''
     Compute all metrics for the given reference and estimated annotations.
 
+    :usage:
+        >>> reference_onsets = mir_eval.io.load_events('reference.txt')
+        >>> estimated_onsets = mir_eval.io.load_events('estimated.txt')
+        >>> scores = mir_eval.onset.evaluate(reference_onsets,
+                                             estimated_onsets)
+
     :parameters:
         - reference_onsets : np.ndarray
             reference onset locations, in seconds
