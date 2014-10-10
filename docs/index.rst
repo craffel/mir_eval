@@ -20,7 +20,7 @@ Quickstart: Using the evaluators
 
 The fastest way to get up and running with ``mir_eval`` is to use the evaluators.
 These are scripts which can be run from the command line and utilize ``mir_eval`` to compute metrics according to reference and estimated annotations you provide.
-To use the evaluators, you can either install ``mir_eval`` and its dependencies (see :ref:`installation`) and run them as Python scripts, or you can download standalone binaries which have no dependencies (good for users who don't use Python).
+To use the evaluators, you can either install ``mir_eval`` and its dependencies (see :ref:`installation`) and run them as Python scripts, or you can download standalone binaries which are just precompiled executables of the evaluator scripts and have no dependencies (good for users who don't use Python).
 The evaluator Python scripts can be found in the ``mir_eval`` github repository in the ``evaluators`` folder:
 
 http://github.com/craffel/mir_eval/tree/master/evaluators
