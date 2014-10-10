@@ -1241,6 +1241,14 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     Computes weighted accuracy for all comparison functions for the given
     reference and estimated annotations.
 
+    :usage:
+        >>> (ref_intervals,
+             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+        >>> (est_intervals,
+             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+        >>> scores = mir_eval.chord.evaluate(ref_intervals, ref_labels,
+                                             est_intervals, est_labels)
+
     :parameters:
         - ref_intervals : np.ndarray, shape=(n, 2)
             Reference chord intervals, in the format returned by
