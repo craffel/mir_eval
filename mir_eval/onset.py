@@ -28,6 +28,10 @@ from . import util
 import warnings
 
 
+# The maximum allowable beat time
+MAX_TIME = 30000.
+
+
 def validate(reference_onsets, estimated_onsets):
     '''
     Checks that the input annotations to a metric look like valid onset time
@@ -49,7 +53,7 @@ def validate(reference_onsets, estimated_onsets):
     if estimated_onsets.size == 0:
         warnings.warn("Estimated onsets are empty.")
     for onsets in [reference_onsets, estimated_onsets]:
-        util.validate_events(onsets)
+        util.validate_events(onsets, MAX_TIME)
 
 
 def f_measure(reference_onsets, estimated_onsets, window=.05):

@@ -50,6 +50,10 @@ from . import util
 import warnings
 
 
+# The maximum allowable beat time
+MAX_TIME = 30000.
+
+
 def trim_beats(beats, min_beat_time=5.):
     '''Removes beats before min_beat_time.  A common preprocessing step.
 
@@ -88,7 +92,7 @@ def validate(reference_beats, estimated_beats):
     if estimated_beats.size == 0:
         warnings.warn("Estimated beats are empty.")
     for beats in [reference_beats, estimated_beats]:
-        util.validate_events(beats)
+        util.validate_events(beats, MAX_TIME)
 
 
 def _get_reference_beat_variations(reference_beats):

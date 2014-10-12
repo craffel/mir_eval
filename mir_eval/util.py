@@ -628,8 +628,10 @@ def validate_events(events, max_time=30000.):
     '''
     # Make sure no event times are huge
     if (events > max_time).any():
-        raise ValueError('An event at time {} was found; '
-                         'should be in seconds.'.format(events.max()))
+        raise ValueError('An event at time {} was found which is greater than '
+                         'the maximum allowable time of max_time = {} (did you'
+                         ' supply event times in '
+                         'seconds?)'.format(events.max(), max_time))
     # Make sure event locations are 1-d np ndarrays
     if events.ndim != 1:
         raise ValueError('Event times should be 1-d numpy ndarray, '
