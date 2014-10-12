@@ -42,6 +42,10 @@ import warnings
 from . import util
 
 
+# The maximum allowable number of sources (prevents insane computational load)
+MAX_SOURCES = 1000
+
+
 def validate(reference_sources, estimated_sources):
     '''Checks that the input data to a metric are valid, and throws helpful
     errors if not.
@@ -64,6 +68,24 @@ def validate(reference_sources, estimated_sources):
                          '= {}, estimated_sources '
                          '= {}'.format(reference_sources.shape,
                                        estimated_sources.shape))
+
+    if estimated_sources.shape[0] > MAX_SOURCES:
+        raise ValueError('The supplied matrices should be of shape (n_sources,'
+                         ' n_samples) but estimated_sources.shape[0] = {} '
+                         'which is greater than '
+                         'mir_eval.separation.MAX_SOURCES = {}.  To override '
+                         'this check, set mir_eval.separation.MAX_SOURCES to '
+                         'a larger value.'.format(estimated_sources.shape[0],
+                                                  MAX_SOURCES))
+
+    if reference_sources.shape[0] > MAX_SOURCES:
+        raise ValueError('The supplied matrices should be of shape (n_sources,'
+                         ' n_samples) but reference_sources.shape[0] = {} '
+                         'which is greater than '
+                         'mir_eval.separation.MAX_SOURCES = {}.  To override '
+                         'this check, set mir_eval.separation.MAX_SOURCES to '
+                         'a larger value.'.format(estimated_sources.shape[0],
+                                                  MAX_SOURCES))
 
     if reference_sources.size == 0:
         warnings.warn("reference_sources is empty, should be of size "

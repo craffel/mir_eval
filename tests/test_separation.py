@@ -53,6 +53,10 @@ def __unit_test_separation_function(metric):
     est_sources = np.random.random_sample((3, 100))
     nose.tools.assert_raises(ValueError, metric, ref_sources, est_sources)
 
+    # Test for error when too many sources are provided
+    sources = np.random.random_sample((mir_eval.separation.MAX_SOURCES*2, 400))
+    nose.tools.assert_raises(ValueError, metric, sources, sources)
+
 
 def __check_score(sco_f, metric, score, expected_score):
     assert np.allclose(score, expected_score, atol=A_TOL)
