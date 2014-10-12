@@ -56,11 +56,6 @@ def validate(reference_sources, estimated_sources):
         - estimated_sources : np.ndarray, shape=(nsrc, nsampl)
             matrix containing estimated sources
     '''
-    # make sure the input is of shape (nsrc, nsampl)
-    if estimated_sources.ndim == 1:
-        estimated_sources = estimated_sources[np.newaxis, :]
-    if reference_sources.ndim == 1:
-        reference_sources = reference_sources[np.newaxis, :]
 
     if reference_sources.shape != estimated_sources.shape:
         raise ValueError('The shape of estimated sources and the true '
@@ -145,6 +140,12 @@ def bss_eval_sources(reference_sources, estimated_sources):
             separation," IEEE Trans.  on Audio, Speech and Language Processing,
             14(4):1462-1469, 2006.
     '''
+
+    # make sure the input is of shape (nsrc, nsampl)
+    if estimated_sources.ndim == 1:
+        estimated_sources = estimated_sources[np.newaxis, :]
+    if reference_sources.ndim == 1:
+        reference_sources = reference_sources[np.newaxis, :]
 
     validate(reference_sources, estimated_sources)
     # If empty matrices were supplied, return empty lists (special case)
