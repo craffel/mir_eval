@@ -68,7 +68,8 @@ if __name__ == '__main__':
     # Compute all the scores
     scores = mir_eval.melody.evaluate(ref_time, ref_freq, est_time, est_freq,
                                       hop=parameters['hop'])
-    print os.path.basename(parameters['estimated_file'])
+    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file']))
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:

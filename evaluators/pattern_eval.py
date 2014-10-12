@@ -45,7 +45,8 @@ def main():
 
     # Compute all the scores
     scores = mir_eval.pattern.evaluate(ref_patterns, est_patterns)
-    print os.path.basename(parameters['estimated_file'])
+    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file']))
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:

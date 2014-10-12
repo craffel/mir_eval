@@ -63,7 +63,8 @@ if __name__ == '__main__':
     scores = mir_eval.segment.evaluate(ref_intervals, ref_labels,
                                        est_intervals, est_labels,
                                        trim=parameters['trim'])
-    print os.path.basename(parameters['estimated_file'])
+    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file']))
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:

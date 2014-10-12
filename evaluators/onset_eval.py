@@ -48,7 +48,8 @@ if __name__ == '__main__':
 
     # Compute all the scores
     scores = mir_eval.onset.evaluate(reference_onsets, estimated_onsets)
-    print os.path.basename(parameters['estimated_file'])
+    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file']))
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:

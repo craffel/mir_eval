@@ -50,7 +50,8 @@ if __name__ == '__main__':
     estimated_beats = mir_eval.io.load_events(parameters['estimated_file'])
     # Compute all the scores
     scores = mir_eval.beat.evaluate(reference_beats, estimated_beats)
-    print os.path.basename(parameters['estimated_file'])
+    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file']))
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
