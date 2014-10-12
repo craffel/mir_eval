@@ -624,7 +624,7 @@ def validate_events(events, max_time=30000.):
         - events : np.ndarray, shape=(n,)
             Array of event times
         - max_time : float
-            If an event is found above this time, the user will be warned.
+            If an event is found above this time, a ValueError will be raised.
     '''
     # Make sure no beat times are huge
     if (events > max_time).any():
