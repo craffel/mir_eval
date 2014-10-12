@@ -626,15 +626,15 @@ def validate_events(events, max_time=30000.):
         - max_time : float
             If an event is found above this time, a ValueError will be raised.
     '''
-    # Make sure no beat times are huge
+    # Make sure no event times are huge
     if (events > max_time).any():
         raise ValueError('An event at time {} was found; '
                          'should be in seconds.'.format(events.max()))
-    # Make sure beat locations are 1-d np ndarrays
+    # Make sure event locations are 1-d np ndarrays
     if events.ndim != 1:
         raise ValueError('Event times should be 1-d numpy ndarray, '
                          'but shape={}'.format(events.shape))
-    # Make sure beat times are increasing
+    # Make sure event times are increasing
     if (np.diff(events) < 0).any():
         raise ValueError('Events should be in increasing order.')
 
