@@ -37,9 +37,9 @@ Metrics
   annotations and compares them by the Rand Index
 * :func:`mir_eval.segment.ari`: Computes the Rand index, adjusted for chance
 * :func:`mir_eval.segment.nce`: Interprets sampled reference and estimated
-  labels as samples of random variables $Y_R, Y_E$ from which the conditional
-  entropy of $Y_R$ given $Y_E$ (Under-Segmentation) and $Y_E$ given $Y_R$
-  (Over-Segmentation) are estimated
+  labels as samples of random variables :math:`Y_R, Y_E` from which the
+  conditional entropy of :math:`Y_R` given :math:`Y_E` (Under-Segmentation) and
+  :math:`Y_E` given :math:`Y_R` (Over-Segmentation) are estimated
 * :func:`mir_eval.segment.mutual_information`: Computes the standard,
   normalized, and adjusted mutual information of sampled reference and
   estimated segments
