@@ -30,7 +30,7 @@ functions.  When converting the chord string into its constituent parts,
   and may be absolute or relative depending on context in the code.
 
 If no chord is present at a given point in time, it should have the label 'N',
-which is defined in the variable `mir_eval.chord.NO_CHORD`.
+which is defined in the variable ``mir_eval.chord.NO_CHORD``.
 
 Metrics
 -------
@@ -57,7 +57,7 @@ Metrics
 * :func:`mir_eval.chord.triads`: Chords are considered at the level of triads
   (major, minor, augmented, diminished, suspended), meaning that, in addition
   to the root, the quality is only considered through #5th scale degree (for
-  augmented chords). For example, ('A:7', 'A:maj') are equivalnet, while
+  augmented chords). For example, ('A:7', 'A:maj') are equivalent, while
   ('A:min', 'A:dim') and ('A:aug', 'A:maj') are not.
 
 * :func:`mir_eval.chord.triads_inv`: Same as above, with inversions (bass
