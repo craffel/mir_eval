@@ -26,7 +26,7 @@ def __load_and_stack_wavs(directory):
     '''
     stacked_audio_data = []
     global_fs = None
-    for f in glob.glob(os.path.join(directory, '*.wav')):
+    for f in sorted(glob.glob(os.path.join(directory, '*.wav'))):
         audio_data, fs = mir_eval.io.load_wav(f)
         assert (global_fs is None or fs == global_fs)
         global_fs = fs
