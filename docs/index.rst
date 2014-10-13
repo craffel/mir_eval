@@ -7,11 +7,28 @@ It can be used in any of the following ways:
 
 * By importing it and calling it from your Python code (see :ref:`installation` and :ref:`mir_eval_quickstart`)
 * Via the included evaluator Python scripts (see :ref:`installation` and :ref:`evaluators`)
-* Via the evaluator binaries, which can be run without any additional dependencies (skip straight to :ref:`evaluators`)
 
 If you use ``mir_eval`` in a research project, please cite the following paper:
 
 C. Raffel, B. McFee, E. J. Humphrey, J. Salamon, O. Nieto, D. Liang, and D. P. W. Ellis, `"mir_eval: A Transparent Implementation of Common MIR Metrics" <http://colinraffel.com/publications/ismir2014mir_eval.pdf>`_, Proceedings of the 15th International Conference on Music Information Retrieval, 2014.
+
+.. _installation:
+
+Installing ``mir_eval``
+=======================
+
+The simplest way to instal ``mir_eval`` is by using ``pip``, which will also install the required dependencies (Scipy and Numpy) if needed.
+To install ``mir_eval`` using ``pip``, simply run
+
+``pip install mir_eval``
+
+Alternatively, you can install ``mir_eval`` from source by first installing Scipy/Numpy via ``pip`` or by following the instructions here:
+http://www.scipy.org/install.html
+and then running
+
+``python setup.py install``
+
+from the source directory.
 
 .. _evaluators:
 
@@ -20,18 +37,10 @@ Quickstart: Using the evaluators
 
 The fastest way to get up and running with ``mir_eval`` is to use the evaluators.
 These are scripts which can be run from the command line and utilize ``mir_eval`` to compute metrics according to reference and estimated annotations you provide.
-To use the evaluators, you can either install ``mir_eval`` and its dependencies (see :ref:`installation`) and run them as Python scripts, or you can download standalone binaries which are just precompiled executables of the evaluator scripts and have no dependencies (good for users who don't use Python).
+To use the evaluators, you must first install ``mir_eval`` and its dependencies (see :ref:`installation`).
 The evaluator Python scripts can be found in the ``mir_eval`` github repository in the ``evaluators`` folder:
 
 http://github.com/craffel/mir_eval/tree/master/evaluators
-
-The standalone binaries can be downloaded here for Mac OS X (64-bit):
-
-http://labrosa.ee.columbia.edu/mir_eval/mir_eval_mac.tar.gz
-
-or here for Windows:
-
-http://labrosa.ee.columbia.edu/mir_eval/mir_eval_win.tar.gz
 
 One evaluator is included for each of the MIR tasks implemented in ``mir_eval``.
 By way of example, we'll cover the usage of the beat detection evaluator ``beat_eval``.
@@ -40,28 +49,10 @@ To get usage help, simply run
 
 ``./beat_eval.py --help``
 
-to use the Python script evaluator or
-
-``./beat_eval --help``
-
-in Mac OS X or
-
-``beat_eval.exe --help``
-
-in Windows.
-For example, to evaluate generated beat times stored in the file ``estimated_beats.txt`` against ground-truth beats stored in the file ``reference_beats.txt`` and store the resulting scores in ``results.json``, simply run
+As an example, to evaluate generated beat times stored in the file ``estimated_beats.txt`` against ground-truth beats stored in the file ``reference_beats.txt`` and store the resulting scores in ``results.json``, simply run
 
 ``./beat_eval.py -o results.json reference_beats.txt estimated_beats.txt``
 
-to use the Python script evaluator or
-
-``./beat_eval -o results.json reference_beats.txt estimated_beats.txt``
-
-to use the binary in Mac OS X or
-
-``beat_eval.exe -o results.json reference_beats.txt estimated_beats.txt``
-
-to use the binary in Windows.
 The file ``results.json`` will now contain the achieved scores in machine-parsable, human-readable json format.  Nice!
 
 
@@ -94,24 +85,6 @@ or you'll load in the data, do some preprocessing, and call specific metric func
   f_measure = mir_eval.beat.f_measure(reference_beats, estimated_beats)
 
 The documentation for each metric function, found in the :ref:`mir_eval` section below, contains further usage information.
-
-.. _installation:
-
-Installing ``mir_eval``
-=======================
-
-The simplest way to instal ``mir_eval`` is by using ``pip``, which will also install the required dependencies (Scipy and Numpy) if needed.
-To install ``mir_eval`` using ``pip``, simply run
-
-``pip install mir_eval``
-
-Alternatively, you can install ``mir_eval`` from source by first installing Scipy/Numpy via ``pip`` or by following the instructions here:
-http://www.scipy.org/install.html
-and then running
-
-``python setup.py install``
-
-from the source directory.
 
 .. _mir_eval:
 
