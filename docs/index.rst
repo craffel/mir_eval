@@ -17,7 +17,7 @@ C. Raffel, B. McFee, E. J. Humphrey, J. Salamon, O. Nieto, D. Liang, and D. P. W
 Installing ``mir_eval``
 =======================
 
-The simplest way to instal ``mir_eval`` is by using ``pip``, which will also install the required dependencies (Scipy and Numpy) if needed.
+The simplest way to install ``mir_eval`` is by using ``pip``, which will also install the required dependencies (Scipy and Numpy) if needed.
 To install ``mir_eval`` using ``pip``, simply run
 
 ``pip install mir_eval``
