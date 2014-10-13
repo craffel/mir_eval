@@ -30,6 +30,8 @@ and then running
 
 from the source directory.
 
+If you don't use Python and want to get started as quickly as possible, you might consider using `Anaconda <https://store.continuum.io/cshop/anaconda/>`_ which makes it easy to install a Python environment which can run ``mir_eval``.
+
 .. _evaluators:
 
 Quickstart: Using the evaluators
