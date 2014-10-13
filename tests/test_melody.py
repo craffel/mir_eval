@@ -62,9 +62,9 @@ def test_resample_melody_series():
 
 def test_to_cent_voicing():
     # We'll just test a few values from one of the test annotations
-    ref_file = list(glob.glob(REF_GLOB))[0]
+    ref_file = sorted(glob.glob(REF_GLOB))[0]
     ref_time, ref_freq = mir_eval.io.load_time_series(ref_file)
-    est_file = list(glob.glob(EST_GLOB))[0]
+    est_file = sorted(glob.glob(EST_GLOB))[0]
     est_time, est_freq = mir_eval.io.load_time_series(est_file)
     ref_v, ref_c, est_v, est_c = mir_eval.melody.to_cent_voicing(ref_time,
                                                                  ref_freq,
