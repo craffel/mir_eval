@@ -48,6 +48,16 @@ def __unit_test_separation_function(metric):
         # And that the metric returns empty arrays
         assert np.allclose(metric(np.array([]), np.array([])), np.array([]))
 
+    # Test for error when there is a silent reference/estimated source
+    ref_sources = np.vstack((np.zeros(100),
+                             np.random.random_sample((2, 100))))
+    est_sources = np.vstack((np.zeros(100),
+                             np.random.random_sample((2, 100))))
+    nose.tools.assert_raises(ValueError, metric, ref_sources[:2],
+                             est_sources[1:])
+    nose.tools.assert_raises(ValueError, metric, ref_sources[1:],
+                             est_sources[:2])
+
     # Test for error when shape is different
     ref_sources = np.random.random_sample((4, 100))
     est_sources = np.random.random_sample((3, 100))
