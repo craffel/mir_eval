@@ -342,10 +342,10 @@ def goto(reference_beats,
         goto_criteria = 1
     else:
         # Get the track of maximal length
-        track_length = np.max(np.diff(incorrect_beats))
-        track_start = np.flatnonzero(np.diff(incorrect_beats) == track_length)
+        track_len = np.max(np.diff(incorrect_beats))
+        track_start = np.flatnonzero(np.diff(incorrect_beats) == track_len)[0]
         # Is the track length at least 25% of the song?
-        if track_length - 1 > .25*(reference_beats.shape[0] - 2):
+        if track_len - 1 > .25*(reference_beats.shape[0] - 2):
             goto_criteria = 1
             start_beat = incorrect_beats[track_start]
             end_beat = incorrect_beats[track_start + 1]
