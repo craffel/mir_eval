@@ -1,5 +1,8 @@
 from setuptools import setup
 
+with open('README.rst') as file:
+    long_description = file.read()
+
 setup(
     name='mir_eval',
     version='0.0.0',
@@ -8,10 +11,7 @@ setup(
     author_email='craffel@gmail.com',
     url='https://github.com/craffel/mir_eval',
     packages=['mir_eval'],
-    long_description="""\
-    Collection of Python scripts to compute common heuristic accuracy scores
-    for various music/audio information retrieval/signal processing tasks.
-    """,
+    long_description=long_description,
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
