@@ -11,6 +11,6 @@ Dependencies:
 
 If you use mir_eval in a research project, please cite the following paper:
 
-C. Raffel, B. McFee, E. J. Humphrey, J. Salamon, O. Nieto, D. Liang, and D. P. W. Ellis, "`mir_eval: A Transparent Implementation of Common MIR Metrics <http://colinraffel.com/publications/ismir2014mir_eval.pdf>`_", Proceedings of the 15th International Conference on Music Information Retrieval, 2014.
+Colin Raffel, Brian McFee, Eric J. Humphrey, Justin Salamon, Oriol Nieto, Dawen Liang, and Daniel P. W. Ellis, "`mir_eval: A Transparent Implementation of Common MIR Metrics <http://colinraffel.com/publications/ismir2014mir_eval.pdf>`_", Proceedings of the 15th International Conference on Music Information Retrieval, 2014.
 
 
