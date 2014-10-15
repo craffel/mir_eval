@@ -13,14 +13,14 @@ setup(
     for various music/audio information retrieval/signal processing tasks.
     """,
     classifiers=[
-        "License :: OSI Approved :: GNU General Public License (GPL)",
+        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Topic :: Multimedia :: Sound/Audio :: Analysis",
     ],
     keywords='audio music mir dsp',
-    license='GPL',
+    license='MIT',
     install_requires=[
         'numpy >= 1.7.0',
         'scipy',
