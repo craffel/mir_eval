@@ -4,10 +4,9 @@
 # Import all submodules (for each task)
 from . import beat
 from . import chord
-from . import input_output as io
+from . import io
 from . import onset
-from . import boundary
-from . import structure
+from . import segment
 from . import separation
 from . import util
 from . import sonify

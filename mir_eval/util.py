@@ -1,7 +1,11 @@
-"""Utility sub-module for mir-eval"""
+'''
+This submodule collects useful functionality required across the task
+submodules, such as preprocessing, validation, and common computations.
+'''
 
 import numpy as np
 import os
+import inspect
 
 
 def index_labels(labels, case_sensitive=False):
@@ -68,8 +72,8 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
-            :func:``mir_eval.io.load_intervals()`` or
-            :func:``mir_eval.io.load_labeled.intervals()``.
+            :func:`mir_eval.io.load_intervals()` or
+            :func:`mir_eval.io.load_labeled.intervals()`.
             The *i* th interval spans time ``intervals[i, 0]`` to
             ``intervals[i, 1]``.
 
@@ -90,10 +94,10 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
             list of sample times
 
         - sample_labels : list
-            array of segment labels for each generated sample
+            array of labels for each generated sample
 
     .. note::
-        Segment intervals will be rounded down to the nearest multiple
+        Intervals will be rounded down to the nearest multiple
         of *frame_size*.
     '''
 
@@ -115,7 +119,7 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     :parameters:
         - intervals : np.ndarray, shape=(n, d)
             An array of time intervals, as returned by
-            :func:``mir_eval.input_output.load_intervals()``.
+            :func:``mir_eval.io.load_intervals()``.
             The *i* th interval spans time ``intervals[i, 0]`` to
             ``intervals[i, 1]``.
 
@@ -124,6 +128,9 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
 
         - time_points : array_like, shape=(m,)
             Points in time to assign labels.
+
+        - fill_value : type(labels[0])
+            Object to use for the label with out-of-range time points.
 
     :returns:
         - aligned_labels : list
@@ -164,15 +171,15 @@ def f_measure(precision, recall, beta=1.0):
 
 
 def intervals_to_boundaries(intervals):
-    '''Convert segment interval times into boundaries.
+    '''Convert interval times into boundaries.
 
     :parameters:
       - intervals : np.ndarray, shape=(n_events, 2)
-          Array of segment start and end-times
+          Array of interval start and end-times
 
     :returns:
       - boundaries : np.ndarray
-          Segment boundary times, including the end of the final segment
+          Interval boundary times, including the end of the final interval
     '''
 
     return np.unique(np.ravel(intervals))
@@ -182,23 +189,23 @@ def boundaries_to_intervals(boundaries, labels=None):
     '''Convert an array of event times into intervals
 
     :parameters:
-      - boundaries : list-like
-          List-like of event times.  These are assumed to be unique timestamps
-          in ascending order.
+        - boundaries : list-like
+            List-like of event times.  These are assumed to be unique
+            timestamps in ascending order.
 
-      - labels : None or list of str
-          Optional list of strings describing each event
+        - labels : None or list of str
+            Optional list of strings describing each event
 
     :returns:
-      - segments : np.ndarray, shape=(n_segments, 2)
-          Start and end time for each segment
+        - intervals : np.ndarray, shape=(n_intervals, 2)
+            Start and end time for each interval
 
-      - labels : list of str or None
-          Labels for each event.
+        - labels : list of str or None
+            Labels for each event.
 
     :raises:
-      - ValueError
-        If the input times are not unique and ascending
+        - ValueError
+            If the input times are not unique and ascending
     '''
 
     if not np.allclose(boundaries, np.unique(boundaries)):
@@ -227,13 +234,13 @@ def adjust_intervals(intervals,
     Any intervals lying partially outside the specified range will be cropped.
 
     If the specified range exceeds the span of the provided data in either
-    direction, additional intervals will be appended.  Any appended intervals
-    at the start will be given label *start_label*.  Any appended intervals at
-    the end will be given label *end_label*.
+    direction, additional intervals will be appended.  If an interval is
+    appended at the beginning, it will be given the label *start_label*; if an
+    interval is appended at the end, it will be given the label *end_label*.
 
     :parameters:
         - intervals : np.ndarray, shape=(n_events, 2)
-            Array of segment start and end-times
+            Array of interval start and end-times
 
         - labels : list, len=n_events or None
             List of labels
@@ -257,6 +264,16 @@ def adjust_intervals(intervals,
         - new_labels : list
             List of labels for new_labels
     '''
+
+    # When supplied intervals are empty and t_max and t_min are supplied,
+    # create one interval from t_min to t_max with the label start_label
+    if t_min is not None and t_max is not None and intervals.size == 0:
+        return np.array([[t_min, t_max]]), [start_label]
+    # When intervals are empty and either t_min or t_max are not supplied,
+    # we can't append new intervals
+    elif (t_min is None or t_max is None) and intervals.size == 0:
+        raise ValueError("Supplied intervals are empty, can't append new"
+                         " intervals")
 
     if t_min is not None:
         # Find the intervals that end at or after t_min
@@ -587,7 +604,7 @@ def validate_intervals(intervals):
 
     # Validate interval shape
     if intervals.ndim != 2 or intervals.shape[1] != 2:
-        raise ValueError('Segment intervals should be n-by-2 numpy ndarray, '
+        raise ValueError('Intervals should be n-by-2 numpy ndarray, '
                          'but shape={}'.format(intervals.shape))
 
     # Make sure no times are negative
@@ -607,40 +624,59 @@ def validate_events(events, max_time=30000.):
         - events : np.ndarray, shape=(n,)
             Array of event times
         - max_time : float
-            If an event is found above this time, the user will be warned.
+            If an event is found above this time, a ValueError will be raised.
     '''
-    # Make sure no beat times are huge
+    # Make sure no event times are huge
     if (events > max_time).any():
-        raise ValueError('An event at time {} was found; '
-                         'should be in seconds.'.format(events.max()))
-    # Make sure beat locations are 1-d np ndarrays
+        raise ValueError('An event at time {} was found which is greater than '
+                         'the maximum allowable time of max_time = {} (did you'
+                         ' supply event times in '
+                         'seconds?)'.format(events.max(), max_time))
+    # Make sure event locations are 1-d np ndarrays
     if events.ndim != 1:
         raise ValueError('Event times should be 1-d numpy ndarray, '
                          'but shape={}'.format(events.shape))
-    # Make sure beat times are increasing
+    # Make sure event times are increasing
     if (np.diff(events) < 0).any():
         raise ValueError('Events should be in increasing order.')
 
 
-def filter_labeled_intervals(intervals, labels):
-    r'''Remove all invalid intervals (start >= end) and corresponding labels.
+def filter_kwargs(function, *args, **kwargs):
+    '''
+    Given a function and args and keyword args to pass to it, call the function
+    but using only the keyword arguments which it accepts.  This is equivalent
+    to redefining the function with an additional \*\*kwargs to accept slop
+    keyword args.
 
     :parameters:
-        - intervals : np.ndarray
-            Array of interval times (seconds)
+        - function : function
+            Function to call.  Can take in any number of args or kwargs
+    '''
+    # Get the list of function arguments
+    function_args = inspect.getargspec(function).args
+    # Construct a dict of those kwargs which appear in the function
+    filtered_kwargs = {}
+    for kwarg, value in kwargs.items():
+        if kwarg in function_args:
+            filtered_kwargs[kwarg] = value
+    # Call the function with the supplied args and the filtered kwarg dict
+    return function(*args, **filtered_kwargs)
 
-        - labels : list
-            List of labels
+
+def intervals_to_durations(intervals):
+    '''
+    Converts an array of n intervals to their n durations.
+
+    :parameters:
+        - intervals : np.ndarray, shape=(n, 2)
+            An array of time intervals, as returned by
+            :func:``mir_eval.io.load_intervals()``.
+            The *i* th interval spans time ``intervals[i, 0]`` to
+            ``intervals[i, 1]``.
 
     :returns:
-        - filtered_intervals : np.ndarray
-            Valid interval times.
-        - filtered_labels : list
-            Corresponding filtered labels
+        - durations : np.ndarray, shape=(n,)
+            Array of the duration of each interval.
     '''
-    filt_intervals, filt_labels = [], []
-    for interval, label in zip(intervals, labels):
-        if interval[0] < interval[1]:
-            filt_intervals.append(interval)
-            filt_labels.append(label)
-    return np.array(filt_intervals), filt_labels
+    validate_intervals(intervals)
+    return np.abs(np.diff(intervals, axis=-1)).flatten()

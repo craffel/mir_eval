@@ -14,70 +14,10 @@ Written by Oriol Nieto (oriol@nyu.edu), 2014
 
 import argparse
 import os
-from collections import OrderedDict
-import json
 import sys
+import eval_utilities
 
 import mir_eval
-
-
-def evaluate(ref_file, est_file):
-    """Load data and perform the evaluation.
-
-    :param ref_file: Path to the reference file.
-    :type ref_file: str
-    :param est_file: Path to the estimation file.
-    :type est_file: str
-    :returns:
-        - M: dict
-            Results contained in an ordered dictionary.
-    """
-    # load the data
-    ref_patterns = mir_eval.io.load_patterns(ref_file)
-    est_patterns = mir_eval.io.load_patterns(est_file)
-
-    # Now compute all the metrics
-    M = OrderedDict()
-
-    # Standard scores
-    M['F'], M['P'], M['R'] = \
-        mir_eval.pattern.standard_FPR(ref_patterns, est_patterns)
-
-    # Establishment scores
-    M['F_est'], M['P_est'], M['R_est'] = \
-        mir_eval.pattern.establishment_FPR(ref_patterns, est_patterns)
-
-    # Occurrence scores
-    M['F_occ.5'], M['P_occ.5'], M['R_occ.5'] = \
-        mir_eval.pattern.occurrence_FPR(ref_patterns, est_patterns, thres=.5)
-    M['F_occ.75'], M['P_occ.75'], M['R_occ.75'] = \
-        mir_eval.pattern.occurrence_FPR(ref_patterns, est_patterns, thres=.75)
-
-    # Three-layer scores
-    M['F_3'], M['P_3'], M['R_3'] = \
-        mir_eval.pattern.three_layer_FPR(ref_patterns, est_patterns)
-
-    # First Five Patterns scores
-    M['FFP'] = mir_eval.pattern.first_n_three_layer_P(ref_patterns,
-                                                      est_patterns, n=5)
-    M['FFTP_est'] = mir_eval.pattern.first_n_target_proportion_R(ref_patterns,
-                                                                 est_patterns,
-                                                                 n=5)
-
-    return M
-
-
-def save_results(results, output_file):
-    '''Save a results dict into a json file'''
-    with open(output_file, 'w') as f:
-        json.dump(results, f)
-
-
-def print_evaluation(estimation_file, M):
-    # And print them
-    print os.path.basename(estimation_file)
-    for key, value in M.iteritems():
-        print '\t%12s:\t%0.3f' % (key, value)
 
 
 def main():
@@ -91,22 +31,27 @@ def main():
                         type=str,
                         action='store',
                         help='Store results in json format')
-    parser.add_argument("ref_file",
+    parser.add_argument("reference_file",
                         action="store",
                         help="Path to the reference file.")
-    parser.add_argument("est_file",
+    parser.add_argument("estimated_file",
                         action="store",
                         help="Path to the estimation file.")
     parameters = vars(parser.parse_args(sys.argv[1:]))
 
+    # Load in data
+    ref_patterns = mir_eval.io.load_patterns(parameters['reference_file'])
+    est_patterns = mir_eval.io.load_patterns(parameters['estimated_file'])
+
     # Compute all the scores
-    scores = evaluate(ref_file=parameters['ref_file'],
-                      est_file=parameters['est_file'])
-    print_evaluation(parameters['est_file'], scores)
+    scores = mir_eval.pattern.evaluate(ref_patterns, est_patterns)
+    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file']))
+    eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
         print 'Saving results to: ', parameters['output_file']
-        save_results(scores, parameters['output_file'])
+        eval_utilities.save_results(scores, parameters['output_file'])
 
 
 if __name__ == '__main__':

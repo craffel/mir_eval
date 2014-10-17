@@ -55,16 +55,8 @@ def __unit_test_beat_function(metric):
     assert np.allclose(metric(beats, beats), 1)
 
 
-def __regression_test_beat_function(metric, reference_file, estimated_file, score):
-    # Load in an example beat annotation
-    reference_beats, _ = mir_eval.io.load_events(reference_file)
-    # Load in an example beat tracker output
-    estimated_beats, _ = mir_eval.io.load_events(estimated_file)
-    # Trim the first 5 seconds off
-    reference_beats = mir_eval.beat.trim_beats(reference_beats)
-    estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
-    # Ensure that the score is correct
-    assert np.allclose(metric(reference_beats, estimated_beats), score, atol=A_TOL)
+def __check_score(sco_f, metric, score, expected_score):
+    assert np.allclose(score, expected_score, atol=A_TOL)
 
 
 def test_beat_functions():
@@ -74,12 +66,25 @@ def test_beat_functions():
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
     # Unit tests
-    for metric in mir_eval.beat.METRICS.values():
+    for metric in [mir_eval.beat.f_measure,
+                   mir_eval.beat.cemgil,
+                   mir_eval.beat.goto,
+                   mir_eval.beat.p_score,
+                   mir_eval.beat.continuity,
+                   mir_eval.beat.information_gain]:
         yield (__unit_test_beat_function, metric)
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
-            scores = json.load(f)
-        for name, metric in mir_eval.beat.METRICS.items():
-            yield (__regression_test_beat_function, metric,
-                   ref_f, est_f, scores[name])
+            expected_scores = json.load(f)
+        # Load in an example beat annotation
+        reference_beats = mir_eval.io.load_events(ref_f)
+        # Load in an example beat tracker output
+        estimated_beats = mir_eval.io.load_events(est_f)
+        # Compute scores
+        scores = mir_eval.beat.evaluate(reference_beats, estimated_beats)
+        # Compare them
+        for metric in scores:
+            # This is a simple hack to make nosetest's messages more useful
+            yield (__check_score, sco_f, metric, scores[metric],
+                   expected_scores[metric])

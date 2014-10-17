@@ -1,14 +1,15 @@
 '''
-Unit tests for mir_eval.structure and mir_eval.boundary
+Unit tests for mir_eval.segment
 '''
 
 import numpy as np
 import json
 import mir_eval
 import glob
+import warnings
+import nose.tools
 
-# JSON encoding loses some precision, we'll keep it to 1e-5 precision
-A_TOL = 1e-5
+A_TOL = 1e-12
 
 # Path to the fixture files
 REF_GLOB    = 'data/segment/ref*.lab'
@@ -16,189 +17,129 @@ EST_GLOB    = 'data/segment/est*.lab'
 SCORES_GLOB  = 'data/segment/output*.json'
 
 
-def generate_data():
+def __unit_test_boundary_function(metric):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        # Test for warning when empty intervals with no trimming
+        metric(np.zeros((0, 2)), np.array([[1, 2], [2, 3]]), trim=False)
+        assert len(w) == 1
+        assert issubclass(w[-1].category, UserWarning)
+        assert str(w[-1].message) == "Reference intervals are empty."
+        # Now test when 1 interval with trimming
+        metric(np.array([[1, 2], [2, 3]]), np.array([[1, 2]]), trim=True)
+        assert len(w) == 2
+        assert issubclass(w[-1].category, UserWarning)
+        assert str(w[-1].message) == "Estimated intervals are empty."
+        # Check for correct behavior in empty intervals
+        empty_intervals = np.zeros((0, 2))
+        if metric == mir_eval.segment.detection:
+            assert np.allclose(metric(empty_intervals, empty_intervals), 0)
+        else:
+            assert np.all(np.isnan(metric(empty_intervals, empty_intervals)))
 
+    # Now test validation function - intervals must be n by 2
+    intervals = np.array([1, 2, 3, 4])
+    nose.tools.assert_raises(ValueError, metric, intervals, intervals)
+    # Interval boundaries must be positive
+    intervals = np.array([[-1, 2], [2, 3]])
+    nose.tools.assert_raises(ValueError, metric, intervals, intervals)
+    # Positive interval durations
+    intervals = np.array([[2, 1], [2, 3]])
+    nose.tools.assert_raises(ValueError, metric, intervals, intervals)
+    # Check for correct behavior when intervals are the same
+    correct_intervals = np.array([[0, 1], [1, 2]])
+    if metric == mir_eval.segment.detection:
+        assert np.allclose(metric(correct_intervals, correct_intervals), 1)
+    else:
+        assert np.allclose(metric(correct_intervals, correct_intervals), 0)
+
+
+def __unit_test_structure_function(metric):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        # Test for warning when empty intervals
+        score = metric(np.zeros((0, 2)), [], np.zeros((0, 2)), [])
+        assert len(w) == 2
+        assert issubclass(w[0].category, UserWarning)
+        assert issubclass(w[1].category, UserWarning)
+        assert str(w[0].message) == "Reference intervals are empty."
+        assert str(w[1].message) == "Estimated intervals are empty."
+        # And that the metric is 0
+        assert np.allclose(score, 0)
+
+    # Now test validation function - intervals must be n by 2
+    intervals = np.arange(4)
+    labels = ['a', 'b', 'c', 'd']
+    nose.tools.assert_raises(ValueError, metric, intervals, labels, intervals,
+                             labels)
+    # Interval boundaries must be positive
+    intervals = np.array([[-1, 2], [2, 3]])
+    nose.tools.assert_raises(ValueError, metric, intervals, labels, intervals,
+                             labels)
+    # Positive interval durations
+    intervals = np.array([[2, 1], [2, 3]])
+    labels = ['a', 'b']
+    nose.tools.assert_raises(ValueError, metric, intervals, labels, intervals,
+                             labels)
+    # Number of intervals must match number of labels
+    labels = ['a']
+    nose.tools.assert_raises(ValueError, metric, intervals, labels, intervals,
+                             labels)
+    # Intervals must start at 0
+    intervals = np.array([[1, 2], [2, 3]])
+    labels = ['a', 'b']
+    nose.tools.assert_raises(ValueError, metric, intervals, labels, intervals,
+                             labels)
+    # End times must match
+    reference_intervals = np.array([[0, 1], [1, 2]])
+    estimated_intervals = np.array([[0, 1], [1, 3]])
+    nose.tools.assert_raises(ValueError, metric, reference_intervals, labels,
+                             estimated_intervals, labels)
+    # Check for correct output when input is the same
+    estimated_intervals = reference_intervals
+    if metric == mir_eval.segment.mutual_information:
+        assert np.allclose(metric(reference_intervals, labels,
+                                  estimated_intervals, labels),
+                           [np.log(2), 1, 1])
+    else:
+        assert np.allclose(metric(reference_intervals, labels,
+                                  estimated_intervals, labels), 1)
+
+
+def __check_score(sco_f, metric, score, expected_score):
+    assert np.allclose(score, expected_score, atol=A_TOL)
+
+
+def test_segment_functions():
+    # Load in all files in the same order
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
+    # Unit tests for boundary
+    for metric in [mir_eval.segment.detection,
+                   mir_eval.segment.deviation]:
+        yield (__unit_test_boundary_function, metric)
+    # And structure
+    for metric in [mir_eval.segment.pairwise,
+                   mir_eval.segment.rand_index,
+                   mir_eval.segment.ari,
+                   mir_eval.segment.mutual_information,
+                   mir_eval.segment.nce]:
+        yield (__unit_test_structure_function, metric)
+    # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
-        ref_t, ref_l = mir_eval.io.load_labeled_intervals(ref_f)
-        est_t, est_l = mir_eval.io.load_labeled_intervals(est_f)
-
         with open(sco_f, 'r') as f:
-            scores = json.load(f)
-
-        yield ref_t, ref_l, est_t, est_l, scores
-
-
-def test_boundary_detection():
-
-    def __test_detection(_window, _ref_t, _est_t):
-        _ref_t = mir_eval.util.adjust_intervals(_ref_t, t_min=0.0)[0]
-        _est_t = mir_eval.util.adjust_intervals(_est_t, t_min=0.0,
-                                                t_max=_ref_t.max())[0]
-        (precision,
-         recall,
-         fmeasure) = mir_eval.boundary.detection(_ref_t, _est_t,
-                                                 window=_window)
-
-        print precision, recall, fmeasure
-        print (scores['P@%0.1f' % _window], scores['R@%0.1f' % _window],
-               scores['F@%0.1f' % _window])
-
-        assert np.allclose(precision, scores['P@%0.1f' % _window], atol=A_TOL)
-        assert np.allclose(recall, scores['R@%0.1f' % _window], atol=A_TOL)
-        assert np.allclose(fmeasure, scores['F@%0.1f' % _window], atol=A_TOL)
-
-    # Iterate over fixtures
-    for ref_t, ref_l, est_t, est_l, scores in generate_data():
-
-        # Test boundary detection at each window size
-        for window in [0.5, 3.0]:
-            yield (__test_detection, window, ref_t, est_t)
-
-    # Done
-    pass
-
-
-def test_boundary_deviation():
-    def __test_deviation(_ref_t, _est_t):
-        _ref_t = mir_eval.util.adjust_intervals(_ref_t, t_min=0.0)[0]
-        _est_t = mir_eval.util.adjust_intervals(_est_t, t_min=0.0,
-                                                t_max=_ref_t.max())[0]
-        t_to_p, p_to_t = mir_eval.boundary.deviation(_ref_t, _est_t)
-
-        print t_to_p, p_to_t
-        print scores['True-to-Pred'], scores['Pred-to-True']
-
-        assert np.allclose(t_to_p,  scores['True-to-Pred'], atol=A_TOL)
-        assert np.allclose(p_to_t,  scores['Pred-to-True'], atol=A_TOL)
-
-    # Iterate over fixtures
-    for ref_t, ref_l, est_t, est_l, scores in generate_data():
-        # Test boundary deviation
-        yield (__test_deviation, ref_t, est_t)
-
-    # Done
-    pass
-
-
-def test_structure_pairwise():
-
-    def __test_pairwise(_ref_t, _ref_l, _est_t, _est_l):
-        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l,
-                                                        t_min=0.0)
-        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l,
-                                                        t_min=0.0,
-                                                        t_max=_ref_t.max())
-
-        precision, recall, fmeasure = mir_eval.structure.pairwise(_ref_t,
-                                                                  _ref_l,
-                                                                  _est_t,
-                                                                  _est_l)
-
-        print precision, recall, fmeasure
-        print scores['Pair-P'], scores['Pair-R'], scores['Pair-F']
-
-        assert np.allclose(precision,   scores['Pair-P'], atol=A_TOL)
-        assert np.allclose(recall,      scores['Pair-R'], atol=A_TOL)
-        assert np.allclose(fmeasure,    scores['Pair-F'], atol=A_TOL)
-
-    # Iterate over fixtures
-    for ref_t, ref_l, est_t, est_l, scores in generate_data():
-
-        yield (__test_pairwise, ref_t, ref_l, est_t, est_l)
-
-    # Done
-    pass
-
-
-def test_structure_rand():
-    def __test_rand(_ref_t, _ref_l, _est_t, _est_l):
-        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l,
-                                                        t_min=0.0)
-        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l,
-                                                        t_min=0.0,
-                                                        t_max=_ref_t.max())
-
-        ri = mir_eval.structure.rand_index(_ref_t, _ref_l, _est_t, _est_l)
-
-        print ri
-        print scores['RI']
-
-        assert np.allclose(ri,  scores['RI'], atol=A_TOL)
-
-    def __test_adj_rand(_ref_t, _ref_l, _est_t, _est_l):
-        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l,
-                                                        t_min=0.0)
-        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l,
-                                                        t_min=0.0,
-                                                        t_max=_ref_t.max())
-
-        ari = mir_eval.structure.ari(_ref_t, _ref_l, _est_t, _est_l)
-
-        print ari
-        print scores['ARI']
-
-        assert np.allclose(ari,  scores['ARI'], atol=A_TOL)
-
-    # Iterate over fixtures
-    for ref_t, ref_l, est_t, est_l, scores in generate_data():
-        yield (__test_adj_rand, ref_t, ref_l, est_t, est_l)
-        yield (__test_rand, ref_t, ref_l, est_t, est_l)
-
-    # Done
-    pass
-
-
-def test_structure_mutual_information():
-    def __test_mutual_information(_ref_t, _ref_l, _est_t, _est_l):
-        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l,
-                                                        t_min=0.0)
-        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l,
-                                                        t_min=0.0,
-                                                        t_max=_ref_t.max())
-
-        mi, ami, nmi = mir_eval.structure.mutual_information(_ref_t, _ref_l,
-                                                             _est_t, _est_l)
-
-        print mi, ami, nmi
-        print scores['MI'], scores['AMI'], scores['NMI']
-
-        assert np.allclose(mi,  scores['MI'], atol=A_TOL)
-        assert np.allclose(ami, scores['AMI'], atol=A_TOL)
-        assert np.allclose(nmi, scores['NMI'], atol=A_TOL)
-
-    # Iterate over fixtures
-    for ref_t, ref_l, est_t, est_l, scores in generate_data():
-        yield (__test_mutual_information, ref_t, ref_l, est_t, est_l)
-
-    # Done
-    pass
-
-
-def test_structure_entropy():
-    def __test_entropy(_ref_t, _ref_l, _est_t, _est_l):
-        _ref_t, _ref_l = mir_eval.util.adjust_intervals(_ref_t, labels=_ref_l,
-                                                        t_min=0.0)
-        _est_t, _est_l = mir_eval.util.adjust_intervals(_est_t, labels=_est_l,
-                                                        t_min=0.0,
-                                                        t_max=_ref_t.max())
-
-        s_over, s_under, s_f = mir_eval.structure.nce(_ref_t, _ref_l, _est_t,
-                                                      _est_l)
-
-        print s_over, s_under, s_f
-        print scores['S_Over'], scores['S_Under'], scores['S_F']
-
-        assert np.allclose(s_over,  scores['S_Over'], atol=A_TOL)
-        assert np.allclose(s_under, scores['S_Under'], atol=A_TOL)
-        assert np.allclose(s_f, scores['S_F'], atol=A_TOL)
-
-    # Iterate over fixtures
-    for ref_t, ref_l, est_t, est_l, scores in generate_data():
-        yield (__test_entropy, ref_t, ref_l, est_t, est_l)
-
-    # Done
-    pass
+            expected_scores = json.load(f)
+        # Load in an example segmentation annotation
+        ref_intervals, ref_labels = mir_eval.io.load_labeled_intervals(ref_f)
+        # Load in an example segmentation tracker output
+        est_intervals, est_labels = mir_eval.io.load_labeled_intervals(est_f)
+        # Compute scores
+        scores = mir_eval.segment.evaluate(ref_intervals, ref_labels,
+                                           est_intervals, est_labels)
+        # Compare them
+        for metric in scores:
+            # This is a simple hack to make nosetest's messages more useful
+            yield (__check_score, sco_f, metric, scores[metric],
+                   expected_scores[metric])

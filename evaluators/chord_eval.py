@@ -1,107 +1,61 @@
 #!/usr/bin/env python
-'''Compute chord evaluation metrics
+'''
 
+Compute chord evaluation metrics
 
-Usage: To run an evaluation consistent with MIREX2013, run the following:
+Usage:
 
-./chord_eval.py reference_file.lab \
-estimation_file.txt \
--v root majmin majmin-inv sevenths sevenths-inv
+./chord_eval.py TRUTH.TXT PREDICTION.TXT
 '''
 
 import argparse
-import glob
+import sys
 import os
+import eval_utilities
 
 import mir_eval
 
 
-def collect_fileset(reference_dir, estimation_dir, fext='lab'):
-    '''Collect the set of files for evaluation.
+def process_arguments():
+    '''Argparse function to get the program parameters'''
 
-    :parameters:
-    - reference_dir : str
-        Path to a directory of reference files.
-    - estimation_dir : str
-        Path to a directory of estimation files.
-    - fext : str
-        File extension for annotations.
-    '''
-    ref_files = glob.glob(os.path.join(reference_dir, "*.%s" % fext))
-    est_files = glob.glob(os.path.join(estimation_dir, "*.%s" % fext))
-    ref_files, est_files = mir_eval.util.intersect_files(ref_files, est_files)
-    return ref_files, est_files
+    parser = argparse.ArgumentParser(description='mir_eval chord evaluation')
 
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
 
-def print_evaluation(prediction_file, result):
-    # And print them
-    print os.path.basename(prediction_file)
-    for key, value in result.iteritems():
-        if not key.startswith("_"):
-            print '\t%12s:\t%0.6f' % (key, value)
+    parser.add_argument('reference_file',
+                        action='store',
+                        help='path to the reference annotation')
 
+    parser.add_argument('estimated_file',
+                        action='store',
+                        help='path to the estimated annotation')
 
-def print_summary(results):
-    '''
-    '''
-    file_errors = []
-    chord_errors = set()
-    print "\n%s\n%s" % (mir_eval.chord.InvalidChordException().name,
-                        '-'*len(mir_eval.chord.InvalidChordException().name))
-    for item in results:
-        err_pair = item.get("_error", None)
-        if err_pair:
-            print "Chord: %10s\tFile: %s" % err_pair
-            chord_errors.add(err_pair[0])
-            file_errors.append(err_pair[1])
-
-
-def parse_input_data(reference_data, estimation_data):
-    '''
-    '''
-    if all([os.path.isdir(a) for a in (reference_data, estimation_data)]):
-        ref_files, est_files = collect_fileset(reference_data, estimation_data)
-    else:
-        for a in (reference_data, estimation_data):
-            if not os.path.exists(a):
-                raise ValueError("File does not exist: %s" % a)
-        ref_files = [reference_data]
-        est_files = [estimation_data]
-    return ref_files, est_files
-
-
-def main(reference_data, estimation_data, vocabularies):
-    '''
-    '''
-    ref_files, est_files = parse_input_data(reference_data, estimation_data)
-    # Compute all the scores
-    results = []
-    for ref, est in zip(ref_files, est_files):
-        results.append(mir_eval.chord.evaluate_file_pair(ref, est,
-                                                         vocabularies))
-        print_evaluation(ref, results[-1])
-
-    print_summary(results)
+    return vars(parser.parse_args(sys.argv[1:]))
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='mir_eval chord recognition evaluation')
+    # Get the parameters
+    parameters = process_arguments()
 
-    parser.add_argument(
-        'reference_data', action='store',
-        help='Path to a reference annotation file or directory.')
+    # load the data
+    ref_file = parameters['reference_file']
+    est_file = parameters['estimated_file']
+    ref_intervals, ref_labels = mir_eval.io.load_labeled_intervals(ref_file)
+    est_intervals, est_labels = mir_eval.io.load_labeled_intervals(est_file)
 
-    parser.add_argument(
-        'estimation_data', action='store',
-        help='Path to estimation annotation file or directory.')
+    # Compute all the scores
+    scores = mir_eval.chord.evaluate(ref_intervals, ref_labels,
+                                     est_intervals, est_labels)
+    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file']))
+    eval_utilities.print_evaluation(scores)
 
-    parser.add_argument(
-        '-v', '--vocabularies', nargs='+', type=str)
-
-    parser.add_argument(
-        '-strict_bass', '--strict_bass', type=bool, default=False)
-
-    args = parser.parse_args()
-    mir_eval.chord.STRICT_BASS_INTERVALS = args.strict_bass
-    main(args.reference_data, args.estimation_data, args.vocabularies)
+    if parameters['output_file']:
+        print 'Saving results to: ', parameters['output_file']
+        eval_utilities.save_results(scores, parameters['output_file'])

@@ -1,10 +1,34 @@
 # -*- coding: utf-8 -*-
 '''
-CREATED: 2013-08-13 12:31:25 by Dawen Liang <dliang@ee.columbia.edu>
+Source separation algorithms attempt to extract recordings of individual
+sources from a recording of a mixture of sources.  Evaluation methods for
+source separation compare the extracted sources from reference sources and
+attempt to measure the perceptual quality of the separation.
 
-Source separation evaluation:
-    BSS-EVAL -- SDR (Source-to-Distortion Ratio), SIR (Source-to-Interferences
-                Ratio), and SAR (Source-to-Artifacts Ratio)
+Currently, only bss_eval is implemented, as described in:
+    Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
+    measurement in blind audio source separation," IEEE Trans. on Audio,
+    Speech and Language Processing, 14(4):1462-1469, 2006.
+
+See also the bss_eval MATLAB toolbox:
+    http://bass-db.gforge.inria.fr/bss_eval/
+
+Conventions
+-----------
+
+An audio signal is expected to be in the format of a 1-dimensional array where
+the entries are the samples of the audio signal.  When providing a group of
+estimated or reference sources, they should be provided in a 2-dimensional
+array, where the first dimension corresponds to the source number and the
+second corresponds to the samples.
+
+Metrics
+-------
+
+* :func:`mir_eval.separation.bss_eval_sources`: Computes the bss_eval metrics,
+  which optimally match the estimated sources to the reference sources and
+  measure the distortion and artifacts present in the estimated sources as well
+  as the interference between them.
 
 '''
 
@@ -14,6 +38,11 @@ from scipy.signal import fftconvolve
 import collections
 import itertools
 import warnings
+from . import util
+
+
+# The maximum allowable number of sources (prevents insane computational load)
+MAX_SOURCES = 100
 
 
 def validate(reference_sources, estimated_sources):
@@ -26,11 +55,6 @@ def validate(reference_sources, estimated_sources):
         - estimated_sources : np.ndarray, shape=(nsrc, nsampl)
             matrix containing estimated sources
     '''
-    # make sure the input is of shape (nsrc, nsampl)
-    if estimated_sources.ndim == 1:
-        estimated_sources = estimated_sources[np.newaxis, :]
-    if reference_sources.ndim == 1:
-        reference_sources = reference_sources[np.newaxis, :]
 
     if reference_sources.shape != estimated_sources.shape:
         raise ValueError('The shape of estimated sources and the true '
@@ -43,25 +67,53 @@ def validate(reference_sources, estimated_sources):
         warnings.warn("reference_sources is empty, should be of size "
                       "(nsrc, nsample).  sdr, sir, sar, and perm will all "
                       "be empty np.ndarrays")
+    elif np.any(np.all(reference_sources == 0, axis=1)):
+        raise ValueError('All the reference sources should be non-silent (not '
+                         'all-zeros), but at least one of the reference '
+                         'sources is all 0s, which introduces ambiguity to the'
+                         ' evaluation. (Otherwise we can add infinitely many '
+                         'all-zero sources.)')
+
     if estimated_sources.size == 0:
         warnings.warn("estimated_sources is empty, should be of size "
                       "(nsrc, nsample).  sdr, sir, sar, and perm will all "
                       "be empty np.ndarrays")
+    elif np.any(np.all(estimated_sources == 0, axis=1)):
+        raise ValueError('All the estimated sources should be non-silent (not '
+                         'all-zeros), but at least one of the estimated '
+                         'sources is all 0s. Since we require each reference '
+                         'source to be non-silent, having a silent estiamted '
+                         'source will result in an underdetermined system.')
+
+    if estimated_sources.shape[0] > MAX_SOURCES:
+        raise ValueError('The supplied matrices should be of shape (n_sources,'
+                         ' n_samples) but estimated_sources.shape[0] = {} '
+                         'which is greater than '
+                         'mir_eval.separation.MAX_SOURCES = {}.  To override '
+                         'this check, set mir_eval.separation.MAX_SOURCES to '
+                         'a larger value.'.format(estimated_sources.shape[0],
+                                                  MAX_SOURCES))
+
+    if reference_sources.shape[0] > MAX_SOURCES:
+        raise ValueError('The supplied matrices should be of shape (n_sources,'
+                         ' n_samples) but reference_sources.shape[0] = {} '
+                         'which is greater than '
+                         'mir_eval.separation.MAX_SOURCES = {}.  To override '
+                         'this check, set mir_eval.separation.MAX_SOURCES to '
+                         'a larger value.'.format(estimated_sources.shape[0],
+                                                  MAX_SOURCES))
 
 
 def bss_eval_sources(reference_sources, estimated_sources):
     '''
-        MATLAB translation of BSS_EVAL Toolbox
+    MATLAB translation of BSS_EVAL Toolbox
 
-        Ordering and measurement of the separation quality for estimated source
-        signals in terms of filtered true source, interference and artifacts.
+    Ordering and measurement of the separation quality for estimated source
+    signals in terms of filtered true source, interference and artifacts.
 
-        The decomposition allows a time-invariant filter distortion of length
-        512, as described in Section III.B of:
+    The decomposition allows a time-invariant filter distortion of length
+    512, as described in Section III.B of [#vincent2006performance]_.
 
-          Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
-          measurement in blind audio source separation," IEEE Trans. on Audio,
-          Speech and Language Processing, 14(4):1462-1469, 2006.
 
     :usage:
         >>> # reference_sources[n] should be an ndarray of samples of the
@@ -90,7 +142,22 @@ def bss_eval_sources(reference_sources, estimated_sources):
             the mean SIR sense (estimated source number perm[j] corresponds to
             true source number j)
 
+    :raises:
+        - ValueError
+            Thrown when the provided audio data is not in the correct format.
+
+    :references:
+        .. [#vincent2006performance] Emmanuel Vincent, Rémi Gribonval, and
+            Cedric Fevotte, "Performance measurement in blind audio source
+            separation," IEEE Trans.  on Audio, Speech and Language Processing,
+            14(4):1462-1469, 2006.
     '''
+
+    # make sure the input is of shape (nsrc, nsampl)
+    if estimated_sources.ndim == 1:
+        estimated_sources = estimated_sources[np.newaxis, :]
+    if reference_sources.ndim == 1:
+        reference_sources = reference_sources[np.newaxis, :]
 
     validate(reference_sources, estimated_sources)
     # If empty matrices were supplied, return empty lists (special case)
@@ -199,12 +266,57 @@ def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
     '''
     # energy ratios
     s_filt = s_true + e_spat
-    sdr = 10 * np.log10(np.sum(s_filt**2) / np.sum((e_interf + e_artif)**2))
-    sir = 10 * np.log10(np.sum(s_filt**2) / np.sum(e_interf**2))
-    sar = 10 * np.log10(np.sum((s_filt + e_interf)**2) / np.sum(e_artif**2))
+    sdr = _safe_db(np.sum(s_filt**2), np.sum((e_interf + e_artif)**2))
+    sir = _safe_db(np.sum(s_filt**2), np.sum(e_interf**2))
+    sar = _safe_db(np.sum((s_filt + e_interf)**2), np.sum(e_artif**2))
     return (sdr, sir, sar)
 
-# Create a dictionary which maps the name of each metric
-# to the function used to compute it
-METRICS = collections.OrderedDict()
-METRICS['bss_eval_sources'] = bss_eval_sources
+
+def _safe_db(num, den):
+    '''
+    Properly handle the potential +Inf db SIR, instead of raising a
+    RuntimeWarning. Only denominator is checked because the numerator can never
+    be 0.
+    '''
+    if den == 0:
+        return np.Inf
+    return 10 * np.log10(num / den)
+
+
+def evaluate(reference_sources, estimated_sources, **kwargs):
+    '''
+    Compute all metrics for the given reference and estimated annotations.
+
+    :usage:
+        >>> # reference_sources[n] should be an ndarray of samples of the
+        >>> # n'th reference source
+        >>> # estimated_sources[n] should be the same for the n'th estimated
+        >>> scores = mir_eval.separation.evaluate(reference_sources,
+                                                  estimated_sources)
+    :parameters:
+        - reference_sources : np.ndarray, shape=(nsrc, nsampl)
+            matrix containing true sources
+        - estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+            matrix containing estimated sources
+        - kwargs
+            Additional keyword arguments which will be passed to the
+            appropriate metric or preprocessing functions.
+
+    :returns:
+        - scores : dict
+            Dictionary of scores, where the key is the metric name (str) and
+            the value is the (float) score achieved.
+    '''
+    # Compute all the metrics
+    scores = collections.OrderedDict()
+
+    sdr, sir, sar, perm = util.filter_kwargs(bss_eval_sources,
+                                             reference_sources,
+                                             estimated_sources, **kwargs)
+
+    scores['Source to Distortion'] = sdr.tolist()
+    scores['Source to Interference'] = sir.tolist()
+    scores['Source to Artifact'] = sar.tolist()
+    scores['Source permutation'] = perm
+
+    return scores
