@@ -12,5 +12,6 @@ from . import util
 from . import sonify
 from . import melody
 from . import pattern
+from . import tempo
 
 __version__ = '0.0.1'
