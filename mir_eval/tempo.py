@@ -2,14 +2,23 @@
 The goal of a tempo estimation algorithm is to automatically detect the tempo
 of a piece of music, measured in beats per minute (BPM).  
 
+See http://www.music-ir.org/mirex/wiki/2014:Audio_Tempo_Estimation for a description of
+the task and evaluation criteria.
+
 Conventions
 -----------
 
+Reference tempi should be strictly positive, and provided in ascending order
+as a numpy array of length 2.  Estimated tempi are allowed to be 0, but otherwise
+are subject to the same constraints as reference.
+
+The weighting value from the reference must be a float in the range [0, 1].
 
 Metrics
 -------
 
-* :func:`mir_eval.tempo.detection`: 
+* :func:`mir_eval.tempo.detection`: Relative error, hits, and weighted precision
+  of tempo estimation.
 
 '''
 
@@ -54,21 +63,22 @@ def validate(reference_tempi, reference_weight, estimated_tempi):
 def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     '''
     Compute the tempo detection accuracy metric.
-    Correctness of an estimated tempo is 
+    
+
 
     :parameters:
       - reference_tempi : np.ndarray, shape=(2,)
-        Two non-negative reference tempi, T1 and T2, such that T1 < T2.
+        Two non-negative reference tempi, t_slow and t_fast, such that t_slow < t_fast.
 
       - reference_weight : float > 0
-        The relative strength of T1 vs T2 in the reference.
+        The relative strength of t_slow vs t_fast in the reference.
 
       - estimated_tempi : np.ndarray, shape=(2,)
-        Two non-negative estimated tempi, S1 and S2, such that S1 < S2
+        Two non-negative estimated tempi, r_slow and r_fast.
 
       - tol : float in [0, 1]:
         The maximum allowable deviation from a reference tempo to count as a hit.
-        ``|S1 - T1| <= tol * T1``
+        ``|est_t - ref_t| <= tol * ref_t``
 
     :returns:
       - relative_errors : np.ndarray, shape=(2,)
@@ -102,8 +112,6 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
 def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
     '''
     Compute all metrics for the given reference and estimated annotations.
-
-    :usage:
 
     :parameters:
         - kwargs
