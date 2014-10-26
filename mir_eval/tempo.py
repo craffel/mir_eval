@@ -80,12 +80,10 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     for ref_t in reference_tempi:
         # Compute the relative error for tihs reference tempo
         relative_errors.append(np.min(np.abs(ref_t - estimated_tempi) / float(ref_t)))
-        
-        # Count the hits
-        hits.append(relative_errors[-1] <= tol)
 
-    relative_errors = np.asarray(relative_errors)
-    hits = np.asarray(hits)
+        # Count the hits
+        hits.append(bool(relative_errors[-1] <= tol))
+
     p_score = reference_weight * hits[0] + (1.0-reference_weight) * hits[1]
 
     return relative_errors, hits, p_score
