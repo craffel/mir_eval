@@ -81,16 +81,15 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
         ``|est_t - ref_t| <= tol * ref_t``
 
     :returns:
-      - relative_errors : np.ndarray, shape=(2,)
-        The relative error of estimates vs reference tempi
-
-      - hits : np.ndarray, shape=(2,)
-        Boolean array counting whether each reference tempo was within tolerance 
-        of an estimated tempo
-
       - p_score : float in [0, 1]
         Weighted average of recalls: 
         ``reference_weight * hits[0] + (1 - reference_weight) * hits[1]``
+
+      - one_correct : bool
+        True if at least one reference tempo was correctly estimated
+
+      - both_correct : bool
+        True if both reference tempi were correctly estimated
     '''
 
     validate(reference_tempi, reference_weight, estimated_tempi)
@@ -107,7 +106,10 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
 
     p_score = reference_weight * hits[0] + (1.0-reference_weight) * hits[1]
 
-    return relative_errors, hits, p_score
+    one_correct = bool(np.max(hits))
+    both_correct = bool(np.min(hits))
+
+    return p_score, one_correct, both_correct
 
 def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
     '''
@@ -126,10 +128,10 @@ def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
     # Compute all metrics
     scores = collections.OrderedDict()
 
-    (scores['Relative-Error'],
-     scores['Hits'],
-     scores['P-score']) = util.filter_kwargs(detection, reference_tempi,
-                                             reference_weight, estimated_tempi, 
-                                             **kwargs)
+    (scores['P-score'],
+     scores['One-correct'],
+     scores['Both-correct']) = util.filter_kwargs(detection, reference_tempi,
+                                                  reference_weight, estimated_tempi, 
+                                                  **kwargs)
 
     return scores
