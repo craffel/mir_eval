@@ -19,28 +19,37 @@ from . import util
 import warnings
 
 
-def validate(reference_onsets, estimated_onsets):
+def validate(reference_tempi, reference_weight, estimated_tempi):
     '''
-    Checks that the input annotations to a metric look like valid onset time
-    arrays, and throws helpful errors if not.
+    Checks that the input annotations to a metric look like valid tempo
+    annotations.
 
     :parameters:
         - reference_onsets : np.ndarray
-            reference onset locations, in seconds
+            reference tempo values, in bpm
+
+        - reference_weight : float
+            perceptual weight of slow vs fast in reference
+
         - estimated_onsets : np.ndarray
-            estimated onset locations, in seconds
+            estimated tempo values, in bpm
 
     :raises:
         - ValueError
             Thrown when the provided annotations are not valid.
     '''
     # If reference or estimated onsets are empty, warn because metric will be 0
-    if reference_onsets.size == 0:
-        warnings.warn("Reference onsets are empty.")
-    if estimated_onsets.size == 0:
-        warnings.warn("Estimated onsets are empty.")
-    for onsets in [reference_onsets, estimated_onsets]:
-        util.validate_events(onsets, MAX_TIME)
+    if reference_tempi.size != 2:
+        raise ValueError("Reference tempi must have two values.")
+    
+    if estimated_tempi.size != 2:
+        raise ValueError("Estimated tempi must have two values.")
+    
+    if np.any(reference_tempi <= 0):
+        warnings.warn('Detected non-positive reference tempo')
+
+    if reference_weight < 0 or reference_weight > 1:
+        raise ValueError('Reference weight must lie in range [0, 1]')
 
 def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     '''
@@ -73,6 +82,8 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
         Weighted average of recalls: 
         ``reference_weight * hits[0] + (1 - reference_weight) * hits[1]``
     '''
+
+    validate(reference_tempi, reference_weight, estimated_tempi)
 
     relative_errors = []
     hits = []
