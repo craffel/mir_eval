@@ -288,36 +288,54 @@ def load_patterns(filename):
              P = [[[(77.0, 67.0), (77.5, 77.0), ... ]]]
     """
 
-    with open(filename, "r") as input_file:
-        # List with all the patterns
-        pattern_list = []
-        # Current pattern, which will contain all occs
-        pattern = []
-        # Current occurrence, containing (onset, midi)
-        occurrence = []
-        for line in input_file.readlines():
-            if "pattern" in line:
-                if occurrence != []:
-                    pattern.append(occurrence)
-                if pattern != []:
-                    pattern_list.append(pattern)
-                occurrence = []
-                pattern = []
-                continue
-            if "occurrence" in line:
-                if occurrence != []:
-                    pattern.append(occurrence)
-                occurrence = []
-                continue
-            string_values = line.split(",")
-            onset_midi = (float(string_values[0]), float(string_values[1]))
-            occurrence.append(onset_midi)
+    # Keep track of whether we create our own file handle
+    own_fh = False
+    # If the filename input is a string, need to open it
+    if type(filename) == str:
+        # Remember that we need to close it later
+        own_fh = True
+        # Open the file for reading
+        input_file = open(filename, 'r')
+    # If the provided has a read attribute, we can use it as a file handle
+    elif hasattr(filename, 'read'):
+        input_file = filename
+    # Raise error otherwise
+    else:
+        raise ValueError('filename must be a string or file handle')
 
-        # Add last occurrence and pattern to pattern_list
-        if occurrence != []:
-            pattern.append(occurrence)
-        if pattern != []:
-            pattern_list.append(pattern)
+    # List with all the patterns
+    pattern_list = []
+    # Current pattern, which will contain all occs
+    pattern = []
+    # Current occurrence, containing (onset, midi)
+    occurrence = []
+    for line in input_file.readlines():
+        if "pattern" in line:
+            if occurrence != []:
+                pattern.append(occurrence)
+            if pattern != []:
+                pattern_list.append(pattern)
+            occurrence = []
+            pattern = []
+            continue
+        if "occurrence" in line:
+            if occurrence != []:
+                pattern.append(occurrence)
+            occurrence = []
+            continue
+        string_values = line.split(",")
+        onset_midi = (float(string_values[0]), float(string_values[1]))
+        occurrence.append(onset_midi)
+
+    # Add last occurrence and pattern to pattern_list
+    if occurrence != []:
+        pattern.append(occurrence)
+    if pattern != []:
+        pattern_list.append(pattern)
+
+    # If we opened an input file, we need to close it
+    if own_fh:
+        input_file.close()
 
     return pattern_list
 
