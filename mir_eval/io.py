@@ -48,33 +48,51 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
     # Create re object for splitting lines
     splitter = re.compile(delimiter)
 
+    # Keep track of whether we create our own file handle
+    own_fh = False
+    # If the filename input is a string, need to open it
+    if type(filename) == str:
+        # Remember that we need to close it later
+        own_fh = True
+        # Open the file for reading
+        input_file = open(filename, 'r')
+    # If the provided has a read attribute, we can use it as a file handle
+    elif hasattr(filename, 'read'):
+        input_file = filename
+    # Raise error otherwise
+    else:
+        raise ValueError('filename must be a string or file handle')
+
     # Note: we do io manually here for two reasons.
     #   1. The csv module has difficulties with unicode, which may lead
     #      to failures on certain annotation strings
     #
     #   2. numpy's text loader does not handle non-numeric data
     #
-    with open(filename, 'r') as input_file:
-        for row, line in enumerate(input_file, 1):
-            # Split each line using the supplied delimiter
-            data = splitter.split(line.strip(), n_columns - 1)
+    for row, line in enumerate(input_file, 1):
+        # Split each line using the supplied delimiter
+        data = splitter.split(line.strip(), n_columns - 1)
 
-            # Throw a helpful error if we got an unexpected # of columns
-            if n_columns != len(data):
-                raise ValueError('Expected {} columns, got {} at '
-                                 '{}:{:d}:\n\t{}'.format(n_columns, len(data),
-                                                         filename, row, line))
+        # Throw a helpful error if we got an unexpected # of columns
+        if n_columns != len(data):
+            raise ValueError('Expected {} columns, got {} at '
+                             '{}:{:d}:\n\t{}'.format(n_columns, len(data),
+                                                     filename, row, line))
 
-            for value, column, converter in zip(data, columns, converters):
-                # Try converting the value, throw a helpful error on failure
-                try:
-                    converted_value = converter(value)
-                except:
-                    raise ValueError("Couldn't convert value {} using {} "
-                                     "found at {}:{:d}:\n\t{}".format(
-                                         value, converter.__name__, filename,
-                                         row, line))
-                column.append(converted_value)
+        for value, column, converter in zip(data, columns, converters):
+            # Try converting the value, throw a helpful error on failure
+            try:
+                converted_value = converter(value)
+            except:
+                raise ValueError("Couldn't convert value {} using {} "
+                                 "found at {}:{:d}:\n\t{}".format(
+                                     value, converter.__name__, filename, row,
+                                     line))
+            column.append(converted_value)
+
+    # Close the file handle if we opened it
+    if own_fh:
+        input_file.close()
 
     # Sane output
     if n_columns == 1:
