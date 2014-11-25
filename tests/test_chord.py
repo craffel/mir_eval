@@ -209,7 +209,24 @@ def __check_not_comparable(metric, ref_label, est_label):
 
 # TODO(ejhumphrey): Comparison functions lacking unit tests.
 # test_root()
-# test_mirex()
+
+
+def test_mirex():
+    ref_labels = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min',
+                  'C:maj',  'G:min',  'C:maj', 'C:min',   'C:min',
+                  'C:maj',  'F:maj',  'C:maj7',    'A:maj', 'A:maj']
+    est_labels = ['N', 'N',     'C:aug', 'C:dim', 'C:dim',
+                  'C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:min7',
+                  'C:maj6', 'F:min6', 'C:minmaj7', 'A:7',   'A:9']
+    scores = [1.0, 0.0, 0.0, 0.0, 0.0,
+              0.0, 0.0, 0.0, 0.0, 1.0,
+              1.0, 0.0, 1.0, 1.0, 1.0]
+
+    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
+        yield (__check_one_metric, mir_eval.chord.mirex,
+               ref_label, est_label, score)
+
+    yield (__check_not_comparable, mir_eval.chord.thirds, 'X', 'N')
 
 
 def test_thirds():

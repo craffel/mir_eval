@@ -1037,7 +1037,13 @@ def mirex(reference_labels, estimated_labels):
     est_chroma = rotate_bitmaps_to_roots(est_data[1], est_data[0])
 
     eq_chroma = (ref_chroma * est_chroma).sum(axis=-1)
+
+    # Chroma matching for set bits
     comparison_scores = (eq_chroma >= min_intersection).astype(np.float)
+
+    # No-chord matching; match -1 roots, SKIP_CHORDS dropped next
+    no_root = np.logical_and(ref_data[0] == -1, est_data[0] == -1)
+    comparison_scores[no_root] = 1.0
 
     # Ignore 'X' chords
     comparison_scores[np.any(ref_data[1] < 0, axis=1)] = -1.0
