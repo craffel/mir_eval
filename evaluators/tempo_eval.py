@@ -49,7 +49,7 @@ if __name__ == '__main__':
     estimated_tempi = mir_eval.io.load_delimited(parameters['estimated_file'],
                                                  [float]*3)
 
-    estimated_tempi = np.concatenate(estimated_tempi)
+    estimated_tempi = np.concatenate(estimated_tempi[:2])
     reference_weight = reference_tempi[-1][0]
     reference_tempi = np.concatenate(reference_tempi[:2])
 
