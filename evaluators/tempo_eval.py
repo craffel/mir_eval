@@ -44,15 +44,19 @@ if __name__ == '__main__':
     parameters = process_arguments()
 
     # Load in data
-    reference_tempi = mir_eval.io.load_delimited(parameters['reference_file'], [float]*3)
-    estimated_tempi = mir_eval.io.load_delimited(parameters['estimated_file'], [float]*2)
+    reference_tempi = mir_eval.io.load_delimited(parameters['reference_file'],
+                                                 [float]*3)
+    estimated_tempi = mir_eval.io.load_delimited(parameters['estimated_file'],
+                                                 [float]*3)
 
     estimated_tempi = np.concatenate(estimated_tempi)
     reference_weight = reference_tempi[-1][0]
     reference_tempi = np.concatenate(reference_tempi[:2])
 
     # Compute all the scores
-    scores = mir_eval.tempo.evaluate(reference_tempi, reference_weight, estimated_tempi)
+    scores = mir_eval.tempo.evaluate(reference_tempi,
+                                     reference_weight,
+                                     estimated_tempi)
     print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file']))
     eval_utilities.print_evaluation(scores)
