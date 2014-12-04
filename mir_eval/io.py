@@ -173,7 +173,6 @@ def load_intervals(filename, delimiter=r'\s+'):
     columns of numeric values corresponding to start and end time of each
     interval.  This is primarily useful for processing events which span a
     duration, such as segmentation, chords, or instrument activation.
->>>>>>> d41316536de3a3d8001af2bd57178b1c07a3c973
 
     :parameters:
         - filename : str

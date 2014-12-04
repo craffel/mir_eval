@@ -730,7 +730,11 @@ def thirds(reference_labels, estimated_labels):
 
     eq_roots = ref_roots == est_roots
     eq_thirds = ref_semitones[:, 3] == est_semitones[:, 3]
-    return (eq_roots * eq_thirds).astype(np.float)
+    comparison_scores = (eq_roots * eq_thirds).astype(np.float)
+
+    # Ignore 'X' chords
+    comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
+    return comparison_scores
 
 
 def thirds_inv(reference_labels, estimated_labels):
@@ -770,7 +774,11 @@ def thirds_inv(reference_labels, estimated_labels):
     eq_root = ref_roots == est_roots
     eq_bass = ref_bass == est_bass
     eq_third = ref_semitones[:, 3] == est_semitones[:, 3]
-    return (eq_root * eq_third * eq_bass).astype(np.float)
+    comparison_scores = (eq_root * eq_third * eq_bass).astype(np.float)
+
+    # Ignore 'X' chords
+    comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
+    return comparison_scores
 
 
 def triads(reference_labels, estimated_labels):
@@ -810,7 +818,11 @@ def triads(reference_labels, estimated_labels):
     eq_roots = ref_roots == est_roots
     eq_semitones = np.all(
         np.equal(ref_semitones[:, :8], est_semitones[:, :8]), axis=1)
-    return (eq_roots * eq_semitones).astype(np.float)
+    comparison_scores = (eq_roots * eq_semitones).astype(np.float)
+
+    # Ignore 'X' chords
+    comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
+    return comparison_scores
 
 
 def triads_inv(reference_labels, estimated_labels):
@@ -851,7 +863,11 @@ def triads_inv(reference_labels, estimated_labels):
     eq_basses = ref_bass == est_bass
     eq_semitones = np.all(
         np.equal(ref_semitones[:, :8], est_semitones[:, :8]), axis=1)
-    return (eq_roots * eq_semitones * eq_basses).astype(np.float)
+    comparison_scores = (eq_roots * eq_semitones * eq_basses).astype(np.float)
+
+    # Ignore 'X' chords
+    comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
+    return comparison_scores
 
 
 def tetrads(reference_labels, estimated_labels):
@@ -890,7 +906,11 @@ def tetrads(reference_labels, estimated_labels):
 
     eq_roots = ref_roots == est_roots
     eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
-    return (eq_roots * eq_semitones).astype(np.float)
+    comparison_scores = (eq_roots * eq_semitones).astype(np.float)
+
+    # Ignore 'X' chords
+    comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
+    return comparison_scores
 
 
 def tetrads_inv(reference_labels, estimated_labels):
@@ -930,7 +950,11 @@ def tetrads_inv(reference_labels, estimated_labels):
     eq_roots = ref_roots == est_roots
     eq_basses = ref_bass == est_bass
     eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
-    return (eq_roots * eq_semitones * eq_basses).astype(np.float)
+    comparison_scores = (eq_roots * eq_semitones * eq_basses).astype(np.float)
+
+    # Ignore 'X' chords
+    comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
+    return comparison_scores
 
 
 def root(reference_labels, estimated_labels):
@@ -966,9 +990,13 @@ def root(reference_labels, estimated_labels):
     '''
 
     validate(reference_labels, estimated_labels)
-    ref_roots = encode_many(reference_labels, False)[0]
+    ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots = encode_many(estimated_labels, False)[0]
-    return (ref_roots == est_roots).astype(np.float)
+    comparison_scores = (ref_roots == est_roots).astype(np.float)
+
+    # Ignore 'X' chords
+    comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
+    return comparison_scores
 
 
 def mirex(reference_labels, estimated_labels):
@@ -1009,7 +1037,17 @@ def mirex(reference_labels, estimated_labels):
     est_chroma = rotate_bitmaps_to_roots(est_data[1], est_data[0])
 
     eq_chroma = (ref_chroma * est_chroma).sum(axis=-1)
-    return (eq_chroma >= min_intersection).astype(np.float)
+
+    # Chroma matching for set bits
+    comparison_scores = (eq_chroma >= min_intersection).astype(np.float)
+
+    # No-chord matching; match -1 roots, SKIP_CHORDS dropped next
+    no_root = np.logical_and(ref_data[0] == -1, est_data[0] == -1)
+    comparison_scores[no_root] = 1.0
+
+    # Ignore 'X' chords
+    comparison_scores[np.any(ref_data[1] < 0, axis=1)] = -1.0
+    return comparison_scores
 
 
 def majmin(reference_labels, estimated_labels):
@@ -1059,7 +1097,7 @@ def majmin(reference_labels, estimated_labels):
     # Test for Major / Minor / No-chord
     is_maj = np.all(np.equal(ref_semitones[:, :8], maj_semitones), axis=1)
     is_min = np.all(np.equal(ref_semitones[:, :8], min_semitones), axis=1)
-    is_none = ref_roots < 0
+    is_none = np.logical_and(ref_roots < 0, np.all(ref_semitones == 0, axis=1))
 
     # Only keep majors, minors, and Nones (NOR)
     comparison_scores[(is_maj + is_min + is_none) == 0] = -1
@@ -1122,7 +1160,7 @@ def majmin_inv(reference_labels, estimated_labels):
     # Test for Major / Minor / No-chord
     is_maj = np.all(np.equal(ref_semitones[:, :8], maj_semitones), axis=1)
     is_min = np.all(np.equal(ref_semitones[:, :8], min_semitones), axis=1)
-    is_none = ref_roots < 0
+    is_none = np.logical_and(ref_roots < 0, np.all(ref_semitones == 0, axis=1))
 
     # Only keep majors, minors, and Nones (NOR)
     comparison_scores[(is_maj + is_min + is_none) == 0] = -1
