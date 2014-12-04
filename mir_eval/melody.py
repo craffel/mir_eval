@@ -211,6 +211,7 @@ def resample_melody_series(times, frequencies, voicing,
     '''
     # Round to avoid floating point problems
     times = np.round(times, 10)
+    times_new = np.round(times_new, 10)
     # Add in an additional sample if we'll be asking for a time too large
     if times_new.max() > times.max():
         times = np.append(times, times_new.max())
