@@ -63,28 +63,18 @@ def validate_boundary(reference_intervals, estimated_intervals, trim):
 
     Parameters
     ----------
-    eters :
-        reference_intervals : np.ndarray, shape=(n, 2)
+    reference_intervals : np.ndarray, shape=(n, 2)
         reference segment intervals, in the format returned by
         :func:`mir_eval.io.load_intervals` or
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_intervals : np.ndarray, shape=(m, 2)
+
+    estimated_intervals : np.ndarray, shape=(m, 2)
         estimated segment intervals, in the format returned by
         :func:`mir_eval.io.load_intervals` or
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - trim : bool
-        will the start and end events be trimmed?
-    reference_intervals :
-        
-    estimated_intervals :
-        
-    trim :
-        
 
-    Returns
-    -------
+    trim : bool
+        will the start and end events be trimmed?
 
     """
 
@@ -113,33 +103,21 @@ def validate_structure(reference_intervals, reference_labels,
 
     Parameters
     ----------
-    eters :
-        reference_intervals : np.ndarray, shape=(n, 2)
+    reference_intervals : np.ndarray, shape=(n, 2)
         reference segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - reference_labels : list, shape=(n,)
+
+    reference_labels : list, shape=(n,)
         reference segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_intervals : np.ndarray, shape=(m, 2)
+
+    estimated_intervals : np.ndarray, shape=(m, 2)
         estimated segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_labels : list, shape=(m,)
+
+    estimated_labels : list, shape=(m,)
         estimated segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-    reference_intervals :
-        
-    reference_labels :
-        
-    estimated_intervals :
-        
-    estimated_labels :
-        
-
-    Returns
-    -------
 
     """
     for (intervals, labels) in [(reference_intervals, reference_labels),
@@ -170,73 +148,59 @@ def validate_structure(reference_intervals, reference_labels,
 def detection(reference_intervals, estimated_intervals,
               window=0.5, beta=1.0, trim=False):
     """Boundary detection hit-rate.
-    
+
     A hit is counted whenever an reference boundary is within ``window`` of a
     estimated boundary.  Note that each boundary is matched at most once: this
     is achieved by computing the size of a maximal matching between reference
     and estimated boundary points, subject to the window constraint.
-    
-    :usage:
-        >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> # With 0.5s windowing
-        >>> P05, R05, F05 = mir_eval.boundary.detection(ref_intervals,
-                                                        est_intervals,
-                                                        window=0.5)
-        >>> # With 3s windowing
-        >>> P3, R3, F3 = mir_eval.boundary.detection(ref_intervals,
-                                                     est_intervals,
-                                                     window=3)
-        >>> # Ignoring hits for the beginning and end of track
-        >>> P, R, F = mir_eval.boundary.detection(ref_intervals,
-                                                  est_intervals,
-                                                  window=0.5,
-                                                  trim=True)
+
+    Examples
+    --------
+    >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> # With 0.5s windowing
+    >>> P05, R05, F05 = mir_eval.boundary.detection(ref_intervals,
+    ...                                             est_intervals,
+    ...                                             window=0.5)
+    >>> # With 3s windowing
+    >>> P3, R3, F3 = mir_eval.boundary.detection(ref_intervals,
+    ...                                          est_intervals,
+    ...                                          window=3)
+    >>> # Ignoring hits for the beginning and end of track
+    >>> P, R, F = mir_eval.boundary.detection(ref_intervals,
+    ...                                       est_intervals,
+    ...                                       window=0.5,
+    ...                                       trim=True)
 
     Parameters
     ----------
-    eters :
-        reference_intervals : np.ndarray, shape=(n, 2)
+    reference_intervals : np.ndarray, shape=(n, 2)
         reference segment intervals, in the format returned by
         :func:`mir_eval.io.load_intervals` or
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_intervals : np.ndarray, shape=(m, 2)
+    estimated_intervals : np.ndarray, shape=(m, 2)
         estimated segment intervals, in the format returned by
         :func:`mir_eval.io.load_intervals` or
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - window : float > 0
+    window : float > 0
         size of the window of 'correctness' around ground-truth beats
         (in seconds)
-        
-        - beta : float > 0
+        (Default value = 0.5)
+    beta : float > 0
         weighting constant for F-measure.
-        
-        - trim : boolean
+        (Default value = 1.0)
+    trim : boolean
         if ``True``, the first and last boundary times are ignored.
         Typically, these denote start (0) and end-markers.
-    reference_intervals :
-        
-    estimated_intervals :
-        
-    window :
-         (Default value = 0.5)
-    beta :
-         (Default value = 1.0)
-    trim :
          (Default value = False)
 
     Returns
     -------
-    type
-        precision : float
+    precision : float
         precision of estimated predictions
-        
-        - recall : float
+    recall : float
         recall of reference reference boundaries
-        
-        - f_measure : float
+    f_measure : float
         F-measure (weighted harmonic mean of ``precision`` and ``recall``)
 
     """
@@ -271,44 +235,35 @@ def detection(reference_intervals, estimated_intervals,
 def deviation(reference_intervals, estimated_intervals, trim=False):
     """Compute the median deviations between reference
     and estimated boundary times.
-    
-    :usage:
-        >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> r_to_e, e_to_r = mir_eval.boundary.deviation(ref_intervals,
-                                                         est_intervals)
+
+    Examples
+    --------
+    >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> r_to_e, e_to_r = mir_eval.boundary.deviation(ref_intervals,
+    ...                                              est_intervals)
 
     Parameters
     ----------
-    eters :
-        reference_intervals : np.ndarray, shape=(n, 2)
+    reference_intervals : np.ndarray, shape=(n, 2)
         reference segment intervals, in the format returned by
         :func:`mir_eval.io.load_intervals` or
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_intervals : np.ndarray, shape=(m, 2)
+    estimated_intervals : np.ndarray, shape=(m, 2)
         estimated segment intervals, in the format returned by
         :func:`mir_eval.io.load_intervals` or
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - trim : boolean
+    trim : boolean
         if ``True``, the first and last intervals are ignored.
         Typically, these denote start (0.0) and end-of-track markers.
-    reference_intervals :
-        
-    estimated_intervals :
-        
-    trim :
-         (Default value = False)
+        (Default value = False)
 
     Returns
     -------
-    type
-        reference_to_estimated : float
+    reference_to_estimated : float
         median time from each reference boundary to the
         closest estimated boundary
-        
-        - estimated_to_reference : float
+    estimated_to_reference : float
         median time from each estimated boundary to the
         closest reference boundary
 
@@ -342,72 +297,56 @@ def pairwise(reference_intervals, reference_labels,
              estimated_intervals, estimated_labels,
              frame_size=0.1, beta=1.0):
     """Frame-clustering segmentation evaluation by pair-wise agreement.
-    
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> # Trim or pad the estimate to match reference timing
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
-                                                          ref_labels,
-                                                          t_min=0)
-        >>> (est_intervals,
-             est_labels) = mir_eval.util.adjust_intervals(est_intervals,
-                                                          est_labels,
-                                                          t_min=0,
-                                                          t_max=ref_intervals.max())
-        >>> precision, recall, f = mir_eval.structure.pairwise(ref_intervals,
-                                                               ref_labels,
-                                                               est_intervals,
-                                                               est_labels)
+
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> # Trim or pad the estimate to match reference timing
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
+    ...                                               ref_labels,
+    ...                                               t_min=0)
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.util.adjust_intervals(est_intervals,
+    ...                                               est_labels,
+    ...                                               t_min=0,
+    ...                                               t_max=ref_intervals.max())
+    >>> precision, recall, f = mir_eval.structure.pairwise(ref_intervals,
+    ...                                                    ref_labels,
+    ...                                                    est_intervals,
+    ...                                                    est_labels)
 
     Parameters
     ----------
-    eters :
-        reference_intervals : np.ndarray, shape=(n, 2)
+    reference_intervals : np.ndarray, shape=(n, 2)
         reference segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - reference_labels : list, shape=(n,)
+    reference_labels : list, shape=(n,)
         reference segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_intervals : np.ndarray, shape=(m, 2)
+    estimated_intervals : np.ndarray, shape=(m, 2)
         estimated segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_labels : list, shape=(m,)
+    estimated_labels : list, shape=(m,)
         estimated segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - frame_size : float > 0
+    frame_size : float > 0
         length (in seconds) of frames for clustering
-        
-        - beta : float > 0
+        (Default value = 0.1)
+    beta : float > 0
         beta value for F-measure
-    reference_intervals :
-        
-    reference_labels :
-        
-    estimated_intervals :
-        
-    estimated_labels :
-        
-    frame_size :
-         (Default value = 0.1)
-    beta :
-         (Default value = 1.0)
+        (Default value = 1.0)
 
     Returns
     -------
-    type
-        precision : float > 0
+    precision : float > 0
         Precision of detecting whether frames belong in the same cluster
-        - recall : float > 0
+    recall : float > 0
         Recall of detecting whether frames belong in the same cluster
-        - f : float > 0
+    f : float > 0
         F-measure of detecting whether frames belong in the same cluster
 
     """
@@ -458,68 +397,52 @@ def rand_index(reference_intervals, reference_labels,
                estimated_intervals, estimated_labels,
                frame_size=0.1, beta=1.0):
     """(Non-adjusted) Rand index.
-    
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> # Trim or pad the estimate to match reference timing
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
-                                                          ref_labels,
-                                                          t_min=0)
-        >>> (est_intervals,
-             est_labels) = mir_eval.util.adjust_intervals(est_intervals,
-                                                          est_labels,
-                                                          t_min=0,
-                                                          t_max=ref_intervals.max())
-        >>> rand_index = mir_eval.structure.rand_index(ref_intervals,
-                                                       ref_labels,
-                                                       est_intervals,
-                                                       est_labels)
+
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> # Trim or pad the estimate to match reference timing
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
+    ...                                               ref_labels,
+    ...                                               t_min=0)
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.util.adjust_intervals(est_intervals,
+    ...                                               est_labels,
+    ...                                               t_min=0,
+    ...                                               t_max=ref_intervals.max())
+    >>> rand_index = mir_eval.structure.rand_index(ref_intervals,
+    ...                                            ref_labels,
+    ...                                            est_intervals,
+    ...                                            est_labels)
 
     Parameters
     ----------
-    eters :
-        reference_intervals : np.ndarray, shape=(n, 2)
+    reference_intervals : np.ndarray, shape=(n, 2)
         reference segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - reference_labels : list, shape=(n,)
+    reference_labels : list, shape=(n,)
         reference segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_intervals : np.ndarray, shape=(m, 2)
+    estimated_intervals : np.ndarray, shape=(m, 2)
         estimated segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_labels : list, shape=(m,)
+    estimated_labels : list, shape=(m,)
         estimated segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - frame_size : float > 0
+    frame_size : float > 0
         length (in seconds) of frames for clustering
-        
-        - beta : float > 0
+        (Default value = 0.1)
+    beta : float > 0
         beta value for F-measure
-    reference_intervals :
-        
-    reference_labels :
-        
-    estimated_intervals :
-        
-    estimated_labels :
-        
-    frame_size :
-         (Default value = 0.1)
-    beta :
-         (Default value = 1.0)
+        (Default value = 1.0)
 
     Returns
     -------
-    type
-        rand_index : float > 0
+    rand_index : float > 0
         Rand index
 
     """
@@ -572,24 +495,16 @@ def _contingency_matrix(reference_indices, estimated_indices):
 
     Parameters
     ----------
-    eters :
-        reference_indices : np.ndarray
+    reference_indices : np.ndarray
         Array of reference indices
-        
-        - estimated_indices : np.ndarray
+    estimated_indices : np.ndarray
         Array of estimated indices
-    reference_indices :
-        
-    estimated_indices :
-        
 
     Returns
     -------
-    type
-        contingency_matrix : np.ndarray
+    contingency_matrix : np.ndarray
         Contingency matrix, shape=(#reference indices, #estimated indices)
-        
-        .. note:: Based on sklearn.metrics.cluster.contingency_matrix
+    .. note:: Based on sklearn.metrics.cluster.contingency_matrix
 
     """
     ref_classes, ref_class_idx = np.unique(reference_indices,
@@ -610,24 +525,17 @@ def _adjusted_rand_index(reference_indices, estimated_indices):
 
     Parameters
     ----------
-    eters :
-        reference_indices : np.ndarray
+    reference_indices : np.ndarray
         Array of reference indices
-        
-        - estimated_indices : np.ndarray
+    estimated_indices : np.ndarray
         Array of estimated indices
-    reference_indices :
-        
-    estimated_indices :
-        
 
     Returns
     -------
-    type
-        ari : float
+    ari : float
         Adjusted Rand index
-        
-        .. note:: Based on sklearn.metrics.cluster.adjusted_rand_score
+
+    .. note:: Based on sklearn.metrics.cluster.adjusted_rand_score
 
     """
     n_samples = len(reference_indices)
@@ -662,60 +570,46 @@ def ari(reference_intervals, reference_labels,
         frame_size=0.1):
     """Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
     
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> # Trim or pad the estimate to match reference timing
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
-                                                          ref_labels,
-                                                          t_min=0)
-        >>> (est_intervals,
-             est_labels) = mir_eval.util.adjust_intervals(est_intervals,
-                                                          est_labels,
-                                                          t_min=0,
-                                                          t_max=ref_intervals.max())
-        >>> ari_score = mir_eval.structure.ari(ref_intervals, ref_labels,
-                                               est_intervals, est_labels)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> # Trim or pad the estimate to match reference timing
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
+    ...                                               ref_labels,
+    ...                                               t_min=0)
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.util.adjust_intervals(est_intervals,
+    ...                                               est_labels,
+    ...                                               t_min=0,
+    ...                                               t_max=ref_intervals.max())
+    >>> ari_score = mir_eval.structure.ari(ref_intervals, ref_labels,
+    ...                                    est_intervals, est_labels)
 
     Parameters
     ----------
-    eters :
-        reference_intervals : np.ndarray, shape=(n, 2)
+    reference_intervals : np.ndarray, shape=(n, 2)
         reference segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - reference_labels : list, shape=(n,)
+    reference_labels : list, shape=(n,)
         reference segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_intervals : np.ndarray, shape=(m, 2)
+    estimated_intervals : np.ndarray, shape=(m, 2)
         estimated segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_labels : list, shape=(m,)
+    estimated_labels : list, shape=(m,)
         estimated segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - frame_size : float > 0
+    frame_size : float > 0
         length (in seconds) of frames for clustering
-    reference_intervals :
-        
-    reference_labels :
-        
-    estimated_intervals :
-        
-    estimated_labels :
-        
-    frame_size :
-         (Default value = 0.1)
+        (Default value = 0.1)
 
     Returns
     -------
-    type
-        ari_score : float > 0
+    ari_score : float > 0
         Adjusted Rand index between segmentations.
 
     """
@@ -749,29 +643,20 @@ def _mutual_info_score(reference_indices, estimated_indices, contingency=None):
 
     Parameters
     ----------
-    eters :
-        reference_indices : np.ndarray
+    reference_indices : np.ndarray
         Array of reference indices
-        
-        - estimated_indices : np.ndarray
+    estimated_indices : np.ndarray
         Array of estimated indices
-        
-        - contingency : np.ndarray
+    contingency : np.ndarray
         Pre-computed contingency matrix.  If None, one will be computed.
-    reference_indices :
-        
-    estimated_indices :
-        
-    contingency :
-         (Default value = None)
+        (Default value = None)
 
     Returns
     -------
-    type
-        mi : float
+    mi : float
         Mutual information
-        
-        .. note:: Based on sklearn.metrics.cluster.mutual_info_score
+
+    .. note:: Based on sklearn.metrics.cluster.mutual_info_score
 
     """
     if contingency is None:
@@ -799,19 +684,15 @@ def _entropy(labels):
 
     Parameters
     ----------
-    eters :
-        labels : list-like
+    labels : list-like
         List of labels.
-    labels :
-        
 
     Returns
     -------
-    type
-        entropy : float
+    entropy : float
         Entropy of the labeling.
-        
-        .. note:: Based on sklearn.metrics.cluster.entropy
+
+    .. note:: Based on sklearn.metrics.cluster.entropy
 
     """
     if len(labels) == 0:
@@ -831,24 +712,18 @@ def _adjusted_mutual_info_score(reference_indices, estimated_indices):
 
     Parameters
     ----------
-    eters :
-        reference_indices : np.ndarray
+    reference_indices : np.ndarray
         Array of reference indices
-        
-        - estimated_indices : np.ndarray
+
+    estimated_indices : np.ndarray
         Array of estimated indices
-    reference_indices :
-        
-    estimated_indices :
-        
 
     Returns
     -------
-    type
-        ami : float <= 1.0
+    ami : float <= 1.0
         Mutual information
-        
-        .. note:: Based on sklearn.metrics.cluster.adjusted_mutual_info_score
+
+    .. note:: Based on sklearn.metrics.cluster.adjusted_mutual_info_score
         and sklearn.metrics.cluster.expected_mutual_info_score
 
     """
@@ -922,24 +797,18 @@ def _normalized_mutual_info_score(reference_indices, estimated_indices):
 
     Parameters
     ----------
-    eters :
-        reference_indices : np.ndarray
+    reference_indices : np.ndarray
         Array of reference indices
-        
-        - estimated_indices : np.ndarray
+
+    estimated_indices : np.ndarray
         Array of estimated indices
-    reference_indices :
-        
-    estimated_indices :
-        
 
     Returns
     -------
-    type
-        nmi : float <= 1.0
+    nmi : float <= 1.0
         Normalized mutual information
-        
-        .. note:: Based on sklearn.metrics.cluster.normalized_mutual_info_score
+
+    .. note:: Based on sklearn.metrics.cluster.normalized_mutual_info_score
 
     """
     ref_classes = np.unique(reference_indices)
@@ -967,66 +836,52 @@ def mutual_information(reference_intervals, reference_labels,
                        frame_size=0.1):
     """Frame-clustering segmentation: mutual information metrics.
     
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> # Trim or pad the estimate to match reference timing
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
-                                                          ref_labels,
-                                                          t_min=0)
-        >>> (est_intervals,
-             est_labels) = mir_eval.util.adjust_intervals(est_intervals,
-                                                          est_labels,
-                                                          t_min=0,
-                                                          t_max=ref_intervals.max())
-        >>> mi, ami, nmi = mir_eval.structure.mutual_information(ref_intervals,
-                                                                 ref_labels,
-                                                                 est_intervals,
-                                                                 est_labels)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> # Trim or pad the estimate to match reference timing
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
+    ...                                               ref_labels,
+    ...                                               t_min=0)
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.util.adjust_intervals(est_intervals,
+    ...                                               est_labels,
+    ...                                               t_min=0,
+    ...                                               t_max=ref_intervals.max())
+    >>> mi, ami, nmi = mir_eval.structure.mutual_information(ref_intervals,
+    ...                                                      ref_labels,
+    ...                                                      est_intervals,
+    ...                                                      est_labels)
 
     Parameters
     ----------
-    eters :
-        reference_intervals : np.ndarray, shape=(n, 2)
+    reference_intervals : np.ndarray, shape=(n, 2)
         reference segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - reference_labels : list, shape=(n,)
+    reference_labels : list, shape=(n,)
         reference segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_intervals : np.ndarray, shape=(m, 2)
+    estimated_intervals : np.ndarray, shape=(m, 2)
         estimated segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_labels : list, shape=(m,)
+    estimated_labels : list, shape=(m,)
         estimated segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - frame_size : float > 0
+    frame_size : float > 0
         length (in seconds) of frames for clustering
-    reference_intervals :
-        
-    reference_labels :
-        
-    estimated_intervals :
-        
-    estimated_labels :
-        
-    frame_size :
-         (Default value = 0.1)
+        (Default value = 0.1)
 
     Returns
     -------
-    type
-        MI : float > 0
+    MI : float > 0
         Mutual information between segmentations
-        - AMI : float
+    AMI : float
         Adjusted mutual information between segmentations.
-        - NMI : float > 0
+    NMI : float > 0
         Normalize mutual information between segmentations
 
     """
@@ -1067,81 +922,63 @@ def mutual_information(reference_intervals, reference_labels,
 def nce(reference_intervals, reference_labels, estimated_intervals,
         estimated_labels, frame_size=0.1, beta=1.0):
     """Frame-clustering segmentation: normalized conditional entropy
-    
+
     Computes cross-entropy of cluster assignment, normalized by the
     max-entropy.
-    
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> # Trim or pad the estimate to match reference timing
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
-                                                          ref_labels,
-                                                          t_min=0)
-        >>> (est_intervals,
-             est_labels) = mir_eval.util.adjust_intervals(est_intervals,
-                                                          est_labels,
-                                                          t_min=0,
-                                                          t_max=ref_intervals.max())
-        >>> S_over, S_under, S_F = mir_eval.structure.nce(ref_intervals,
-                                                          ref_labels,
-                                                          est_intervals,
-                                                          est_labels)
+
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> # Trim or pad the estimate to match reference timing
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
+    ...                                               ref_labels,
+    ...                                               t_min=0)
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.util.adjust_intervals(est_intervals,
+    ...                                               est_labels,
+    ...                                               t_min=0,
+    ...                                               t_max=ref_intervals.max())
+    >>> S_over, S_under, S_F = mir_eval.structure.nce(ref_intervals,
+    ...                                               ref_labels,
+    ...                                               est_intervals,
+    ...                                               est_labels)
 
     Parameters
     ----------
-    eters :
-        reference_intervals : np.ndarray, shape=(n, 2)
+    reference_intervals : np.ndarray, shape=(n, 2)
         reference segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - reference_labels : list, shape=(n,)
+    reference_labels : list, shape=(n,)
         reference segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_intervals : np.ndarray, shape=(m, 2)
+    estimated_intervals : np.ndarray, shape=(m, 2)
         estimated segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - estimated_labels : list, shape=(m,)
+    estimated_labels : list, shape=(m,)
         estimated segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - frame_size : float > 0
+    frame_size : float > 0
         length (in seconds) of frames for clustering
-        
-        - beta : float > 0
+        (Default value = 0.1)
+    beta : float > 0
         beta for F-measure
-    reference_intervals :
-        
-    reference_labels :
-        
-    estimated_intervals :
-        
-    estimated_labels :
-        
-    frame_size :
-         (Default value = 0.1)
-    beta :
-         (Default value = 1.0)
+        (Default value = 1.0)
 
     Returns
     -------
-    type
-        S_over
+    S_over
         Over-clustering score:
         ``1 - H(y_est | y_ref) / log(|y_est|)``
         If `|y_est|==1`, then `S_over` will be 0.
-        
-        - S_under
+    S_under
         Under-clustering score:
         ``1 - H(y_ref | y_est) / log(|y_ref|)``
         If `|y_ref|==1`, then `S_under` will be 0.
-        
-        - S_F
+    S_F
         F-measure for (S_over, S_under)
 
     """
@@ -1199,52 +1036,37 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
 
 def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
-    
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> scores = mir_eval.segment.evaluate(ref_intervals, ref_labels,
-                                               est_intervals, est_labels)
+
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> scores = mir_eval.segment.evaluate(ref_intervals, ref_labels,
+    ...                                    est_intervals, est_labels)
 
     Parameters
     ----------
-    eters :
-        ref_intervals : np.ndarray, shape=(n, 2)
+    ref_intervals : np.ndarray, shape=(n, 2)
         reference segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - ref_labels : list, shape=(n,)
+    ref_labels : list, shape=(n,)
         reference segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - est_intervals : np.ndarray, shape=(m, 2)
+    est_intervals : np.ndarray, shape=(m, 2)
         estimated segment intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - est_labels : list, shape=(m,)
+    est_labels : list, shape=(m,)
         estimated segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-        
-        - kwargs
+    kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
-    ref_intervals :
-        
-    ref_labels :
-        
-    est_intervals :
-        
-    est_labels :
-        
-    **kwargs :
-        
 
     Returns
     -------
-    type
-        scores : dict
+    scores : dict
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
 
