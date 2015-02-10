@@ -11,36 +11,36 @@ from . import util
 
 
 def load_delimited(filename, converters, delimiter=r'\s+'):
-    '''
-    Utility function for loading in data from an annotation file where columns
+    r"""Utility function for loading in data from an annotation file where columns
     are delimited.  The number of columns is inferred from the length of
     the provided converters list.
 
-    :usage:
-        >>> # Load in a one-column list of event times (floats)
-        >>> load_delimited('events.txt', [float])
-        >>> # Load in a list of labeled events, separated by commas
-        >>> load_delimited('labeled_events.csv', [float, str], ',')
+    Examples
+    --------
+    >>> # Load in a one-column list of event times (floats)
+    >>> load_delimited('events.txt', [float])
+    >>> # Load in a list of labeled events, separated by commas
+    >>> load_delimited('labeled_events.csv', [float, str], ',')
 
-    :parameters:
-        - filename : str
-            Path to the annotation file
-        - converters : list of functions
-            Each entry in column n of the file will be cast by the function
-            converters[n].
-        - delimiter : str
-            Separator regular expression.
-            By default, lines will be split by any amount of whitespace ('\s+')
+    Parameters
+    ----------
+    filename : str
+        Path to the annotation file
+    converters : list of functions
+        Each entry in column n of the file will be cast by the function
+        converters[n].
+    delimiter : str
+        Separator regular expression.
+        By default, lines will be split by any amount of whitespace
+        (Default value = r'\s+')
 
-    :returns:
-        - columns : tuple of lists
-            Each list in this tuple corresponds to values in one of the columns
-            in the file.
+    Returns
+    -------
+    columns : tuple of lists
+        Each list in this tuple corresponds to values in one of the columns
+        in the file.
 
-    :raises:
-        - ValueError
-            Thrown when the provided file is not in the specified format
-    '''
+    """
     # Initialize list of empty lists
     n_columns = len(converters)
     columns = tuple(list() for _ in xrange(n_columns))
@@ -102,24 +102,26 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
 
 
 def load_events(filename, delimiter=r'\s+'):
-    r'''
-    Import time-stamp events from an annotation file.  The file should
+    r"""Import time-stamp events from an annotation file.  The file should
     consist of a single column of numeric values corresponding to the event
     times. This is primarily useful for processing events which lack duration,
     such as beats or onsets.
 
-    :parameters:
-        - filename : str
-            Path to the annotation file
+    Parameters
+    ----------
+    filename : str
+        Path to the annotation file
+    delimiter : str
+        Separator regular expression.
+        By default, lines will be split by any amount of whitespace
+        (Default value = r'\s+')
 
-        - delimiter : str
-            Separator regular expression.
-            By default, lines will be split by any amount of whitespace ('\s+')
+    Returns
+    -------
+    event_times : np.ndarray
+        array of event times (float)
 
-    :returns:
-        - event_times : np.ndarray
-            array of event times (float)
-    '''
+    """
     # Use our universal function to load in the events
     events = load_delimited(filename, [float], delimiter)
     events = np.array(events)
@@ -133,28 +135,29 @@ def load_events(filename, delimiter=r'\s+'):
 
 
 def load_labeled_events(filename, delimiter=r'\s+'):
-    r'''
-    Import labeled time-stamp events from an annotation file.  The file should
+    r"""Import labeled time-stamp events from an annotation file.  The file should
     consist of two columns; the first having numeric values corresponding to
     the event times and the second having string labels for each event.  This
     is primarily useful for processing labeled events which lack duration, such
     as beats with metric beat number or onsets with an instrument label.
 
-    :parameters:
-        - filename : str
-            Path to the annotation file
+    Parameters
+    ----------
+    filename : str
+        Path to the annotation file
+    delimiter : str
+        Separator regular expression.
+        By default, lines will be split by any amount of whitespace ('\s+')
+        (Default value = r'\s+')
 
-        - delimiter : str
-            Separator regular expression.
-            By default, lines will be split by any amount of whitespace ('\s+')
+    Returns
+    -------
+    event_times : np.ndarray
+        array of event times (float)
+    labels : list of str
+        list of labels
 
-    :returns:
-        - event_times : np.ndarray
-            array of event times (float)
-
-        - labels : list of str
-            list of labels
-    '''
+    """
     # Use our universal function to load in the events
     events, labels = load_delimited(filename, [float, str], delimiter)
     events = np.array(events)
@@ -168,23 +171,26 @@ def load_labeled_events(filename, delimiter=r'\s+'):
 
 
 def load_intervals(filename, delimiter=r'\s+'):
-    r'''
-    Import intervals from an annotation file.  The file should consist of two
+    r"""Import intervals from an annotation file.  The file should consist of two
     columns of numeric values corresponding to start and end time of each
     interval.  This is primarily useful for processing events which span a
     duration, such as segmentation, chords, or instrument activation.
 
-    :parameters:
-        - filename : str
-            Path to the annotation file
-        - delimiter : str
-            Separator regular expression.
-            By default, lines will be split by any amount of whitespace ('\s+')
+    Parameters
+    ----------
+    filename : str
+        Path to the annotation file
+    delimiter : str
+        Separator regular expression.
+        By default, lines will be split by any amount of whitespace ('\s+')
+        (Default value = r'\s+')
 
-    :returns:
-        - intervals : np.ndarray, shape=(n_events, 2)
-            array of event start and end times
-    '''
+    Returns
+    -------
+    intervals : np.ndarray, shape=(n_events, 2)
+        array of event start and end times
+
+    """
     # Use our universal function to load in the events
     starts, ends = load_delimited(filename, [float, float], delimiter)
     # Stack into an interval matrix
@@ -199,26 +205,29 @@ def load_intervals(filename, delimiter=r'\s+'):
 
 
 def load_labeled_intervals(filename, delimiter=r'\s+'):
-    r'''
-    Import labeled intervals from an annotation file.  The file should consist
+    r"""Import labeled intervals from an annotation file.  The file should consist
     of three columns: Two consisting of numeric values corresponding to start
     and end time of each interval and a third corresponding to the label of
     each interval.  This is primarily useful for processing events which span a
     duration, such as segmentation, chords, or instrument activation.
 
-    :parameters:
-        - filename : str
-            Path to the annotation file
-        - delimiter : str
-            Separator regular expression.
-            By default, lines will be split by any amount of whitespace ('\s+')
+    Parameters
+    ----------
+    filename : str
+        Path to the annotation file
+    delimiter : str
+        Separator regular expression.
+        By default, lines will be split by any amount of whitespace ('\s+')
+        (Default value = r'\s+')
 
-    :returns:
-        - intervals : np.ndarray, shape=(n_events, 2)
-            array of event start and end time
-        - labels : list of str
-            list of labels
-    '''
+    Returns
+    -------
+    intervals : np.ndarray, shape=(n_events, 2)
+        array of event start and end time
+    labels : list of str
+        list of labels
+
+    """
     # Use our universal function to load in the events
     starts, ends, labels = load_delimited(filename, [float, float, str],
                                           delimiter)
@@ -234,24 +243,27 @@ def load_labeled_intervals(filename, delimiter=r'\s+'):
 
 
 def load_time_series(filename, delimiter=r'\s+'):
-    r'''
-    Import a time series from an annotation file.  The file should consist of
+    r"""Import a time series from an annotation file.  The file should consist of
     two columns of numeric values corresponding to the time and value of each
     sample of the time series.
 
-    :parameters:
-        - filename : str
-            Path to the annotation file
-        - delimiter : str
-            Separator regular expression.
-            By default, lines will be split by any amount of whitespace ('\s+')
+    Parameters
+    ----------
+    filename : str
+        Path to the annotation file
+    delimiter : str
+        Separator regular expression.
+        By default, lines will be split by any amount of whitespace ('\s+')
+        (Default value = r'\s+')
 
-    :returns:
-        - times : np.ndarray
-            array of timestamps (float)
-        - values : np.ndarray
-            array of corresponding numeric values (float)
-    '''
+    Returns
+    -------
+    times : np.ndarray
+        array of timestamps (float)
+    values : np.ndarray
+        array of corresponding numeric values (float)
+
+    """
     # Use our universal function to load in the events
     times, values = load_delimited(filename, [float, float], delimiter)
     times = np.array(times)
@@ -268,23 +280,26 @@ def load_patterns(filename):
     The input file must be formatted as described in MIREX 2013:
         http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_%26_Sections
 
-    :params:
-      - filename : str
-          The input file path containing the patterns of a given
-          given piece using the MIREX 2013 format.
+    Parameters
+    ----------
+    filename : str
+        The input file path containing the patterns of a given
+        given piece using the MIREX 2013 format.
 
-    :returns:
-       - pattern_list : list
-           The list of patterns, containing all their occurrences,
-           using the following format::
+    Returns
+    -------
+    pattern_list : list
+        The list of patterns, containing all their occurrences,
+        using the following format::
 
-             pattern_list = [pattern1, ..., patternN]
-             pattern = [occurrence1, ..., occurrenceM]
-             occurrence = [onset_midi1, ..., onset_midiO]
-             onset_midi = (onset_time, midi_number)
+            pattern_list = [pattern1, ..., patternN]
+            pattern = [occurrence1, ..., occurrenceM]
+            occurrence = [onset_midi1, ..., onset_midiO]
+            onset_midi = (onset_time, midi_number)
 
-             E.g.:
-             P = [[[(77.0, 67.0), (77.5, 77.0), ... ]]]
+        E.g.::
+            P = [[[(77.0, 67.0), (77.5, 77.0), ... ]]]
+
     """
 
     # Keep track of whether we create our own file handle
@@ -340,22 +355,26 @@ def load_patterns(filename):
 
 
 def load_wav(path, mono=True):
-    '''
-    Loads a .wav file as a numpy array using scipy.io.wavfile.
+    """Loads a .wav file as a numpy array using scipy.io.wavfile.
 
-    :parameters:
-        - path : str
-            Path to a .wav file
-        - mono : bool
-            If the provided .wav has more than one channel, it will be
-            converted to mono if mono=True.  Defaults to True.
+    Parameters
+    ----------
+    path : str
+        Path to a .wav file
+    mono : bool
+        If the provided .wav has more than one channel, it will be
+        converted to mono if mono=True.  Defaults to True.
+        (Default value = True)
 
-    :returns:
-        - audio_data : np.ndarray
-            Array of audio samples, normalized to the range [-1., 1.]
-        - fs : int
-            Sampling rate of the audio data
-    '''
+    Returns
+    -------
+    audio_data : np.ndarray
+        Array of audio samples, normalized to the range [-1., 1.]
+    fs : int
+        Sampling rate of the audio data
+
+    """
+
     fs, audio_data = scipy.io.wavfile.read(path)
     # Make float in range [-1, 1]
     if audio_data.dtype == 'int8':

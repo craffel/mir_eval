@@ -9,23 +9,26 @@ from . import chord
 
 
 def clicks(times, fs, click=None, length=None):
-    '''
-    Returns a signal with the signal 'click' placed at each specified time
+    """Returns a signal with the signal 'click' placed at each specified time
 
-    :inputs:
-        - times : np.ndarray
-            times to place clicks, in seconds
-        - fs : int
-            desired sampling rate of the output signal
-        - click : np.ndarray
-            click signal, defaults to a 1 kHz blip
-        - length : int
-            desired number of samples in the output signal,
-            defaults to times.max()*fs + click.shape[0] + 1
-    :outputs:
-        - click_signal : np.ndarray
-            Synthesized click signal
-    '''
+    Parameters
+    ----------
+    times : np.ndarray
+        times to place clicks, in seconds
+    fs : int
+        desired sampling rate of the output signal
+    click : np.ndarray
+        click signal, defaults to a 1 kHz blip
+    length : int
+        desired number of samples in the output signal,
+        defaults to times.max()*fs + click.shape[0] + 1
+
+    Returns
+    -------
+    click_signal : np.ndarray
+        Synthesized click signal
+
+    """
     # Create default click signal
     if click is None:
         # 1 kHz tone, 100ms
@@ -54,37 +57,50 @@ def clicks(times, fs, click=None, length=None):
 
 
 def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
-    '''
-    Reverse synthesis of a time-frequency representation of a signal
+    """Reverse synthesis of a time-frequency representation of a signal
+    
+    Parameters
+    ----------
+    gram : np.ndarray
+        gram[n, m] is the magnitude of frequencies[n]
+        from times[n] to times[n + 1]
+    frequencies : np.ndarray
+        array of size gram.shape[0] denoting the frequency of
+        each row of gram
+    times : np.ndarray
+        array of size gram.shape[1] denoting the start time of each
+        column of gram
+    fs : int
+        desired sampling rate of the output signal
+    function : function
+        function to use to synthesize notes, should be 2pi-periodic
+    length : int
+        desired number of samples in the output signal,
+        defaults to times[-1]*fs
 
-    :inputs:
-        - gram : np.ndarray
-            gram[n, m] is the magnitude of frequencies[n]
-            from times[n] to times[n + 1]
-        - frequencies : np.ndarray
-            array of size gram.shape[0] denoting the frequency of
-            each row of gram
-        - times : np.ndarray
-            array of size gram.shape[1] denoting the start time of each
-            column of gram
-        - fs : int
-            desired sampling rate of the output signal
-        - function : function
-            function to use to synthesize notes, should be 2pi-periodic
-        - length : int
-            desired number of samples in the output signal,
-            defaults to times[-1]*fs
-    :outputs:
-        - output : np.ndarray
-            synthetized version of the piano roll
-    '''
+    Returns
+    -------
+    output : np.ndarray
+        synthetized version of the piano roll
+
+    """
     # Default value for length
     if length is None:
         length = int(times[-1]*fs)
 
     def _fast_synthesize(frequency):
-        ''' A faster (approximate) way to synthesize a signal
-            synthesize a few periods then repeat that signal '''
+        """A faster (approximate) way to synthesize a signal
+            synthesize a few periods then repeat that signal
+
+        Parameters
+        ----------
+        frequency :
+            
+
+        Returns
+        -------
+
+        """
         # Generate ten periods at this frequency
         ten_periods = int(10*fs*(1./frequency))
         short_signal = function(2*np.pi*np.arange(ten_periods)*frequency/fs)
@@ -110,23 +126,25 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
 
 
 def chroma(chromagram, times, fs):
-    '''
-    Reverse synthesis of a chromagram (semitone matrix)
+    """Reverse synthesis of a chromagram (semitone matrix)
 
-    :parameters:
-        - chromagram : np.ndarray, shape=(12, times.shape[0])
-            Chromagram matrix, where each row represents a semitone [C->Bb]
-            i.e., chromagram[3, j] is the magnitude of D# from times[j] to
-            times[j + 1]
-        - times : np.ndarray
-            The start time of each column in the chromagram
-        - fs : int
-            Sampling rate to synthesize audio data at
+    Parameters
+    ----------
+    chromagram : np.ndarray, shape=(12, times.shape[0])
+        Chromagram matrix, where each row represents a semitone [C->Bb]
+        i.e., chromagram[3, j] is the magnitude of D# from times[j] to
+        times[j + 1]
+    times : np.ndarray
+        The start time of each column in the chromagram
+    fs : int
+        Sampling rate to synthesize audio data at
 
-    :returns:
-        - output : np.ndarray
-            Synthesized chromagram
-    '''
+    Returns
+    -------
+    output : np.ndarray
+        Synthesized chromagram
+
+    """
     # We'll just use time_frequency with a Shepard tone-gram
     # To create the Shepard tone-gram, we copy the chromagram across 7 octaves
     n_octaves = 7
@@ -151,20 +169,23 @@ def chroma(chromagram, times, fs):
 
 
 def chords(chord_labels, intervals, fs):
-    '''
-    Synthesizes chord labels
+    """Synthesizes chord labels
 
-    :parameters:
-        - chord_labels : list of str
-            List of chord label strings.
-        - intervals : np.ndarray, shape=(len(chord_labels), 2)
-            Start and end times of each chord label
-        - fs : int
-            Sampling rate to synthesize at
-    :returns:
-        - output : np.ndarray
-            Synthesized chord labels
-    '''
+    Parameters
+    ----------
+    chord_labels : list of str
+        List of chord label strings.
+    intervals : np.ndarray, shape=(len(chord_labels), 2)
+        Start and end times of each chord label
+    fs : int
+        Sampling rate to synthesize at
+
+    Returns
+    -------
+    output : np.ndarray
+        Synthesized chord labels
+
+    """
     util.validate_intervals(intervals)
     # We need to convert from intervals to label start times
     times = intervals.flatten()

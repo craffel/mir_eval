@@ -46,15 +46,17 @@ MAX_SOURCES = 100
 
 
 def validate(reference_sources, estimated_sources):
-    '''Checks that the input data to a metric are valid, and throws helpful
+    """Checks that the input data to a metric are valid, and throws helpful
     errors if not.
 
-    :parameters:
-        - reference_sources : np.ndarray, shape=(nsrc, nsampl)
-            matrix containing true sources
-        - estimated_sources : np.ndarray, shape=(nsrc, nsampl)
-            matrix containing estimated sources
-    '''
+    Parameters
+    ----------
+    reference_sources : np.ndarray, shape=(nsrc, nsampl)
+        matrix containing true sources
+    estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+        matrix containing estimated sources
+
+    """
 
     if reference_sources.shape != estimated_sources.shape:
         raise ValueError('The shape of estimated sources and the true '
@@ -105,8 +107,7 @@ def validate(reference_sources, estimated_sources):
 
 
 def bss_eval_sources(reference_sources, estimated_sources):
-    '''
-    MATLAB translation of BSS_EVAL Toolbox
+    """MATLAB translation of BSS_EVAL Toolbox
 
     Ordering and measurement of the separation quality for estimated source
     signals in terms of filtered true source, interference and artifacts.
@@ -114,44 +115,37 @@ def bss_eval_sources(reference_sources, estimated_sources):
     The decomposition allows a time-invariant filter distortion of length
     512, as described in Section III.B of [#vincent2006performance]_.
 
+    Examples
+    --------
+    >>> # reference_sources[n] should be an ndarray of samples of the
+    >>> # n'th reference source
+    >>> # estimated_sources[n] should be the same for the n'th estimated
+    >>> # source
+    >>> (sdr, sir, sar,
+    ...  perm) = mir_eval.separation.bss_eval_sources(reference_sources,
+    ...                                               estimated_sources)
 
-    :usage:
-        >>> # reference_sources[n] should be an ndarray of samples of the
-        >>> # n'th reference source
-        >>> # estimated_sources[n] should be the same for the n'th estimated
-        >>> # source
-        >>> (sdr, sir, sar,
-             perm) = mir_eval.separation.bss_eval_sources(reference_sources,
-                                                          estimated_sources)
+    Parameters
+    ----------
+    reference_sources : np.ndarray, shape=(nsrc, nsampl)
+        matrix containing true sources
+    estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+        matrix containing estimated sources
 
-    :parameters:
-        - reference_sources : np.ndarray, shape=(nsrc, nsampl)
-            matrix containing true sources
-        - estimated_sources : np.ndarray, shape=(nsrc, nsampl)
-            matrix containing estimated sources
+    Returns
+    -------
+    sdr : np.ndarray, shape=(nsrc,)
+        vector of Signal to Distortion Ratios (SDR)
+    sir : np.ndarray, shape=(nsrc,)
+        vector of Source to Interference Ratios (SIR)
+    sar : np.ndarray, shape=(nsrc,)
+        vector of Sources to Artifacts Ratios (SAR)
+    perm : np.ndarray, shape=(nsrc,)
+        vector containing the best ordering of estimated sources in
+        the mean SIR sense (estimated source number perm[j] corresponds to
+        true source number j)
 
-    :returns:
-        - sdr : np.ndarray, shape=(nsrc,)
-            vector of Signal to Distortion Ratios (SDR)
-        - sir : np.ndarray, shape=(nsrc,)
-            vector of Source to Interference Ratios (SIR)
-        - sar : np.ndarray, shape=(nsrc,)
-            vector of Sources to Artifacts Ratios (SAR)
-        - perm : np.ndarray, shape=(nsrc,)
-            vector containing the best ordering of estimated sources in
-            the mean SIR sense (estimated source number perm[j] corresponds to
-            true source number j)
-
-    :raises:
-        - ValueError
-            Thrown when the provided audio data is not in the correct format.
-
-    :references:
-        .. [#vincent2006performance] Emmanuel Vincent, Rémi Gribonval, and
-            Cedric Fevotte, "Performance measurement in blind audio source
-            separation," IEEE Trans.  on Audio, Speech and Language Processing,
-            14(4):1462-1469, 2006.
-    '''
+    """
 
     # make sure the input is of shape (nsrc, nsampl)
     if estimated_sources.ndim == 1:
@@ -191,12 +185,26 @@ def bss_eval_sources(reference_sources, estimated_sources):
 
 
 def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
-    '''
-    Decomposition of an estimated source image into four components
+    """Decomposition of an estimated source image into four components
     representing respectively the true source image, spatial (or filtering)
     distortion, interference and artifacts, derived from the true source
     images using multichannel time-invariant filters.
-    '''
+
+    Parameters
+    ----------
+    reference_sources :
+        
+    estimated_source :
+        
+    j :
+        
+    flen :
+        
+
+    Returns
+    -------
+
+    """
     nsampl = estimated_source.size
     # decomposition
     # true source image
@@ -214,10 +222,22 @@ def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
 
 
 def _project(reference_sources, estimated_source, flen):
-    '''
-    Least-squares projection of estimated source on the subspace spanned by
+    """Least-squares projection of estimated source on the subspace spanned by
     delayed versions of reference sources, with delays between 0 and flen-1
-    '''
+
+    Parameters
+    ----------
+    reference_sources :
+        
+    estimated_source :
+        
+    flen :
+        
+
+    Returns
+    -------
+
+    """
     nsrc, nsampl = reference_sources.shape
 
     # computing coefficients of least squares problem via FFT ##
@@ -260,10 +280,24 @@ def _project(reference_sources, estimated_source, flen):
 
 
 def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
-    '''
-    Measurement of the separation quality for a given source in terms of
+    """Measurement of the separation quality for a given source in terms of
     filtered true source, interference and artifacts.
-    '''
+
+    Parameters
+    ----------
+    s_true :
+        
+    e_spat :
+        
+    e_interf :
+        
+    e_artif :
+        
+
+    Returns
+    -------
+
+    """
     # energy ratios
     s_filt = s_true + e_spat
     sdr = _safe_db(np.sum(s_filt**2), np.sum((e_interf + e_artif)**2))
@@ -273,40 +307,54 @@ def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
 
 
 def _safe_db(num, den):
-    '''
-    Properly handle the potential +Inf db SIR, instead of raising a
+    """Properly handle the potential +Inf db SIR, instead of raising a
     RuntimeWarning. Only denominator is checked because the numerator can never
     be 0.
-    '''
+
+    Parameters
+    ----------
+    num :
+        
+    den :
+        
+
+    Returns
+    -------
+
+    """
     if den == 0:
         return np.Inf
     return 10 * np.log10(num / den)
 
 
 def evaluate(reference_sources, estimated_sources, **kwargs):
-    '''
-    Compute all metrics for the given reference and estimated annotations.
+    """Compute all metrics for the given reference and estimated annotations.
 
-    :usage:
-        >>> # reference_sources[n] should be an ndarray of samples of the
-        >>> # n'th reference source
-        >>> # estimated_sources[n] should be the same for the n'th estimated
-        >>> scores = mir_eval.separation.evaluate(reference_sources,
-                                                  estimated_sources)
-    :parameters:
-        - reference_sources : np.ndarray, shape=(nsrc, nsampl)
-            matrix containing true sources
-        - estimated_sources : np.ndarray, shape=(nsrc, nsampl)
-            matrix containing estimated sources
-        - kwargs
-            Additional keyword arguments which will be passed to the
-            appropriate metric or preprocessing functions.
+    Examples
+    --------
+    >>> # reference_sources[n] should be an ndarray of samples of the
+    >>> # n'th reference source
+    >>> # estimated_sources[n] should be the same for the n'th estimated
+    >>> scores = mir_eval.separation.evaluate(reference_sources,
+    ...                                       estimated_sources)
 
-    :returns:
-        - scores : dict
-            Dictionary of scores, where the key is the metric name (str) and
-            the value is the (float) score achieved.
-    '''
+    Parameters
+    ----------
+    reference_sources : np.ndarray, shape=(nsrc, nsampl)
+        matrix containing true sources
+    estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+        matrix containing estimated sources
+    kwargs
+        Additional keyword arguments which will be passed to the
+        appropriate metric or preprocessing functions.
+
+    Returns
+    -------
+    scores : dict
+        Dictionary of scores, where the key is the metric name (str) and
+        the value is the (float) score achieved.
+
+    """
     # Compute all the metrics
     scores = collections.OrderedDict()
 

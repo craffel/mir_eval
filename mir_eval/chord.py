@@ -102,7 +102,7 @@ STRICT_BASS_INTERVALS = False
 
 
 class InvalidChordException(Exception):
-    r'''Exception class for suspect / invalid chord labels.'''
+    r'''Exception class for suspect / invalid chord labels'''
 
     def __init__(self, message='', chord_label=None):
         self.message = message
@@ -133,16 +133,16 @@ PITCH_CLASSES = _pitch_classes()
 def pitch_class_to_semitone(pitch_class):
     r'''Convert a pitch class to semitone.
 
-    :parameters:
-     - pitch_class : str
+    Parameters
+    ----------
+    pitch_class : str
         Spelling of a given pitch class, e.g. 'C#', 'Gbb'
 
-    :returns:
-     - semitone : int
+    Returns
+    -------
+    semitone : int
         Semitone value of the pitch class.
 
-    :raises:
-     - InvalidChordException
     '''
     semitone = 0
     for idx, char in enumerate(pitch_class):
@@ -163,19 +163,19 @@ SCALE_DEGREES = _scale_degrees()
 
 
 def scale_degree_to_semitone(scale_degree):
-    r'''Convert a scale degree to semitone.
+    r"""Convert a scale degree to semitone.
 
-    :parameters:
-     - scale degree : str
+    Parameters
+    ----------
+    scale degree : str
         Spelling of a relative scale degree, e.g. 'b3', '7', '#5'
 
-    :returns:
-     - semitone : int
+    Returns
+    -------
+    semitone : int
         Relative semitone of the scale degree, wrapped to a single octave
 
-    :raises:
-     - InvalidChordException
-    '''
+    """
     semitone = 0
     offset = 0
     if scale_degree.startswith("#"):
@@ -193,19 +193,22 @@ def scale_degree_to_semitone(scale_degree):
 
 
 def scale_degree_to_bitmap(scale_degree):
-    '''Create a bitmap representation of a scale degree.
+    """Create a bitmap representation of a scale degree.
 
     Note that values in the bitmap may be negative, indicating that the
     semitone is to be removed.
 
-    :parameters:
-     - scale_degree : str
+    Parameters
+    ----------
+    scale_degree : str
         Spelling of a relative scale degree, e.g. 'b3', '7', '#5'
 
-    :returns:
-     - bitmap : np.ndarray, in [-1, 0, 1]
+    Returns
+    -------
+    bitmap : np.ndarray, in [-1, 0, 1]
         Bitmap representation of this scale degree (12-dim).
-    '''
+
+    """
     sign = 1
     if scale_degree.startswith("*"):
         sign = -1
@@ -253,19 +256,19 @@ QUALITIES = {
 
 
 def quality_to_bitmap(quality):
-    '''Return the bitmap for a given quality.
+    """Return the bitmap for a given quality.
 
-    :parameters:
-      - quality : str
-          Chord quality name.
+    Parameters
+    ----------
+    quality : str
+        Chord quality name.
 
-    :returns:
-      - bitmap : np.ndarray
-          Bitmap representation of this quality (12-dim).
+    Returns
+    -------
+    bitmap : np.ndarray
+        Bitmap representation of this quality (12-dim).
 
-    :raises:
-      - InvalidChordException
-    '''
+    """
     if quality not in QUALITIES:
         raise InvalidChordException(
             "Unsupported chord quality shorthand: '%s' "
@@ -294,33 +297,35 @@ EXTENDED_QUALITY_REDUX = {
 
 
 def reduce_extended_quality(quality):
-    '''Map an extended chord quality to a simpler one, moving upper voices to
+    """Map an extended chord quality to a simpler one, moving upper voices to
     a set of scale degree extensions.
 
-    :parameters:
-     - quality : str
+    Parameters
+    ----------
+    quality : str
         Extended chord quality to reduce.
 
-    :returns:
-     - base_quality : str
+    Returns
+    -------
+    base_quality : str
         New chord quality.
-     - extensions : set
+    extensions : set
         Scale degrees extensions for the quality.
-    '''
+
+    """
     return EXTENDED_QUALITY_REDUX.get(quality, (quality, set()))
 
 
 # --- Chord Label Parsing ---
 def validate_chord_label(chord_label):
-    '''Test for well-formedness of a chord label.
+    """Test for well-formedness of a chord label.
 
-    :parameters:
-     - chord : str
+    Parameters
+    ----------
+    chord : str
         Chord label to validate.
 
-    :raises:
-     - InvalidFormatException
-    '''
+    """
     # Test for single special characters
     for one_char in [':', '/', '(', ')']:
         if chord_label.count(one_char) > 1:
@@ -337,32 +342,36 @@ def validate_chord_label(chord_label):
 
 
 def split(chord_label, reduce_extended_chords=False):
-    '''Parse a chord label into its four constituent parts:
+    """Parse a chord label into its four constituent parts:
         - root
         - quality shorthand
         - scale degrees
         - bass
-
+    
     Note: Chords lacking quality AND interval information are major.
       - If a quality is specified, it is returned.
       - If an interval is specified WITHOUT a quality, the quality field is
         empty.
-
+    
     Some examples::
-
+    
         'C' -> ['C', 'maj', {}, '1']
         'G#:min(*b3,*5)/5' -> ['G#', 'min', {'*b3', '*5'}, '5']
         'A:(3)/6' -> ['A', '', {'3'}, '6']
 
-
-    :parameters:
-     - chord_label : str
+    Parameters
+    ----------
+    chord_label : str
         A chord label.
+    reduce_extended_chords :
+         (Default value = False)
 
-    :returns:
-     - chord_parts : list
+    Returns
+    -------
+    chord_parts : list
         Split version of the chord label.
-    '''
+
+    """
     chord_label = str(chord_label)
     validate_chord_label(chord_label)
     if chord_label == NO_CHORD:
@@ -406,26 +415,28 @@ def split(chord_label, reduce_extended_chords=False):
 
 
 def join(chord_root, quality='', extensions=None, bass=''):
-    r'''Join the parts of a chord into a complete chord label.
+    r"""Join the parts of a chord into a complete chord label.
 
-    :parameters:
-     - chord_root : str
+    Parameters
+    ----------
+    chord_root : str
         Root pitch class of the chord, e.g. 'C', 'Eb'
-     - quality : str
+    quality : str
         Quality of the chord, e.g. 'maj', 'hdim7'
-     - extensions : list
+         (Default value = '')
+    extensions : list
         Any added or absent scaled degrees for this chord, e.g. ['4', '\*3']
-     - bass : str
+         (Default value = None)
+    bass : str
         Scale degree of the bass note, e.g. '5'.
+         (Default value = '')
 
-    :returns:
-     - chord_label : str
+    Returns
+    -------
+    chord_label : str
         A complete chord label.
 
-    :raises:
-     - InvalidChordException
-         Thrown if the provided args yield a garbage chord label.
-    '''
+    """
     chord_label = chord_root
     if quality or extensions:
         chord_label += ":%s" % quality
@@ -441,28 +452,24 @@ def join(chord_root, quality='', extensions=None, bass=''):
 def encode(chord_label, reduce_extended_chords=False):
     """Translate a chord label to numerical representations for evaluation.
 
-    :parameters:
-     - chord_label : str
+    Parameters
+    ----------
+    chord_label : str
         Chord label to encode.
-
-     - reduce_extended_chords : bool
+    reduce_extended_chords : bool
         Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
         extensions.
+        (Default value = False)
 
-    :returns:
-     - root_number : int
+    Returns
+    -------
+    root_number : int
         Absolute semitone of the chord's root.
-
-     - semitone_bitmap : np.ndarray, dtype=int
+    semitone_bitmap : np.ndarray, dtype=int
         12-dim vector of relative semitones in the chord spelling.
-
-     - bass_number : int
+    bass_number : int
         Relative semitone of the chord's bass note, e.g. 0=root, 7=fifth, etc.
 
-    :raises:
-     - InvalidChordException
-         Thrown if the given bass note is not explicitly
-         named as an extension.
     """
 
     if chord_label == NO_CHORD:
@@ -495,28 +502,24 @@ def encode_many(chord_labels, reduce_extended_chords=False):
     """Translate a set of chord labels to numerical representations for sane
     evaluation.
 
-    :parameters:
-     - chord_labels : list
+    Parameters
+    ----------
+    chord_labels : list
         Set of chord labels to encode.
-
-     - reduce_extended_chords : bool
+    reduce_extended_chords : bool
         Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
         extensions.
+        (Default value = False)
 
-    :returns:
-     - root_number : np.ndarray, dtype=int
+    Returns
+    -------
+    root_number : np.ndarray, dtype=int
         Absolute semitone of the chord's root.
-
-     - interval_bitmap : np.ndarray, dtype=int
+    interval_bitmap : np.ndarray, dtype=int
         12-dim vector of relative semitones in the given chord quality.
-
-     - bass_number : np.ndarray, dtype=int
+    bass_number : np.ndarray, dtype=int
         Relative semitones of the chord's bass notes.
 
-    :raises:
-     - InvalidChordException
-        Thrown if the given bass note is not explicitly
-        named as an extension.
     """
     num_items = len(chord_labels)
     roots, basses = np.zeros([2, num_items], dtype=np.int)
@@ -532,7 +535,7 @@ def encode_many(chord_labels, reduce_extended_chords=False):
 
 
 def rotate_bitmap_to_root(bitmap, chord_root):
-    '''Circularly shift a relative bitmap to its asbolute pitch classes.
+    """Circularly shift a relative bitmap to its asbolute pitch classes.
 
     For clarity, the best explanation is an example. Given 'G:Maj', the root
     and quality map are as follows::
@@ -544,17 +547,19 @@ def rotate_bitmap_to_root(bitmap, chord_root):
 
         abs_quality = [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1]  # G, B, and D
 
-    :parameters:
-        - bitmap : np.ndarray, shape=(12,)
-            Bitmap of active notes, relative to the given root.
+    Parameters
+    ----------
+    bitmap : np.ndarray, shape=(12,)
+        Bitmap of active notes, relative to the given root.
+    chord_root : int
+        Absolute pitch class number.
 
-        - chord_root : int
-            Absolute pitch class number.
+    Returns
+    -------
+    bitmap : np.ndarray, shape=(12,)
+        Absolute bitmap of active pitch classes.
 
-    :returns:
-        - bitmap : np.ndarray, shape=(12,)
-            Absolute bitmap of active pitch classes.
-    '''
+    """
     bitmap = np.asarray(bitmap)
     assert bitmap.ndim == 1, "Currently only 1D bitmaps are supported."
     idxs = list(np.nonzero(bitmap))
@@ -565,21 +570,23 @@ def rotate_bitmap_to_root(bitmap, chord_root):
 
 
 def rotate_bitmaps_to_roots(bitmaps, roots):
-    '''Circularly shift a relative bitmaps to asbolute pitch classes.
+    """Circularly shift a relative bitmaps to asbolute pitch classes.
 
     See rotate_bitmap_to_root for more information.
 
-    :parameters:
-        - bitmap : np.ndarray, shape=(N, 12)
-            Bitmap of active notes, relative to the given root.
+    Parameters
+    ----------
+    bitmap : np.ndarray, shape=(N, 12)
+        Bitmap of active notes, relative to the given root.
+    root : np.ndarray, shape=(N,)
+        Absolute pitch class number.
 
-        - root : np.ndarray, shape=(N,)
-            Absolute pitch class number.
+    Returns
+    -------
+    bitmap : np.ndarray, shape=(N, 12)
+        Absolute bitmaps of active pitch classes.
 
-    :returns:
-        - bitmap : np.ndarray, shape=(N, 12)
-            Absolute bitmaps of active pitch classes.
-    '''
+    """
     abs_bitmaps = []
     for bitmap, chord_root in zip(bitmaps, roots):
         abs_bitmaps.append(rotate_bitmap_to_root(bitmap, chord_root))
@@ -587,32 +594,37 @@ def rotate_bitmaps_to_roots(bitmaps, roots):
 
 
 def rotate_bass_to_root(bass, chord_root):
-    '''Rotate a relative bass interval to its asbolute pitch class.
+    """Rotate a relative bass interval to its asbolute pitch class.
 
-    :parameters:
-        - bass : int
-            Relative bass interval.
-        - chord_root : int
-            Absolute root pitch class.
+    Parameters
+    ----------
+    bass : int
+        Relative bass interval.
+    chord_root : int
+        Absolute root pitch class.
 
-    :returns:
-        - bass : int
-            Pitch class of the bass intervalself.
-    '''
+    Returns
+    -------
+    bass : int
+        Pitch class of the bass interval.
+
+    """
     return (bass + chord_root) % 12
 
 
 # --- Comparison Routines ---
 def validate(reference_labels, estimated_labels):
-    '''Checks that the input annotations to a comparison function look like
+    """Checks that the input annotations to a comparison function look like
     valid chord labels.
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
-    '''
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
+
+    """
     N = len(reference_labels)
     M = len(estimated_labels)
     if N != M:
@@ -630,45 +642,48 @@ def validate(reference_labels, estimated_labels):
 
 
 def weighted_accuracy(comparisons, weights):
-    '''
-    Compute the weighted accuracy of a list of chord comparisons.
+    """Compute the weighted accuracy of a list of chord comparisons.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> # Here, we're using the "thirds" function to compare labels
-        >>> # but any of the comparison functions would work.
-        >>> comparisons = mir_eval.chord.thirds(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> # Here, we're using the "thirds" function to compare labels
+    >>> # but any of the comparison functions would work.
+    >>> comparisons = mir_eval.chord.thirds(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - comparisons : np.ndarray
-            List of chord comparison scores, in [0, 1] or -1
-        - weights : np.ndarray
-            Weights (not necessarily normalized) for each comparison.
-            This can be a list of interval durations
+    Parameters
+    ----------
+    comparisons : np.ndarray
+        List of chord comparison scores, in [0, 1] or -1
+    weights : np.ndarray
+        Weights (not necessarily normalized) for each comparison.
+        This can be a list of interval durations
 
-    :returns:
-        - score : float
-            Weighted accuracy
-    '''
+    Returns
+    -------
+    score : float
+        Weighted accuracy
+
+    """
     N = len(comparisons)
     # There should be as many weights as comparisons
     if weights.shape[0] != N:
         raise ValueError('weights and comparisons should be of the same'
-                        ' length. len(weights) = {} but len(comparisons)'
-                        ' = {}'.format(weights.shape[0], N))
+                         ' length. len(weights) = {} but len(comparisons)'
+                         ' = {}'.format(weights.shape[0], N))
     if (weights < 0).any():
         raise ValueError('Weights should all be positive.')
     if np.sum(weights) == 0:
@@ -695,35 +710,39 @@ def weighted_accuracy(comparisons, weights):
 
 
 def thirds(reference_labels, estimated_labels):
-    '''Compare chords along root & third relationships.
+    """Compare chords along root & third relationships.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.thirds(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.thirds(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0]
-    '''
+    Returns
+    -------
+    comparison_scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0]
+
+    """
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
@@ -738,35 +757,39 @@ def thirds(reference_labels, estimated_labels):
 
 
 def thirds_inv(reference_labels, estimated_labels):
-    '''Score chords along root, third, & bass relationships.
+    """Score chords along root, third, & bass relationships.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.thirds_inv(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.thirds_inv(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0]
-    '''
+    Returns
+    -------
+    scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0]
+
+    """
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
     est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
@@ -782,35 +805,39 @@ def thirds_inv(reference_labels, estimated_labels):
 
 
 def triads(reference_labels, estimated_labels):
-    '''Compare chords along triad (root & quality to #5) relationships.
+    """Compare chords along triad (root & quality to #5) relationships.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.triads(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.triads(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0]
-    '''
+    Returns
+    -------
+    comparison_scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0]
+
+    """
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
@@ -826,35 +853,39 @@ def triads(reference_labels, estimated_labels):
 
 
 def triads_inv(reference_labels, estimated_labels):
-    '''Score chords along triad (root, quality to #5, & bass) relationships.
+    """Score chords along triad (root, quality to #5, & bass) relationships.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.triads_inv(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.triads_inv(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0]
-    '''
+    Returns
+    -------
+    scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0]
+
+    """
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
     est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
@@ -871,35 +902,39 @@ def triads_inv(reference_labels, estimated_labels):
 
 
 def tetrads(reference_labels, estimated_labels):
-    '''Compare chords along tetrad (root & full quality) relationships.
+    """Compare chords along tetrad (root & full quality) relationships.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.tetrads(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.tetrads(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0]
-    '''
+    Returns
+    -------
+    comparison_scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0]
+
+    """
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
@@ -914,35 +949,39 @@ def tetrads(reference_labels, estimated_labels):
 
 
 def tetrads_inv(reference_labels, estimated_labels):
-    '''Compare chords along seventh (root, quality) relationships.
+    """Compare chords along seventh (root, quality) relationships.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.tetrads_inv(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.tetrads_inv(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0]
-    '''
+    Returns
+    -------
+    comparison_scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0]
+
+    """
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
     est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
@@ -958,36 +997,40 @@ def tetrads_inv(reference_labels, estimated_labels):
 
 
 def root(reference_labels, estimated_labels):
-    '''Compare chords according to roots.
+    """Compare chords according to roots.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.root(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.root(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
-            gamut.
-    '''
+    Returns
+    -------
+    comparison_scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+        gamut.
+
+    """
 
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
@@ -1000,35 +1043,39 @@ def root(reference_labels, estimated_labels):
 
 
 def mirex(reference_labels, estimated_labels):
-    '''Compare chords along MIREX rules.
+    """Compare chords along MIREX rules.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.mirex(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.mirex(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0]
-    '''
+    Returns
+    -------
+    comparison_scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0]
+
+    """
     validate(reference_labels, estimated_labels)
     min_intersection = 3
     ref_data = encode_many(reference_labels, False)
@@ -1051,37 +1098,41 @@ def mirex(reference_labels, estimated_labels):
 
 
 def majmin(reference_labels, estimated_labels):
-    '''Compare chords along major-minor rules. Chords with qualities outside
+    """Compare chords along major-minor rules. Chords with qualities outside
     Major/minor/no-chord are ignored.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.majmin(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.majmin(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
-            gamut.
-    '''
+    Returns
+    -------
+    comparison_scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+        gamut.
+
+    """
     validate(reference_labels, estimated_labels)
     maj_semitones = np.array(QUALITIES['maj'][:8])
     min_semitones = np.array(QUALITIES['min'][:8])
@@ -1113,38 +1164,42 @@ def majmin(reference_labels, estimated_labels):
 
 
 def majmin_inv(reference_labels, estimated_labels):
-    '''Compare chords along major-minor rules, with inversions. Chords with
+    """Compare chords along major-minor rules, with inversions. Chords with
     qualities outside Major/minor/no-chord are ignored, and the bass note must
     exist in the triad (bass in [1, 3, 5]).
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.majmin_inv(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.majmin_inv(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
-            gamut.
-    '''
+    Returns
+    -------
+    comparison_scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+        gamut.
+
+    """
     validate(reference_labels, estimated_labels)
     maj_semitones = np.array(QUALITIES['maj'][:8])
     min_semitones = np.array(QUALITIES['min'][:8])
@@ -1174,37 +1229,41 @@ def majmin_inv(reference_labels, estimated_labels):
 
 
 def sevenths(reference_labels, estimated_labels):
-    '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
+    """Compare chords along MIREX 'sevenths' rules. Chords with qualities
     outside [maj, maj7, 7, min, min7, N] are ignored.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.sevenths(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.sevenths(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
-            gamut.
-    '''
+    Returns
+    -------
+    comparison_scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+        gamut.
+
+    """
     validate(reference_labels, estimated_labels)
     seventh_qualities = ['maj', 'min', 'maj7', '7', 'min7', '']
     valid_semitones = np.array([QUALITIES[name] for name in seventh_qualities])
@@ -1225,37 +1284,41 @@ def sevenths(reference_labels, estimated_labels):
 
 
 def sevenths_inv(reference_labels, estimated_labels):
-    '''Compare chords along MIREX 'sevenths' rules. Chords with qualities
+    """Compare chords along MIREX 'sevenths' rules. Chords with qualities
     outside [maj, maj7, 7, min, min7, N] are ignored.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
-                est_intervals, est_labels, ref_intervals.min(),
-                ref_intervals.max(), mir_eval.chord.NO_CHORD,
-                mir_eval.chord.NO_CHORD)
-        >>> (intervals,
-             ref_labels,
-             est_labels) = mir_eval.util.merge_labeled_intervals(
-                 ref_intervals, ref_labels, est_intervals, est_labels)
-        >>> durations = mir_eval.util.intervals_to_durations(intervals)
-        >>> comparisons = mir_eval.chord.sevenths_inv(ref_labels, est_labels)
-        >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> est_intervals, est_labels = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, ref_intervals.min(),
+    ...     ref_intervals.max(), mir_eval.chord.NO_CHORD,
+    ...     mir_eval.chord.NO_CHORD)
+    >>> (intervals,
+    ...  ref_labels,
+    ...  est_labels) = mir_eval.util.merge_labeled_intervals(
+    ...      ref_intervals, ref_labels, est_intervals, est_labels)
+    >>> durations = mir_eval.util.intervals_to_durations(intervals)
+    >>> comparisons = mir_eval.chord.sevenths_inv(ref_labels, est_labels)
+    >>> score = mir_eval.chord.weighted_accuracy(comparisons, durations)
 
-    :parameters:
-        - reference_labels : list, len=n
-            Reference chord labels to score against.
-        - estimated_labels : list, len=n
-            Estimated chord labels to score against.
+    Parameters
+    ----------
+    reference_labels : list, len=n
+        Reference chord labels to score against.
+    estimated_labels : list, len=n
+        Estimated chord labels to score against.
 
-    :returns:
-        - comparison_scores : np.ndarray, shape=(n,), dtype=float
-            Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
-            gamut.
-    '''
+    Returns
+    -------
+    comparison_scores : np.ndarray, shape=(n,), dtype=float
+        Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
+        gamut.
+
+    """
     validate(reference_labels, estimated_labels)
     seventh_qualities = ['maj', 'min', 'maj7', '7', 'min7', '']
     valid_semitones = np.array([QUALITIES[name] for name in seventh_qualities])
@@ -1281,48 +1344,47 @@ def sevenths_inv(reference_labels, estimated_labels):
 
 
 def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
-    '''
-    Computes weighted accuracy for all comparison functions for the given
+    """Computes weighted accuracy for all comparison functions for the given
     reference and estimated annotations.
 
-    :usage:
-        >>> (ref_intervals,
-             ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
-        >>> (est_intervals,
-             est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
-        >>> scores = mir_eval.chord.evaluate(ref_intervals, ref_labels,
-                                             est_intervals, est_labels)
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> scores = mir_eval.chord.evaluate(ref_intervals, ref_labels,
+    ...                                  est_intervals, est_labels)
 
-    :parameters:
-        - ref_intervals : np.ndarray, shape=(n, 2)
-            Reference chord intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
+    Parameters
+    ----------
+    ref_intervals : np.ndarray, shape=(n, 2)
+        Reference chord intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
 
-        - ref_labels : list, shape=(n,)
-            reference chord labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
+    ref_labels : list, shape=(n,)
+        reference chord labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
 
-        - est_intervals : np.ndarray, shape=(m, 2)
-            estimated chord intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
+    est_intervals : np.ndarray, shape=(m, 2)
+        estimated chord intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
 
-        - est_labels : list, shape=(m,)
-            estimated chord labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
+    est_labels : list, shape=(m,)
+        estimated chord labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
 
-        - kwargs
-            Additional keyword arguments which will be passed to the
-            appropriate metric or preprocessing functions.
+    kwargs
+        Additional keyword arguments which will be passed to the
+        appropriate metric or preprocessing functions.
 
-    :returns:
-        - scores : dict
-            Dictionary of scores, where the key is the metric name (str) and
-            the value is the (float) score achieved.
+    Returns
+    -------
+    scores : dict
+        Dictionary of scores, where the key is the metric name (str) and
+        the value is the (float) score achieved.
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-    '''
+    """
     # Append or crop estimated intervals so their span is the same as reference
     est_intervals, est_labels = util.adjust_intervals(
         est_intervals, est_labels, ref_intervals.min(), ref_intervals.max(),
