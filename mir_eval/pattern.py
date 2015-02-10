@@ -84,16 +84,11 @@ def validate(reference_patterns, estimated_patterns):
 
     Parameters
     ----------
-    eters :
-        reference_patterns : list
+    reference_patterns : list
         The reference patterns using the format returned by
         :func:`mir_eval.io.load_patterns()`
-        - estimated_patterns : list
+    estimated_patterns : list
         The estimated patterns in the same format
-    reference_patterns :
-        
-    estimated_patterns :
-        
 
     Returns
     -------
@@ -121,20 +116,14 @@ def _occurrence_intersection(occ_P, occ_Q):
 
     Parameters
     ----------
-    eters :
-        occ_P : list of tuples
+    occ_P : list of tuples
         (onset, midi) pairs representing the reference occurrence.
-        - occ_Q : list
+    occ_Q : list
         second list of (onset, midi) tuples
-    occ_P :
-        
-    occ_Q :
-        
 
     Returns
     -------
-    type
-        S : set
+    S : set
         Set of the intersection between occ_P and occ_Q.
 
     """
@@ -148,29 +137,20 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
 
     Parameters
     ----------
-    eters :
-        P : list
+    P : list
         Pattern containing a list of occurrences.
-        
-        - Q : list
+    Q : list
         Pattern containing a list of occurrences.
-        
-        - similarity_metric : str
+    similarity_metric : str
         A string representing the metric to be used
         when computing the similarity matrix. Accepted values:
         - "cardinality_score":
-        Count of the intersection between occurrences.
-    P :
-        
-    Q :
-        
-    similarity_metric :
-         (Default value = "cardinality_score")
+            Count of the intersection between occurrences.
+        (Default value = "cardinality_score")
 
     Returns
     -------
-    type
-        sm : np.array
+    sm : np.array
         The score matrix between P and Q using the similarity_metric.
 
     """
@@ -191,44 +171,38 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
 
 def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     """Standard F1 Score, Precision and Recall.
-    
+
     This metric checks if the prorotype patterns of the reference match
     possible translated patterns in the prototype patterns of the estimations.
     Since the sizes of these prototypes must be equal, this metric is quite
     restictive and it tends to be 0 in most of 2013 MIREX results.
-    
-    :usage:
-        >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
-        >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
-        >>> F, P, R = mir_eval.pattern.standard_FPR(ref_patterns, est_patterns)
+
+    Examples
+    --------
+    >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
+    >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
+    >>> F, P, R = mir_eval.pattern.standard_FPR(ref_patterns, est_patterns)
 
     Parameters
     ----------
-    s :
-        reference_patterns : list
+    reference_patterns : list
         The reference patterns using the format returned by
         :func:`mir_eval.io.load_patterns()`
-        - estimated_patterns : list
+    estimated_patterns : list
         The estimated patterns in the same format
-        - tol : float
+    tol : float
         Tolerance level when comparing reference against estimation.
         Default parameter is the one found in the original matlab code by
         Tom Collins used for MIREX 2013.
-    reference_patterns :
-        
-    estimated_patterns :
-        
-    tol :
-         (Default value = 1e-5)
+        (Default value = 1e-5)
 
     Returns
     -------
-    type
-        f_measure : float
+    f_measure : float
         The standard F1 Score
-        - precision : float
+    precision : float
         The standard Precision
-        - recall : float
+    recall : float
         The standard Recall
 
     """
@@ -266,42 +240,35 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
 def establishment_FPR(reference_patterns, estimated_patterns,
                       similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
-    
-    :usage:
-        >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
-        >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
-        >>> F, P, R = mir_eval.pattern.establishment_FPR(ref_patterns,
-                                                         est_patterns)
+
+    Examples
+    --------
+    >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
+    >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
+    >>> F, P, R = mir_eval.pattern.establishment_FPR(ref_patterns,
+    ...                                              est_patterns)
 
     Parameters
     ----------
-    s :
-        reference_patterns : list
+    reference_patterns : list
         The reference patterns in the format returned by
         :func:`mir_eval.io.load_patterns()`
-        - estimated_patterns : list
+    estimated_patterns : list
         The estimated patterns in the same format
-        -  similarity_metric : str
+    similarity_metric : str
         A string representing the metric to be used when computing the
         similarity matrix. Accepted values:
-        
-        - "cardinality_score":
-        Count of the intersection between occurrences.
-    reference_patterns :
-        
-    estimated_patterns :
-        
-    similarity_metric :
-         (Default value = "cardinality_score")
+            - "cardinality_score": Count of the intersection
+              between occurrences.
+        (Default value = "cardinality_score")
 
     Returns
     -------
-    type
-        f_measure : float
+    f_measure : float
         The establishment F1 Score
-        - precision : float
+    precision : float
         The establishment Precision
-        - recall : float
+    recall : float
         The establishment Recall
 
     """
@@ -331,47 +298,39 @@ def establishment_FPR(reference_patterns, estimated_patterns,
 def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
                    similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
-    
-    :usage:
-        >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
-        >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
-        >>> F, P, R = mir_eval.pattern.occurrence_FPR(ref_patterns,
-                                                      est_patterns)
+
+    Examples
+    --------
+    >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
+    >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
+    >>> F, P, R = mir_eval.pattern.occurrence_FPR(ref_patterns,
+    ...                                           est_patterns)
 
     Parameters
     ----------
-    s :
-        reference_patterns : list
+    reference_patterns : list
         The reference patterns in the format returned by
         :func:`mir_eval.io.load_patterns()`
-        - estimated_patterns : list
+    estimated_patterns : list
         The estimated patterns in the same format
-        - thres : float
+    thres : float
         How similar two occcurrences must be in order to be considered
         equal
-        - similarity_metric : str
+        (Default value = .75)
+    similarity_metric : str
         A string representing the metric to be used
         when computing the similarity matrix. Accepted values:
-        
-        - "cardinality_score":
-        Count of the intersection between occurrences.
-    reference_patterns :
-        
-    estimated_patterns :
-        
-    thres :
-         (Default value = .75)
-    similarity_metric :
-         (Default value = "cardinality_score")
+            - "cardinality_score": Count of the intersection
+              between occurrences.
+        (Default value = "cardinality_score")
 
     Returns
     -------
-    type
-        f_measure : float
+    f_measure : float
         The establishment F1 Score
-        - precision : float
+    precision : float
         The establishment Precision
-        - recall : float
+    recall : float
         The establishment Recall
 
     """
@@ -417,36 +376,31 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
 
 def three_layer_FPR(reference_patterns, estimated_patterns):
     """Three Layer F1 Score, Precision and Recall. As described by Meridith.
-    
+
     TODO: Add publication. Collins 2014?
-    
-    :usage:
-        >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
-        >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
-        >>> F, P, R = mir_eval.pattern.three_layer_FPR(ref_patterns,
-                                                       est_patterns)
+
+    Examples
+    --------
+    >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
+    >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
+    >>> F, P, R = mir_eval.pattern.three_layer_FPR(ref_patterns,
+    ...                                            est_patterns)
 
     Parameters
     ----------
-    s :
-        reference_patterns : list
+    reference_patterns : list
         The reference patterns in the format returned by
         :func:`mir_eval.io.load_patterns()`
-        - estimated_patterns : list
+    estimated_patterns : list
         The estimated patterns in the same format
-    reference_patterns :
-        
-    estimated_patterns :
-        
 
     Returns
     -------
-    type
-        f_measure : float
+    f_measure : float
         The three-layer F1 Score
-        - precision : float
+    precision : float
         The three-layer Precision
-        - recall : float
+    recall : float
         The three-layer Recall
 
     """
@@ -557,39 +511,33 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
 
 def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
     """First n three-layer precision.
-    
+
     This metric is basically the same as the three-layer FPR but it is only
     applied to the first n estimated patterns, and it only returns the
     precision. In MIREX and typically, n = 5.
-    
-    :usage:
-        >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
-        >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
-        >>> P = mir_eval.pattern.first_n_three_layer_P(ref_patterns,
-                                                       est_patterns, n=5)
+
+    Examples
+    --------
+    >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
+    >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
+    >>> P = mir_eval.pattern.first_n_three_layer_P(ref_patterns,
+    ...                                            est_patterns, n=5)
 
     Parameters
     ----------
-    s :
-        reference_patterns : list
+    reference_patterns : list
         The reference patterns in the format returned by
         :func:`mir_eval.io.load_patterns()`
-        - estimated_patterns : list
+    estimated_patterns : list
         The estimated patterns in the same format
-        - n : int
+    n : int
         Number of patterns to consider from the estimated results, in
         the order they appear in the matrix
-    reference_patterns :
-        
-    estimated_patterns :
-        
-    n :
-         (Default value = 5)
+        (Default value = 5)
 
     Returns
     -------
-    type
-        precision : float
+    precision : float
         The first n three-layer Precision
 
     """
@@ -610,40 +558,34 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
 
 
 def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
-    """Firt n target proportion establishment recall metric.
-    
+    """First n target proportion establishment recall metric.
+
     This metric is similar is similar to the establishment FPR score, but it
     only takes into account the first n estimated patterns and it only
     outputs the Recall value of it.
-    
-    :usage:
-        >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
-        >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
-        >>> R = mir_eval.pattern.first_n_target_proportion_R(
-                                            ref_patterns, est_patterns, n=5)
+
+    Examples
+    --------
+    >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
+    >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
+    >>> R = mir_eval.pattern.first_n_target_proportion_R(
+    ...                                 ref_patterns, est_patterns, n=5)
 
     Parameters
     ----------
-    s :
-        reference_patterns : list
+    reference_patterns : list
         The reference patterns in the format returned by
         :func:`mir_eval.io.load_patterns()`
-        - estimated_patterns : list
+    estimated_patterns : list
         The estimated patterns in the same format
-        - n : int
+    n : int
         Number of patterns to consider from the estimated results, in
         the order they appear in the matrix.
-    reference_patterns :
-        
-    estimated_patterns :
-        
-    n :
-         (Default value = 5)
+        (Default value = 5)
 
     Returns
     -------
-    type
-        recall : float
+    recall : float
         The first n target proportion Recall.
 
     """
@@ -663,34 +605,27 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
 
 def evaluate(ref_patterns, est_patterns, **kwargs):
     """Load data and perform the evaluation.
-    
-    :usage:
-        >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
-        >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
-        >>> scores = mir_eval.pattern.evaluate(ref_patterns, est_patterns)
+
+    Examples
+    --------
+    >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
+    >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
+    >>> scores = mir_eval.pattern.evaluate(ref_patterns, est_patterns)
 
     Parameters
     ----------
-    s :
-        ref_patterns : list
+    ref_patterns : list
         The reference patterns in the format returned by
         :func:`mir_eval.io.load_patterns()`
-        - est_patterns : list
+    est_patterns : list
         The estimated patterns in the same format
-        - kwargs
+    kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
-    ref_patterns :
-        
-    est_patterns :
-        
-    **kwargs :
-        
 
     Returns
     -------
-    type
-        scores : dict
+    scores : dict
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
 
