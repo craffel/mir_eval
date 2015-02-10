@@ -64,7 +64,17 @@ import collections
 
 
 def _n_onset_midi(patterns):
-    ''' Computes the number of onset_midi objects in a pattern '''
+    """Computes the number of onset_midi objects in a pattern
+
+    Parameters
+    ----------
+    patterns :
+        
+
+    Returns
+    -------
+
+    """
     return len([o_m for pat in patterns for occ in pat for o_m in occ])
 
 
@@ -72,16 +82,22 @@ def validate(reference_patterns, estimated_patterns):
     """Checks that the input annotations to a metric look like valid pattern
     lists, and throws helpful errors if not.
 
-    :parameters:
-        - reference_patterns : list
-            The reference patterns using the format returned by
-            :func:`mir_eval.io.load_patterns()`
+    Parameters
+    ----------
+    eters :
+        reference_patterns : list
+        The reference patterns using the format returned by
+        :func:`mir_eval.io.load_patterns()`
         - estimated_patterns : list
-            The estimated patterns in the same format
+        The estimated patterns in the same format
+    reference_patterns :
+        
+    estimated_patterns :
+        
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
+    Returns
+    -------
+
     """
     # Warn if pattern lists are empty
     if _n_onset_midi(reference_patterns) == 0:
@@ -103,15 +119,24 @@ def validate(reference_patterns, estimated_patterns):
 def _occurrence_intersection(occ_P, occ_Q):
     """Computes the intersection between two occurrences.
 
-    :parameters:
-        - occ_P : list of tuples
-            (onset, midi) pairs representing the reference occurrence.
+    Parameters
+    ----------
+    eters :
+        occ_P : list of tuples
+        (onset, midi) pairs representing the reference occurrence.
         - occ_Q : list
-            second list of (onset, midi) tuples
+        second list of (onset, midi) tuples
+    occ_P :
+        
+    occ_Q :
+        
 
-    :returns:
-        - S : set
-            Set of the intersection between occ_P and occ_Q.
+    Returns
+    -------
+    type
+        S : set
+        Set of the intersection between occ_P and occ_Q.
+
     """
     set_P = set([tuple(onset_midi) for onset_midi in occ_P])
     set_Q = set([tuple(onset_midi) for onset_midi in occ_Q])
@@ -121,22 +146,33 @@ def _occurrence_intersection(occ_P, occ_Q):
 def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
     """Computes the score matrix between the patterns P and Q.
 
-    :parameters:
-        - P : list
-            Pattern containing a list of occurrences.
-
+    Parameters
+    ----------
+    eters :
+        P : list
+        Pattern containing a list of occurrences.
+        
         - Q : list
-            Pattern containing a list of occurrences.
-
+        Pattern containing a list of occurrences.
+        
         - similarity_metric : str
-            A string representing the metric to be used
-            when computing the similarity matrix. Accepted values:
-            - "cardinality_score":
-                Count of the intersection between occurrences.
+        A string representing the metric to be used
+        when computing the similarity matrix. Accepted values:
+        - "cardinality_score":
+        Count of the intersection between occurrences.
+    P :
+        
+    Q :
+        
+    similarity_metric :
+         (Default value = "cardinality_score")
 
-    :returns:
-        - sm : np.array
-            The score matrix between P and Q using the similarity_metric.
+    Returns
+    -------
+    type
+        sm : np.array
+        The score matrix between P and Q using the similarity_metric.
+
     """
     sm = np.zeros((len(P), len(Q)))     # The score matrix
     for iP, occ_P in enumerate(P):
@@ -155,50 +191,47 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
 
 def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     """Standard F1 Score, Precision and Recall.
-
+    
     This metric checks if the prorotype patterns of the reference match
     possible translated patterns in the prototype patterns of the estimations.
     Since the sizes of these prototypes must be equal, this metric is quite
     restictive and it tends to be 0 in most of 2013 MIREX results.
-
+    
     :usage:
         >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
         >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
         >>> F, P, R = mir_eval.pattern.standard_FPR(ref_patterns, est_patterns)
 
-    :params:
-        - reference_patterns : list
-            The reference patterns using the format returned by
-            :func:`mir_eval.io.load_patterns()`
+    Parameters
+    ----------
+    s :
+        reference_patterns : list
+        The reference patterns using the format returned by
+        :func:`mir_eval.io.load_patterns()`
         - estimated_patterns : list
-            The estimated patterns in the same format
+        The estimated patterns in the same format
         - tol : float
-            Tolerance level when comparing reference against estimation.
-            Default parameter is the one found in the original matlab code by
-            Tom Collins used for MIREX 2013.
+        Tolerance level when comparing reference against estimation.
+        Default parameter is the one found in the original matlab code by
+        Tom Collins used for MIREX 2013.
+    reference_patterns :
+        
+    estimated_patterns :
+        
+    tol :
+         (Default value = 1e-5)
 
-    :returns:
-        - f_measure : float
-            The standard F1 Score
+    Returns
+    -------
+    type
+        f_measure : float
+        The standard F1 Score
         - precision : float
-            The standard Precision
+        The standard Precision
         - recall : float
-            The standard Recall
+        The standard Recall
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] T. Collins. MIREX task: Discovery of repeated themes & sections.
-            http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_&_Sections,
-            2013.
-        .. [#] Tom Collins, Jeremy Thurlow, Robin Laney, Alistair Willis, and
-            Paul H.  Garthwaite. A comparative evaluation of algorithms for
-            discovering translational patterns in Baroque keyboard works. In
-            J.S. Downie and R. Veltkamp (Eds), Proc ISMIR, pp. 3-8, Utrecht,
-            2010.
-        """
+    """
     validate(reference_patterns, estimated_patterns)
     nP = len(reference_patterns)    # Number of patterns in the reference
     nQ = len(estimated_patterns)    # Number of patterns in the estimation
@@ -233,42 +266,44 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
 def establishment_FPR(reference_patterns, estimated_patterns,
                       similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
-
+    
     :usage:
         >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
         >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
         >>> F, P, R = mir_eval.pattern.establishment_FPR(ref_patterns,
                                                          est_patterns)
 
-    :params:
-        - reference_patterns : list
-            The reference patterns in the format returned by
-            :func:`mir_eval.io.load_patterns()`
+    Parameters
+    ----------
+    s :
+        reference_patterns : list
+        The reference patterns in the format returned by
+        :func:`mir_eval.io.load_patterns()`
         - estimated_patterns : list
-            The estimated patterns in the same format
+        The estimated patterns in the same format
         -  similarity_metric : str
-            A string representing the metric to be used when computing the
-            similarity matrix. Accepted values:
+        A string representing the metric to be used when computing the
+        similarity matrix. Accepted values:
+        
+        - "cardinality_score":
+        Count of the intersection between occurrences.
+    reference_patterns :
+        
+    estimated_patterns :
+        
+    similarity_metric :
+         (Default value = "cardinality_score")
 
-                - "cardinality_score":
-                    Count of the intersection between occurrences.
-
-    :returns:
-        - f_measure : float
-            The establishment F1 Score
+    Returns
+    -------
+    type
+        f_measure : float
+        The establishment F1 Score
         - precision : float
-            The establishment Precision
+        The establishment Precision
         - recall : float
-            The establishment Recall
+        The establishment Recall
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] T. Collins. MIREX task: Discovery of repeated themes & sections.
-            http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_&_Sections,
-            2013.
     """
     validate(reference_patterns, estimated_patterns)
     nP = len(reference_patterns)    # Number of elements in reference
@@ -296,45 +331,49 @@ def establishment_FPR(reference_patterns, estimated_patterns,
 def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
                    similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
-
+    
     :usage:
         >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
         >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
         >>> F, P, R = mir_eval.pattern.occurrence_FPR(ref_patterns,
                                                       est_patterns)
 
-    :params:
-        - reference_patterns : list
-            The reference patterns in the format returned by
-            :func:`mir_eval.io.load_patterns()`
+    Parameters
+    ----------
+    s :
+        reference_patterns : list
+        The reference patterns in the format returned by
+        :func:`mir_eval.io.load_patterns()`
         - estimated_patterns : list
-            The estimated patterns in the same format
+        The estimated patterns in the same format
         - thres : float
-            How similar two occcurrences must be in order to be considered
-            equal
+        How similar two occcurrences must be in order to be considered
+        equal
         - similarity_metric : str
-            A string representing the metric to be used
-            when computing the similarity matrix. Accepted values:
+        A string representing the metric to be used
+        when computing the similarity matrix. Accepted values:
+        
+        - "cardinality_score":
+        Count of the intersection between occurrences.
+    reference_patterns :
+        
+    estimated_patterns :
+        
+    thres :
+         (Default value = .75)
+    similarity_metric :
+         (Default value = "cardinality_score")
 
-                - "cardinality_score":
-                    Count of the intersection between occurrences.
-
-    :returns:
-        - f_measure : float
-            The establishment F1 Score
+    Returns
+    -------
+    type
+        f_measure : float
+        The establishment F1 Score
         - precision : float
-            The establishment Precision
+        The establishment Precision
         - recall : float
-            The establishment Recall
+        The establishment Recall
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] T. Collins. MIREX task: Discovery of repeated themes & sections.
-            http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_&_Sections,
-            2013.
     """
     validate(reference_patterns, estimated_patterns)
     # Number of elements in reference
@@ -378,45 +417,57 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
 
 def three_layer_FPR(reference_patterns, estimated_patterns):
     """Three Layer F1 Score, Precision and Recall. As described by Meridith.
-
+    
     TODO: Add publication. Collins 2014?
-
+    
     :usage:
         >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
         >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
         >>> F, P, R = mir_eval.pattern.three_layer_FPR(ref_patterns,
                                                        est_patterns)
 
-    :params:
-        - reference_patterns : list
-            The reference patterns in the format returned by
-            :func:`mir_eval.io.load_patterns()`
+    Parameters
+    ----------
+    s :
+        reference_patterns : list
+        The reference patterns in the format returned by
+        :func:`mir_eval.io.load_patterns()`
         - estimated_patterns : list
-            The estimated patterns in the same format
+        The estimated patterns in the same format
+    reference_patterns :
+        
+    estimated_patterns :
+        
 
-    :returns:
-        - f_measure : float
-            The three-layer F1 Score
+    Returns
+    -------
+    type
+        f_measure : float
+        The three-layer F1 Score
         - precision : float
-            The three-layer Precision
+        The three-layer Precision
         - recall : float
-            The three-layer Recall
+        The three-layer Recall
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] T. Collins. MIREX task: Discovery of repeated themes & sections.
-            http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_&_Sections,
-            2013.
     """
     validate(reference_patterns, estimated_patterns)
 
     def compute_first_layer_PR(ref_occs, est_occs):
         """Computes the first layer Precision and Recall values given the
         set of occurrences in the reference and the set of occurrences in the
-        estimation."""
+        estimation.
+
+        Parameters
+        ----------
+        ref_occs :
+            
+        est_occs :
+            
+
+        Returns
+        -------
+
+        """
         # Find the length of the intersection between reference and estimation
         s = len(_occurrence_intersection(ref_occs, est_occs))
 
@@ -428,7 +479,19 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
     def compute_second_layer_PR(ref_pattern, est_pattern):
         """Computes the second layer Precision and Recall values given the
         set of occurrences in the reference and the set of occurrences in the
-        estimation."""
+        estimation.
+
+        Parameters
+        ----------
+        ref_pattern :
+            
+        est_pattern :
+            
+
+        Returns
+        -------
+
+        """
         # Compute the first layer scores
         F_1 = compute_layer(ref_pattern, est_pattern)
 
@@ -441,9 +504,22 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         """Computes the F-measure matrix for a given layer. The reference and
         estimated elements can be either patters or occurrences, depending
         on the layer.
-
+        
         For layer 1, the elements must be occurrences.
         For layer 2, the elements must be patterns.
+
+        Parameters
+        ----------
+        ref_elements :
+            
+        est_elements :
+            
+        layer :
+             (Default value = 1)
+
+        Returns
+        -------
+
         """
         if layer != 1 and layer != 2:
             raise ValueError("Layer (%d) must be an integer between 1 and 2"
@@ -481,39 +557,41 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
 
 def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
     """First n three-layer precision.
-
+    
     This metric is basically the same as the three-layer FPR but it is only
     applied to the first n estimated patterns, and it only returns the
     precision. In MIREX and typically, n = 5.
-
+    
     :usage:
         >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
         >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
         >>> P = mir_eval.pattern.first_n_three_layer_P(ref_patterns,
                                                        est_patterns, n=5)
 
-    :params:
-        - reference_patterns : list
-            The reference patterns in the format returned by
-            :func:`mir_eval.io.load_patterns()`
+    Parameters
+    ----------
+    s :
+        reference_patterns : list
+        The reference patterns in the format returned by
+        :func:`mir_eval.io.load_patterns()`
         - estimated_patterns : list
-            The estimated patterns in the same format
+        The estimated patterns in the same format
         - n : int
-            Number of patterns to consider from the estimated results, in
-            the order they appear in the matrix
+        Number of patterns to consider from the estimated results, in
+        the order they appear in the matrix
+    reference_patterns :
+        
+    estimated_patterns :
+        
+    n :
+         (Default value = 5)
 
-    :returns:
-        - precision : float
-            The first n three-layer Precision
+    Returns
+    -------
+    type
+        precision : float
+        The first n three-layer Precision
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] T. Collins. MIREX task: Discovery of repeated themes & sections.
-            http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_&_Sections,
-            2013.
     """
 
     validate(reference_patterns, estimated_patterns)
@@ -533,39 +611,41 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
 
 def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
     """Firt n target proportion establishment recall metric.
-
+    
     This metric is similar is similar to the establishment FPR score, but it
     only takes into account the first n estimated patterns and it only
     outputs the Recall value of it.
-
+    
     :usage:
         >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
         >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
         >>> R = mir_eval.pattern.first_n_target_proportion_R(
                                             ref_patterns, est_patterns, n=5)
 
-    :params:
-        - reference_patterns : list
-            The reference patterns in the format returned by
-            :func:`mir_eval.io.load_patterns()`
+    Parameters
+    ----------
+    s :
+        reference_patterns : list
+        The reference patterns in the format returned by
+        :func:`mir_eval.io.load_patterns()`
         - estimated_patterns : list
-            The estimated patterns in the same format
+        The estimated patterns in the same format
         - n : int
-            Number of patterns to consider from the estimated results, in
-            the order they appear in the matrix.
+        Number of patterns to consider from the estimated results, in
+        the order they appear in the matrix.
+    reference_patterns :
+        
+    estimated_patterns :
+        
+    n :
+         (Default value = 5)
 
-    :returns:
-        - recall : float
-            The first n target proportion Recall.
+    Returns
+    -------
+    type
+        recall : float
+        The first n target proportion Recall.
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] T. Collins. MIREX task: Discovery of repeated themes & sections.
-            http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_&_Sections,
-            2013.
     """
 
     validate(reference_patterns, estimated_patterns)
@@ -582,34 +662,39 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
 
 
 def evaluate(ref_patterns, est_patterns, **kwargs):
-    '''
-    Load data and perform the evaluation.
-
+    """Load data and perform the evaluation.
+    
     :usage:
         >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
         >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
         >>> scores = mir_eval.pattern.evaluate(ref_patterns, est_patterns)
 
-    :params:
-        - ref_patterns : list
-            The reference patterns in the format returned by
-            :func:`mir_eval.io.load_patterns()`
+    Parameters
+    ----------
+    s :
+        ref_patterns : list
+        The reference patterns in the format returned by
+        :func:`mir_eval.io.load_patterns()`
         - est_patterns : list
-            The estimated patterns in the same format
+        The estimated patterns in the same format
         - kwargs
-            Additional keyword arguments which will be passed to the
-            appropriate metric or preprocessing functions.
+        Additional keyword arguments which will be passed to the
+        appropriate metric or preprocessing functions.
+    ref_patterns :
+        
+    est_patterns :
+        
+    **kwargs :
+        
 
-    :returns:
-        - scores : dict
-            Dictionary of scores, where the key is the metric name (str) and
-            the value is the (float) score achieved.
+    Returns
+    -------
+    type
+        scores : dict
+        Dictionary of scores, where the key is the metric name (str) and
+        the value is the (float) score achieved.
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    '''
+    """
 
     # Now compute all the metrics
     scores = collections.OrderedDict()

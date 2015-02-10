@@ -59,19 +59,24 @@ from . import util
 
 
 def validate_voicing(ref_voicing, est_voicing):
-    '''
-    Checks that voicing inputs to a metric are in the correct format.
+    """Checks that voicing inputs to a metric are in the correct format.
 
-    :parameters:
-        - ref_voicing : np.ndarray
-            Reference boolean voicing array
+    Parameters
+    ----------
+    eters :
+        ref_voicing : np.ndarray
+        Reference boolean voicing array
         - est_voicing : np.ndarray
-            Estimated boolean voicing array
+        Estimated boolean voicing array
+    ref_voicing :
+        
+    est_voicing :
+        
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-    '''
+    Returns
+    -------
+
+    """
     if ref_voicing.size == 0:
         warnings.warn("Reference voicing array is empty.")
     if est_voicing.size == 0:
@@ -91,24 +96,33 @@ def validate_voicing(ref_voicing, est_voicing):
 
 
 def validate(ref_voicing, ref_cent, est_voicing, est_cent):
-    '''
-    Checks that voicing and frequency arrays are well-formed.  To be used in
+    """Checks that voicing and frequency arrays are well-formed.  To be used in
     conjunction with validate_voicing
 
-    :parameters:
-        - ref_voicing : np.ndarray
-            Reference boolean voicing array
+    Parameters
+    ----------
+    eters :
+        ref_voicing : np.ndarray
+        Reference boolean voicing array
         - ref_cent : np.ndarray
-            Reference pitch sequence in cents
+        Reference pitch sequence in cents
         - est_voicing : np.ndarray
-            Estimated boolean voicing array
+        Estimated boolean voicing array
         - est_cent : np.ndarray
-            Estimate pitch sequence in cents
+        Estimate pitch sequence in cents
+    ref_voicing :
+        
+    ref_cent :
+        
+    est_voicing :
+        
+    est_cent :
+        
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-    '''
+    Returns
+    -------
+
+    """
     if ref_cent.size == 0:
         warnings.warn("Reference frequency array is empty.")
     if est_cent.size == 0:
@@ -122,20 +136,28 @@ def validate(ref_voicing, ref_cent, est_voicing, est_cent):
 
 
 def hz2cents(freq_hz, base_frequency=10.0):
-    '''
-    Convert an array of frequency values in Hz to cents.
+    """Convert an array of frequency values in Hz to cents.
     0 values are left in place.
 
-    :parameters:
-        - freq_hz : np.ndarray
-            Array of frequencies in Hz.
+    Parameters
+    ----------
+    eters :
+        freq_hz : np.ndarray
+        Array of frequencies in Hz.
         - base_frequency : float
-            Base frequency for conversion.
+        Base frequency for conversion.
+    freq_hz :
+        
+    base_frequency :
+         (Default value = 10.0)
 
-    :returns:
-        - cent : np.ndarray
-            Array of frequencies in cents, relative to base_frequency
-    '''
+    Returns
+    -------
+    type
+        cent : np.ndarray
+        Array of frequencies in cents, relative to base_frequency
+
+    """
     freq_cent = np.zeros(freq_hz.shape[0])
     freq_nonz_ind = np.flatnonzero(freq_hz)
     normalized_frequency = np.abs(freq_hz[freq_nonz_ind])/base_frequency
@@ -145,38 +167,52 @@ def hz2cents(freq_hz, base_frequency=10.0):
 
 
 def freq_to_voicing(frequencies):
-    '''
-    Convert from an array of frequency values to frequency array +
+    """Convert from an array of frequency values to frequency array +
     voice/unvoiced array
 
-    :parameters:
-        - frequencies : np.ndarray
-            Array of frequencies.  A frequency <= 0 indicates "unvoiced".
+    Parameters
+    ----------
+    eters :
+        frequencies : np.ndarray
+        Array of frequencies.  A frequency <= 0 indicates "unvoiced".
+    frequencies :
+        
 
-    :returns:
-        - frequencies : np.ndarray
-            Array of frequencies, all >= 0.
+    Returns
+    -------
+    type
+        frequencies : np.ndarray
+        Array of frequencies, all >= 0.
         - voiced : np.ndarray
-            Boolean array, same length as frequencies,
-            which indicates voiced or unvoiced
-    '''
+        Boolean array, same length as frequencies,
+        which indicates voiced or unvoiced
+
+    """
     return np.abs(frequencies), frequencies > 0
 
 
 def constant_hop_timebase(hop, end_time):
-    '''
-    Generates a time series from 0 to end_time with times spaced hop apart
+    """Generates a time series from 0 to end_time with times spaced hop apart
 
-    :parameters:
-        - hop : float
-            Spacing of samples in the time series
+    Parameters
+    ----------
+    eters :
+        hop : float
+        Spacing of samples in the time series
         - end_time : float
-            Time series will span [0, end_time]
+        Time series will span [0, end_time]
+    hop :
+        
+    end_time :
+        
 
-    :returns:
-        - times : np.ndarray
-            Generated timebase
-    '''
+    Returns
+    -------
+    type
+        times : np.ndarray
+        Generated timebase
+
+    """
     # Compute new timebase.  Rounding/linspace is to avoid float problems.
     end_time = np.round(end_time, 10)
     times = np.linspace(0, hop*int(np.floor(end_time/hop)),
@@ -187,28 +223,42 @@ def constant_hop_timebase(hop, end_time):
 
 def resample_melody_series(times, frequencies, voicing,
                            times_new, kind='linear'):
-    '''
-    Resamples frequency and voicing time series to a new timescale.  Maintains
+    """Resamples frequency and voicing time series to a new timescale.  Maintains
     any zero ("unvoiced") values in frequencies.
 
-    :parameters:
-        - times : np.ndarray
-            Times of each frequency value
+    Parameters
+    ----------
+    eters :
+        times : np.ndarray
+        Times of each frequency value
         - frequencies : np.ndarray
-            Array of frequency values, >= 0
+        Array of frequency values, >= 0
         - voicing : np.ndarray
-            Boolean array which indicates voiced or unvoiced
+        Boolean array which indicates voiced or unvoiced
         - times_new : np.ndarray
-            Times to resample frequency and voicing sequences to
+        Times to resample frequency and voicing sequences to
         - kind : str
-            kind parameter to pass to scipy.interpolate.interp1d.
+        kind parameter to pass to scipy.interpolate.interp1d.
+    times :
+        
+    frequencies :
+        
+    voicing :
+        
+    times_new :
+        
+    kind :
+         (Default value = 'linear')
 
-    :returns:
-        - frequencies_resampled : np.ndarray
-            Frequency array resampled to new timebase
+    Returns
+    -------
+    type
+        frequencies_resampled : np.ndarray
+        Frequency array resampled to new timebase
         - voicing_resampled : np.ndarray, dtype=bool
-            Boolean voicing array resampled to new timebase
-    '''
+        Boolean voicing array resampled to new timebase
+
+    """
     # Round to avoid floating point problems
     times = np.round(times, 10)
     times_new = np.round(times_new, 10)
@@ -253,42 +303,60 @@ def resample_melody_series(times, frequencies, voicing,
 
 def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, base_frequency=10.,
                     hop=None, kind='linear'):
-    '''
-    Converts reference and estimated time/frequency (Hz) annotations to sampled
+    """Converts reference and estimated time/frequency (Hz) annotations to sampled
     frequency (cent)/voicing arrays.
-
+    
     A zero frequency indicates "unvoiced".
-
+    
     A negative frequency indicates "Predicted as unvoiced, but if it's voiced,
     this is the frequency estimate".
 
-    :parameters:
-        - ref_time : np.ndarray
-            Time of each reference frequency value
+    Parameters
+    ----------
+    eters :
+        ref_time : np.ndarray
+        Time of each reference frequency value
         - ref_freq : np.ndarray
-            Array of reference frequency values
+        Array of reference frequency values
         - est_time : np.ndarray
-            Time of each estimated frequency value
+        Time of each estimated frequency value
         - est_freq : np.ndarray
-            Array of estimated frequency values
+        Array of estimated frequency values
         - base_frequency : float
-            Base frequency in Hz for conversion to cents, default 10.0
+        Base frequency in Hz for conversion to cents, default 10.0
         - hop : float
-            Hop size, in seconds, to resample,
-            default None which means use ref_time
+        Hop size, in seconds, to resample,
+        default None which means use ref_time
         - kind : str
-            kind parameter to pass to scipy.interpolate.interp1d.
+        kind parameter to pass to scipy.interpolate.interp1d.
+    ref_time :
+        
+    ref_freq :
+        
+    est_time :
+        
+    est_freq :
+        
+    base_frequency :
+         (Default value = 10.)
+    hop :
+         (Default value = None)
+    kind :
+         (Default value = 'linear')
 
-    :returns:
-        - ref_voicing : np.ndarray, dtype=bool
-            Resampled reference boolean voicing array
+    Returns
+    -------
+    type
+        ref_voicing : np.ndarray, dtype=bool
+        Resampled reference boolean voicing array
         - ref_cent : np.ndarray
-            Resampled reference frequency (cent) array
+        Resampled reference frequency (cent) array
         - est_voicing : np.ndarray, dtype=bool
-            Resampled estimated boolean voicing array
+        Resampled estimated boolean voicing array
         - est_cent : np.ndarray
-            Resampled estimated frequency (cent) array
-    '''
+        Resampled estimated frequency (cent) array
+
+    """
     # Check if missing sample at time 0 and if so add one
     if ref_time[0] > 0:
         ref_time = np.insert(ref_time, 0, 0)
@@ -333,11 +401,10 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, base_frequency=10.,
 
 
 def voicing_measures(ref_voicing, est_voicing):
-    '''
-    Compute the voicing recall and false alarm rates given two voicing
+    """Compute the voicing recall and false alarm rates given two voicing
     indicator sequences, one as reference (truth) and the other as the estimate
     (prediction).  The sequences must be of the same length.
-
+    
     :usage:
         >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
         >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
@@ -349,34 +416,29 @@ def voicing_measures(ref_voicing, est_voicing):
         >>> recall, false_alarm = mir_eval.melody.voicing_measures(ref_v,
                                                                    est_v)
 
-    :parameters:
-        - ref_voicing : np.ndarray
-            Reference boolean voicing array
+    Parameters
+    ----------
+    eters :
+        ref_voicing : np.ndarray
+        Reference boolean voicing array
         - est_voicing : np.ndarray
-            Estimated boolean voicing array
+        Estimated boolean voicing array
+    ref_voicing :
+        
+    est_voicing :
+        
 
-    :returns:
-        - vx_recall : float
-            Voicing recall rate, the fraction of voiced frames in ref
-            indicated as voiced in est
+    Returns
+    -------
+    type
+        vx_recall : float
+        Voicing recall rate, the fraction of voiced frames in ref
+        indicated as voiced in est
         - vx_false_alarm : float
-            Voicing false alarm rate, the fraction of unvoiced frames in ref
-            indicated as voiced in est
+        Voicing false alarm rate, the fraction of unvoiced frames in ref
+        indicated as voiced in est
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
-            Extraction from Polyphonic Music Signals: Approaches, Applications
-            and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
-            Mar. 2014.
-        .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
-            Streich, and B. Ong. "Melody transcription from music audio:
-            Approaches and evaluation", IEEE Transactions on Audio, Speech, and
-            Language Processing, 15(4):1247-1256, 2007.
-    '''
+    """
     validate_voicing(ref_voicing, est_voicing)
     ref_voicing = ref_voicing.astype(bool)
     est_voicing = est_voicing.astype(bool)
@@ -416,12 +478,11 @@ def voicing_measures(ref_voicing, est_voicing):
 
 def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
                        cent_tolerance=50):
-    '''
-    Compute the raw pitch accuracy given two pitch (frequency) sequences in
+    """Compute the raw pitch accuracy given two pitch (frequency) sequences in
     cents and matching voicing indicator sequences. The first pitch and voicing
     arrays are treated as the reference (truth), and the second two as the
     estimate (prediction).  All 4 sequences must be of the same length.
-
+    
     :usage:
         >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
         >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
@@ -433,38 +494,39 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
         >>> raw_pitch = mir_eval.melody.raw_pitch_accuracy(ref_v, ref_c,
                                                            est_v, est_c)
 
-    :parameters:
-        - ref_voicing : np.ndarray
-            Reference boolean voicing array
+    Parameters
+    ----------
+    eters :
+        ref_voicing : np.ndarray
+        Reference boolean voicing array
         - ref_cent : np.ndarray
-            Reference pitch sequence in cents
+        Reference pitch sequence in cents
         - est_voicing : np.ndarray
-            Estimated boolean voicing array
+        Estimated boolean voicing array
         - est_cent : np.ndarray
-            Estimate pitch sequence in cents
+        Estimate pitch sequence in cents
         - cent_tolerance : float
-            Maximum absolute deviation for a cent value to be considerd correct
+        Maximum absolute deviation for a cent value to be considerd correct
+    ref_voicing :
+        
+    ref_cent :
+        
+    est_voicing :
+        
+    est_cent :
+        
+    cent_tolerance :
+         (Default value = 50)
 
-    :returns:
-        - raw_pitch : float
-            Raw pitch accuracy, the fraction of voiced frames in ref_cent for
-            which est_cent provides a correct frequency values
-            (within cent_tolerance cents).
+    Returns
+    -------
+    type
+        raw_pitch : float
+        Raw pitch accuracy, the fraction of voiced frames in ref_cent for
+        which est_cent provides a correct frequency values
+        (within cent_tolerance cents).
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
-            Extraction from Polyphonic Music Signals: Approaches, Applications
-            and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
-            Mar. 2014.
-        .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
-            Streich, and B. Ong. "Melody transcription from music audio:
-            Approaches and evaluation", IEEE Transactions on Audio, Speech, and
-            Language Processing, 15(4):1247-1256, 2007.
-    '''
+    """
 
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_cent, est_voicing, est_cent)
@@ -489,12 +551,11 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
 
 def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
                         cent_tolerance=50):
-    '''
-    Compute the raw chroma accuracy given two pitch (frequency) sequences
+    """Compute the raw chroma accuracy given two pitch (frequency) sequences
     in cents and matching voicing indicator sequences. The first pitch and
     voicing arrays are treated as the reference (truth), and the second two as
     the estimate (prediction).  All 4 sequences must be of the same length.
-
+    
     :usage:
         >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
         >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
@@ -506,35 +567,49 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
         >>> raw_chroma = mir_eval.melody.raw_chroma_accuracy(ref_v, ref_c,
                                                              est_v, est_c)
 
-
-    :parameters:
-        - ref_voicing : np.ndarray
-            Reference boolean voicing array
+    Parameters
+    ----------
+    eters :
+        ref_voicing : np.ndarray
+        Reference boolean voicing array
         - ref_cent : np.ndarray
-            Reference pitch sequence in cents
+        Reference pitch sequence in cents
         - est_voicing : np.ndarray
-            Estimated boolean voicing array
+        Estimated boolean voicing array
         - est_cent : np.ndarray
-            Estimate pitch sequence in cents
+        Estimate pitch sequence in cents
         - cent_tolerance : float
-            Maximum absolute deviation for a cent value to be considerd correct
+        Maximum absolute deviation for a cent value to be considerd correct
+    ref_voicing :
+        
+    ref_cent :
+        
+    est_voicing :
+        
+    est_cent :
+        
+    cent_tolerance :
+         (Default value = 50)
 
-    :returns:
-        - raw_chroma : float
-            Raw chroma accuracy, the fraction of voiced frames in ref_cent for
-            which est_cent provides a correct frequency values (within
-            cent_tolerance cents), ignoring octave errors
-
-    :references:
+    Returns
+    -------
+    type
+        raw_chroma : float
+        Raw chroma accuracy, the fraction of voiced frames in ref_cent for
+        which est_cent provides a correct frequency values (within
+        cent_tolerance cents), ignoring octave errors
+        
+        :references:
         .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
-            Extraction from Polyphonic Music Signals: Approaches, Applications
-            and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
-            Mar. 2014.
+        Extraction from Polyphonic Music Signals: Approaches, Applications
+        and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
+        Mar. 2014.
         .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
-            Streich, and B. Ong. "Melody transcription from music audio:
-            Approaches and evaluation", IEEE Transactions on Audio, Speech, and
-            Language Processing, 15(4):1247-1256, 2007.
-    '''
+        Streich, and B. Ong. "Melody transcription from music audio:
+        Approaches and evaluation", IEEE Transactions on Audio, Speech, and
+        Language Processing, 15(4):1247-1256, 2007.
+
+    """
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_cent, est_voicing, est_cent)
     ref_voicing = ref_voicing.astype(bool)
@@ -559,12 +634,11 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
 
 def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
                      cent_tolerance=50):
-    '''
-    Compute the overall accuracy given two pitch (frequency) sequences in cents
+    """Compute the overall accuracy given two pitch (frequency) sequences in cents
     and matching voicing indicator sequences. The first pitch and voicing
     arrays are treated as the reference (truth), and the second two as the
     estimate (prediction).  All 4 sequences must be of the same length.
-
+    
     :usage:
         >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
         >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
@@ -576,38 +650,39 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
         >>> overall_accuracy = mir_eval.melody.overall_accuracy(ref_v, ref_c,
                                                                 est_v, est_c)
 
-    :parameters:
-        - ref_voicing : np.ndarray
-            Reference boolean voicing array
+    Parameters
+    ----------
+    eters :
+        ref_voicing : np.ndarray
+        Reference boolean voicing array
         - ref_cent : np.ndarray
-            Reference pitch sequence in cents
+        Reference pitch sequence in cents
         - est_voicing : np.ndarray
-            Estimated boolean voicing array
+        Estimated boolean voicing array
         - est_cent : np.ndarray
-            Estimate pitch sequence in cents
+        Estimate pitch sequence in cents
         - cent_tolerance : float
-            Maximum absolute deviation for a cent value to be considerd correct
+        Maximum absolute deviation for a cent value to be considerd correct
+    ref_voicing :
+        
+    ref_cent :
+        
+    est_voicing :
+        
+    est_cent :
+        
+    cent_tolerance :
+         (Default value = 50)
 
-    :returns:
-        - overall_accuracy : float
-            Overall accuracy, the total fraction of correctly estimates frames,
-            where provides a correct frequency values (within cent_tolerance
-            cents).
+    Returns
+    -------
+    type
+        overall_accuracy : float
+        Overall accuracy, the total fraction of correctly estimates frames,
+        where provides a correct frequency values (within cent_tolerance
+        cents).
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
-            Extraction from Polyphonic Music Signals: Approaches, Applications
-            and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
-            Mar. 2014.
-        .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
-            Streich, and B. Ong. "Melody transcription from music audio:
-            Approaches and evaluation", IEEE Transactions on Audio, Speech, and
-            Language Processing, 15(4):1247-1256, 2007.
-    '''
+    """
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_cent, est_voicing, est_cent)
     ref_voicing = ref_voicing.astype(bool)
@@ -628,38 +703,49 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
 
 
 def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
-    '''
-    Evaluate two melody (predominant f0) transcriptions, where the first is
+    """Evaluate two melody (predominant f0) transcriptions, where the first is
     treated as the reference (ground truth) and the second as the estimate to
     be evaluated (prediction).
-
+    
     :usage:
         >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
         >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
         >>> scores = mir_eval.melody.evaluate(ref_time, ref_freq,
                                               est_time, est_freq)
-    :parameters:
-        - ref_time : np.ndarray
-            Time of each reference frequency value
+
+    Parameters
+    ----------
+    eters :
+        ref_time : np.ndarray
+        Time of each reference frequency value
         - ref_freq : np.ndarray
-            Array of reference frequency values
+        Array of reference frequency values
         - est_time : np.ndarray
-            Time of each estimated frequency value
+        Time of each estimated frequency value
         - est_freq : np.ndarray
-            Array of estimated frequency values
+        Array of estimated frequency values
         - kwargs
-            Additional keyword arguments which will be passed to the
-            appropriate metric or preprocessing functions.
+        Additional keyword arguments which will be passed to the
+        appropriate metric or preprocessing functions.
+    ref_time :
+        
+    ref_freq :
+        
+    est_time :
+        
+    est_freq :
+        
+    **kwargs :
+        
 
-    :returns:
-        - scores : dict
-            Dictionary of scores, where the key is the metric name (str) and
-            the value is the (float) score achieved.
+    Returns
+    -------
+    type
+        scores : dict
+        Dictionary of scores, where the key is the metric name (str) and
+        the value is the (float) score achieved.
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-    '''
+    """
     # Convert to reference/estimated voicing/frequency (cent) arrays
     (ref_voicing, ref_cent,
      est_voicing, est_cent) = util.filter_kwargs(to_cent_voicing, ref_time,

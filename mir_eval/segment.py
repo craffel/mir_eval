@@ -57,28 +57,36 @@ from . import util
 
 
 def validate_boundary(reference_intervals, estimated_intervals, trim):
-    '''Checks that the input annotations to a segment boundary estimation
+    """Checks that the input annotations to a segment boundary estimation
     metric (i.e. one that only takes in segment intervals) look like valid
     segment times, and throws helpful errors if not.
 
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, in the format returned by
-            :func:`mir_eval.io.load_intervals` or
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+    Parameters
+    ----------
+    eters :
+        reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_intervals` or
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, in the format returned by
-            :func:`mir_eval.io.load_intervals` or
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_intervals` or
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - trim : bool
-            will the start and end events be trimmed?
+        will the start and end events be trimmed?
+    reference_intervals :
+        
+    estimated_intervals :
+        
+    trim :
+        
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-    '''
+    Returns
+    -------
+
+    """
 
     if trim:
         # If we're trimming, then we need at least 2 intervals
@@ -99,31 +107,41 @@ def validate_boundary(reference_intervals, estimated_intervals, trim):
 
 def validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels):
-    '''Checks that the input annotations to a structure estimation metric (i.e.
+    """Checks that the input annotations to a structure estimation metric (i.e.
     one that takes in both segment boundaries and their labels) look like valid
     segment times and labels, and throws helpful errors if not.
 
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+    Parameters
+    ----------
+    eters :
+        reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - reference_labels : list, shape=(n,)
-            reference segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        reference segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_labels : list, shape=(m,)
-            estimated segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
+        estimated segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+    reference_intervals :
+        
+    reference_labels :
+        
+    estimated_intervals :
+        
+    estimated_labels :
+        
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-    '''
+    Returns
+    -------
+
+    """
     for (intervals, labels) in [(reference_intervals, reference_labels),
                                 (estimated_intervals, estimated_labels)]:
 
@@ -151,13 +169,13 @@ def validate_structure(reference_intervals, reference_labels,
 
 def detection(reference_intervals, estimated_intervals,
               window=0.5, beta=1.0, trim=False):
-    '''Boundary detection hit-rate.
-
+    """Boundary detection hit-rate.
+    
     A hit is counted whenever an reference boundary is within ``window`` of a
     estimated boundary.  Note that each boundary is matched at most once: this
     is achieved by computing the size of a maximal matching between reference
     and estimated boundary points, subject to the window constraint.
-
+    
     :usage:
         >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
         >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
@@ -175,50 +193,53 @@ def detection(reference_intervals, estimated_intervals,
                                                   window=0.5,
                                                   trim=True)
 
-
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, in the format returned by
-            :func:`mir_eval.io.load_intervals` or
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+    Parameters
+    ----------
+    eters :
+        reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_intervals` or
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, in the format returned by
-            :func:`mir_eval.io.load_intervals` or
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_intervals` or
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - window : float > 0
-            size of the window of 'correctness' around ground-truth beats
-            (in seconds)
-
+        size of the window of 'correctness' around ground-truth beats
+        (in seconds)
+        
         - beta : float > 0
-            weighting constant for F-measure.
-
+        weighting constant for F-measure.
+        
         - trim : boolean
-            if ``True``, the first and last boundary times are ignored.
-            Typically, these denote start (0) and end-markers.
+        if ``True``, the first and last boundary times are ignored.
+        Typically, these denote start (0) and end-markers.
+    reference_intervals :
+        
+    estimated_intervals :
+        
+    window :
+         (Default value = 0.5)
+    beta :
+         (Default value = 1.0)
+    trim :
+         (Default value = False)
 
-    :returns:
-        - precision : float
-            precision of estimated predictions
-
+    Returns
+    -------
+    type
+        precision : float
+        precision of estimated predictions
+        
         - recall : float
-            recall of reference reference boundaries
-
+        recall of reference reference boundaries
+        
         - f_measure : float
-            F-measure (weighted harmonic mean of ``precision`` and ``recall``)
+        F-measure (weighted harmonic mean of ``precision`` and ``recall``)
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] D. Turnbull, G. Lanckriet, E. Pampalk, and M. Goto. A supervised
-            approach for detecting boundaries in music using difference
-            features and boosting. In Proceedings of the 8th International
-            Society for Music Information Retrieval Conference (ISMIR), pages
-            51-54, 2007.
-    '''
+    """
 
     validate_boundary(reference_intervals, estimated_intervals, trim)
 
@@ -248,50 +269,50 @@ def detection(reference_intervals, estimated_intervals,
 
 
 def deviation(reference_intervals, estimated_intervals, trim=False):
-    '''Compute the median deviations between reference
+    """Compute the median deviations between reference
     and estimated boundary times.
-
+    
     :usage:
         >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
         >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
         >>> r_to_e, e_to_r = mir_eval.boundary.deviation(ref_intervals,
                                                          est_intervals)
 
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, in the format returned by
-            :func:`mir_eval.io.load_intervals` or
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+    Parameters
+    ----------
+    eters :
+        reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_intervals` or
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, in the format returned by
-            :func:`mir_eval.io.load_intervals` or
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_intervals` or
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - trim : boolean
-            if ``True``, the first and last intervals are ignored.
-            Typically, these denote start (0.0) and end-of-track markers.
+        if ``True``, the first and last intervals are ignored.
+        Typically, these denote start (0.0) and end-of-track markers.
+    reference_intervals :
+        
+    estimated_intervals :
+        
+    trim :
+         (Default value = False)
 
-    :returns:
-        - reference_to_estimated : float
-            median time from each reference boundary to the
-            closest estimated boundary
-
+    Returns
+    -------
+    type
+        reference_to_estimated : float
+        median time from each reference boundary to the
+        closest estimated boundary
+        
         - estimated_to_reference : float
-            median time from each estimated boundary to the
-            closest reference boundary
+        median time from each estimated boundary to the
+        closest reference boundary
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] D. Turnbull, G. Lanckriet, E. Pampalk, and M. Goto. A supervised
-            approach for detecting boundaries in music using difference
-            features and boosting. In Proceedings of the 8th International
-            Society for Music Information Retrieval Conference (ISMIR), pages
-            51-54, 2007.
-    '''
+    """
 
     validate_boundary(reference_intervals, estimated_intervals, trim)
 
@@ -320,8 +341,8 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
 def pairwise(reference_intervals, reference_labels,
              estimated_intervals, estimated_labels,
              frame_size=0.1, beta=1.0):
-    '''Frame-clustering segmentation evaluation by pair-wise agreement.
-
+    """Frame-clustering segmentation evaluation by pair-wise agreement.
+    
     :usage:
         >>> (ref_intervals,
              ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
@@ -342,46 +363,54 @@ def pairwise(reference_intervals, reference_labels,
                                                                est_intervals,
                                                                est_labels)
 
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+    Parameters
+    ----------
+    eters :
+        reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - reference_labels : list, shape=(n,)
-            reference segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        reference segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_labels : list, shape=(m,)
-            estimated segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - frame_size : float > 0
-            length (in seconds) of frames for clustering
-
+        length (in seconds) of frames for clustering
+        
         - beta : float > 0
-            beta value for F-measure
+        beta value for F-measure
+    reference_intervals :
+        
+    reference_labels :
+        
+    estimated_intervals :
+        
+    estimated_labels :
+        
+    frame_size :
+         (Default value = 0.1)
+    beta :
+         (Default value = 1.0)
 
-    :returns:
-        - precision : float > 0
-            Precision of detecting whether frames belong in the same cluster
+    Returns
+    -------
+    type
+        precision : float > 0
+        Precision of detecting whether frames belong in the same cluster
         - recall : float > 0
-            Recall of detecting whether frames belong in the same cluster
+        Recall of detecting whether frames belong in the same cluster
         - f : float > 0
-            F-measure of detecting whether frames belong in the same cluster
+        F-measure of detecting whether frames belong in the same cluster
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] M. Levy and M. Sandler. Structural segmentation of musical audio
-            by constrained clustering. IEEE Transactions on Audio, Speech, and
-            Language Processing, 16(2):318-326, 2008.
-    '''
+    """
 
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
@@ -428,8 +457,8 @@ def pairwise(reference_intervals, reference_labels,
 def rand_index(reference_intervals, reference_labels,
                estimated_intervals, estimated_labels,
                frame_size=0.1, beta=1.0):
-    '''(Non-adjusted) Rand index.
-
+    """(Non-adjusted) Rand index.
+    
     :usage:
         >>> (ref_intervals,
              ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
@@ -450,42 +479,50 @@ def rand_index(reference_intervals, reference_labels,
                                                        est_intervals,
                                                        est_labels)
 
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+    Parameters
+    ----------
+    eters :
+        reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - reference_labels : list, shape=(n,)
-            reference segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        reference segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_labels : list, shape=(m,)
-            estimated segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - frame_size : float > 0
-            length (in seconds) of frames for clustering
-
+        length (in seconds) of frames for clustering
+        
         - beta : float > 0
-            beta value for F-measure
+        beta value for F-measure
+    reference_intervals :
+        
+    reference_labels :
+        
+    estimated_intervals :
+        
+    estimated_labels :
+        
+    frame_size :
+         (Default value = 0.1)
+    beta :
+         (Default value = 1.0)
 
-    :returns:
-        - rand_index : float > 0
-            Rand index
+    Returns
+    -------
+    type
+        rand_index : float > 0
+        Rand index
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] W. M. Rand. Objective criteria for the evaluation of clustering
-            methods. Journal of the American Statistical association,
-            66(336):846-850, 1971.
-    '''
+    """
 
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
@@ -531,22 +568,30 @@ def rand_index(reference_intervals, reference_labels,
 
 
 def _contingency_matrix(reference_indices, estimated_indices):
-    '''
-    Computes the contingency matrix of a true labeling vs an estimated one.
+    """Computes the contingency matrix of a true labeling vs an estimated one.
 
-    :parameters:
-        - reference_indices : np.ndarray
-            Array of reference indices
-
+    Parameters
+    ----------
+    eters :
+        reference_indices : np.ndarray
+        Array of reference indices
+        
         - estimated_indices : np.ndarray
-            Array of estimated indices
+        Array of estimated indices
+    reference_indices :
+        
+    estimated_indices :
+        
 
-    :returns:
-        - contingency_matrix : np.ndarray
-            Contingency matrix, shape=(#reference indices, #estimated indices)
+    Returns
+    -------
+    type
+        contingency_matrix : np.ndarray
+        Contingency matrix, shape=(#reference indices, #estimated indices)
+        
+        .. note:: Based on sklearn.metrics.cluster.contingency_matrix
 
-    .. note:: Based on sklearn.metrics.cluster.contingency_matrix
-    '''
+    """
     ref_classes, ref_class_idx = np.unique(reference_indices,
                                            return_inverse=True)
     est_classes, est_class_idx = np.unique(estimated_indices,
@@ -561,22 +606,30 @@ def _contingency_matrix(reference_indices, estimated_indices):
 
 
 def _adjusted_rand_index(reference_indices, estimated_indices):
-    '''
-    Compute the Rand index, adjusted for change.
+    """Compute the Rand index, adjusted for change.
 
-    :parameters:
-        - reference_indices : np.ndarray
-            Array of reference indices
-
+    Parameters
+    ----------
+    eters :
+        reference_indices : np.ndarray
+        Array of reference indices
+        
         - estimated_indices : np.ndarray
-            Array of estimated indices
+        Array of estimated indices
+    reference_indices :
+        
+    estimated_indices :
+        
 
-    :returns:
-        - ari : float
-            Adjusted Rand index
+    Returns
+    -------
+    type
+        ari : float
+        Adjusted Rand index
+        
+        .. note:: Based on sklearn.metrics.cluster.adjusted_rand_score
 
-    .. note:: Based on sklearn.metrics.cluster.adjusted_rand_score
-    '''
+    """
     n_samples = len(reference_indices)
     ref_classes = np.unique(reference_indices)
     est_classes = np.unique(estimated_indices)
@@ -607,8 +660,8 @@ def _adjusted_rand_index(reference_indices, estimated_indices):
 def ari(reference_intervals, reference_labels,
         estimated_intervals, estimated_labels,
         frame_size=0.1):
-    '''Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
-
+    """Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
+    
     :usage:
         >>> (ref_intervals,
              ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
@@ -627,46 +680,45 @@ def ari(reference_intervals, reference_labels,
         >>> ari_score = mir_eval.structure.ari(ref_intervals, ref_labels,
                                                est_intervals, est_labels)
 
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+    Parameters
+    ----------
+    eters :
+        reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - reference_labels : list, shape=(n,)
-            reference segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        reference segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_labels : list, shape=(m,)
-            estimated segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - frame_size : float > 0
-            length (in seconds) of frames for clustering
+        length (in seconds) of frames for clustering
+    reference_intervals :
+        
+    reference_labels :
+        
+    estimated_intervals :
+        
+    estimated_labels :
+        
+    frame_size :
+         (Default value = 0.1)
 
-    :returns:
-        - ari_score : float > 0
-            Adjusted Rand index between segmentations.
+    Returns
+    -------
+    type
+        ari_score : float > 0
+        Adjusted Rand index between segmentations.
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] W. M. Rand. Objective criteria for the evaluation of clustering
-            methods. Journal of the American Statistical association,
-            66(336):846-850, 1971.
-
-    .. note::
-        It is assumed that ``intervals[-1]`` == length of song
-
-    .. note::
-        Segment intervals will be rounded down to the nearest multiple
-        of frame_size.
-    '''
+    """
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
 
@@ -693,25 +745,35 @@ def ari(reference_intervals, reference_labels,
 
 
 def _mutual_info_score(reference_indices, estimated_indices, contingency=None):
-    '''
-    Compute the mutual information between two sequence labelings.
+    """Compute the mutual information between two sequence labelings.
 
-    :parameters:
-        - reference_indices : np.ndarray
-            Array of reference indices
-
+    Parameters
+    ----------
+    eters :
+        reference_indices : np.ndarray
+        Array of reference indices
+        
         - estimated_indices : np.ndarray
-            Array of estimated indices
-
+        Array of estimated indices
+        
         - contingency : np.ndarray
-            Pre-computed contingency matrix.  If None, one will be computed.
+        Pre-computed contingency matrix.  If None, one will be computed.
+    reference_indices :
+        
+    estimated_indices :
+        
+    contingency :
+         (Default value = None)
 
-    :returns:
-        - mi : float
-            Mutual information
+    Returns
+    -------
+    type
+        mi : float
+        Mutual information
+        
+        .. note:: Based on sklearn.metrics.cluster.mutual_info_score
 
-    .. note:: Based on sklearn.metrics.cluster.mutual_info_score
-    '''
+    """
     if contingency is None:
         contingency = _contingency_matrix(reference_indices,
                                           estimated_indices).astype(float)
@@ -733,19 +795,25 @@ def _mutual_info_score(reference_indices, estimated_indices, contingency=None):
 
 
 def _entropy(labels):
-    '''
-    Calculates the entropy for a labeling.
+    """Calculates the entropy for a labeling.
 
-    :parameters:
-        - labels : list-like
-            List of labels.
+    Parameters
+    ----------
+    eters :
+        labels : list-like
+        List of labels.
+    labels :
+        
 
-    :returns:
-        - entropy : float
-            Entropy of the labeling.
+    Returns
+    -------
+    type
+        entropy : float
+        Entropy of the labeling.
+        
+        .. note:: Based on sklearn.metrics.cluster.entropy
 
-    .. note:: Based on sklearn.metrics.cluster.entropy
-    '''
+    """
     if len(labels) == 0:
         return 1.0
     label_idx = np.unique(labels, return_inverse=True)[1]
@@ -758,24 +826,32 @@ def _entropy(labels):
 
 
 def _adjusted_mutual_info_score(reference_indices, estimated_indices):
-    '''
-    Compute the mutual information between two sequence labelings, adjusted for
+    """Compute the mutual information between two sequence labelings, adjusted for
     chance.
 
-    :parameters:
-        - reference_indices : np.ndarray
-            Array of reference indices
-
+    Parameters
+    ----------
+    eters :
+        reference_indices : np.ndarray
+        Array of reference indices
+        
         - estimated_indices : np.ndarray
-            Array of estimated indices
+        Array of estimated indices
+    reference_indices :
+        
+    estimated_indices :
+        
 
-    :returns:
-        - ami : float <= 1.0
-            Mutual information
-
-    .. note:: Based on sklearn.metrics.cluster.adjusted_mutual_info_score
+    Returns
+    -------
+    type
+        ami : float <= 1.0
+        Mutual information
+        
+        .. note:: Based on sklearn.metrics.cluster.adjusted_mutual_info_score
         and sklearn.metrics.cluster.expected_mutual_info_score
-    '''
+
+    """
     n_samples = len(reference_indices)
     ref_classes = np.unique(reference_indices)
     est_classes = np.unique(estimated_indices)
@@ -841,23 +917,31 @@ def _adjusted_mutual_info_score(reference_indices, estimated_indices):
 
 
 def _normalized_mutual_info_score(reference_indices, estimated_indices):
-    '''
-    Compute the mutual information between two sequence labelings, adjusted for
+    """Compute the mutual information between two sequence labelings, adjusted for
     chance.
 
-    :parameters:
-        - reference_indices : np.ndarray
-            Array of reference indices
-
+    Parameters
+    ----------
+    eters :
+        reference_indices : np.ndarray
+        Array of reference indices
+        
         - estimated_indices : np.ndarray
-            Array of estimated indices
+        Array of estimated indices
+    reference_indices :
+        
+    estimated_indices :
+        
 
-    :returns:
-        - nmi : float <= 1.0
-            Normalized mutual information
+    Returns
+    -------
+    type
+        nmi : float <= 1.0
+        Normalized mutual information
+        
+        .. note:: Based on sklearn.metrics.cluster.normalized_mutual_info_score
 
-    .. note:: Based on sklearn.metrics.cluster.normalized_mutual_info_score
-    '''
+    """
     ref_classes = np.unique(reference_indices)
     est_classes = np.unique(estimated_indices)
     # Special limit cases: no clustering since the data is not split.
@@ -881,8 +965,8 @@ def _normalized_mutual_info_score(reference_indices, estimated_indices):
 def mutual_information(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels,
                        frame_size=0.1):
-    '''Frame-clustering segmentation: mutual information metrics.
-
+    """Frame-clustering segmentation: mutual information metrics.
+    
     :usage:
         >>> (ref_intervals,
              ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
@@ -903,45 +987,49 @@ def mutual_information(reference_intervals, reference_labels,
                                                                  est_intervals,
                                                                  est_labels)
 
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+    Parameters
+    ----------
+    eters :
+        reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - reference_labels : list, shape=(n,)
-            reference segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        reference segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_labels : list, shape=(m,)
-            estimated segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - frame_size : float > 0
-            length (in seconds) of frames for clustering
+        length (in seconds) of frames for clustering
+    reference_intervals :
+        
+    reference_labels :
+        
+    estimated_intervals :
+        
+    estimated_labels :
+        
+    frame_size :
+         (Default value = 0.1)
 
-    :returns:
-        - MI : float > 0
-            Mutual information between segmentations
+    Returns
+    -------
+    type
+        MI : float > 0
+        Mutual information between segmentations
         - AMI : float
-            Adjusted mutual information between segmentations.
+        Adjusted mutual information between segmentations.
         - NMI : float > 0
-            Normalize mutual information between segmentations
+        Normalize mutual information between segmentations
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    .. note::
-        It is assumed that `intervals[-1] == length of song`
-
-    .. note::
-        Segment intervals will be rounded down to the nearest multiple
-        of frame_size.
-    '''
+    """
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
 
@@ -978,11 +1066,11 @@ def mutual_information(reference_intervals, reference_labels,
 
 def nce(reference_intervals, reference_labels, estimated_intervals,
         estimated_labels, frame_size=0.1, beta=1.0):
-    '''Frame-clustering segmentation: normalized conditional entropy
-
+    """Frame-clustering segmentation: normalized conditional entropy
+    
     Computes cross-entropy of cluster assignment, normalized by the
     max-entropy.
-
+    
     :usage:
         >>> (ref_intervals,
              ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
@@ -1003,53 +1091,60 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
                                                           est_intervals,
                                                           est_labels)
 
-    :parameters:
-        - reference_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+    Parameters
+    ----------
+    eters :
+        reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - reference_labels : list, shape=(n,)
-            reference segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        reference segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - estimated_labels : list, shape=(m,)
-            estimated segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - frame_size : float > 0
-            length (in seconds) of frames for clustering
-
+        length (in seconds) of frames for clustering
+        
         - beta : float > 0
-            beta for F-measure
+        beta for F-measure
+    reference_intervals :
+        
+    reference_labels :
+        
+    estimated_intervals :
+        
+    estimated_labels :
+        
+    frame_size :
+         (Default value = 0.1)
+    beta :
+         (Default value = 1.0)
 
-    :returns:
-        - S_over
-            Over-clustering score:
-            ``1 - H(y_est | y_ref) / log(|y_est|)``
-            If `|y_est|==1`, then `S_over` will be 0.
-
+    Returns
+    -------
+    type
+        S_over
+        Over-clustering score:
+        ``1 - H(y_est | y_ref) / log(|y_est|)``
+        If `|y_est|==1`, then `S_over` will be 0.
+        
         - S_under
-            Under-clustering score:
-            ``1 - H(y_ref | y_est) / log(|y_ref|)``
-            If `|y_ref|==1`, then `S_under` will be 0.
-
+        Under-clustering score:
+        ``1 - H(y_ref | y_est) / log(|y_ref|)``
+        If `|y_ref|==1`, then `S_under` will be 0.
+        
         - S_F
-            F-measure for (S_over, S_under)
+        F-measure for (S_over, S_under)
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] Hanna M. Lukashevich. "Towards Quantitative Measures of
-            Evaluating Song Segmentation," in Proceedings of the 9th
-            International Society for Music Information Retrieval Conference,
-            2007, pp. 375-380.
-    '''
+    """
 
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
@@ -1103,9 +1198,8 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
 
 
 def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
-    '''
-    Compute all metrics for the given reference and estimated annotations.
-
+    """Compute all metrics for the given reference and estimated annotations.
+    
     :usage:
         >>> (ref_intervals,
              ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
@@ -1113,36 +1207,48 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
              est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
         >>> scores = mir_eval.segment.evaluate(ref_intervals, ref_labels,
                                                est_intervals, est_labels)
-    :parameters:
-        - ref_intervals : np.ndarray, shape=(n, 2)
-            reference segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
 
+    Parameters
+    ----------
+    eters :
+        ref_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - ref_labels : list, shape=(n,)
-            reference segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        reference segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - est_intervals : np.ndarray, shape=(m, 2)
-            estimated segment intervals, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - est_labels : list, shape=(m,)
-            estimated segment labels, in the format returned by
-            :func:`mir_eval.io.load_labeled_intervals`.
-
+        estimated segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+        
         - kwargs
-            Additional keyword arguments which will be passed to the
-            appropriate metric or preprocessing functions.
+        Additional keyword arguments which will be passed to the
+        appropriate metric or preprocessing functions.
+    ref_intervals :
+        
+    ref_labels :
+        
+    est_intervals :
+        
+    est_labels :
+        
+    **kwargs :
+        
 
-    :returns:
-        - scores : dict
-            Dictionary of scores, where the key is the metric name (str) and
-            the value is the (float) score achieved.
+    Returns
+    -------
+    type
+        scores : dict
+        Dictionary of scores, where the key is the metric name (str) and
+        the value is the (float) score achieved.
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-    '''
+    """
 
     # Adjust timespan of estimations relative to ground truth
     ref_intervals, ref_labels = \
