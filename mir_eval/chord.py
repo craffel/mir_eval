@@ -121,8 +121,9 @@ def _pitch_classes():
 
 def _scale_degrees():
     r'''Mapping from scale degrees (str) to semitones (int).'''
-    degrees = ['1', '2', '3', '4', '5', '6', '7', '9', '10', '11', '12', '13']
-    semitones = [0, 2, 4, 5, 7, 9, 11, 14, 16, 17, 19, 21]
+    degrees = ['1', '2', '3',  '4',  '5',  '6', '7',
+               '8', '9', '10', '11', '12', '13']
+    semitones = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21]
     return dict([(d, s) for d, s in zip(degrees, semitones)])
 
 
@@ -1077,6 +1078,7 @@ def mirex(reference_labels, estimated_labels):
 
     """
     validate(reference_labels, estimated_labels)
+    # TODO(?): Should this be an argument?
     min_intersection = 3
     ref_data = encode_many(reference_labels, False)
     ref_chroma = rotate_bitmaps_to_roots(ref_data[1], ref_data[0])
@@ -1092,8 +1094,14 @@ def mirex(reference_labels, estimated_labels):
     no_root = np.logical_and(ref_data[0] == -1, est_data[0] == -1)
     comparison_scores[no_root] = 1.0
 
-    # Ignore 'X' chords
-    comparison_scores[np.any(ref_data[1] < 0, axis=1)] = -1.0
+    # Skip chords where the number of active semitones `n` is
+    #   0 < n < `min_intersection`.
+    ref_semitone_count = (ref_data[1] > 0).sum(axis=1)
+    skip_idx = np.logical_and(ref_semitone_count > 0,
+                              ref_semitone_count < min_intersection)
+    # Also ignore 'X' chords.
+    np.logical_or(skip_idx, np.any(ref_data[1] < 0, axis=1), skip_idx)
+    comparison_scores[skip_idx] = -1.0
     return comparison_scores
 
 

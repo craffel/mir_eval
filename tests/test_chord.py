@@ -212,13 +212,13 @@ def __check_not_comparable(metric, ref_label, est_label):
 
 
 def test_mirex():
-    ref_labels = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min',
+    ref_labels = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min', 'C:maj',
                   'C:maj',  'G:min',  'C:maj', 'C:min',   'C:min',
                   'C:maj',  'F:maj',  'C:maj7',    'A:maj', 'A:maj']
-    est_labels = ['N', 'N',     'C:aug', 'C:dim', 'C:dim',
+    est_labels = ['N', 'N',     'C:aug', 'C:dim', 'C:dim', 'C:5',
                   'C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:min7',
                   'C:maj6', 'F:min6', 'C:minmaj7', 'A:7',   'A:9']
-    scores = [1.0, 0.0, 0.0, 0.0, 0.0,
+    scores = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
               0.0, 0.0, 0.0, 0.0, 1.0,
               1.0, 0.0, 1.0, 1.0, 1.0]
 
@@ -226,7 +226,12 @@ def test_mirex():
         yield (__check_one_metric, mir_eval.chord.mirex,
                ref_label, est_label, score)
 
-    yield (__check_not_comparable, mir_eval.chord.thirds, 'X', 'N')
+    ref_not_comparable = ['C:5', 'X']
+    est_not_comparable = ['C:maj', 'N']
+
+    for ref_label, est_label in zip(ref_not_comparable, est_not_comparable):
+        yield (__check_not_comparable, mir_eval.chord.mirex,
+               ref_label, est_label)
 
 
 def test_thirds():
