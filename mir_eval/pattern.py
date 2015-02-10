@@ -248,19 +248,25 @@ def establishment_FPR(reference_patterns, estimated_patterns,
     >>> F, P, R = mir_eval.pattern.establishment_FPR(ref_patterns,
     ...                                              est_patterns)
 
+
     Parameters
     ----------
     reference_patterns : list
         The reference patterns in the format returned by
         :func:`mir_eval.io.load_patterns()`
+
     estimated_patterns : list
         The estimated patterns in the same format
+
     similarity_metric : str
         A string representing the metric to be used when computing the
         similarity matrix. Accepted values:
+
             - "cardinality_score": Count of the intersection
               between occurrences.
+
         (Default value = "cardinality_score")
+
 
     Returns
     -------
@@ -299,12 +305,14 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
                    similarity_metric="cardinality_score"):
     """Establishment F1 Score, Precision and Recall.
 
+
     Examples
     --------
     >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
     >>> est_patterns = mir_eval.io.load_patterns("est_pattern.txt")
     >>> F, P, R = mir_eval.pattern.occurrence_FPR(ref_patterns,
     ...                                           est_patterns)
+
 
     Parameters
     ----------
@@ -320,9 +328,12 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
     similarity_metric : str
         A string representing the metric to be used
         when computing the similarity matrix. Accepted values:
+
             - "cardinality_score": Count of the intersection
               between occurrences.
+
         (Default value = "cardinality_score")
+
 
     Returns
     -------

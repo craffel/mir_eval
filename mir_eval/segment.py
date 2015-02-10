@@ -159,18 +159,18 @@ def detection(reference_intervals, estimated_intervals,
     >>> ref_intervals, _ = mir_eval.io.load_labeled_intervals('ref.lab')
     >>> est_intervals, _ = mir_eval.io.load_labeled_intervals('est.lab')
     >>> # With 0.5s windowing
-    >>> P05, R05, F05 = mir_eval.boundary.detection(ref_intervals,
-    ...                                             est_intervals,
-    ...                                             window=0.5)
+    >>> P05, R05, F05 = mir_eval.segment.detection(ref_intervals,
+    ...                                            est_intervals,
+    ...                                            window=0.5)
     >>> # With 3s windowing
-    >>> P3, R3, F3 = mir_eval.boundary.detection(ref_intervals,
-    ...                                          est_intervals,
-    ...                                          window=3)
+    >>> P3, R3, F3 = mir_eval.segment.detection(ref_intervals,
+    ...                                         est_intervals,
+    ...                                         window=3)
     >>> # Ignoring hits for the beginning and end of track
-    >>> P, R, F = mir_eval.boundary.detection(ref_intervals,
-    ...                                       est_intervals,
-    ...                                       window=0.5,
-    ...                                       trim=True)
+    >>> P, R, F = mir_eval.segment.detection(ref_intervals,
+    ...                                      est_intervals,
+    ...                                      window=0.5,
+    ...                                      trim=True)
 
     Parameters
     ----------
@@ -192,7 +192,7 @@ def detection(reference_intervals, estimated_intervals,
     trim : boolean
         if ``True``, the first and last boundary times are ignored.
         Typically, these denote start (0) and end-markers.
-         (Default value = False)
+        (Default value = False)
 
     Returns
     -------

@@ -481,6 +481,7 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     voicing arrays are treated as the reference (truth), and the second two as
     the estimate (prediction).  All 4 sequences must be of the same length.
 
+
     Examples
     --------
     >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
@@ -492,6 +493,7 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     ...                                                  est_freq)
     >>> raw_chroma = mir_eval.melody.raw_chroma_accuracy(ref_v, ref_c,
     ...                                                  est_v, est_c)
+
 
     Parameters
     ----------
@@ -507,6 +509,7 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
         Maximum absolute deviation for a cent value to be considered correct
         (Default value = 50)
 
+
     Returns
     -------
     raw_chroma : float
@@ -514,17 +517,19 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
         which est_cent provides a correct frequency values (within
         cent_tolerance cents), ignoring octave errors
 
+
     References
     ----------
     .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
-    Extraction from Polyphonic Music Signals: Approaches, Applications
-    and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
-    Mar. 2014.
+        Extraction from Polyphonic Music Signals: Approaches, Applications
+        and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
+        Mar. 2014.
+
 
     .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
-    Streich, and B. Ong. "Melody transcription from music audio:
-    Approaches and evaluation", IEEE Transactions on Audio, Speech, and
-    Language Processing, 15(4):1247-1256, 2007.
+        Streich, and B. Ong. "Melody transcription from music audio:
+        Approaches and evaluation", IEEE Transactions on Audio, Speech, and
+        Language Processing, 15(4):1247-1256, 2007.
 
     """
     validate_voicing(ref_voicing, est_voicing)
