@@ -13,25 +13,19 @@ def index_labels(labels, case_sensitive=False):
 
     Parameters
     ----------
-    eters :
-        labels : list of strings, shape=(n,)
+    labels : list of strings, shape=(n,)
         A list of annotations, e.g., segment or chord labels from an
         annotation file.
-        
-        - case_sensitive : bool
+
+    case_sensitive : bool
         Set to *True* to enable case-sensitive label indexing
-    labels :
-        
-    case_sensitive :
-         (Default value = False)
+        (Default value = False)
 
     Returns
     -------
-    type
-        indices : list, shape=(n,)
+    indices : list, shape=(n,)
         Numerical representation of *labels*
-        
-        - index_to_label : dict
+    index_to_label : dict
         Mapping to convert numerical indices back to labels.
         ``labels[i] == index_to_label[indices[i]]``
 
@@ -62,20 +56,15 @@ def generate_labels(items, prefix='__'):
 
     Parameters
     ----------
-    eters :
-        items : list-like
+    items : list-like
         A list or array of events or intervals
-        - prefix : str
+    prefix : str
         This prefix will be prepended to all synthetically generated labels
-    items :
-        
-    prefix :
-         (Default value = '__')
+        (Default value = '__')
 
     Returns
     -------
-    type
-        labels : list of str
+    labels : list of str
         Synthetically generated labels
 
     """
@@ -88,46 +77,37 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
 
     Parameters
     ----------
-    eters :
-        intervals : np.ndarray, shape=(n, d)
+    intervals : np.ndarray, shape=(n, d)
         An array of time intervals, as returned by
         :func:`mir_eval.io.load_intervals()` or
         :func:`mir_eval.io.load_labeled.intervals()`.
         The *i* th interval spans time ``intervals[i, 0]`` to
         ``intervals[i, 1]``.
-        
-        - labels : list, shape=(n,)
+
+    labels : list, shape=(n,)
         The annotation for each interval
-        
-        - offset : float > 0
+
+    offset : float > 0
         Phase offset of the sampled time grid (in seconds)
-        
-        - sample_size : float > 0
+        (Default value = 0)
+
+    sample_size : float > 0
         duration of each sample to be generated (in seconds)
-        
-        - fill_value : type(labels[0])
+        (Default value = 0.1)
+
+    fill_value : type(labels[0])
         Object to use for the label with out-of-range time points.
-    intervals :
-        
-    labels :
-        
-    offset :
-         (Default value = 0)
-    sample_size :
-         (Default value = 0.1)
-    fill_value :
-         (Default value = None)
+        (Default value = None)
 
     Returns
     -------
-    type
-        sample_times : list
+    sample_times : list
         list of sample times
-        
-        - sample_labels : list
+
+    sample_labels : list
         array of labels for each generated sample
-        
-        .. note::
+
+    .. note::
         Intervals will be rounded down to the nearest multiple
         of *frame_size*.
 
@@ -145,39 +125,30 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
 
 def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     """Assign labels to a set of points in time given a set of intervals.
-    
+
     Note: Times outside of the known boundaries are mapped to None by default.
 
     Parameters
     ----------
-    eters :
-        intervals : np.ndarray, shape=(n, d)
+    intervals : np.ndarray, shape=(n, d)
         An array of time intervals, as returned by
         :func:``mir_eval.io.load_intervals()``.
         The *i* th interval spans time ``intervals[i, 0]`` to
         ``intervals[i, 1]``.
-        
-        - labels : list, shape=(n,)
+
+    labels : list, shape=(n,)
         The annotation for each interval
-        
-        - time_points : array_like, shape=(m,)
+
+    time_points : array_like, shape=(m,)
         Points in time to assign labels.
-        
-        - fill_value : type(labels[0])
+
+    fill_value : type(labels[0])
         Object to use for the label with out-of-range time points.
-    intervals :
-        
-    labels :
-        
-    time_points :
-        
-    fill_value :
-         (Default value = None)
+        (Default value = None)
 
     Returns
     -------
-    type
-        aligned_labels : list
+    aligned_labels : list
         Labels corresponding to the given time points.
 
     """
@@ -196,26 +167,17 @@ def f_measure(precision, recall, beta=1.0):
 
     Parameters
     ----------
-    eters :
-        precision : float in (0, 1]
+    precision : float in (0, 1]
         Precision
-        
-        - recall : float in (0, 1]
+    recall : float in (0, 1]
         Recall
-        
-        - beta : float > 0
+    beta : float > 0
         Weighting factor for f-measure
-    precision :
-        
-    recall :
-        
-    beta :
-         (Default value = 1.0)
+        (Default value = 1.0)
 
     Returns
     -------
-    type
-        f_measure : float
+    f_measure : float
         The weighted f-measure
 
     """
@@ -231,16 +193,12 @@ def intervals_to_boundaries(intervals):
 
     Parameters
     ----------
-    eters :
-        intervals : np.ndarray, shape=(n_events, 2)
+    intervals : np.ndarray, shape=(n_events, 2)
         Array of interval start and end-times
-    intervals :
-        
 
     Returns
     -------
-    type
-        boundaries : np.ndarray
+    boundaries : np.ndarray
         Interval boundary times, including the end of the final interval
 
     """
@@ -253,25 +211,18 @@ def boundaries_to_intervals(boundaries, labels=None):
 
     Parameters
     ----------
-    eters :
-        boundaries : list-like
+    boundaries : list-like
         List-like of event times.  These are assumed to be unique
         timestamps in ascending order.
-        
-        - labels : None or list of str
+    labels : None or list of str
         Optional list of strings describing each event
-    boundaries :
-        
-    labels :
-         (Default value = None)
+        (Default value = None)
 
     Returns
     -------
-    type
-        intervals : np.ndarray, shape=(n_intervals, 2)
+    intervals : np.ndarray, shape=(n_intervals, 2)
         Start and end time for each interval
-        
-        - labels : list of str or None
+    labels : list of str or None
         Labels for each event.
 
     """
@@ -296,11 +247,11 @@ def adjust_intervals(intervals,
                      start_label='__T_MIN',
                      end_label='__T_MAX'):
     """Adjust a list of time intervals to span the range [t_min, t_max].
-    
+
     Any intervals lying completely outside the specified range will be removed.
-    
+
     Any intervals lying partially outside the specified range will be cropped.
-    
+
     If the specified range exceeds the span of the provided data in either
     direction, additional intervals will be appended.  If an interval is
     appended at the beginning, it will be given the label *start_label*; if an
@@ -308,44 +259,29 @@ def adjust_intervals(intervals,
 
     Parameters
     ----------
-    eters :
-        intervals : np.ndarray, shape=(n_events, 2)
+    intervals : np.ndarray, shape=(n_events, 2)
         Array of interval start and end-times
-        
-        - labels : list, len=n_events or None
+    labels : list, len=n_events or None
         List of labels
-        
-        - t_min : float or None
+        (Default value = None)
+    t_min : float or None
         Minimum interval start time.
-        
-        - t_max : float or None
+        (Default value = 0.0)
+    t_max : float or None
         Maximum interval end time.
-        
-        - start_label : str or float or int
+        (Default value = None)
+    start_label : str or float or int
         Label to give any intervals appended at the beginning
-        
-        - end_label : str or float or int
+        (Default value = '__T_MIN')
+    end_label : str or float or int
         Label to give any intervals appended at the end
-    intervals :
-        
-    labels :
-         (Default value = None)
-    t_min :
-         (Default value = 0.0)
-    t_max :
-         (Default value = None)
-    start_label :
-         (Default value = '__T_MIN')
-    end_label :
-         (Default value = '__T_MAX')
+        (Default value = '__T_MAX')
 
     Returns
     -------
-    type
-        new_intervals : np.ndarray
-        Intervals spanning [t_min, t_max]
-        
-        - new_labels : list
+    new_intervals : np.ndarray
+        Intervals spanning [t_min, t_max]    
+    new_labels : list
         List of labels for new_labels
 
     """
@@ -405,44 +341,32 @@ def adjust_intervals(intervals,
 def adjust_events(events, labels=None, t_min=0.0,
                   t_max=None, label_prefix='__'):
     """Adjust the given list of event times to span the range [t_min, t_max].
-    
+
     Any event times outside of the specified range will be removed.
-    
+
     If the times do not span [t_min, t_max], additional events will be added
     with the prefix label_prefix.
 
     Parameters
     ----------
-    eters :
-        events : np.ndarray
+    events : np.ndarray
         Array of event times (seconds)
-        
-        - labels : list or None
+    labels : list or None
         List of labels
-        
-        - t_min : float or None
+        (Default value = None)
+    t_min : float or None
         Minimum valid event time.
-        
-        - t_max : float or None
+        (Default value = 0.0)
+    t_max : float or None
         Maximum valid event time.
-        
-        - label_prefix : str
+        (Default value = None)
+    label_prefix : str
         Prefix string to use for synthetic labels
-    events :
-        
-    labels :
-         (Default value = None)
-    t_min :
-         (Default value = 0.0)
-    t_max :
-         (Default value = None)
-    label_prefix :
-         (Default value = '__')
+        (Default value = '__')
 
     Returns
     -------
-    type
-        new_times : np.ndarray
+    new_times : np.ndarray
         Event times corrected to the given range.
 
     """
@@ -484,34 +408,30 @@ def adjust_events(events, labels=None, t_min=0.0,
 
 def intersect_files(flist1, flist2):
     """Return the intersection of two sets of filepaths, based on the file name
-    (after the final '/') and ignoring the file extension.  For example::
-    
-      >>> flist1 = ['/a/b/abc.lab', '/c/d/123.lab', '/e/f/xyz.lab']
-      >>> flist2 = ['/g/h/xyz.npy', '/i/j/123.txt', '/k/l/456.lab']
-      >>> sublist1, sublist2 = mir_eval.util.intersect_files(flist1, flist2)
-      >>> print sublist1
-      ['/e/f/xyz.lab', '/c/d/123.lab']
-      >>> print sublist2
-      ['/g/h/xyz.npy', '/i/j/123.txt']
+    (after the final '/') and ignoring the file extension.
+
+    Examples
+    --------
+     >>> flist1 = ['/a/b/abc.lab', '/c/d/123.lab', '/e/f/xyz.lab']
+     >>> flist2 = ['/g/h/xyz.npy', '/i/j/123.txt', '/k/l/456.lab']
+     >>> sublist1, sublist2 = mir_eval.util.intersect_files(flist1, flist2)
+     >>> print sublist1
+     ['/e/f/xyz.lab', '/c/d/123.lab']
+     >>> print sublist2
+     ['/g/h/xyz.npy', '/i/j/123.txt']
 
     Parameters
     ----------
-    eters :
-        flist1 : list
+    flist1 : list
         first list of filepaths
-        - flist2 : list
+    flist2 : list
         second list of filepaths
-    flist1 :
-        
-    flist2 :
-        
 
     Returns
     -------
-    type
-        sublist1 : list
+    sublist1 : list
         subset of filepaths with matching stems from *flist1*
-        - sublist2 : list
+    sublist2 : list
         corresponding filepaths from *flist2*
 
     """
@@ -540,39 +460,26 @@ def intersect_files(flist1, flist2):
 
 
 def merge_labeled_intervals(x_intervals, x_labels, y_intervals, y_labels):
-    """r'''Merge the time intervals of two sequences *x* and *y*.
+    r"""Merge the time intervals of two sequences *x* and *y*.
 
     Parameters
     ----------
-    eters :
-        x_intervals : np.ndarray
+    x_intervals : np.ndarray
         Array of interval times (seconds)
-        
-        - x_labels : list or None
+    x_labels : list or None
         List of labels
-        
-        - y_intervals : np.ndarray
+    y_intervals : np.ndarray
         Array of interval times (seconds)
-        
-        - y_labels : list or None
+    y_labels : list or None
         List of labels
-    x_intervals :
-        
-    x_labels :
-        
-    y_intervals :
-        
-    y_labels :
-        
 
     Returns
     -------
-    type
-        new_intervals : np.ndarray
+    new_intervals : np.ndarray
         New interval times of the merged sequences.
-        - new_x_labels : list
+    new_x_labels : list
         New labels for the sequence *x*
-        - new_y_labels : list
+    new_y_labels : list
         New labels for the sequence *y*
 
     """
@@ -698,36 +605,26 @@ def _bipartite_match(graph):
 def match_events(ref, est, window):
     """Compute a maximum matching between reference and estimated event times,
     subject to a window constraint.
-    
+
     Given two list of event times *ref* and *est*, we seek the largest set of
     correspondences ``(ref[i], est[j])`` such that ``|ref[i] - est[j]| <=
     window``, and each ``ref[i]`` and ``est[j]`` is matched at most once.
-    
+
     This is useful for computing precision/recall metrics in beat tracking,
     onset detection, and segmentation.
 
     Parameters
     ----------
-    eters :
-        ref : np.ndarray, shape=(n,)
+    ref : np.ndarray, shape=(n,)
         Array of reference event times
-        
-        - est : np.ndarray, shape=(m,)
+    est : np.ndarray, shape=(m,)
         Array of estimated event times
-        
-        - window : float > 0
+    window : float > 0
         Size of the window.
-    ref :
-        
-    est :
-        
-    window :
-        
 
     Returns
     -------
-    type
-        matching : list of tuples
+    matching : list of tuples
         A list of matched reference and event numbers.
         ``matching[i] == (i, j)`` where ``ref[i]`` matches ``est[j]``.
 
@@ -755,14 +652,8 @@ def validate_intervals(intervals):
 
     Parameters
     ----------
-    eters :
-        intervals : np.ndarray, shape=(n, 2)
+    intervals : np.ndarray, shape=(n, 2)
         Array of interval start/end locations.
-    intervals :
-        
-
-    Returns
-    -------
 
     """
 
@@ -786,18 +677,11 @@ def validate_events(events, max_time=30000.):
 
     Parameters
     ----------
-    eters :
-        events : np.ndarray, shape=(n,)
+    events : np.ndarray, shape=(n,)
         Array of event times
-        - max_time : float
+    max_time : float
         If an event is found above this time, a ValueError will be raised.
-    events :
-        
-    max_time :
-         (Default value = 30000.)
-
-    Returns
-    -------
+        (Default value = 30000.)
 
     """
     # Make sure no event times are huge
@@ -823,18 +707,8 @@ def filter_kwargs(function, *args, **kwargs):
 
     Parameters
     ----------
-    eters :
-        function : function
+    function : function
         Function to call.  Can take in any number of args or kwargs
-    function :
-        
-    *args :
-        
-    **kwargs :
-        
-
-    Returns
-    -------
 
     """
     # Get the list of function arguments
@@ -853,19 +727,15 @@ def intervals_to_durations(intervals):
 
     Parameters
     ----------
-    eters :
-        intervals : np.ndarray, shape=(n, 2)
+    intervals : np.ndarray, shape=(n, 2)
         An array of time intervals, as returned by
         :func:``mir_eval.io.load_intervals()``.
         The *i* th interval spans time ``intervals[i, 0]`` to
         ``intervals[i, 1]``.
-    intervals :
-        
 
     Returns
     -------
-    type
-        durations : np.ndarray, shape=(n,)
+    durations : np.ndarray, shape=(n,)
         Array of the duration of each interval.
 
     """
