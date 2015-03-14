@@ -5,6 +5,8 @@ Python library for computing common heuristic accuracy scores for various music/
 
 Documentation, including installation and usage information: http://craffel.github.io/mir_eval/
 
+If you're looking for the mir_eval web service, which you can use to run mir_eval without installing anything or writing any code, it can be found here: http://labrosa.ee.columbia.edu/mir_eval/
+
 Dependencies:
 
 * `Scipy/Numpy <http://www.scipy.org/>`_
