@@ -33,6 +33,7 @@ Metrics
 '''
 
 import numpy as np
+import scipy.fftpack
 from scipy.linalg import toeplitz
 from scipy.signal import fftconvolve
 import collections
@@ -245,15 +246,15 @@ def _project(reference_sources, estimated_source, flen):
     reference_sources = np.hstack((reference_sources,
                                    np.zeros((nsrc, flen - 1))))
     estimated_source = np.hstack((estimated_source, np.zeros(flen - 1)))
-    n_fft = int(2**np.ceil(np.log2(nsampl + flen - 1)))
-    sf = np.fft.fft(reference_sources, n=n_fft, axis=1)
-    sef = np.fft.fft(estimated_source, n=n_fft)
+    n_fft = int(2**np.ceil(np.log2(nsampl + flen - 1.)))
+    sf = scipy.fftpack.fft(reference_sources, n=n_fft, axis=1)
+    sef = scipy.fftpack.fft(estimated_source, n=n_fft)
     # inner products between delayed versions of reference_sources
     G = np.zeros((nsrc * flen, nsrc * flen))
     for i in xrange(nsrc):
         for j in xrange(nsrc):
             ssf = sf[i] * np.conj(sf[j])
-            ssf = np.real(np.fft.ifft(ssf))
+            ssf = np.real(scipy.fftpack.ifft(ssf))
             ss = toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])),
                           r=ssf[:flen])
             G[i * flen: (i+1) * flen, j * flen: (j+1) * flen] = ss
@@ -263,7 +264,7 @@ def _project(reference_sources, estimated_source, flen):
     D = np.zeros(nsrc * flen)
     for i in xrange(nsrc):
         ssef = sf[i] * np.conj(sef)
-        ssef = np.real(np.fft.ifft(ssef))
+        ssef = np.real(scipy.fftpack.ifft(ssef))
         D[i * flen: (i+1) * flen] = np.hstack((ssef[0], ssef[-1:-flen:-1]))
 
     # Computing projection
