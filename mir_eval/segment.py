@@ -1018,8 +1018,12 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     # H(true | prediction) = sum_j P[estimated = j] *
     # sum_i P[true = i | estimated = j] log P[true = i | estimated = j]
     # entropy sums over axis=0, which is true labels
-    true_given_est = p_est.dot(scipy.stats.entropy(contingency, base=2))
-    pred_given_ref = p_ref.dot(scipy.stats.entropy(contingency.T, base=2))
+
+    # The following scipy.stats.entropy calls are equivalent to
+    # scipy.stats.entropy(contingency, base=2)
+    # However the `base` kwarg has only been introduced in scipy 0.14.0
+    true_given_est = p_est.dot(scipy.stats.entropy(contingency) / np.log(2))
+    pred_given_ref = p_ref.dot(scipy.stats.entropy(contingency.T) / np.log(2))
 
     score_under = 0.0
     if contingency.shape[0] > 1:

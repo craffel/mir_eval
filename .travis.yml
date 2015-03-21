@@ -1,0 +1,18 @@
+language: python
+python:
+    - "2.7"
+    - "3.3"
+#    - "3.4" # not supported due to no scipy wheel available yet
+install:
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq libatlas-base-dev libatlas3gf-base gfortran
+
+# Install NumPy and SciPy from wheels, as compilation takes ages
+# This should be wheels.astropy.org, but there are strange HTTPS errors a.t.m.
+    - pip install --no-index --find-links http://www.mpia.de/~robitaille/wheelhouse/ --trusted-host www.mpia.de scipy
+    - pip install -e .
+    - pip install nose sphinx numpydoc
+script:
+    - nosetests
+    - python setup.py build_sphinx
+    - python setup.py egg_info -b.dev sdist --formats gztar
