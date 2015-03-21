@@ -18,6 +18,8 @@ setup(
         'Development Status :: 5 - Production/Stable',
         "Intended Audience :: Developers",
         "Topic :: Multimedia :: Sound/Audio :: Analysis",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
     ],
     keywords='audio music mir dsp',
     license='MIT',

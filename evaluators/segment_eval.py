@@ -9,6 +9,7 @@ Usage:
 ./segment_eval.py TRUTH.TXT PREDICTION.TXT
 '''
 
+from __future__ import print_function
 import argparse
 import sys
 import os
@@ -63,10 +64,10 @@ if __name__ == '__main__':
     scores = mir_eval.segment.evaluate(ref_intervals, ref_labels,
                                        est_intervals, est_labels,
                                        trim=parameters['trim'])
-    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
-                             os.path.basename(parameters['estimated_file']))
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
-        print 'Saving results to: ', parameters['output_file']
+        print('Saving results to: ', parameters['output_file'])
         eval_utilities.save_results(scores, parameters['output_file'])

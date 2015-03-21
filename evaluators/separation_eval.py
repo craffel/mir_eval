@@ -7,6 +7,7 @@ Usage:
 ./separation_eval.py PATH_TO_REFERENCE_WAVS PATH_TO_ESTIMATED_WAVS
 '''
 
+from __future__ import print_function
 import argparse
 import sys
 import os
@@ -73,10 +74,10 @@ if __name__ == '__main__':
     # Compute all the scores
     scores = mir_eval.separation.evaluate(reference_sources, estimated_sources)
     last_dir = lambda d: os.path.basename(os.path.normpath(d))
-    print "{} vs. {}".format(last_dir(parameters['reference_directory']),
-                             last_dir(parameters['estimated_directory']))
+    print("{} vs. {}".format(last_dir(parameters['reference_directory']),
+                             last_dir(parameters['estimated_directory'])))
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
-        print 'Saving results to: ', parameters['output_file']
+        print('Saving results to: ', parameters['output_file'])
         eval_utilities.save_results(scores, parameters['output_file'])

@@ -9,6 +9,11 @@ import scipy.io.wavfile
 
 from . import util
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 def load_delimited(filename, converters, delimiter=r'\s+'):
     '''

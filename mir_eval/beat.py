@@ -53,6 +53,11 @@ import warnings
 # The maximum allowable beat time
 MAX_TIME = 30000.
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 def trim_beats(beats, min_beat_time=5.):
     '''Removes beats before min_beat_time.  A common preprocessing step.

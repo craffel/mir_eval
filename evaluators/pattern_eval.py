@@ -12,6 +12,7 @@ Example:
 Written by Oriol Nieto (oriol@nyu.edu), 2014
 """
 
+from __future__ import print_function
 import argparse
 import os
 import sys
@@ -45,12 +46,12 @@ def main():
 
     # Compute all the scores
     scores = mir_eval.pattern.evaluate(ref_patterns, est_patterns)
-    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
-                             os.path.basename(parameters['estimated_file']))
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
-        print 'Saving results to: ', parameters['output_file']
+        print('Saving results to: ', parameters['output_file'])
         eval_utilities.save_results(scores, parameters['output_file'])
 
 
