@@ -7,11 +7,6 @@ import numpy as np
 import os
 import inspect
 
-try:
-    xrange
-except NameError:
-    xrange = range
-
 
 def index_labels(labels, case_sensitive=False):
     """Convert a list of string identifiers into numerical indices.
@@ -73,7 +68,7 @@ def generate_labels(items, prefix='__'):
         Synthetically generated labels
 
     """
-    return ['{}{}'.format(prefix, n) for n in xrange(len(items))]
+    return ['{}{}'.format(prefix, n) for n in range(len(items))]
 
 
 def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,

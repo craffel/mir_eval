@@ -53,11 +53,6 @@ import warnings
 # The maximum allowable beat time
 MAX_TIME = 30000.
 
-try:
-    xrange
-except NameError:
-    xrange = range
-
 
 def trim_beats(beats, min_beat_time=5.):
     """Removes beats before min_beat_time.  A common preprocessing step.
@@ -287,7 +282,7 @@ def goto(reference_beats,
     paired = np.zeros(reference_beats.shape[0])
     # Keep track of Goto's three criteria
     goto_criteria = 0
-    for n in xrange(1, reference_beats.shape[0]-1):
+    for n in range(1, reference_beats.shape[0]-1):
         # Get previous inner-reference-beat-interval
         previous_interval = 0.5*(reference_beats[n] - reference_beats[n-1])
         # Window start - in the middle of the current beat and the previous
@@ -465,7 +460,7 @@ def continuity(reference_beats,
         used_annotations = np.zeros(n_annotations)
         # Whether or not we are continuous at any given point
         beat_successes = np.zeros(n_annotations)
-        for m in xrange(estimated_beats.shape[0]):
+        for m in range(estimated_beats.shape[0]):
             # Is this beat correct?
             beat_success = 0
             # Get differences for this beat
@@ -637,7 +632,7 @@ def _get_entropy(reference_beats, estimated_beats, bins):
 
     """
     beat_error = np.zeros(estimated_beats.shape[0])
-    for n in xrange(estimated_beats.shape[0]):
+    for n in range(estimated_beats.shape[0]):
         # Get index of closest annotation to this beat
         beat_distances = estimated_beats[n] - reference_beats
         closest_beat = np.argmin(np.abs(beat_distances))
