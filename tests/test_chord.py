@@ -89,11 +89,11 @@ def test_join():
     # Arguments are root, quality, extensions, bass
     splits = [('F#', '', None, ''),
               ('F#', 'hdim7', None, ''),
-              ('F#', '', {'*b3', '4'}, ''),
+              ('F#', '', ['*b3', '4'], ''),
               ('F#', '', None, 'b7'),
-              ('F#', '', {'*b3', '4'}, 'b7'),
+              ('F#', '', ['*b3', '4'], 'b7'),
               ('F#', 'hdim7', None, 'b7'),
-              ('F#', 'hdim7', {'*b3', '4'}, 'b7')]
+              ('F#', 'hdim7', ['*b3', '4'], 'b7')]
     labels = ['F#', 'F#:hdim7', 'F#:(*b3,4)', 'F#/b7',
               'F#:(*b3,4)/b7', 'F#:hdim7/b7', 'F#:hdim7(*b3,4)/b7']
 
