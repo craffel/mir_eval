@@ -7,6 +7,11 @@ import numpy as np
 import os
 import inspect
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 def index_labels(labels, case_sensitive=False):
     """Convert a list of string identifiers into numerical indices.
@@ -230,7 +235,7 @@ def boundaries_to_intervals(boundaries, labels=None):
     if not np.allclose(boundaries, np.unique(boundaries)):
         raise ValueError('Boundary times are not unique or not ascending.')
 
-    intervals = np.asarray(zip(boundaries[:-1], boundaries[1:]))
+    intervals = np.asarray(list(zip(boundaries[:-1], boundaries[1:])))
 
     if labels is None:
         interval_labels = None
@@ -715,7 +720,7 @@ def filter_kwargs(function, *args, **kwargs):
     function_args = inspect.getargspec(function).args
     # Construct a dict of those kwargs which appear in the function
     filtered_kwargs = {}
-    for kwarg, value in kwargs.items():
+    for kwarg, value in list(kwargs.items()):
         if kwarg in function_args:
             filtered_kwargs[kwarg] = value
     # Call the function with the supplied args and the filtered kwarg dict

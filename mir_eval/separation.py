@@ -41,6 +41,11 @@ import itertools
 import warnings
 from . import util
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 # The maximum allowable number of sources (prevents insane computational load)
 MAX_SOURCES = 100

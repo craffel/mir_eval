@@ -19,6 +19,7 @@ So, for example, if you'd like to generate data for onset and melody,run
     ./generate_data.py onset melody
 '''
 
+from __future__ import print_function
 import mir_eval
 import glob
 import json
@@ -66,7 +67,7 @@ if __name__ == '__main__':
                            'data/separation/{}*')
     # Get task keys from argv
     for task in sys.argv[1:]:
-        print 'Generating data for {}'.format(task)
+        print('Generating data for {}'.format(task))
         submodule, loader, data_glob = tasks[task]
         # Cycle through annotation file pairs
         for ref_file, est_file in zip(glob.glob(data_glob.format('ref')),

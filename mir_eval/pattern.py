@@ -62,6 +62,11 @@ from . import util
 import warnings
 import collections
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 def _n_onset_midi(patterns):
     """Computes the number of onset_midi objects in a pattern

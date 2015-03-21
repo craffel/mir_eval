@@ -16,6 +16,7 @@ from Polyphonic Music Signals: Approaches, Applications and Challenges",
 IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
 '''
 
+from __future__ import print_function
 import argparse
 import sys
 import os
@@ -68,10 +69,10 @@ if __name__ == '__main__':
     # Compute all the scores
     scores = mir_eval.melody.evaluate(ref_time, ref_freq, est_time, est_freq,
                                       hop=parameters['hop'])
-    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
-                             os.path.basename(parameters['estimated_file']))
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
-        print 'Saving results to: ', parameters['output_file']
+        print('Saving results to: ', parameters['output_file'])
         eval_utilities.save_results(scores, parameters['output_file'])
