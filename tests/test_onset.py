@@ -12,9 +12,9 @@ import nose.tools
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'data/onset/ref*.txt'
-EST_GLOB = 'data/onset/est*.txt'
-SCORES_GLOB = 'data/onset/output*.json'
+REF_GLOB = 'tests/data/onset/ref*.txt'
+EST_GLOB = 'tests/data/onset/est*.txt'
+SCORES_GLOB = 'tests/data/onset/output*.json'
 
 
 def __unit_test_onset_function(metric):

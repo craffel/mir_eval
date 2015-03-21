@@ -12,9 +12,9 @@ import nose.tools
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB    = 'data/segment/ref*.lab'
-EST_GLOB    = 'data/segment/est*.lab'
-SCORES_GLOB  = 'data/segment/output*.json'
+REF_GLOB    = 'tests/data/segment/ref*.lab'
+EST_GLOB    = 'tests/data/segment/est*.lab'
+SCORES_GLOB  = 'tests/data/segment/output*.json'
 
 
 def __unit_test_boundary_function(metric):
