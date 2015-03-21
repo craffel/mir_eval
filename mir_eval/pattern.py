@@ -62,11 +62,6 @@ from . import util
 import warnings
 import collections
 
-try:
-    xrange
-except NameError:
-    xrange = range
-
 
 def _n_onset_midi(patterns):
     """Computes the number of onset_midi objects in a pattern
@@ -498,8 +493,8 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         nP = len(ref_elements)      # Number of elements in reference
         nQ = len(est_elements)      # Number of elements in estimation
         F = np.zeros((nP, nQ))      # F-measure matrix for the given layer
-        for iP in xrange(nP):
-            for iQ in xrange(nQ):
+        for iP in range(nP):
+            for iQ in range(nQ):
                 if layer == 1:
                     func = compute_first_layer_PR
                 elif layer == 2:

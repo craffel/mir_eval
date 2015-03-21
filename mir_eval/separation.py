@@ -41,11 +41,6 @@ import itertools
 import warnings
 from . import util
 
-try:
-    xrange
-except NameError:
-    xrange = range
-
 
 # The maximum allowable number of sources (prevents insane computational load)
 MAX_SOURCES = 100
@@ -170,8 +165,8 @@ def bss_eval_sources(reference_sources, estimated_sources):
     sdr = np.empty((nsrc, nsrc))
     sir = np.empty((nsrc, nsrc))
     sar = np.empty((nsrc, nsrc))
-    for jest in xrange(nsrc):
-        for jtrue in xrange(nsrc):
+    for jest in range(nsrc):
+        for jtrue in range(nsrc):
             s_true, e_spat, e_interf, e_artif = \
                 _bss_decomp_mtifilt(reference_sources,
                                     estimated_sources[jest],
@@ -180,7 +175,7 @@ def bss_eval_sources(reference_sources, estimated_sources):
                 _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
     # select the best ordering
-    perms = list(itertools.permutations(xrange(nsrc)))
+    perms = list(itertools.permutations(range(nsrc)))
     mean_sir = np.empty(len(perms))
     dum = np.arange(nsrc)
     for (i, perm) in enumerate(perms):
@@ -256,8 +251,8 @@ def _project(reference_sources, estimated_source, flen):
     sef = scipy.fftpack.fft(estimated_source, n=n_fft)
     # inner products between delayed versions of reference_sources
     G = np.zeros((nsrc * flen, nsrc * flen))
-    for i in xrange(nsrc):
-        for j in xrange(nsrc):
+    for i in range(nsrc):
+        for j in range(nsrc):
             ssf = sf[i] * np.conj(sf[j])
             ssf = np.real(scipy.fftpack.ifft(ssf))
             ss = toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])),
@@ -267,7 +262,7 @@ def _project(reference_sources, estimated_source, flen):
     # inner products between estimated_source and delayed versions of
     # reference_sources
     D = np.zeros(nsrc * flen)
-    for i in xrange(nsrc):
+    for i in range(nsrc):
         ssef = sf[i] * np.conj(sef)
         ssef = np.real(scipy.fftpack.ifft(ssef))
         D[i * flen: (i+1) * flen] = np.hstack((ssef[0], ssef[-1:-flen:-1]))
@@ -280,7 +275,7 @@ def _project(reference_sources, estimated_source, flen):
         C = np.linalg.lstsq(G, D)[0].reshape(flen, nsrc, order='F')
     # Filtering
     sproj = np.zeros(nsampl + flen - 1)
-    for i in xrange(nsrc):
+    for i in range(nsrc):
         sproj += fftconvolve(C[:, i], reference_sources[i])[:nsampl + flen - 1]
     return sproj
 

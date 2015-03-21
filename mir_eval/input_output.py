@@ -9,11 +9,6 @@ import scipy.io.wavfile
 
 from . import util
 
-try:
-    xrange
-except NameError:
-    xrange = range
-
 
 def load_delimited(filename, converters, delimiter=r'\s+'):
     r"""Utility function for loading in data from an annotation file where columns
@@ -48,7 +43,7 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
     """
     # Initialize list of empty lists
     n_columns = len(converters)
-    columns = tuple(list() for _ in xrange(n_columns))
+    columns = tuple(list() for _ in range(n_columns))
 
     # Create re object for splitting lines
     splitter = re.compile(delimiter)
