@@ -52,19 +52,19 @@ if __name__ == '__main__':
     # that task will be generated.
     tasks = {}
     tasks['beat'] = (mir_eval.beat, mir_eval.io.load_events,
-                     'data/beat/{}*.txt')
+                     'tests/data/beat/{}*.txt')
     tasks['chord'] = (mir_eval.chord, mir_eval.io.load_labeled_intervals,
-                      'data/chord/{}*.lab')
+                      'tests/data/chord/{}*.lab')
     tasks['melody'] = (mir_eval.melody, mir_eval.io.load_time_series,
-                       'data/melody/{}*.txt')
+                       'tests/data/melody/{}*.txt')
     tasks['onset'] = (mir_eval.onset, mir_eval.io.load_events,
-                      'data/onset/{}*.txt')
+                      'tests/data/onset/{}*.txt')
     tasks['pattern'] = (mir_eval.pattern, mir_eval.io.load_patterns,
-                        'data/pattern/{}*.txt')
+                        'tests/data/pattern/{}*.txt')
     tasks['segment'] = (mir_eval.segment, mir_eval.io.load_labeled_intervals,
-                        'data/segment/{}*.lab')
+                        'tests/data/segment/{}*.lab')
     tasks['separation'] = (mir_eval.separation, load_separation_data,
-                           'data/separation/{}*')
+                           'tests/data/separation/{}*')
     # Get task keys from argv
     for task in sys.argv[1:]:
         print('Generating data for {}'.format(task))

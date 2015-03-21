@@ -12,9 +12,9 @@ import json
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'data/chord/ref*.lab'
-EST_GLOB = 'data/chord/est*.lab'
-SCORES_GLOB = 'data/chord/output*.json'
+REF_GLOB = 'tests/data/chord/ref*.lab'
+EST_GLOB = 'tests/data/chord/est*.lab'
+SCORES_GLOB = 'tests/data/chord/output*.json'
 
 
 def __check_valid(function, parameters, result):

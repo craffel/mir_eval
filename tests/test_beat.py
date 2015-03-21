@@ -12,9 +12,9 @@ import nose.tools
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'data/beat/ref*.txt'
-EST_GLOB = 'data/beat/est*.txt'
-SCORES_GLOB = 'data/beat/output*.json'
+REF_GLOB = 'tests/data/beat/ref*.txt'
+EST_GLOB = 'tests/data/beat/est*.txt'
+SCORES_GLOB = 'tests/data/beat/output*.json'
 
 
 def test_trim_beats():
