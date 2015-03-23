@@ -57,6 +57,8 @@ def test_onset_functions():
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
+    assert len(ref_files) == len(est_files) == len(sco_files) > 0
+
     # Unit tests
     for metric in [mir_eval.onset.f_measure]:
         yield (__unit_test_onset_function, metric)
