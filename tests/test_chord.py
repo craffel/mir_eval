@@ -432,6 +432,8 @@ def test_beat_functions():
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
+    assert len(ref_files) == len(est_files) == len(sco_files) > 0
+
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:

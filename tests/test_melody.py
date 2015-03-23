@@ -152,6 +152,8 @@ def test_melody_functions():
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
+    assert len(ref_files) == len(est_files) == len(sco_files) > 0
+
     # Unit tests
     for metric in [mir_eval.melody.voicing_measures,
                    mir_eval.melody.raw_pitch_accuracy,

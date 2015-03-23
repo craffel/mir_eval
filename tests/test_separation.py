@@ -78,6 +78,8 @@ def test_separation_functions():
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
+    assert len(ref_files) == len(est_files) == len(sco_files) > 0
+
     # Unit tests
     for metric in [mir_eval.separation.bss_eval_sources]:
         yield (__unit_test_separation_function, metric)
