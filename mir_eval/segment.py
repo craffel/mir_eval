@@ -231,16 +231,23 @@ def detection(reference_intervals, estimated_intervals,
         reference_boundaries = reference_boundaries[1:-1]
         estimated_boundaries = estimated_boundaries[1:-1]
 
-    # If we have no boundaries, we get no score.
+    # If we have no boundaries, we do not need to match them.
     if len(reference_boundaries) == 0 or len(estimated_boundaries) == 0:
-        return 0.0, 0.0, 0.0
-
-    matching = util.match_events(reference_boundaries,
-                                 estimated_boundaries,
-                                 window)
-
-    precision = float(len(matching)) / len(estimated_boundaries)
-    recall = float(len(matching)) / len(reference_boundaries)
+        matching = []
+    else:
+        matching = util.match_events(reference_boundaries,
+                                     estimated_boundaries,
+                                     window)
+    # If we did not predict any boundary, all of them are correct.
+    if len(estimated_boundaries) == 0:
+        precision = 1
+    else:
+        precision = float(len(matching)) / len(estimated_boundaries)
+    # If there was no boundary to detect, we detected all of them.
+    if len(reference_boundaries) == 0:
+        recall = 1
+    else:
+        recall = float(len(matching)) / len(reference_boundaries)
 
     f_measure = util.f_measure(precision, recall, beta=beta)
 
