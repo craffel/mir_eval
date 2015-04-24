@@ -51,7 +51,7 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
     # Keep track of whether we create our own file handle
     own_fh = False
     # If the filename input is a string, need to open it
-    if type(filename) == str:
+    if type(filename) == str or type(filename) == unicode:
         # Remember that we need to close it later
         own_fh = True
         # Open the file for reading
