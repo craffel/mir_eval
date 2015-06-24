@@ -290,15 +290,31 @@ def load_patterns(filename):
     -------
     pattern_list : list
         The list of patterns, containing all their occurrences,
-        using the following format::
+        using the following format:
 
-            pattern_list = [pattern1, ..., patternN]
-            pattern = [occurrence1, ..., occurrenceM]
-            occurrence = [onset_midi1, ..., onset_midiO]
             onset_midi = (onset_time, midi_number)
+            occurrence = [onset_midi1, ..., onset_midiO]
+            pattern = [occurrence1, ..., occurrenceM]
+            pattern_list = [pattern1, ..., patternN]
 
-        E.g.::
-            P = [[[(77.0, 67.0), (77.5, 77.0), ... ]]]
+        where `N` is the number of patterns, `M[i]` is the number of occurrences
+        of the `i`'th pattern, and `O[j]` is the number of onsets in the `j`'th
+        occurrence.
+
+        E.g.:
+            occ1 = [(0.5, 67.0), (1.0, 67.0), (1.5, 67.0), (2.0, 64.0)]
+            occ2 = [(4.5, 65.0), (5.0, 65.0), (5.5, 65.0), (6.0, 62.0)]
+            pattern1 = [occ1, occ2]
+
+            occ1 = [(10.5, 67.0), (11.0, 67.0), (11.5, 67.0), (12.0, 64.0),
+                    (12.5, 69.0), (13.0, 69.0), (13.5, 69.0), (14.0, 67.0),
+                    (14.5, 76.0), (15.0, 76.0), (15.5, 76.0), (16.0, 72.0)]
+            occ2 = [(18.5, 67.0), (19.0, 67.0), (19.5, 67.0), (20.0, 62.0),
+                    (20.5, 69.0), (21.0, 69.0), (21.5, 69.0), (22.0, 67.0),
+                    (22.5, 77.0), (23.0, 77.0), (23.5, 77.0), (24.0, 74.0)]
+            pattern2 = [occ1, occ2]
+
+            pattern_list = [pattern1, pattern2]
 
     """
 

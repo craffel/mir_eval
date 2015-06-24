@@ -69,10 +69,13 @@ def _n_onset_midi(patterns):
     Parameters
     ----------
     patterns :
-        
+        A list of patterns using the format returned by
+        :func:`mir_eval.io.load_patterns()`
 
     Returns
     -------
+    n_onsets : int
+        Number of onsets within the pattern.
 
     """
     return len([o_m for pat in patterns for occ in pat for o_m in occ])
@@ -425,9 +428,9 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         Parameters
         ----------
         ref_occs :
-            
+
         est_occs :
-            
+
 
         Returns
         -------
@@ -449,9 +452,9 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         Parameters
         ----------
         ref_pattern :
-            
+
         est_pattern :
-            
+
 
         Returns
         -------
@@ -469,16 +472,16 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         """Computes the F-measure matrix for a given layer. The reference and
         estimated elements can be either patters or occurrences, depending
         on the layer.
-        
+
         For layer 1, the elements must be occurrences.
         For layer 2, the elements must be patterns.
 
         Parameters
         ----------
         ref_elements :
-            
+
         est_elements :
-            
+
         layer :
              (Default value = 1)
 
@@ -642,7 +645,7 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
 
     """
 
-    # Now compute all the metrics
+    # Compute all the metrics
     scores = collections.OrderedDict()
 
     # Standard scores
