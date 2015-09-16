@@ -13,5 +13,6 @@ from . import sonify
 from . import melody
 from . import pattern
 from . import tempo
+from . import hierarchy
 
 __version__ = '0.0.1'
