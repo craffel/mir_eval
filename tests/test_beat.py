@@ -12,9 +12,9 @@ import nose.tools
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'data/beat/ref*.txt'
-EST_GLOB = 'data/beat/est*.txt'
-SCORES_GLOB = 'data/beat/output*.json'
+REF_GLOB = 'tests/data/beat/ref*.txt'
+EST_GLOB = 'tests/data/beat/est*.txt'
+SCORES_GLOB = 'tests/data/beat/output*.json'
 
 
 def test_trim_beats():
@@ -64,6 +64,8 @@ def test_beat_functions():
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
+
+    assert len(ref_files) == len(est_files) == len(sco_files) > 0
 
     # Unit tests
     for metric in [mir_eval.beat.f_measure,

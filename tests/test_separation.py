@@ -16,9 +16,9 @@ import warnings
 
 A_TOL = 1e-12
 
-REF_GLOB = 'data/separation/ref*'
-EST_GLOB = 'data/separation/est*'
-SCORES_GLOB = 'data/separation/output*.json'
+REF_GLOB = 'tests/data/separation/ref*'
+EST_GLOB = 'tests/data/separation/est*'
+SCORES_GLOB = 'tests/data/separation/output*.json'
 
 
 def __load_and_stack_wavs(directory):
@@ -77,6 +77,8 @@ def test_separation_functions():
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
+
+    assert len(ref_files) == len(est_files) == len(sco_files) > 0
 
     # Unit tests
     for metric in [mir_eval.separation.bss_eval_sources]:

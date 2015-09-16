@@ -1,3 +1,5 @@
+from __future__ import print_function
+from future.utils import iteritems
 import json
 
 
@@ -26,8 +28,8 @@ def print_evaluation(results):
             the corresponding scores
     '''
     max_len = max([len(key) for key in results])
-    for key, value in results.iteritems():
+    for key, value in iteritems(results):
         if type(value) == float:
-            print '\t{:>{}} : {:.3f}'.format(key, max_len, value)
+            print('\t{:>{}} : {:.3f}'.format(key, max_len, value))
         else:
-            print '\t{:>{}} : {}'.format(key, max_len, value)
+            print('\t{:>{}} : {}'.format(key, max_len, value))

@@ -13,9 +13,9 @@ import warnings
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'data/melody/ref*.txt'
-EST_GLOB = 'data/melody/est*.txt'
-SCORES_GLOB = 'data/melody/output*.json'
+REF_GLOB = 'tests/data/melody/ref*.txt'
+EST_GLOB = 'tests/data/melody/est*.txt'
+SCORES_GLOB = 'tests/data/melody/output*.json'
 
 
 def test_hz2cents():
@@ -151,6 +151,8 @@ def test_melody_functions():
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
+
+    assert len(ref_files) == len(est_files) == len(sco_files) > 0
 
     # Unit tests
     for metric in [mir_eval.melody.voicing_measures,

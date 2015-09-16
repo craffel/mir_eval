@@ -1,20 +1,17 @@
 #!/usr/bin/env python
 '''
-CREATED:2014-01-24 12:42:43 by Brian McFee <brm2132@columbia.edu>
-
-Compute beat evaluation metrics
-
+Utility script for computing all tempo metrics.
 
 Usage:
 
-./beat_eval.py REFERENCE.TXT ESTIMATED.TXT
+./tempo_eval.py REFERENCE.TXT ESTIMATED.TXT
 '''
 
-from __future__ import print_function
 import argparse
 import sys
 import os
 import eval_utilities
+import numpy as np
 
 import mir_eval
 
@@ -22,7 +19,7 @@ import mir_eval
 def process_arguments():
     '''Argparse function to get the program parameters'''
 
-    parser = argparse.ArgumentParser(description='mir_eval beat detection '
+    parser = argparse.ArgumentParser(description='mir_eval tempo detection '
                                                  'evaluation')
 
     parser.add_argument('-o',
@@ -47,14 +44,23 @@ if __name__ == '__main__':
     parameters = process_arguments()
 
     # Load in data
-    reference_beats = mir_eval.io.load_events(parameters['reference_file'])
-    estimated_beats = mir_eval.io.load_events(parameters['estimated_file'])
+    reference_tempi = mir_eval.io.load_delimited(parameters['reference_file'],
+                                                 [float]*3)
+    estimated_tempi = mir_eval.io.load_delimited(parameters['estimated_file'],
+                                                 [float]*3)
+
+    estimated_tempi = np.concatenate(estimated_tempi[:2])
+    reference_weight = reference_tempi[-1][0]
+    reference_tempi = np.concatenate(reference_tempi[:2])
+
     # Compute all the scores
-    scores = mir_eval.beat.evaluate(reference_beats, estimated_beats)
-    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
-                             os.path.basename(parameters['estimated_file'])))
+    scores = mir_eval.tempo.evaluate(reference_tempi,
+                                     reference_weight,
+                                     estimated_tempi)
+    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file']))
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
-        print('Saving results to: ', parameters['output_file'])
+        print 'Saving results to: ', parameters['output_file']
         eval_utilities.save_results(scores, parameters['output_file'])

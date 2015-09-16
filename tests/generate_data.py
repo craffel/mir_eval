@@ -19,6 +19,7 @@ So, for example, if you'd like to generate data for onset and melody,run
     ./generate_data.py onset melody
 '''
 
+from __future__ import print_function
 import mir_eval
 import glob
 import json
@@ -51,22 +52,22 @@ if __name__ == '__main__':
     # that task will be generated.
     tasks = {}
     tasks['beat'] = (mir_eval.beat, mir_eval.io.load_events,
-                     'data/beat/{}*.txt')
+                     'tests/data/beat/{}*.txt')
     tasks['chord'] = (mir_eval.chord, mir_eval.io.load_labeled_intervals,
-                      'data/chord/{}*.lab')
+                      'tests/data/chord/{}*.lab')
     tasks['melody'] = (mir_eval.melody, mir_eval.io.load_time_series,
-                       'data/melody/{}*.txt')
+                       'tests/data/melody/{}*.txt')
     tasks['onset'] = (mir_eval.onset, mir_eval.io.load_events,
-                      'data/onset/{}*.txt')
+                      'tests/data/onset/{}*.txt')
     tasks['pattern'] = (mir_eval.pattern, mir_eval.io.load_patterns,
-                        'data/pattern/{}*.txt')
+                        'tests/data/pattern/{}*.txt')
     tasks['segment'] = (mir_eval.segment, mir_eval.io.load_labeled_intervals,
-                        'data/segment/{}*.lab')
+                        'tests/data/segment/{}*.lab')
     tasks['separation'] = (mir_eval.separation, load_separation_data,
-                           'data/separation/{}*')
+                           'tests/data/separation/{}*')
     # Get task keys from argv
     for task in sys.argv[1:]:
-        print 'Generating data for {}'.format(task)
+        print('Generating data for {}'.format(task))
         submodule, loader, data_glob = tasks[task]
         # Cycle through annotation file pairs
         for ref_file, est_file in zip(glob.glob(data_glob.format('ref')),

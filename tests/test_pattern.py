@@ -12,9 +12,9 @@ import nose.tools
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'data/pattern/ref*.txt'
-EST_GLOB = 'data/pattern/est*.txt'
-SCORES_GLOB = 'data/pattern/output*.json'
+REF_GLOB = 'tests/data/pattern/ref*.txt'
+EST_GLOB = 'tests/data/pattern/est*.txt'
+SCORES_GLOB = 'tests/data/pattern/output*.json'
 
 
 def __unit_test_pattern_function(metric):
@@ -53,6 +53,8 @@ def test_pattern_functions():
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
+
+    assert len(ref_files) == len(est_files) == len(sco_files) > 0
 
     # Unit tests
     for metric in [mir_eval.pattern.standard_FPR,

@@ -55,36 +55,36 @@ MAX_TIME = 30000.
 
 
 def trim_beats(beats, min_beat_time=5.):
-    '''Removes beats before min_beat_time.  A common preprocessing step.
+    """Removes beats before min_beat_time.  A common preprocessing step.
 
-    :parameters:
-        - beats : np.ndarray
-            Array of beat times in seconds.
-        - min_beat_time : float
-            Minimum beat time to allow, default 5
+    Parameters
+    ----------
+    beats : np.ndarray
+        Array of beat times in seconds.
+    min_beat_time : float
+        Minimum beat time to allow
+        (Default value = 5.)
 
-    :returns:
-        - beats_trimmed : np.ndarray
-            Trimmed beat array.
-    '''
+    Returns
+    -------
+    beats_trimmed : np.ndarray
+        Trimmed beat array.
+    """
     # Remove beats before min_beat_time
     return beats[beats >= min_beat_time]
 
 
 def validate(reference_beats, estimated_beats):
-    '''Checks that the input annotations to a metric look like valid beat time
+    """Checks that the input annotations to a metric look like valid beat time
     arrays, and throws helpful errors if not.
 
-    :parameters:
-        - reference_beats : np.ndarray
-            reference beat times, in seconds
-        - estimated_beats : np.ndarray
-            estimated beat times, in seconds
-
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-    '''
+    Parameters
+    ----------
+    reference_beats : np.ndarray
+        reference beat times, in seconds
+    estimated_beats : np.ndarray
+        estimated beat times, in seconds
+    """
     # If reference or estimated beats are empty,
     # warn because metric will be 0
     if reference_beats.size == 0:
@@ -96,25 +96,27 @@ def validate(reference_beats, estimated_beats):
 
 
 def _get_reference_beat_variations(reference_beats):
-    '''
-    Return metric variations of the reference beats
+    """Return metric variations of the reference beats
 
-    :parameters:
-        - reference_beats : np.ndarray
-            beat locations in seconds
+    Parameters
+    ----------
+    reference_beats : np.ndarray
+        beat locations in seconds
 
-    :returns:
-        - reference_beats : np.ndarray
-            Original beat locations
-        - off_beat : np.ndarray
-            180 degrees out of phase from the original beat locations
-        - double : np.ndarray
-            Beats at 2x the original tempo
-        - half_odd : np.ndarray
-            Half tempo, odd beats
-        - half_even : np.ndarray
-            Half tempo, even beats
-    '''
+    Returns
+    -------
+    reference_beats : np.ndarray
+        Original beat locations
+    off_beat : np.ndarray
+        180 degrees out of phase from the original beat locations
+    double : np.ndarray
+        Beats at 2x the original tempo
+    half_odd : np.ndarray
+        Half tempo, odd beats
+    half_even : np.ndarray
+        Half tempo, even beats
+
+    """
 
     # Create annotations at twice the metric level
     interpolated_indices = np.arange(0, reference_beats.shape[0]-.5, .5)
@@ -134,43 +136,34 @@ def _get_reference_beat_variations(reference_beats):
 def f_measure(reference_beats,
               estimated_beats,
               f_measure_threshold=0.07):
-    '''
-    Compute the F-measure of correct vs incorrectly predicted beats.
-    "Corectness" is determined over a small window.
+    """Compute the F-measure of correct vs incorrectly predicted beats.
+    "Correctness" is determined over a small window.
 
-    :usage:
-        >>> reference_beats = mir_eval.io.load_events('reference.txt')
-        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
-        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
-        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
-        >>> f_measure = mir_eval.beat.f_measure(reference_beats,
-                                                estimated_beats)
+    Examples
+    --------
+    >>> reference_beats = mir_eval.io.load_events('reference.txt')
+    >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+    >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+    >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
+    >>> f_measure = mir_eval.beat.f_measure(reference_beats,
+                                            estimated_beats)
 
-    :parameters:
-        - reference_beats : np.ndarray
-            reference beat times, in seconds
-        - estimated_beats : np.ndarray
-            estimated beat times, in seconds
-        - f_measure_threshold : float
-            Window size, in seconds, default 0.07
+    Parameters
+    ----------
+    reference_beats : np.ndarray
+        reference beat times, in seconds
+    estimated_beats : np.ndarray
+        estimated beat times, in seconds
+    f_measure_threshold : float
+        Window size, in seconds
+        (Default value = 0.07)
 
-    :returns:
-        - f_score : float
-            The computed F-measure score
+    Returns
+    -------
+    f_score : float
+        The computed F-measure score
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] Matthew E. P. Davies,  Norberto Degara, and
-            Mark D. Plumbley.  "Evaluation Methods for Musical Audio Beat
-            Tracking Algorithms", Queen Mary University of London Technical
-            Report C4DM-TR-09-06 London, United Kingdom, 8 October 2009.
-        .. [#] S. Dixon, "Onset detection revisited," in
-            Proceedings of 9th International Conference on Digital Audio
-            Effects (DAFx), Montreal, Canada, 2006, pp. 133-137.
-    '''
+    """
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
@@ -188,45 +181,35 @@ def f_measure(reference_beats,
 def cemgil(reference_beats,
            estimated_beats,
            cemgil_sigma=0.04):
-    '''
-    Cemgil's score, computes a gaussian error of each estimated beat.
+    """Cemgil's score, computes a gaussian error of each estimated beat.
     Compares against the original beat times and all metrical variations.
 
-    :usage:
-        >>> reference_beats = mir_eval.io.load_events('reference.txt')
-        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
-        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
-        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
-        >>> cemgil_score, cemgil_max = mir_eval.beat.cemgil(reference_beats,
-                                                            estimated_beats)
+    Examples
+    --------
+    >>> reference_beats = mir_eval.io.load_events('reference.txt')
+    >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+    >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+    >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
+    >>> cemgil_score, cemgil_max = mir_eval.beat.cemgil(reference_beats,
+                                                        estimated_beats)
 
-    :parameters:
-        - reference_beats : np.ndarray
-            reference beat times, in seconds
-        - estimated_beats : np.ndarray
-            query beat times, in seconds
-        - cemgil_sigma : float
-            Sigma parameter of gaussian error windows, default 0.04
+    Parameters
+    ----------
+    reference_beats : np.ndarray
+        reference beat times, in seconds
+    estimated_beats : np.ndarray
+        query beat times, in seconds
+    cemgil_sigma : float
+        Sigma parameter of gaussian error windows
+        (Default value = 0.04)
 
-    :returns:
-        - cemgil_score : float
-            Cemgil's score for the original reference beats
-        - cemgil_max : float
-            The best Cemgil score for all metrical variations
-
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] Matthew E. P. Davies,  Norberto Degara, and
-            Mark D. Plumbley.  "Evaluation Methods for Musical Audio Beat
-            Tracking Algorithms", Queen Mary University of London Technical
-            Report C4DM-TR-09-06 London, United Kingdom, 8 October 2009.
-        .. [#] A. T. Cemgil, B. Kappen, P. Desain, and H. Honing,
-            "On tempo tracking: Tempogram representation and Kalman filtering,"
-            Journal Of New Music Research, vol. 28, no. 4, pp. 259-273, 2001.
-    '''
+    Returns
+    -------
+    cemgil_score : float
+        Cemgil's score for the original reference beats
+    cemgil_max : float
+        The best Cemgil score for all metrical variations
+    """
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
@@ -255,48 +238,40 @@ def goto(reference_beats,
          goto_threshold=0.35,
          goto_mu=0.2,
          goto_sigma=0.2):
-    '''
-    Calculate Goto's score, a binary 1 or 0 depending on some specific
+    """Calculate Goto's score, a binary 1 or 0 depending on some specific
     heuristic criteria
 
-    :usage:
-        >>> reference_beats = mir_eval.io.load_events('reference.txt')
-        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
-        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
-        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
-        >>> goto_score = mir_eval.beat.goto(reference_beats, estimated_beats)
+    Examples
+    --------
+    >>> reference_beats = mir_eval.io.load_events('reference.txt')
+    >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+    >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+    >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
+    >>> goto_score = mir_eval.beat.goto(reference_beats, estimated_beats)
 
-    :parameters:
-        - reference_beats : np.ndarray
-            reference beat times, in seconds
-        - estimated_beats : np.ndarray
-            query beat times, in seconds
-        - goto_threshold : float
-            Threshold of beat error for a beat to be "correct", default 0.35
-        - goto_mu : float
-            The mean of the beat errors in the continuously correct
-            track must be less than this, default 0.2
-        - goto_sigma : float
-            The std of the beat errors in the continuously correct track must
-            be less than this, default 0.2
+    Parameters
+    ----------
+    reference_beats : np.ndarray
+        reference beat times, in seconds
+    estimated_beats : np.ndarray
+        query beat times, in seconds
+    goto_threshold : float
+        Threshold of beat error for a beat to be "correct"
+        (Default value = 0.35)
+    goto_mu : float
+        The mean of the beat errors in the continuously correct
+        track must be less than this
+        (Default value = 0.2)
+    goto_sigma : float
+        The std of the beat errors in the continuously correct track must
+        be less than this
+        (Default value = 0.2)
 
-    :returns:
-        - goto_score : float
-            Either 1.0 or 0.0 if some specific criteria are met
-
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] Matthew E. P. Davies,  Norberto Degara, and
-            Mark D. Plumbley.  "Evaluation Methods for Musical Audio Beat
-            Tracking Algorithms", Queen Mary University of London Technical
-            Report C4DM-TR-09-06 London, United Kingdom, 8 October 2009.
-        .. [#] M. Goto and Y. Muraoka, "Issues in evaluating beat
-            tracking systems," in Working Notes of the IJCAI-97 Workshop on
-            Issues in AI and Music - Evaluation and Assessment, 1997, pp. 9-16.
-    '''
+    Returns
+    -------
+    goto_score : float
+        Either 1.0 or 0.0 if some specific criteria are met
+    """
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
@@ -307,7 +282,7 @@ def goto(reference_beats,
     paired = np.zeros(reference_beats.shape[0])
     # Keep track of Goto's three criteria
     goto_criteria = 0
-    for n in xrange(1, reference_beats.shape[0]-1):
+    for n in range(1, reference_beats.shape[0]-1):
         # Get previous inner-reference-beat-interval
         previous_interval = 0.5*(reference_beats[n] - reference_beats[n-1])
         # Window start - in the middle of the current beat and the previous
@@ -363,45 +338,34 @@ def goto(reference_beats,
 def p_score(reference_beats,
             estimated_beats,
             p_score_threshold=0.2):
-    '''
-    Get McKinney's P-score.
+    """Get McKinney's P-score.
     Based on the autocorrelation of the reference and estimated beats
 
-    :usage:
-        >>> reference_beats = mir_eval.io.load_events('reference.txt')
-        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
-        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
-        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
-        >>> p_score = mir_eval.beat.p_score(reference_beats, estimated_beats)
+    Examples
+    --------
+    >>> reference_beats = mir_eval.io.load_events('reference.txt')
+    >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+    >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+    >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
+    >>> p_score = mir_eval.beat.p_score(reference_beats, estimated_beats)
 
-    :parameters:
-        - reference_beats : np.ndarray
-            reference beat times, in seconds
-        - estimated_beats : np.ndarray
-            query beat times, in seconds
-        - p_score_threshold : float
-            Window size will be
-            p_score_threshold*median(inter_annotation_intervals),
-            default 0.2
+    Parameters
+    ----------
+    reference_beats : np.ndarray
+        reference beat times, in seconds
+    estimated_beats : np.ndarray
+        query beat times, in seconds
+    p_score_threshold : float
+        Window size will be
+        p_score_threshold*median(inter_annotation_intervals),
+        (Default value = 0.2)
 
-    :returns:
-        - correlation : float
-            McKinney's P-score
+    Returns
+    -------
+    correlation : float
+        McKinney's P-score
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] Matthew E. P. Davies,  Norberto Degara, and
-            Mark D. Plumbley.  "Evaluation Methods for Musical Audio Beat
-            Tracking Algorithms", Queen Mary University of London Technical
-            Report C4DM-TR-09-06 London, United Kingdom, 8 October 2009.
-        .. [#] M. F. McKinney, D. Moelants, M. E. P.
-            Davies, and A. Klapuri, "Evaluation of audio beat tracking and
-            music tempo extraction algorithms," Journal of New Music Research,
-            vol. 36, no. 1, pp.  1-16, 2007.
-    '''
+    """
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
@@ -443,57 +407,44 @@ def continuity(reference_beats,
                estimated_beats,
                continuity_phase_threshold=0.175,
                continuity_period_threshold=0.175):
-    '''
-    Get metrics based on how much of the estimated beat sequence is
+    """Get metrics based on how much of the estimated beat sequence is
     continually correct.
 
-    :usage:
-        >>> reference_beats = mir_eval.io.load_events('reference.txt')
-        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
-        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
-        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
-        >>> CMLc, CMLt, AMLc, AMLt = mir_eval.beat.continuity(reference_beats,
-                                                              estimated_beats)
+    Examples
+    --------
+    >>> reference_beats = mir_eval.io.load_events('reference.txt')
+    >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+    >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+    >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
+    >>> CMLc, CMLt, AMLc, AMLt = mir_eval.beat.continuity(reference_beats,
+                                                          estimated_beats)
 
-    :parameters:
-        - reference_beats : np.ndarray
-            reference beat times, in seconds
-        - estimated_beats : np.ndarray
-            query beat times, in seconds
-        - continuity_phase_threshold : float
-            Allowable ratio of how far is the estimated beat
-            can be from the reference beat, default 0.175
-        - continuity_period_threshold : float
-            Allowable distance between the inter-beat-interval
-            and the inter-annotation-interval, default 0.175
+    Parameters
+    ----------
+    reference_beats : np.ndarray
+        reference beat times, in seconds
+    estimated_beats : np.ndarray
+        query beat times, in seconds
+    continuity_phase_threshold : float
+        Allowable ratio of how far is the estimated beat
+        can be from the reference beat
+        (Default value = 0.175)
+    continuity_period_threshold : float
+        Allowable distance between the inter-beat-interval
+        and the inter-annotation-interval
+        (Default value = 0.175)
 
-    :returns:
-        - CMLc : float
-            Correct metric level, continuous accuracy
-        - CMLt : float
-            Correct metric level, total accuracy (continuity not required)
-        - AMLc : float
-            Any metric level, continuous accuracy
-        - AMLt : float
-            Any metric level, total accuracy (continuity not required)
-
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] Matthew E. P. Davies,  Norberto Degara, and
-            Mark D. Plumbley.  "Evaluation Methods for Musical Audio Beat
-            Tracking Algorithms", Queen Mary University of London Technical
-            Report C4DM-TR-09-06 London, United Kingdom, 8 October 2009.
-        .. [#] S. Hainsworth, "Techniques for the
-            automated analysis of musical audio," Ph.D. dissertation,
-            Department of Engineering, Cambridge University, 2004.
-        .. [#] A. P. Klapuri, A. Eronen, and J. Astola,
-            "Analysis of the meter of acoustic musical signals," IEEE
-            Transactions on Audio, Speech and Language Processing, vol. 14, no.
-            1, pp. 342-355, 2006.
-    '''
+    Returns
+    -------
+    CMLc : float
+        Correct metric level, continuous accuracy
+    CMLt : float
+        Correct metric level, total accuracy (continuity not required)
+    AMLc : float
+        Any metric level, continuous accuracy
+    AMLt : float
+        Any metric level, total accuracy (continuity not required)
+    """
     validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
@@ -509,7 +460,7 @@ def continuity(reference_beats,
         used_annotations = np.zeros(n_annotations)
         # Whether or not we are continuous at any given point
         beat_successes = np.zeros(n_annotations)
-        for m in xrange(estimated_beats.shape[0]):
+        for m in range(estimated_beats.shape[0]):
             # Is this beat correct?
             beat_success = 0
             # Get differences for this beat
@@ -611,40 +562,33 @@ def continuity(reference_beats,
 def information_gain(reference_beats,
                      estimated_beats,
                      bins=41):
-    '''
-    Get the information gain - K-L divergence of the beat error histogram
+    """Get the information gain - K-L divergence of the beat error histogram
     to a uniform histogram
 
-    :usage:
-        >>> reference_beats = mir_eval.io.load_events('reference.txt')
-        >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
-        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
-        >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
-        >>> information_gain = mir_eval.beat.information_gain(reference_beats,
-                                                              estimated_beats)
+    Examples
+    --------
+    >>> reference_beats = mir_eval.io.load_events('reference.txt')
+    >>> reference_beats = mir_eval.beat.trim_beats(reference_beats)
+    >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+    >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
+    >>> information_gain = mir_eval.beat.information_gain(reference_beats,
+                                                          estimated_beats)
 
-    :parameters:
-        - reference_beats : np.ndarray
-            reference beat times, in seconds
-        - estimated_beats : np.ndarray
-            query beat times, in seconds
-        - bins : int
-            Number of bins in the beat error histogram, default 41
+    Parameters
+    ----------
+    reference_beats : np.ndarray
+        reference beat times, in seconds
+    estimated_beats : np.ndarray
+        query beat times, in seconds
+    bins : int
+        Number of bins in the beat error histogram
+        (Default value = 41)
 
-    :returns:
-        - information_gain_score : float
-            Entropy of beat error histogram
-
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-
-    :references:
-        .. [#] Matthew E. P. Davies,  Norberto Degara, and
-            Mark D. Plumbley.  "Evaluation Methods for Musical Audio Beat
-            Tracking Algorithms", Queen Mary University of London Technical
-            Report C4DM-TR-09-06 London, United Kingdom, 8 October 2009.
-    '''
+    Returns
+    -------
+    information_gain_score : float
+        Entropy of beat error histogram
+    """
     validate(reference_beats, estimated_beats)
     # If an even number of bins is provided,
     # there will be no bin centered at zero, so warn the user.
@@ -669,24 +613,26 @@ def information_gain(reference_beats,
 
 
 def _get_entropy(reference_beats, estimated_beats, bins):
-    '''
-    Helper function for information gain
+    """Helper function for information gain
     (needs to be run twice - once backwards, once forwards)
 
-    :parameters:
-        - reference_beats : np.ndarray
-            reference beat times, in seconds
-        - estimated_beats : np.ndarray
-            query beat times, in seconds
-        - bins : int
-            Number of bins in the beat error histogram
+    Parameters
+    ----------
+    reference_beats : np.ndarray
+        reference beat times, in seconds
+    estimated_beats : np.ndarray
+        query beat times, in seconds
+    bins : int
+        Number of bins in the beat error histogram
 
-    :returns:
-        - entropy : float
-            Entropy of beat error histogram
-    '''
+    Returns
+    -------
+    entropy : float
+        Entropy of beat error histogram
+
+    """
     beat_error = np.zeros(estimated_beats.shape[0])
-    for n in xrange(estimated_beats.shape[0]):
+    for n in range(estimated_beats.shape[0]):
         # Get index of closest annotation to this beat
         beat_distances = estimated_beats[n] - reference_beats
         closest_beat = np.argmin(np.abs(beat_distances))
@@ -729,32 +675,31 @@ def _get_entropy(reference_beats, estimated_beats, bins):
 
 
 def evaluate(reference_beats, estimated_beats, **kwargs):
-    '''
-    Compute all metrics for the given reference and estimated annotations.
+    """Compute all metrics for the given reference and estimated annotations.
 
-    :usage:
-        >>> reference_beats = mir_eval.io.load_events('reference.txt')
-        >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
-        >>> scores = mir_eval.beat.evaluate(reference_beats, estimated_beats)
+    Examples
+    --------
+    >>> reference_beats = mir_eval.io.load_events('reference.txt')
+    >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
+    >>> scores = mir_eval.beat.evaluate(reference_beats, estimated_beats)
 
-    :parameters:
-        - reference_beats : np.ndarray
-            Reference beat times, in seconds
-        - estimated_beats : np.ndarray
-            Query beat times, in seconds
-        - kwargs
-            Additional keyword arguments which will be passed to the
-            appropriate metric or preprocessing functions.
+    Parameters
+    ----------
+    reference_beats : np.ndarray
+        Reference beat times, in seconds
+    estimated_beats : np.ndarray
+        Query beat times, in seconds
+    kwargs
+        Additional keyword arguments which will be passed to the
+        appropriate metric or preprocessing functions.
 
-    :returns:
-        - scores : dict
-            Dictionary of scores, where the key is the metric name (str) and
-            the value is the (float) score achieved.
+    Returns
+    -------
+    scores : dict
+        Dictionary of scores, where the key is the metric name (str) and
+        the value is the (float) score achieved.
 
-    :raises:
-        - ValueError
-            Thrown when the provided annotations are not valid.
-    '''
+    """
 
     # Trim beat times at the beginning of the annotations
     reference_beats = util.filter_kwargs(trim_beats, reference_beats, **kwargs)

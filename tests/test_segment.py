@@ -12,9 +12,9 @@ import nose.tools
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB    = 'data/segment/ref*.lab'
-EST_GLOB    = 'data/segment/est*.lab'
-SCORES_GLOB  = 'data/segment/output*.json'
+REF_GLOB    = 'tests/data/segment/ref*.lab'
+EST_GLOB    = 'tests/data/segment/est*.lab'
+SCORES_GLOB  = 'tests/data/segment/output*.json'
 
 
 def __unit_test_boundary_function(metric):
@@ -115,6 +115,8 @@ def test_segment_functions():
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
+
+    assert len(ref_files) == len(est_files) == len(sco_files) > 0
 
     # Unit tests for boundary
     for metric in [mir_eval.segment.detection,
