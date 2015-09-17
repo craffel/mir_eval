@@ -6,10 +6,12 @@ import numpy as np
 import mir_eval
 from nose.tools import raises
 
+import warnings
+
 def test_tmeasure_pass():
 
     # The estimate here gets none of the structure correct.
-    ref = [ [ [0, 60] ], [ [0, 30], [30, 60] ] ]
+    ref = [[[0, 30]], [[0, 15], [15, 30]]]
     # convert to arrays
     ref = [np.asarray(_) for _ in ref]
 
@@ -37,50 +39,59 @@ def test_tmeasure_pass():
             yield __test, window, frame_size
 
 
-def test_tmeasure_fail_span():
+def test_tmeasure_warning():
 
-    # Missing a boundary from the first layer
-    ref = [[[0, 30],
-            [30, 60]],
-           [[0, 60]]]
+    # Warn if there are missing boundaries from one layer to the next
+    ref = [[[0, 5],
+            [5, 10]],
+           [[0, 10]]]
 
     ref = [np.asarray(_) for _ in ref]
 
-    yield raises(ValueError)(mir_eval.hierarchy.tmeasure), ref, ref
+    warnings.resetwarnings()
+    with warnings.catch_warnings(record=True) as out:
+        mir_eval.hierarchy.tmeasure(ref, ref)
+
+        assert len(out) > 0
+        assert out[0].category is UserWarning
+        assert 'Segment hierarchy is inconsistent at level 1' in str(out[0].message)
+
+
+def test_tmeasure_fail_span():
 
     # Does not start at 0
-    ref = [[[10, 60]],
-           [[10, 30],
-            [30, 60]]]
+    ref = [[[1, 10]],
+           [[1, 5],
+            [5, 10]]]
 
     ref = [np.asarray(_) for _ in ref]
 
     yield raises(ValueError)(mir_eval.hierarchy.tmeasure), ref, ref
 
     # Does not end at the right time
-    ref = [[[0, 60]],
-           [[0, 60],
-            [60, 70]]]
+    ref = [[[0, 5]],
+           [[0, 5],
+            [5, 6]]]
     ref = [np.asarray(_) for _ in ref]
 
     yield raises(ValueError)(mir_eval.hierarchy.tmeasure), ref, ref
 
 
     # Two annotaions of different shape
-    ref = [[[0, 60]],
-           [[0, 30],
-            [30, 60]]]
+    ref = [[[0, 10]],
+           [[0, 5],
+            [5, 10]]]
     ref = [np.asarray(_) for _ in ref]
 
-    est = [[[0, 70]],
-           [[0, 30],
-            [30, 70]]]
+    est = [[[0, 15]],
+           [[0, 5],
+            [5, 15]]]
     est = [np.asarray(_) for _ in est]
 
     yield raises(ValueError)(mir_eval.hierarchy.tmeasure), ref, est
 
 
-def test_tmeasure_fail_frame():
+def test_tmeasure_fail_frame_size():
     ref = [[[0, 60]],
            [[0, 30],
             [30, 60]]]

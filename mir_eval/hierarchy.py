@@ -1,4 +1,5 @@
 # CREATED:2015-09-16 14:46:47 by Brian McFee <brian.mcfee@nyu.edu>
+# -*- encoding: utf-8 -*-
 '''Evaluation criteria for hierarchical structure analysis.
 
 Hierarchical structure analysis seeks to annotate a track with a nested decomposition of
@@ -15,8 +16,8 @@ segments across levels), and not the labels applied to segments.
 Conventions
 -----------
 Annotations are assumed to take the form of an ordered list of segmentations.
-As in the `mir_eval.segment` metrics, each segmentation itself consists of an `n-by-2` 
-array of interval times, so that the i'th segment spans time 
+As in the `mir_eval.segment` metrics, each segmentation itself consists of an `n-by-2`
+array of interval times, so that the i'th segment spans time
 `intervals[i, 0]` to `intervals[i, 1]`.
 
 Hierarchical annotations are ordered by increasing specificity, so that the first
@@ -26,13 +27,21 @@ most.
 Metrics
 -------
 * :func:`mir_eval.hierarchy.tmeasure`: Precision, recall, and F-measure of triplet-based
-frame accuracy.
+    frame accuracy.
+
+:references:
+    .. [#mcfee2015] Brian McFee, Oriol Nieto, and Juan P. Bello.
+        "Hierarchical evaluation of segment boundary detection",
+        International Society for Music Information Retrieval (ISMIR) conference,
+        2015.
+
 '''
 
 import numpy as np
 import scipy.sparse
 import collections
 import itertools
+import warnings
 
 from . import util
 from .segment import validate_structure
@@ -241,6 +250,9 @@ def validate_hier_intervals(intervals_hier):
 
         If any segmentation does not start at 0.
 
+
+    Warnings
+    --------
         If any segmentation contains boundaries that do not exist at a deeper level in
         the hierarchy.
     '''
@@ -260,8 +272,8 @@ def validate_hier_intervals(intervals_hier):
         new_bounds = set(util.intervals_to_boundaries(intervals))
 
         if boundaries - new_bounds:
-            raise ValueError('Segment hierarchy is inconsistent '
-                             'at level {:d}'.format(level))
+            warnings.warn('Segment hierarchy is inconsistent '
+                          'at level {:d}'.format(level))
         boundaries |= new_bounds
 
 
@@ -354,8 +366,8 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
     >>> est = [[[0, 45], [45, 60]], [[0, 15], [15, 30], [30, 45], [45, 60]]]
     >>> scores = mir_eval.hierarchy.evaluate(ref_intervals_h, est_intervals_h)
     >>> dict(scores)
-    {'T-Recall': 0.84857799953694923,
-     'T-Precision': 0.89939075137018787,
+    {'T-Precision': 0.89939075137018787,
+     'T-Recall': 0.84857799953694923,
      'T-measure': 0.8732458222764804}
 
     Parameters
