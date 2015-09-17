@@ -112,6 +112,16 @@ def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
 
     Parameters
     ----------
+    reference_tempi : np.ndarray, shape=(2,)
+        Two non-negative reference tempi, t_slow and t_fast,
+        such that t_slow < t_fast.
+
+    reference_weight : float > 0
+        The relative strength of t_slow vs t_fast in the reference.
+
+    estimated_tempi : np.ndarray, shape=(2,)
+        Two non-negative estimated tempi, r_slow and r_fast.
+
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -121,7 +131,6 @@ def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
     scores : dict
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
-
     """
     # Compute all metrics
     scores = collections.OrderedDict()
