@@ -27,6 +27,15 @@ from . import util
 import warnings
 
 
+
+def validate_tempi(tempi):
+
+    if tempi.size != 2:
+        raise ValueError('tempi must have exactly two values')
+
+    if not np.all(np.isfinite(tempi)) or np.any(tempi <= 0):
+        raise ValueError('tempi={} must be non-negative numbers'.format(tempi))
+
 def validate(reference_tempi, reference_weight, estimated_tempi):
     """Checks that the input annotations to a metric look like valid tempo
     annotations.
@@ -43,15 +52,8 @@ def validate(reference_tempi, reference_weight, estimated_tempi):
         estimated tempo values, in bpm
 
     """
-    # If reference or estimated onsets are empty, warn because metric will be 0
-    if reference_tempi.size != 2:
-        raise ValueError("Reference tempi must have two values.")
-
-    if estimated_tempi.size != 2:
-        raise ValueError("Estimated tempi must have two values.")
-
-    if np.any(reference_tempi <= 0):
-        warnings.warn('Detected non-positive reference tempo')
+    validate_tempi(reference_tempi)
+    validate_tempi(estimated_tempi)
 
     if reference_weight < 0 or reference_weight > 1:
         raise ValueError('Reference weight must lie in range [0, 1]')
@@ -63,12 +65,14 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     Parameters
     ----------
     reference_tempi : np.ndarray, shape=(2,)
-        Two non-negative reference tempi, t_slow and t_fast,
-        such that t_slow < t_fast.
+        Two non-negative reference tempi, t_1 and t_2
+
     reference_weight : float > 0
-        The relative strength of t_slow vs t_fast in the reference.
+        The relative strength of t_1 vs t_2 in the reference.
+
     estimated_tempi : np.ndarray, shape=(2,)
-        Two non-negative estimated tempi, r_slow and r_fast.
+        Two non-negative estimated tempi, r_1 and r_2.
+
     tol : float in [0, 1]:
         The maximum allowable deviation from a reference tempo to
         count as a hit.
@@ -79,21 +83,34 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     -------
     p_score : float in [0, 1]
         Weighted average of recalls:
-        ``reference_weight * hits[0] + (1 - reference_weight) * hits[1]``    
+        ``reference_weight * hits[0] + (1 - reference_weight) * hits[1]``
+
     one_correct : bool
         True if at least one reference tempo was correctly estimated
+
     both_correct : bool
         True if both reference tempi were correctly estimated
 
+    Raises
+    ------
+    ValueError
+        If the input tempi are ill-formed
+
+        If the reference weight is not in the range [0, 1]
+
+        If ``tol <= 0`` or ``tol > 1``.
     """
 
     validate(reference_tempi, reference_weight, estimated_tempi)
+
+    if tol <= 0 or tol > 1:
+        raise ValueError('invalid tolerance {}: must lie in the range (0, 1]'.format(tol))
 
     relative_errors = []
     hits = []
 
     for ref_t in reference_tempi:
-        # Compute the relative error for tihs reference tempo
+        # Compute the relative error for this reference tempo
         relative_errors.append(np.min(np.abs(ref_t - estimated_tempi) / float(ref_t)))
 
         # Count the hits
@@ -112,6 +129,16 @@ def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
 
     Parameters
     ----------
+    reference_tempi : np.ndarray, shape=(2,)
+        Two non-negative reference tempi, t_slow and t_fast,
+        such that t_slow < t_fast.
+
+    reference_weight : float > 0
+        The relative strength of t_slow vs t_fast in the reference.
+
+    estimated_tempi : np.ndarray, shape=(2,)
+        Two non-negative estimated tempi, r_slow and r_fast.
+
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -121,7 +148,6 @@ def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
     scores : dict
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
-
     """
     # Compute all metrics
     scores = collections.OrderedDict()
