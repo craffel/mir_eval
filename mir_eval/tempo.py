@@ -63,12 +63,14 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     Parameters
     ----------
     reference_tempi : np.ndarray, shape=(2,)
-        Two non-negative reference tempi, t_slow and t_fast,
-        such that t_slow < t_fast.
+        Two non-negative reference tempi, t_1 and t_2
+
     reference_weight : float > 0
-        The relative strength of t_slow vs t_fast in the reference.
+        The relative strength of t_1 vs t_2 in the reference.
+
     estimated_tempi : np.ndarray, shape=(2,)
-        Two non-negative estimated tempi, r_slow and r_fast.
+        Two non-negative estimated tempi, r_1 and r_2.
+
     tol : float in [0, 1]:
         The maximum allowable deviation from a reference tempo to
         count as a hit.
@@ -79,12 +81,13 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     -------
     p_score : float in [0, 1]
         Weighted average of recalls:
-        ``reference_weight * hits[0] + (1 - reference_weight) * hits[1]``    
+        ``reference_weight * hits[0] + (1 - reference_weight) * hits[1]``
+
     one_correct : bool
         True if at least one reference tempo was correctly estimated
+
     both_correct : bool
         True if both reference tempi were correctly estimated
-
     """
 
     validate(reference_tempi, reference_weight, estimated_tempi)
@@ -93,7 +96,7 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     hits = []
 
     for ref_t in reference_tempi:
-        # Compute the relative error for tihs reference tempo
+        # Compute the relative error for this reference tempo
         relative_errors.append(np.min(np.abs(ref_t - estimated_tempi) / float(ref_t)))
 
         # Count the hits
