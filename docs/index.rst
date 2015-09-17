@@ -156,7 +156,7 @@ The following subsections document each submodule.
    :member-order: bysource
 
 :mod:`mir_eval.hierarchy`
------------------------
+-------------------------
 .. automodule:: mir_eval.hierarchy
    :members:
    :undoc-members:

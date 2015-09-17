@@ -292,7 +292,7 @@ def tmeasure(reference_intervals_hier, estimated_intervals_hier,
         Like ``reference_intervals_hier`` but for the estimated annotation
 
     transitive : bool
-        whether to compute the h-measures using transitivity or not.
+        whether to compute the t-measures using transitivity or not.
 
     window : float > 0
         size of the window (in seconds).  For each query frame q,
@@ -362,13 +362,40 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
 
     Examples
     --------
+    A toy example with two two-layer annotations
+
     >>> ref = [[[0, 30], [30, 60]], [[0, 15], [15, 30], [30, 45], [45, 60]]]
     >>> est = [[[0, 45], [45, 60]], [[0, 15], [15, 30], [30, 45], [45, 60]]]
-    >>> scores = mir_eval.hierarchy.evaluate(ref_intervals_h, est_intervals_h)
+    >>> scores = mir_eval.hierarchy.evaluate(ref, est)
     >>> dict(scores)
-    {'T-Precision': 0.89939075137018787,
-     'T-Recall': 0.84857799953694923,
-     'T-measure': 0.8732458222764804}
+    {'T-Measure full': 0.94822745804853459,
+     'T-Measure reduced': 0.8732458222764804,
+     'T-Precision full': 0.96569179094693058,
+     'T-Precision reduced': 0.89939075137018787,
+     'T-Recall full': 0.93138358189386117,
+     'T-Recall reduced': 0.84857799953694923}
+
+    A more realistic example, using SALAMI pre-parsed annotations
+
+    >>> def load_salami(filename):
+    ...     "load SALAMI event format as unlabeled intervals"
+    ...     events = mir_eval.io.load_labeled_events(filename)[0]
+    ...     return mir_eval.util.boundaries_to_intervals(events)[0]
+    >>> ref_files = ['data/10/parsed/textfile1_uppercase.txt',
+    ...              'data/10/parsed/textfile1_lowercase.txt']
+    >>> est_files = ['data/10/parsed/textfile2_uppercase.txt',
+    ...              'data/10/parsed/textfile2_lowercase.txt']
+    >>> ref_hier = [load_salami(fname) for fname in ref_files]
+    >>> est_hier = [load_salami(fname) for fname in est_files]
+    >>> scores = mir_eval.hierarchy.evaluate(ref_hier, est_hier)
+    >>> dict(scores)
+    {'T-Measure full': 0.66029225561405358,
+     'T-Measure reduced': 0.62001868041578034,
+     'T-Precision full': 0.66844764668949885,
+     'T-Precision reduced': 0.63252297209957919,
+     'T-Recall full': 0.6523334654992341,
+     'T-Recall reduced': 0.60799919710921635}
+
 
     Parameters
     ----------
@@ -385,6 +412,9 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
     scores :  OrderedDict
         Dictionary of scores, where the key is the metric name (str) and the value
         is the (float) score achieved.
+
+        T-measures are computed in both the `full` (transitive=True) and
+        `reduced` (transitive=False) modes.
 
     Raises
     ------
@@ -404,11 +434,21 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
 
     scores = collections.OrderedDict()
 
-    (scores['T-Precision'],
-     scores['T-Recall'],
-     scores['T-Measure']) = util.filter_kwargs(tmeasure,
-                                               ref_intervals_hier,
-                                               est_intervals_hier,
-                                               **kwargs)
+    # Force the transitivity setting
+    kwargs['transitive'] = False
+    (scores['T-Precision reduced'],
+     scores['T-Recall reduced'],
+     scores['T-Measure reduced']) = util.filter_kwargs(tmeasure,
+                                                       ref_intervals_hier,
+                                                       est_intervals_hier,
+                                                       **kwargs)
+
+    kwargs['transitive'] = True
+    (scores['T-Precision full'],
+     scores['T-Recall full'],
+     scores['T-Measure full']) = util.filter_kwargs(tmeasure,
+                                                    ref_intervals_hier,
+                                                    est_intervals_hier,
+                                                    **kwargs)
 
     return scores
