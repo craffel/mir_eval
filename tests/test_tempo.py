@@ -52,14 +52,12 @@ def test_tempo_regression():
     EST_GLOB = 'tests/data/tempo/est*.lab'
     SCORES_GLOB = 'tests/data/tempo/output*.json'
 
-    print REF_GLOB, EST_GLOB, SCORES_GLOB
 
     # Load in all files in the same order
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
 
-    print ref_files, est_files, sco_files
     assert len(ref_files) == len(est_files) == len(sco_files)
 
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
