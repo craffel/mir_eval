@@ -2,7 +2,9 @@ language: python
 python:
     - "2.7"
     - "3.3"
-#    - "3.4" # not supported due to no scipy wheel available yet
+    - "3.4"
+    - "3.5"
+
 install:
     - sudo apt-get update -qq
     - sudo apt-get install -qq libatlas-base-dev libatlas3gf-base gfortran
