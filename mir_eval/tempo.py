@@ -27,6 +27,15 @@ from . import util
 import warnings
 
 
+
+def validate_tempi(tempi):
+
+    if tempi.size != 2:
+        raise ValueError('tempi must have exactly two values')
+
+    if not np.all(np.isfinite(tempi)) or np.any(tempi <= 0):
+        raise ValueError('tempi={} must be non-negative numbers'.format(tempi))
+
 def validate(reference_tempi, reference_weight, estimated_tempi):
     """Checks that the input annotations to a metric look like valid tempo
     annotations.
@@ -43,15 +52,8 @@ def validate(reference_tempi, reference_weight, estimated_tempi):
         estimated tempo values, in bpm
 
     """
-    # If reference or estimated onsets are empty, warn because metric will be 0
-    if reference_tempi.size != 2:
-        raise ValueError("Reference tempi must have two values.")
-
-    if estimated_tempi.size != 2:
-        raise ValueError("Estimated tempi must have two values.")
-
-    if np.any(reference_tempi <= 0):
-        warnings.warn('Detected non-positive reference tempo')
+    validate_tempi(reference_tempi)
+    validate_tempi(estimated_tempi)
 
     if reference_weight < 0 or reference_weight > 1:
         raise ValueError('Reference weight must lie in range [0, 1]')
@@ -88,9 +90,21 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
 
     both_correct : bool
         True if both reference tempi were correctly estimated
+
+    Raises
+    ------
+    ValueError
+        If the input tempi are ill-formed
+
+        If the reference weight is not in the range [0, 1]
+
+        If ``tol <= 0`` or ``tol > 1``.
     """
 
     validate(reference_tempi, reference_weight, estimated_tempi)
+
+    if tol <= 0 or tol > 1:
+        raise ValueError('invalid tolerance {}: must lie in the range (0, 1]'.format(tol))
 
     relative_errors = []
     hits = []
