@@ -6,6 +6,7 @@ Usage:
 
 ./tempo_eval.py REFERENCE.TXT ESTIMATED.TXT
 '''
+from __future__ import print_function
 
 import argparse
 import sys
@@ -57,10 +58,11 @@ if __name__ == '__main__':
     scores = mir_eval.tempo.evaluate(reference_tempi,
                                      reference_weight,
                                      estimated_tempi)
-    print "{} vs. {}".format(os.path.basename(parameters['reference_file']),
-                             os.path.basename(parameters['estimated_file']))
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
+
     eval_utilities.print_evaluation(scores)
 
     if parameters['output_file']:
-        print 'Saving results to: ', parameters['output_file']
+        print('Saving results to: {}'.format(parameters['output_file']))
         eval_utilities.save_results(scores, parameters['output_file'])
