@@ -1,19 +1,34 @@
 language: python
+
+notifications:
+    email: false
+
 python:
     - "2.7"
-    - "3.3"
     - "3.4"
-    - "3.5"
+
+before_install:
+    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+          wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh -O miniconda.sh;
+      else
+          wget http://repo.continuum.io/miniconda/Miniconda3-3.8.3-Linux-x86_64.sh -O miniconda.sh;
+      fi
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
+    - hash -r
+    - conda config --set always_yes yes --set changeps1 no
+    - conda update -q conda
+    - conda config --add channels pypi
+    - conda info -a
+    - deps='pip numpy scipy sphinx nose six decorator'
+    - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps 
+    - source activate test-environment
+    - pip install python-coveralls
+    - pip install numpydoc
 
 install:
-    - sudo apt-get update -qq
-    - sudo apt-get install -qq libatlas-base-dev libatlas3gf-base gfortran
-
-# Install NumPy and SciPy from wheels, as compilation takes ages
-# This should be wheels.astropy.org, but there are strange HTTPS errors a.t.m.
-    - pip install --no-index --find-links http://www.mpia.de/~robitaille/wheelhouse/ --trusted-host www.mpia.de scipy
     - pip install -e .
-    - pip install nose sphinx numpydoc python-coveralls
+
 script:
     - nosetests --with-coverage --cover-package=mir_eval
     - python setup.py build_sphinx
