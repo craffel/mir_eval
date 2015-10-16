@@ -6,6 +6,7 @@ import numpy as np
 import re
 import warnings
 import scipy.io.wavfile
+import six
 
 from . import util
 
@@ -51,7 +52,7 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
     # Keep track of whether we create our own file handle
     own_fh = False
     # If the filename input is a string, need to open it
-    if type(filename) == str or type(filename) == unicode:
+    if isinstance(filename, six.string_types):
         # Remember that we need to close it later
         own_fh = True
         # Open the file for reading
@@ -321,7 +322,7 @@ def load_patterns(filename):
     # Keep track of whether we create our own file handle
     own_fh = False
     # If the filename input is a string, need to open it
-    if type(filename) == str:
+    if isinstance(filename, six.string_types):
         # Remember that we need to close it later
         own_fh = True
         # Open the file for reading
