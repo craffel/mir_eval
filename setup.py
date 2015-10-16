@@ -26,5 +26,7 @@ setup(
     install_requires=[
         'numpy >= 1.7.0',
         'scipy >= 0.9.0',
+        'future',
+        'six'
     ],
 )
