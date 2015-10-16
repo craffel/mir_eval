@@ -5,7 +5,7 @@ submodules, such as preprocessing, validation, and common computations.
 
 import numpy as np
 import os
-import inspect
+import six
 
 
 def index_labels(labels, case_sensitive=False):
@@ -280,7 +280,7 @@ def adjust_intervals(intervals,
     Returns
     -------
     new_intervals : np.ndarray
-        Intervals spanning [t_min, t_max]    
+        Intervals spanning [t_min, t_max]
     new_labels : list
         List of labels for new_labels
 
@@ -441,7 +441,7 @@ def intersect_files(flist1, flist2):
         Parameters
         ----------
         abs_path :
-            
+
 
         Returns
         -------
@@ -509,13 +509,13 @@ def _bipartite_match(graph):
     """Find maximum cardinality matching of a bipartite graph (U,V,E).
     The input format is a dictionary mapping members of U to a list
     of their neighbors in V.
-    
+
     The output is a dict M mapping members of V to their matches in U.
 
     Parameters
     ----------
     graph :
-        
+
 
     Returns
     -------
@@ -580,7 +580,7 @@ def _bipartite_match(graph):
             Parameters
             ----------
             v :
-                
+
 
             Returns
             -------
@@ -712,7 +712,8 @@ def filter_kwargs(function, *args, **kwargs):
 
     """
     # Get the list of function arguments
-    function_args = inspect.getargspec(function).args
+    func_code = six.get_function_code(function)
+    function_args = func_code.co_varnames[:func_code.co_argcount]
     # Construct a dict of those kwargs which appear in the function
     filtered_kwargs = {}
     for kwarg, value in list(kwargs.items()):

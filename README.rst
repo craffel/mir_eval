@@ -10,6 +10,8 @@ If you're looking for the mir_eval web service, which you can use to run mir_eva
 Dependencies:
 
 * `Scipy/Numpy <http://www.scipy.org/>`_
+* future
+* six
 
 If you use mir_eval in a research project, please cite the following paper:
 
