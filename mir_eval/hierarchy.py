@@ -2,38 +2,40 @@
 # -*- encoding: utf-8 -*-
 '''Evaluation criteria for hierarchical structure analysis.
 
-Hierarchical structure analysis seeks to annotate a track with a nested decomposition of
-the temporal elements of the piece, effectively providing a kind of "parse tree" of the
-composition.  Unlike the flat segmentation metrics defined in `mir_eval.segment`, which
-can only encode one level of analysis, hierarchical annotations expose the relationships
-between short segments and the larger compositional elements to which they belong.
+Hierarchical structure analysis seeks to annotate a track with a nested
+decomposition of the temporal elements of the piece, effectively providing
+a kind of "parse tree" of the composition.  Unlike the flat segmentation
+metrics defined in `mir_eval.segment`, which can only encode one level of
+analysis, hierarchical annotations expose the relationships between short
+segments and the larger compositional elements to which they belong.
 
-Currently, there exist no metrics for evaluating hierarchical segment labeling.  All
-evaluations are therefore based on boundaries between segments (and relationships between
-segments across levels), and not the labels applied to segments.
+Currently, there exist no metrics for evaluating hierarchical segment
+labeling.  All evaluations are therefore based on boundaries between
+segments (and relationships between segments across levels), and not the
+labels applied to segments.
 
 
 Conventions
 -----------
 Annotations are assumed to take the form of an ordered list of segmentations.
-As in the `mir_eval.segment` metrics, each segmentation itself consists of an `n-by-2`
-array of interval times, so that the i'th segment spans time
+As in the `mir_eval.segment` metrics, each segmentation itself consists of an
+`n-by-2` array of interval times, so that the i'th segment spans time
 `intervals[i, 0]` to `intervals[i, 1]`.
 
-Hierarchical annotations are ordered by increasing specificity, so that the first
-segmentation should contain the fewest segments, and the last segmentation contains the
-most.
+Hierarchical annotations are ordered by increasing specificity, so that the
+first segmentation should contain the fewest segments, and the last
+segmentation contains the most.
 
 Metrics
 -------
-* :func:`mir_eval.hierarchy.tmeasure`: Precision, recall, and F-measure of triplet-based
-    frame accuracy.
+* :func:`mir_eval.hierarchy.tmeasure`: Precision, recall, and F-measure of
+  triplet-based frame accuracy.
 
 :references:
-    .. [#mcfee2015] Brian McFee, Oriol Nieto, and Juan P. Bello.
-        "Hierarchical evaluation of segment boundary detection",
-        International Society for Music Information Retrieval (ISMIR) conference,
-        2015.
+  .. [#mcfee2015] Brian McFee, Oriol Nieto, and Juan P. Bello.
+    "Hierarchical evaluation of segment boundary detection",
+    International Society for Music Information Retrieval (ISMIR) conference,
+    2015.
 
 '''
 
@@ -45,6 +47,7 @@ import warnings
 
 from . import util
 from .segment import validate_structure
+
 
 def _round(t, frame_size):
     '''Round a time-stamp to a specified resolution.
@@ -98,14 +101,15 @@ def _lca(intervals_hier, frame_size):
     '''Compute the (sparse) least-common-ancestor (LCA) matrix for a
     hierarchical segmentation.
 
-    For any pair of frames ``(s, t)``, the LCA is the deepest level in the hierarchy
-    such that ``(s, t)`` are contained within a single segment at that level.
+    For any pair of frames ``(s, t)``, the LCA is the deepest level in
+    the hierarchy such that ``(s, t)`` are contained within a single
+    segment at that level.
 
     Parameters
     ----------
     intervals_hier : list of ndarray
-        An ordered list of segment interval arrays.  The list is assumed to be ordered by
-        increasing specificity (depth).
+        An ordered list of segment interval arrays.
+        The list is assumed to be ordered by increasing specificity (depth).
 
     frame_size : number
         The length of the sample frames (in seconds)
@@ -130,7 +134,8 @@ def _lca(intervals_hier, frame_size):
     lca_matrix = scipy.sparse.lil_matrix((n, n), dtype=np.uint8)
 
     for level, intervals in enumerate(intervals_hier, 1):
-        for ival in (_round(np.asarray(intervals), frame_size) / frame_size).astype(int):
+        for ival in (_round(np.asarray(intervals),
+                            frame_size) / frame_size).astype(int):
             idx = slice(ival[0], ival[1])
             lca_matrix[idx, idx] = level
 
@@ -140,15 +145,16 @@ def _lca(intervals_hier, frame_size):
 def _gauc(ref_lca, est_lca, transitive, window):
     '''Generalized area under the curve (GAUC)
 
-    This function computes the normalized recall score for correctly ordering triples
-    `(q, i, j)` where frames `(q, i)` are closer than `(q, j)` in the reference
-    annotation.
+    This function computes the normalized recall score for correctly
+    ordering triples `(q, i, j)` where frames `(q, i)` are closer than
+    `(q, j)` in the reference annotation.
 
     Parameters
     ----------
     ref_lca : scipy.sparse
     est_lca : scipy.sparse
-        The least common ancestor matrices for the reference and estimated annotations
+        The least common ancestor matrices for the reference and
+        estimated annotations
 
     transitive : bool
         If True, then transitive comparisons are counted, meaning that `(q, i)`
@@ -163,7 +169,8 @@ def _gauc(ref_lca, est_lca, transitive, window):
     Returns
     -------
     score : number [0, 1]
-        The percentage of reference triples correctly ordered by the estimation.
+        The percentage of reference triples correctly ordered by
+        the estimation.
 
     Raises
     ------
@@ -173,7 +180,8 @@ def _gauc(ref_lca, est_lca, transitive, window):
     # Make sure we have the right number of frames
 
     if ref_lca.shape != est_lca.shape:
-        raise ValueError('Estimated and reference hierarchies must have the same shape.')
+        raise ValueError('Estimated and reference hierarchies '
+                         'must have the same shape.')
 
     # How many frames?
     n = ref_lca.shape[0]
@@ -253,8 +261,8 @@ def validate_hier_intervals(intervals_hier):
 
     Warnings
     --------
-        If any segmentation contains boundaries that do not exist at a deeper level in
-        the hierarchy.
+        If any segmentation contains boundaries that do not exist at a
+        deeper level in the hierarchy.
     '''
 
     # Synthesize a label array for the top layer.
@@ -284,9 +292,10 @@ def tmeasure(reference_intervals_hier, estimated_intervals_hier,
     Parameters
     ----------
     reference_intervals_hier : list of ndarray
-        ``reference_intervals_hier[i]`` contains the segment intervals (in seconds)
-        for the ``i``th layer of the annotations.  Layers are ordered from top to
-        bottom, so that the last list of intervals should be the most specific.
+        ``reference_intervals_hier[i]`` contains the segment intervals
+        (in seconds) for the ``i``th layer of the annotations.  Layers are
+        ordered from top to bottom, so that the last list of intervals should
+        be the most specific.
 
     estimated_intervals_hier : list of ndarray
         Like ``reference_intervals_hier`` but for the estimated annotation
@@ -299,7 +308,8 @@ def tmeasure(reference_intervals_hier, estimated_intervals_hier,
         result frames are only counted within q +- window.
 
     frame_size : float > 0
-        length (in seconds) of frames.  The frame size cannot be longer than the window.
+        length (in seconds) of frames.  The frame size cannot be longer than
+        the window.
 
     beta : float > 0
         beta parameter for the F-measure.
@@ -401,8 +411,9 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
     ----------
     ref_intervals_hier : list of list-like
     est_intervals_hier : list of list-like
-        Hierarchical annotations are encoded as an ordered list of segmentations.
-        Each segmentation itself is a list (or list-like) of intervals.
+        Hierarchical annotations are encoded as an ordered list
+        of segmentations.  Each segmentation itself is a list (or list-like)
+        of intervals.
 
     kwargs
         additional keyword arguments to the evaluation metrics.
@@ -410,8 +421,8 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
     Returns
     -------
     scores :  OrderedDict
-        Dictionary of scores, where the key is the metric name (str) and the value
-        is the (float) score achieved.
+        Dictionary of scores, where the key is the metric name (str) and
+        the value is the (float) score achieved.
 
         T-measures are computed in both the `full` (transitive=True) and
         `reduced` (transitive=False) modes.
@@ -425,11 +436,13 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
     # First, find the maximum length of the reference
     _, t_end = _hierarchy_bounds(ref_intervals_hier)
 
-    # Pre-process the intervals to match the range of the reference, and start at 0
+    # Pre-process the intervals to match the range of the reference,
+    # and start at 0
     ref_intervals_hier = [util.adjust_intervals(np.asarray(_), t_min=0.0)[0]
                           for _ in ref_intervals_hier]
 
-    est_intervals_hier = [util.adjust_intervals(np.asarray(_), t_min=0.0, t_max=t_end)[0]
+    est_intervals_hier = [util.adjust_intervals(np.asarray(_), t_min=0.0,
+                                                t_max=t_end)[0]
                           for _ in est_intervals_hier]
 
     scores = collections.OrderedDict()
