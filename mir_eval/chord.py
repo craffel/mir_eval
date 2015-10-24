@@ -97,8 +97,6 @@ NO_CHORD = "N"
 NO_CHORD_ENCODED = -1, np.array([0]*BITMAP_LENGTH), -1
 X_CHORD = "X"
 X_CHORD_ENCODED = -1, np.array([-1]*BITMAP_LENGTH), -1
-# See Line 445
-STRICT_BASS_INTERVALS = False
 
 
 class InvalidChordException(Exception):
@@ -348,14 +346,14 @@ def split(chord_label, reduce_extended_chords=False):
         - quality shorthand
         - scale degrees
         - bass
-    
+
     Note: Chords lacking quality AND interval information are major.
       - If a quality is specified, it is returned.
       - If an interval is specified WITHOUT a quality, the quality field is
         empty.
-    
+
     Some examples::
-    
+
         'C' -> ['C', 'maj', {}, '1']
         'G#:min(*b3,*5)/5' -> ['G#', 'min', {'*b3', '*5'}, '5']
         'A:(3)/6' -> ['A', '', {'3'}, '6']
@@ -450,7 +448,8 @@ def join(chord_root, quality='', extensions=None, bass=''):
 
 
 # --- Chords to Numerical Representations ---
-def encode(chord_label, reduce_extended_chords=False):
+def encode(chord_label, reduce_extended_chords=False,
+           strict_bass_intervals=False):
     """Translate a chord label to numerical representations for evaluation.
 
     Parameters
@@ -460,6 +459,9 @@ def encode(chord_label, reduce_extended_chords=False):
     reduce_extended_chords : bool
         Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
         extensions.
+        (Default value = False)
+    strict_bass_intervals : bool
+        Whether to require that the bass scale degree is present in the chord.
         (Default value = False)
 
     Returns
@@ -490,7 +492,7 @@ def encode(chord_label, reduce_extended_chords=False):
         semitone_bitmap += scale_degree_to_bitmap(scale_degree)
 
     semitone_bitmap = (semitone_bitmap > 0).astype(np.int)
-    if not semitone_bitmap[bass_number] and STRICT_BASS_INTERVALS:
+    if not semitone_bitmap[bass_number] and strict_bass_intervals:
         raise InvalidChordException(
             "Given bass scale degree is absent from this chord: "
             "%s" % chord_label, chord_label)
