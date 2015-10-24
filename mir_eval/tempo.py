@@ -27,7 +27,6 @@ from . import util
 import warnings
 
 
-
 def validate_tempi(tempi):
 
     if tempi.size != 2:
@@ -35,6 +34,7 @@ def validate_tempi(tempi):
 
     if not np.all(np.isfinite(tempi)) or np.any(tempi <= 0):
         raise ValueError('tempi={} must be non-negative numbers'.format(tempi))
+
 
 def validate(reference_tempi, reference_weight, estimated_tempi):
     """Checks that the input annotations to a metric look like valid tempo
@@ -104,14 +104,16 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     validate(reference_tempi, reference_weight, estimated_tempi)
 
     if tol <= 0 or tol > 1:
-        raise ValueError('invalid tolerance {}: must lie in the range (0, 1]'.format(tol))
+        raise ValueError('invalid tolerance {}: must lie in the range '
+                         '(0, 1]'.format(tol))
 
     relative_errors = []
     hits = []
 
     for ref_t in reference_tempi:
         # Compute the relative error for this reference tempo
-        relative_errors.append(np.min(np.abs(ref_t - estimated_tempi) / float(ref_t)))
+        relative_errors.append(np.min(
+            np.abs(ref_t - estimated_tempi) / float(ref_t)))
 
         # Count the hits
         hits.append(bool(relative_errors[-1] <= tol))

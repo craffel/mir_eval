@@ -58,7 +58,7 @@ def clicks(times, fs, click=None, length=None):
 
 def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     """Reverse synthesis of a time-frequency representation of a signal
-    
+
     Parameters
     ----------
     gram : np.ndarray
@@ -95,7 +95,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
         Parameters
         ----------
         frequency :
-            
+
 
         Returns
         -------
