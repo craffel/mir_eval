@@ -21,7 +21,7 @@ before_install:
     - conda update -q conda
     - conda config --add channels pypi
     - conda info -a
-    - deps='pip numpy scipy sphinx nose six decorator'
+    - deps='pip numpy scipy sphinx nose six future'
     - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps 
     - source activate test-environment
     - pip install python-coveralls
