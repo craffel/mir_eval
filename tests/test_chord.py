@@ -147,12 +147,10 @@ def test_encode():
         yield (__check_encode, label, e_root, e_interval, e_bass)
 
     # Non-chord bass notes *must* be explicitly named as extensions when
-    #   STRICT_BASS_INTERVALS == True
-    mir_eval.chord.STRICT_BASS_INTERVALS = True
+    #   strict_bass_intervals == True
     yield (__check_exception, mir_eval.chord.encode,
-           ('G:dim(4)/6',), mir_eval.chord.InvalidChordException)
+           ('G:dim(4)/6', False, True), mir_eval.chord.InvalidChordException)
     # Otherwise, we can cut a little slack.
-    mir_eval.chord.STRICT_BASS_INTERVALS = False
     yield (__check_encode, 'G:dim(4)/6', 7,
                            [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0], 9)
 
