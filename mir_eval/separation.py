@@ -194,13 +194,13 @@ def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
     Parameters
     ----------
     reference_sources :
-        
+
     estimated_source :
-        
+
     j :
-        
+
     flen :
-        
+
 
     Returns
     -------
@@ -229,11 +229,11 @@ def _project(reference_sources, estimated_source, flen):
     Parameters
     ----------
     reference_sources :
-        
+
     estimated_source :
-        
+
     flen :
-        
+
 
     Returns
     -------
@@ -287,13 +287,13 @@ def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
     Parameters
     ----------
     s_true :
-        
+
     e_spat :
-        
+
     e_interf :
-        
+
     e_artif :
-        
+
 
     Returns
     -------
@@ -315,9 +315,9 @@ def _safe_db(num, den):
     Parameters
     ----------
     num :
-        
+
     den :
-        
+
 
     Returns
     -------

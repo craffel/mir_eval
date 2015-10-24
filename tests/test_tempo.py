@@ -10,8 +10,8 @@ import json
 import glob
 
 
-
 A_TOL = 1e-12
+
 
 def _load_tempi(filename):
 
@@ -29,7 +29,6 @@ def test_tempo_fail():
     @raises(ValueError)
     def __test(ref, weight, est, tol):
         mir_eval.tempo.detection(ref, weight, est, tol=tol)
-
 
     good_ref = np.array([60, 120])
     good_weight = 0.5
@@ -52,7 +51,6 @@ def test_tempo_regression():
     EST_GLOB = 'tests/data/tempo/est*.lab'
     SCORES_GLOB = 'tests/data/tempo/output*.json'
 
-
     # Load in all files in the same order
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
@@ -70,4 +68,5 @@ def test_tempo_regression():
         scores = mir_eval.tempo.evaluate(ref_tempi, ref_weight, est_tempi)
 
         for metric in scores:
-            yield __check_score, sco_f, metric, scores[metric], expected_scores[metric]
+            yield (__check_score, sco_f, metric, scores[metric],
+                   expected_scores[metric])

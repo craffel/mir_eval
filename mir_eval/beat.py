@@ -127,10 +127,10 @@ def _get_reference_beat_variations(reference_beats):
     # Return metric variations:
     # True, off-beat, double tempo, half tempo odd, and half tempo even
     return (reference_beats,
-           double_reference_beats[1::2],
-           double_reference_beats,
-           reference_beats[::2],
-           reference_beats[1::2])
+            double_reference_beats[1::2],
+            double_reference_beats,
+            reference_beats[::2],
+            reference_beats[1::2])
 
 
 def f_measure(reference_beats,

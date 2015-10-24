@@ -73,7 +73,9 @@ if __name__ == '__main__':
 
     # Compute all the scores
     scores = mir_eval.separation.evaluate(reference_sources, estimated_sources)
-    last_dir = lambda d: os.path.basename(os.path.normpath(d))
+
+    def last_dir(d):
+        return os.path.basename(os.path.normpath(d))
     print("{} vs. {}".format(last_dir(parameters['reference_directory']),
                              last_dir(parameters['estimated_directory'])))
     eval_utilities.print_evaluation(scores)

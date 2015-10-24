@@ -313,20 +313,16 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq, base_frequency=10.,
     # If we received a hop, use it to resample both
     if hop is not None:
         # Resample to common time base
-        ref_cent, ref_voicing = resample_melody_series(ref_time,
-                                    ref_cent, ref_voicing,
-                                    constant_hop_timebase(hop,
-                                                          ref_time.max()),
-                                    kind)
-        est_cent, est_voicing = resample_melody_series(est_time,
-                                    est_cent, est_voicing,
-                                    constant_hop_timebase(hop,
-                                                          est_time.max()),
-                                    kind)
+        ref_cent, ref_voicing = resample_melody_series(
+            ref_time, ref_cent, ref_voicing,
+            constant_hop_timebase(hop, ref_time.max()), kind)
+        est_cent, est_voicing = resample_melody_series(
+            est_time, est_cent, est_voicing,
+            constant_hop_timebase(hop, est_time.max()), kind)
     # Otherwise, only resample estimated to the reference time base
     else:
-        est_cent, est_voicing = resample_melody_series(est_time,
-                                    est_cent, est_voicing, ref_time, kind)
+        est_cent, est_voicing = resample_melody_series(
+            est_time, est_cent, est_voicing, ref_time, kind)
     # ensure the estimated sequence is the same length as the reference
     len_diff = ref_cent.shape[0] - est_cent.shape[0]
     if len_diff >= 0:
@@ -417,7 +413,7 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     cents and matching voicing indicator sequences. The first pitch and voicing
     arrays are treated as the reference (truth), and the second two as the
     estimate (prediction).  All 4 sequences must be of the same length.
-    
+
     Examples
     --------
     >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
@@ -649,9 +645,8 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
     """
     # Convert to reference/estimated voicing/frequency (cent) arrays
     (ref_voicing, ref_cent,
-     est_voicing, est_cent) = util.filter_kwargs(to_cent_voicing, ref_time,
-                                              ref_freq, est_time, est_freq,
-                                              **kwargs)
+     est_voicing, est_cent) = util.filter_kwargs(
+         to_cent_voicing, ref_time, ref_freq, est_time, est_freq, **kwargs)
 
     # Compute metrics
     scores = collections.OrderedDict()

@@ -298,9 +298,9 @@ def load_patterns(filename):
             pattern = [occurrence1, ..., occurrenceM]
             pattern_list = [pattern1, ..., patternN]
 
-        where `N` is the number of patterns, `M[i]` is the number of occurrences
-        of the `i`'th pattern, and `O[j]` is the number of onsets in the `j`'th
-        occurrence.
+        where `N` is the number of patterns, `M[i]` is the number of
+        occurrences of the `i`'th pattern, and `O[j]` is the number of onsets
+        in the `j`'th occurrence.
 
         E.g.:
             occ1 = [(0.5, 67.0), (1.0, 67.0), (1.5, 67.0), (2.0, 64.0)]

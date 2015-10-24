@@ -310,10 +310,8 @@ def pairwise(reference_intervals, reference_labels,
     ...                                               ref_labels,
     ...                                               t_min=0)
     >>> (est_intervals,
-    ...  est_labels) = mir_eval.util.adjust_intervals(est_intervals,
-    ...                                               est_labels,
-    ...                                               t_min=0,
-    ...                                               t_max=ref_intervals.max())
+    ...  est_labels) = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, t_min=0, t_max=ref_intervals.max())
     >>> precision, recall, f = mir_eval.structure.pairwise(ref_intervals,
     ...                                                    ref_labels,
     ...                                                    est_intervals,
@@ -410,10 +408,8 @@ def rand_index(reference_intervals, reference_labels,
     ...                                               ref_labels,
     ...                                               t_min=0)
     >>> (est_intervals,
-    ...  est_labels) = mir_eval.util.adjust_intervals(est_intervals,
-    ...                                               est_labels,
-    ...                                               t_min=0,
-    ...                                               t_max=ref_intervals.max())
+    ...  est_labels) = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, t_min=0, t_max=ref_intervals.max())
     >>> rand_index = mir_eval.structure.rand_index(ref_intervals,
     ...                                            ref_labels,
     ...                                            est_intervals,
@@ -544,10 +540,10 @@ def _adjusted_rand_index(reference_indices, estimated_indices):
     # Special limit cases: no clustering since the data is not split;
     # or trivial clustering where each document is assigned a unique cluster.
     # These are perfect matches hence return 1.0.
-    if (ref_classes.shape[0] == est_classes.shape[0] == 1
-            or ref_classes.shape[0] == est_classes.shape[0] == 0
-            or (ref_classes.shape[0] == est_classes.shape[0] ==
-                len(reference_indices))):
+    if (ref_classes.shape[0] == est_classes.shape[0] == 1 or
+        ref_classes.shape[0] == est_classes.shape[0] == 0 or
+        (ref_classes.shape[0] == est_classes.shape[0] ==
+         len(reference_indices))):
         return 1.0
 
     contingency = _contingency_matrix(reference_indices, estimated_indices)
@@ -569,7 +565,7 @@ def ari(reference_intervals, reference_labels,
         estimated_intervals, estimated_labels,
         frame_size=0.1):
     """Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
-    
+
     Examples
     --------
     >>> (ref_intervals,
@@ -582,10 +578,8 @@ def ari(reference_intervals, reference_labels,
     ...                                               ref_labels,
     ...                                               t_min=0)
     >>> (est_intervals,
-    ...  est_labels) = mir_eval.util.adjust_intervals(est_intervals,
-    ...                                               est_labels,
-    ...                                               t_min=0,
-    ...                                               t_max=ref_intervals.max())
+    ...  est_labels) = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, t_min=0, t_max=ref_intervals.max())
     >>> ari_score = mir_eval.structure.ari(ref_intervals, ref_labels,
     ...                                    est_intervals, est_labels)
 
@@ -674,8 +668,8 @@ def _mutual_info_score(reference_indices, estimated_indices, contingency=None):
     # log(a / b) should be calculated as log(a) - log(b) for
     # possible loss of precision
     log_outer = -np.log(outer[nnz]) + np.log(pi.sum()) + np.log(pj.sum())
-    mi = (contingency_nm * (log_contingency_nm - np.log(contingency_sum))
-          + contingency_nm * log_outer)
+    mi = (contingency_nm * (log_contingency_nm - np.log(contingency_sum)) +
+          contingency_nm * log_outer)
     return mi.sum()
 
 
@@ -732,14 +726,14 @@ def _adjusted_mutual_info_score(reference_indices, estimated_indices):
     est_classes = np.unique(estimated_indices)
     # Special limit cases: no clustering since the data is not split.
     # This is a perfect match hence return 1.0.
-    if (ref_classes.shape[0] == est_classes.shape[0] == 1
-            or ref_classes.shape[0] == est_classes.shape[0] == 0):
+    if (ref_classes.shape[0] == est_classes.shape[0] == 1 or
+            ref_classes.shape[0] == est_classes.shape[0] == 0):
         return 1.0
     contingency = _contingency_matrix(reference_indices,
                                       estimated_indices).astype(float)
     # Calculate the MI for the two clusterings
     mi = _mutual_info_score(reference_indices, estimated_indices,
-                           contingency=contingency)
+                            contingency=contingency)
     # The following code is based on
     # sklearn.metrics.cluster.expected_mutual_information
     R, C = contingency.shape
@@ -778,11 +772,11 @@ def _adjusted_mutual_info_score(reference_indices, estimated_indices):
             for nij in range(start[i, j], end[i, j]):
                 term2 = log_Nnij[nij] - log_ab_outer[i, j]
                 # Numerators are positive, denominators are negative.
-                gln = (gln_a[i] + gln_b[j] + gln_Na[i] + gln_Nb[j]
-                     - gln_N - gln_nij[nij]
-                     - scipy.special.gammaln(a[i] - nij + 1)
-                     - scipy.special.gammaln(b[j] - nij + 1)
-                     - scipy.special.gammaln(N - a[i] - b[j] + nij + 1))
+                gln = (gln_a[i] + gln_b[j] + gln_Na[i] + gln_Nb[j] -
+                       gln_N - gln_nij[nij] -
+                       scipy.special.gammaln(a[i] - nij + 1) -
+                       scipy.special.gammaln(b[j] - nij + 1) -
+                       scipy.special.gammaln(N - a[i] - b[j] + nij + 1))
                 term3 = np.exp(gln)
                 emi += (term1[nij] * term2 * term3)
     # Calculate entropy for each labeling
@@ -815,15 +809,15 @@ def _normalized_mutual_info_score(reference_indices, estimated_indices):
     est_classes = np.unique(estimated_indices)
     # Special limit cases: no clustering since the data is not split.
     # This is a perfect match hence return 1.0.
-    if (ref_classes.shape[0] == est_classes.shape[0] == 1
-            or ref_classes.shape[0] == est_classes.shape[0] == 0):
+    if (ref_classes.shape[0] == est_classes.shape[0] == 1 or
+            ref_classes.shape[0] == est_classes.shape[0] == 0):
         return 1.0
     contingency = _contingency_matrix(reference_indices,
                                       estimated_indices).astype(float)
     contingency = np.array(contingency, dtype='float')
     # Calculate the MI for the two clusterings
     mi = _mutual_info_score(reference_indices, estimated_indices,
-                           contingency=contingency)
+                            contingency=contingency)
     # Calculate the expected value for the mutual information
     # Calculate entropy for each labeling
     h_true, h_pred = _entropy(reference_indices), _entropy(estimated_indices)
@@ -835,7 +829,7 @@ def mutual_information(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels,
                        frame_size=0.1):
     """Frame-clustering segmentation: mutual information metrics.
-    
+
     Examples
     --------
     >>> (ref_intervals,
@@ -848,10 +842,8 @@ def mutual_information(reference_intervals, reference_labels,
     ...                                               ref_labels,
     ...                                               t_min=0)
     >>> (est_intervals,
-    ...  est_labels) = mir_eval.util.adjust_intervals(est_intervals,
-    ...                                               est_labels,
-    ...                                               t_min=0,
-    ...                                               t_max=ref_intervals.max())
+    ...  est_labels) = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, t_min=0, t_max=ref_intervals.max())
     >>> mi, ami, nmi = mir_eval.structure.mutual_information(ref_intervals,
     ...                                                      ref_labels,
     ...                                                      est_intervals,
@@ -938,10 +930,8 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     ...                                               ref_labels,
     ...                                               t_min=0)
     >>> (est_intervals,
-    ...  est_labels) = mir_eval.util.adjust_intervals(est_intervals,
-    ...                                               est_labels,
-    ...                                               t_min=0,
-    ...                                               t_max=ref_intervals.max())
+    ...  est_labels) = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, t_min=0, t_max=ref_intervals.max())
     >>> S_over, S_under, S_F = mir_eval.structure.nce(ref_intervals,
     ...                                               ref_labels,
     ...                                               est_intervals,
