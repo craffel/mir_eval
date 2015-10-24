@@ -21,7 +21,7 @@ before_install:
     - conda update -q conda
     - conda config --add channels pypi
     - conda info -a
-    - deps='pip numpy scipy sphinx nose six future'
+    - deps='pip numpy scipy sphinx nose six future pep8'
     - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps 
     - source activate test-environment
     - pip install python-coveralls
@@ -29,6 +29,9 @@ before_install:
 
 install:
     - pip install -e .
+
+before_script:
+    - pep8 mir_eval tests evaluators
 
 script:
     - nosetests --with-coverage --cover-package=mir_eval
