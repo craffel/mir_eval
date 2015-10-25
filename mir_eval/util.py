@@ -188,13 +188,15 @@ def f_measure(precision, recall, beta=1.0):
     return (1 + beta**2)*precision*recall/((beta**2)*precision + recall)
 
 
-def intervals_to_boundaries(intervals):
+def intervals_to_boundaries(intervals, q=5):
     """Convert interval times into boundaries.
 
     Parameters
     ----------
     intervals : np.ndarray, shape=(n_events, 2)
         Array of interval start and end-times
+    q : int
+        Number of decimals to round to.
 
     Returns
     -------
@@ -203,7 +205,7 @@ def intervals_to_boundaries(intervals):
 
     """
 
-    return np.unique(np.ravel(intervals))
+    return np.unique(np.ravel(np.round(intervals, decimals=q)))
 
 
 def boundaries_to_intervals(boundaries, labels=None):
