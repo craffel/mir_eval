@@ -493,14 +493,8 @@ def continuity(reference_beats,
                 if m == 0 or nearest == 0:
                     # How far is the estimated beat from the reference beat,
                     # relative to the inter-annotation-interval?
-                    if nearest + 1 < reference_beats.shape[0]:
-                        reference_interval = (reference_beats[nearest + 1] -
-                                              reference_beats[nearest])
-                    else:
-                        # Special case when nearest + 1 is too large - use the
-                        # previous interval instead
-                        reference_interval = (reference_beats[nearest] -
-                                              reference_beats[nearest - 1])
+                    reference_interval = (reference_beats[nearest + 1] -
+                                          reference_beats[nearest])
                     # Handle this special case when beats are not unique
                     if reference_interval == 0:
                         if min_difference == 0:
