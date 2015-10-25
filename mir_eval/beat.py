@@ -367,8 +367,17 @@ def p_score(reference_beats,
 
     """
     validate(reference_beats, estimated_beats)
-    # When estimated beats are empty, no beats are correct; metric is 0
-    if estimated_beats.size == 0 or reference_beats.size == 0:
+    # Warn when only one beat is provided for either estimated or reference,
+    # report a warning
+    if reference_beats.size == 1:
+        warnings.warn("Only one reference beat was provided, so beat intervals"
+                      " cannot be computed.")
+    if estimated_beats.size == 1:
+        warnings.warn("Only one estimated beat was provided, so beat intervals"
+                      " cannot be computed.")
+    # When estimated or reference beats have <= 1 beats, can't compute the
+    # metric, so return 0
+    if estimated_beats.size <= 1 or reference_beats.size <= 1:
         return 0.
     # Quantize beats to 10ms
     sampling_rate = int(1.0/0.010)
@@ -446,8 +455,17 @@ def continuity(reference_beats,
         Any metric level, total accuracy (continuity not required)
     """
     validate(reference_beats, estimated_beats)
-    # When estimated beats are empty, no beats are correct; metric is 0
-    if estimated_beats.size == 0 or reference_beats.size == 0:
+    # Warn when only one beat is provided for either estimated or reference,
+    # report a warning
+    if reference_beats.size == 1:
+        warnings.warn("Only one reference beat was provided, so beat intervals"
+                      " cannot be computed.")
+    if estimated_beats.size == 1:
+        warnings.warn("Only one estimated beat was provided, so beat intervals"
+                      " cannot be computed.")
+    # When estimated or reference beats have <= 1 beats, can't compute the
+    # metric, so return 0
+    if estimated_beats.size <= 1 or reference_beats.size <= 1:
         return 0., 0., 0., 0.
     # Accuracies for each variation
     continuous_accuracies = []
@@ -595,8 +613,17 @@ def information_gain(reference_beats,
     if not bins % 2:
         warnings.warn("bins parameter is even, "
                       "so there will not be a bin centered at zero.")
-    # When estimated beats are empty, no beats are correct; metric is 0
-    if estimated_beats.size == 0 or reference_beats.size == 0:
+    # Warn when only one beat is provided for either estimated or reference,
+    # report a warning
+    if reference_beats.size == 1:
+        warnings.warn("Only one reference beat was provided, so beat intervals"
+                      " cannot be computed.")
+    if estimated_beats.size == 1:
+        warnings.warn("Only one estimated beat was provided, so beat intervals"
+                      " cannot be computed.")
+    # When estimated or reference beats have <= 1 beats, can't compute the
+    # metric, so return 0
+    if estimated_beats.size <= 1 or reference_beats.size <= 1:
         return 0.
     # Get entropy for reference beats->estimated beats
     # and estimated beats->reference beats
