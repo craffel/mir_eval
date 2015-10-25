@@ -203,7 +203,8 @@ def intervals_to_boundaries(intervals):
 
     """
 
-    return np.unique(np.ravel(intervals))
+    return np.concatenate((intervals.flatten()[::2], [intervals[-1, -1]]),
+                          axis=0)
 
 
 def boundaries_to_intervals(boundaries, labels=None):
@@ -280,7 +281,7 @@ def adjust_intervals(intervals,
     Returns
     -------
     new_intervals : np.ndarray
-        Intervals spanning [t_min, t_max]    
+        Intervals spanning [t_min, t_max]
     new_labels : list
         List of labels for new_labels
 
@@ -441,7 +442,7 @@ def intersect_files(flist1, flist2):
         Parameters
         ----------
         abs_path :
-            
+
 
         Returns
         -------
@@ -509,13 +510,13 @@ def _bipartite_match(graph):
     """Find maximum cardinality matching of a bipartite graph (U,V,E).
     The input format is a dictionary mapping members of U to a list
     of their neighbors in V.
-    
+
     The output is a dict M mapping members of V to their matches in U.
 
     Parameters
     ----------
     graph :
-        
+
 
     Returns
     -------
@@ -580,7 +581,7 @@ def _bipartite_match(graph):
             Parameters
             ----------
             v :
-                
+
 
             Returns
             -------
