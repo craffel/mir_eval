@@ -213,6 +213,17 @@ def resample_melody_series(times, frequencies, voicing,
         Boolean voicing array resampled to new timebase
 
     """
+    # Warn when the delta between the original times is not constant,
+    # unless times[0] == 0. and frequencies[0] == frequences[1] (see logic at
+    # the begnning of to_cent_voicing)
+    if not (np.allclose(np.diff(times), np.diff(times).mean()) or
+            (np.allclose(np.diff(times[1:]), np.diff(times[1:]).mean()) and
+             frequences[0] == frequencies[1])):
+        warnings.warn(
+            "Non-uniform timescale passed to resample_melody_series.  Pitch "
+            "will be linearly interpolated, which will result in undesirable "
+            "behavior if silences are indicated by missing values.  Silences "
+            "should be indicated by nonpositive frequency values.")
     # Round to avoid floating point problems
     times = np.round(times, 10)
     times_new = np.round(times_new, 10)
