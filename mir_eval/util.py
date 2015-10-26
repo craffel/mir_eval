@@ -203,8 +203,7 @@ def intervals_to_boundaries(intervals):
 
     """
 
-    return np.concatenate((intervals.flatten()[::2], [intervals[-1, -1]]),
-                          axis=0)
+    return np.unique(np.ravel(np.round(intervals, decimals=5)))
 
 
 def boundaries_to_intervals(boundaries, labels=None):
