@@ -90,3 +90,43 @@ def test_beat_functions():
             # This is a simple hack to make nosetest's messages more useful
             yield (__check_score, sco_f, metric, scores[metric],
                    expected_scores[metric])
+
+
+# Unit tests for specific behavior not covered by the above
+def test_goto_proportion_correct():
+    # This covers the case when over 75% of the beat tracking is correct, and
+    # more than 3 beats are incorrect
+    assert mir_eval.beat.goto(
+        np.arange(100), np.append(np.arange(80), np.arange(80, 100) + .2))
+
+
+def test_warning_on_one_beat():
+    # This tests the metrics where passing only a single beat raises a warning
+    # and returns 0
+    for metric in [mir_eval.beat.p_score, mir_eval.beat.continuity,
+                   mir_eval.beat.information_gain]:
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            # First, test for a warning on empty beats
+            metric(np.array([10]), np.arange(10))
+            assert len(w) == 1
+            assert issubclass(w[-1].category, UserWarning)
+            assert str(w[-1].message) == (
+                "Only one reference beat was provided, so beat intervals "
+                "cannot be computed.")
+            metric(np.arange(10), np.array([10.]))
+            assert len(w) == 2
+            assert issubclass(w[-1].category, UserWarning)
+            assert str(w[-1].message) == (
+                "Only one estimated beat was provided, so beat intervals "
+                "cannot be computed.")
+            # And that the metric is 0
+            assert np.allclose(metric(np.array([]), np.array([])), 0)
+
+
+def test_continuity_edge_cases():
+    # There is some special-case logic for when there are few beats
+    assert np.allclose(mir_eval.beat.continuity(
+        np.array([6., 6.]), np.array([6., 7.])), 0.)
+    assert np.allclose(mir_eval.beat.continuity(
+        np.array([6., 6.]), np.array([6.5, 7.])), 0.)
