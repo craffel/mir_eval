@@ -692,9 +692,6 @@ def weighted_accuracy(comparisons, weights):
     if np.sum(weights) == 0:
         warnings.warn('No nonzero weights, returning 0')
         return 0
-    # Return 0 when no labels are given
-    if len(comparisons) == 0:
-        return 0
     # Find all comparison scores which are valid
     valid_idx = (comparisons >= 0)
     # If no comparable chords were provided, warn and return 0
