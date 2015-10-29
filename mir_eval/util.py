@@ -208,7 +208,7 @@ def intervals_to_boundaries(intervals, q=5):
     return np.unique(np.ravel(np.round(intervals, decimals=q)))
 
 
-def boundaries_to_intervals(boundaries, labels=None):
+def boundaries_to_intervals(boundaries):
     """Convert an array of event times into intervals
 
     Parameters
@@ -216,17 +216,11 @@ def boundaries_to_intervals(boundaries, labels=None):
     boundaries : list-like
         List-like of event times.  These are assumed to be unique
         timestamps in ascending order.
-    labels : None or list of str
-        Optional list of strings describing each event
-        (Default value = None)
 
     Returns
     -------
     intervals : np.ndarray, shape=(n_intervals, 2)
         Start and end time for each interval
-    labels : list of str or None
-        Labels for each event.
-
     """
 
     if not np.allclose(boundaries, np.unique(boundaries)):
@@ -234,12 +228,7 @@ def boundaries_to_intervals(boundaries, labels=None):
 
     intervals = np.asarray(list(zip(boundaries[:-1], boundaries[1:])))
 
-    if labels is None:
-        interval_labels = None
-    else:
-        interval_labels = labels[:-1]
-
-    return intervals, interval_labels
+    return intervals
 
 
 def adjust_intervals(intervals,
