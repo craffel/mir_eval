@@ -596,25 +596,6 @@ def rotate_bitmaps_to_roots(bitmaps, roots):
     return np.asarray(abs_bitmaps)
 
 
-def rotate_bass_to_root(bass, chord_root):
-    """Rotate a relative bass interval to its asbolute pitch class.
-
-    Parameters
-    ----------
-    bass : int
-        Relative bass interval.
-    chord_root : int
-        Absolute root pitch class.
-
-    Returns
-    -------
-    bass : int
-        Pitch class of the bass interval.
-
-    """
-    return (bass + chord_root) % 12
-
-
 # --- Comparison Routines ---
 def validate(reference_labels, estimated_labels):
     """Checks that the input annotations to a comparison function look like
