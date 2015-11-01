@@ -84,6 +84,19 @@ def test_split():
         yield (__check_valid, mir_eval.chord.split,
                (chord_label,), split_chord)
 
+    # Test with reducing extended chords
+    labels = ['C', 'C:minmaj7']
+    splits = [['C', 'maj', set(), '1'],
+              ['C', 'min', set(['7']), '1']]
+    for chord_label, split_chord in zip(labels, splits):
+        yield (__check_valid, mir_eval.chord.split,
+               (chord_label, True), split_chord)
+
+    # Test that an exception is raised when a chord with an omission but no
+    # quality is supplied
+    yield (__check_exception, mir_eval.chord.split,
+           ('C(*5)',), mir_eval.chord.InvalidChordException)
+
 
 def test_join():
     # Arguments are root, quality, extensions, bass
@@ -406,6 +419,7 @@ def test_weighted_accuracy():
     nose.tools.assert_raises(ValueError, mir_eval.chord.weighted_accuracy,
                              comparisons, weights)
     # Weights must all be positive
+    comparisons = np.array([1, 1])
     weights = np.array([-1, -1])
     nose.tools.assert_raises(ValueError, mir_eval.chord.weighted_accuracy,
                              comparisons, weights)
@@ -424,7 +438,7 @@ def __check_score(sco_f, metric, score, expected_score):
     assert np.allclose(score, expected_score, atol=A_TOL)
 
 
-def test_beat_functions():
+def test_chord_functions():
     # Load in all files in the same order
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
@@ -448,3 +462,33 @@ def test_beat_functions():
             # This is a simple hack to make nosetest's messages more useful
             yield (__check_score, sco_f, metric, scores[metric],
                    expected_scores[metric])
+
+
+def test_quality_to_bitmap():
+
+    # Test simple case
+    assert np.all(mir_eval.chord.quality_to_bitmap('maj') == np.array(
+        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]))
+
+    # Check exceptions for qualities not in the QUALITIES list
+    invalid_qualities = ['maj5', '2', '#7']
+    for quality in invalid_qualities:
+        yield (__check_exception, mir_eval.chord.quality_to_bitmap,
+               (quality,), mir_eval.chord.InvalidChordException)
+
+
+def test_validate():
+    # Test that the validate function raises the appropriate errors and
+    # warnings
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        # First, test for warnings on empty labels
+        mir_eval.chord.validate([], [])
+        assert len(w) == 2
+        assert issubclass(w[-1].category, UserWarning)
+        assert str(w[-1].message) == "Estimated labels are empty"
+        assert issubclass(w[-2].category, UserWarning)
+        assert str(w[-2].message) == "Reference labels are empty"
+        # Test that error is thrown on different-length labels
+        nose.tools.assert_raises(
+            ValueError, mir_eval.chord.validate, [], ['C'])

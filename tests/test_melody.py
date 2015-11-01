@@ -82,6 +82,13 @@ def test_to_cent_voicing():
     assert np.allclose(est_v[test_range], expected_est_v)
     assert np.allclose(est_c[test_range], expected_est_c)
 
+    # Test that a 0 is added to the beginning
+    for return_item in mir_eval.melody.to_cent_voicing(
+            np.array([1., 2.]), np.array([440., 442.]), np.array([1., 2.]),
+            np.array([441., 443.])):
+        assert len(return_item) == 3
+        assert return_item[0] == return_item[1]
+
     pass
 
 
