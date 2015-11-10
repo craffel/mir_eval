@@ -125,7 +125,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     return output
 
 
-def chroma(chromagram, times, fs):
+def chroma(chromagram, times, fs, **kwargs):
     """Reverse synthesis of a chromagram (semitone matrix)
 
     Parameters
@@ -138,6 +138,9 @@ def chroma(chromagram, times, fs):
         The start time of each column in the chromagram
     fs : int
         Sampling rate to synthesize audio data at
+    kwargs
+        Additional keyword arguments to pass to
+        :func:`mir_eval.sonify.time_frequency`
 
     Returns
     -------
@@ -165,10 +168,10 @@ def chroma(chromagram, times, fs):
     gram *= shepard_weight.reshape(-1, 1)
     # Compute frequencies
     frequencies = 440.0*(2.0**((notes - 69)/12.0))
-    return time_frequency(gram, frequencies, times, fs)
+    return time_frequency(gram, frequencies, times, fs, **kwargs)
 
 
-def chords(chord_labels, intervals, fs):
+def chords(chord_labels, intervals, fs, **kwargs):
     """Synthesizes chord labels
 
     Parameters
@@ -179,6 +182,9 @@ def chords(chord_labels, intervals, fs):
         Start and end times of each chord label
     fs : int
         Sampling rate to synthesize at
+    kwargs
+        Additional keyword arguments to pass to
+        :func:`mir_eval.sonify.time_frequency`
 
     Returns
     -------
@@ -200,4 +206,4 @@ def chords(chord_labels, intervals, fs):
     chromagram = np.array([np.roll(interval_bitmap, root)
                            for (interval_bitmap, root)
                            in zip(interval_bitmaps, roots)]).T
-    return chroma(chromagram, times, fs)
+    return chroma(chromagram, times, fs, **kwargs)

@@ -36,6 +36,10 @@ def test_chroma():
             np.random.standard_normal((12, 1000)),
             np.linspace(0, 10, 1000), fs)
         assert len(signal) == 10*fs
+        signal = mir_eval.sonify.chroma(
+            np.random.standard_normal((12, 1000)),
+            np.linspace(0, 10, 1000), fs, length=fs*11)
+        assert len(signal) == 11*fs
 
 
 def test_chords():
@@ -45,3 +49,7 @@ def test_chords():
             ['C', 'C:maj', 'D:min7', 'E:min', 'C#', 'C', 'C', 'C', 'C', 'C'],
             intervals, fs)
         assert len(signal) == 10*fs
+        signal = mir_eval.sonify.chords(
+            ['C', 'C:maj', 'D:min7', 'E:min', 'C#', 'C', 'C', 'C', 'C', 'C'],
+            intervals, fs, length=fs*11)
+        assert len(signal) == 11*fs
