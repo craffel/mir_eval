@@ -229,7 +229,8 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
                 continue
 
             # Check transposition given a certain tolerance
-            if np.max(np.abs(np.diff(P - Q, axis=0))) < tol:
+            if (len(P) == len(Q) == 1 or
+                    np.max(np.abs(np.diff(P - Q, axis=0))) < tol):
                 k += 1
                 break
 
