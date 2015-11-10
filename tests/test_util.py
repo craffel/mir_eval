@@ -6,6 +6,7 @@ import numpy as np
 import nose.tools
 import mir_eval
 from mir_eval import util
+import collections
 
 
 def test_interpolate_intervals():
@@ -120,3 +121,17 @@ def test_adjust_events():
     assert new_e[-1] == 9.
     assert np.all(new_e[1:] == events[:-1])
     assert new_l[1:] == labels[:-1]
+
+
+def test_bipartite_match():
+    G = collections.defaultdict(list)
+
+    u_set = ['u{:d}'.format(_) for _ in range(5)]
+    v_set = ['v{:d}'.format(_) for _ in range(5)]
+    for i, u in enumerate(u_set):
+        for v in v_set[:-i]:
+            G[v].append(u)
+
+    matching = util._bipartite_match(G)
+
+    nose.tools.eq_(len(matching), len(u_set))
