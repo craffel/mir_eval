@@ -130,6 +130,10 @@ def test_bipartite_match():
     #   v7 -- (u0, u1, u2)
     #   ...
     #   v0 -- (u0, u1, ..., u9)
+    #
+    # This structure and ordering of this graph should force Hopcroft-Karp to
+    # hit each algorithm/layering phase
+    #
     G = collections.defaultdict(list)
 
     u_set = ['u{:d}'.format(_) for _ in range(10)]
@@ -149,3 +153,8 @@ def test_bipartite_match():
 
     nose.tools.eq_(len(matching), len(lhs))
     nose.tools.eq_(len(matching), len(rhs))
+
+    # Finally, make sure that all detected edges are present in G
+    for k in matching:
+        v = matching[k]
+        assert v in G[k] or k in G[v]

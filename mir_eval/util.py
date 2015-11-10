@@ -505,11 +505,13 @@ def _bipartite_match(graph):
 
     Parameters
     ----------
-    graph :
-
+    graph : dictionary : left-vertex -> list of right vertices
+        The input bipartite graph.  Each edge need only be specified once.
 
     Returns
     -------
+    matching : dictionary : right-vertex -> left vertex
+        A maximal bipartite matching.
 
     """
     # Adapted from:
@@ -567,15 +569,6 @@ def _bipartite_match(graph):
         def recurse(v):
             """Recursively search backward through layers to find alternating
             paths.  recursion returns true if found path, false otherwise
-
-            Parameters
-            ----------
-            v :
-
-
-            Returns
-            -------
-
             """
             if v in preds:
                 L = preds[v]
