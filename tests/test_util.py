@@ -124,14 +124,28 @@ def test_adjust_events():
 
 
 def test_bipartite_match():
+    # This test constructs a graph as follows:
+    #   v9 -- (u0)
+    #   v8 -- (u0, u1)
+    #   v7 -- (u0, u1, u2)
+    #   ...
+    #   v0 -- (u0, u1, ..., u9)
     G = collections.defaultdict(list)
 
-    u_set = ['u{:d}'.format(_) for _ in range(5)]
-    v_set = ['v{:d}'.format(_) for _ in range(5)]
+    u_set = ['u{:d}'.format(_) for _ in range(10)]
+    v_set = ['v{:d}'.format(_) for _ in range(len(u_set)+1)]
     for i, u in enumerate(u_set):
-        for v in v_set[:-i]:
+        for v in v_set[:-i-1]:
             G[v].append(u)
 
     matching = util._bipartite_match(G)
 
+    # Make sure that each u vertex is matched
     nose.tools.eq_(len(matching), len(u_set))
+
+    # Make sure that there are no duplicate keys
+    lhs = set([k for k in matching])
+    rhs = set([matching[k] for k in matching])
+
+    nose.tools.eq_(len(matching), len(lhs))
+    nose.tools.eq_(len(matching), len(rhs))
