@@ -175,7 +175,7 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
 def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     """Standard F1 Score, Precision and Recall.
 
-    This metric checks if the prorotype patterns of the reference match
+    This metric checks if the prototype patterns of the reference match
     possible translated patterns in the prototype patterns of the estimations.
     Since the sizes of these prototypes must be equal, this metric is quite
     restictive and it tends to be 0 in most of 2013 MIREX results.
