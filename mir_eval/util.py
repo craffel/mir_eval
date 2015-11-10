@@ -579,7 +579,8 @@ def _bipartite_match(graph):
                         del pred[u]
                         if pu is unmatched or recurse(pu):
                             matching[v] = u
-                            return
+                            return True
+            return False
 
         for v in unmatched:
             recurse(v)
