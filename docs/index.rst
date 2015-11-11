@@ -181,7 +181,7 @@ The following subsections document each submodule.
 
 :mod:`mir_eval.io`
 ------------------
-.. automodule:: mir_eval.input_output
+.. automodule:: mir_eval.io
    :members:
    :undoc-members:
    :show-inheritance:
