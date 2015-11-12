@@ -357,7 +357,7 @@ def p_score(reference_beats,
         query beat times, in seconds
     p_score_threshold : float
         Window size will be
-        p_score_threshold*median(inter_annotation_intervals),
+        ``p_score_threshold*np.median(inter_annotation_intervals)``,
         (Default value = 0.2)
 
     Returns

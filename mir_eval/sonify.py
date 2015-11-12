@@ -21,7 +21,7 @@ def clicks(times, fs, click=None, length=None):
         click signal, defaults to a 1 kHz blip
     length : int
         desired number of samples in the output signal,
-        defaults to times.max()*fs + click.shape[0] + 1
+        defaults to ``times.max()*fs + click.shape[0] + 1``
 
     Returns
     -------
@@ -62,13 +62,13 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     Parameters
     ----------
     gram : np.ndarray
-        gram[n, m] is the magnitude of frequencies[n]
-        from times[n] to times[n + 1]
+        ``gram[n, m]`` is the magnitude of ``frequencies[n]``
+        from ``times[n]`` to ``times[n + 1]``
     frequencies : np.ndarray
-        array of size gram.shape[0] denoting the frequency of
+        array of size ``gram.shape[0]`` denoting the frequency of
         each row of gram
     times : np.ndarray
-        array of size gram.shape[1] denoting the start time of each
+        array of size ``gram.shape[1]`` denoting the start time of each
         column of gram
     fs : int
         desired sampling rate of the output signal
@@ -76,7 +76,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
         function to use to synthesize notes, should be 2pi-periodic
     length : int
         desired number of samples in the output signal,
-        defaults to times[-1]*fs
+        defaults to ``times[-1]*fs``
 
     Returns
     -------
@@ -91,15 +91,6 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     def _fast_synthesize(frequency):
         """A faster (approximate) way to synthesize a signal
             synthesize a few periods then repeat that signal
-
-        Parameters
-        ----------
-        frequency :
-
-
-        Returns
-        -------
-
         """
         # Generate ten periods at this frequency
         ten_periods = int(10*fs*(1./frequency))
@@ -132,8 +123,8 @@ def chroma(chromagram, times, fs, **kwargs):
     ----------
     chromagram : np.ndarray, shape=(12, times.shape[0])
         Chromagram matrix, where each row represents a semitone [C->Bb]
-        i.e., chromagram[3, j] is the magnitude of D# from times[j] to
-        times[j + 1]
+        i.e., ``chromagram[3, j]`` is the magnitude of D# from ``times[j]`` to
+        ``times[j + 1]``
     times : np.ndarray
         The start time of each column in the chromagram
     fs : int

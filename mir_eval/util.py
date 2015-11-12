@@ -18,7 +18,7 @@ def index_labels(labels, case_sensitive=False):
         annotation file.
 
     case_sensitive : bool
-        Set to *True* to enable case-sensitive label indexing
+        Set to True to enable case-sensitive label indexing
         (Default value = False)
 
     Returns
@@ -80,8 +80,8 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
     intervals : np.ndarray, shape=(n, d)
         An array of time intervals, as returned by
         :func:`mir_eval.io.load_intervals()` or
-        :func:`mir_eval.io.load_labeled.intervals()`.
-        The *i* th interval spans time ``intervals[i, 0]`` to
+        :func:`mir_eval.io.load_labeled_intervals()`.
+        The ``i`` th interval spans time ``intervals[i, 0]`` to
         ``intervals[i, 1]``.
 
     labels : list, shape=(n,)
@@ -109,7 +109,7 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
 
     .. note::
         Intervals will be rounded down to the nearest multiple
-        of *frame_size*.
+        of ``sample_size``.
 
     """
 
@@ -132,8 +132,8 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     ----------
     intervals : np.ndarray, shape=(n, d)
         An array of time intervals, as returned by
-        :func:``mir_eval.io.load_intervals()``.
-        The *i* th interval spans time ``intervals[i, 0]`` to
+        :func:`mir_eval.io.load_intervals()`.
+        The ``i`` th interval spans time ``intervals[i, 0]`` to
         ``intervals[i, 1]``.
 
     labels : list, shape=(n,)
@@ -196,7 +196,7 @@ def intervals_to_boundaries(intervals, q=5):
     intervals : np.ndarray, shape=(n_events, 2)
         Array of interval start and end-times
     q : int
-        Number of decimals to round to.
+        Number of decimals to round to. (Default value = 5)
 
     Returns
     -------
@@ -245,8 +245,9 @@ def adjust_intervals(intervals,
 
     If the specified range exceeds the span of the provided data in either
     direction, additional intervals will be appended.  If an interval is
-    appended at the beginning, it will be given the label *start_label*; if an
-    interval is appended at the end, it will be given the label *end_label*.
+    appended at the beginning, it will be given the label ``start_label``; if
+    an interval is appended at the end, it will be given the label
+    ``end_label``.
 
     Parameters
     ----------
@@ -336,7 +337,7 @@ def adjust_events(events, labels=None, t_min=0.0,
     Any event times outside of the specified range will be removed.
 
     If the times do not span [t_min, t_max], additional events will be added
-    with the prefix label_prefix.
+    with the prefix ``label_prefix``.
 
     Parameters
     ----------
@@ -451,7 +452,7 @@ def intersect_files(flist1, flist2):
 
 
 def merge_labeled_intervals(x_intervals, x_labels, y_intervals, y_labels):
-    r"""Merge the time intervals of two sequences *x* and *y*.
+    r"""Merge the time intervals of two sequences.
 
     Parameters
     ----------
@@ -590,8 +591,8 @@ def match_events(ref, est, window):
     """Compute a maximum matching between reference and estimated event times,
     subject to a window constraint.
 
-    Given two list of event times *ref* and *est*, we seek the largest set of
-    correspondences ``(ref[i], est[j])`` such that ``|ref[i] - est[j]| <=
+    Given two lists of event times ``ref`` and ``est``, we seek the largest set
+    of correspondences ``(ref[i], est[j])`` such that ``|ref[i] - est[j]| <=
     window``, and each ``ref[i]`` and ``est[j]`` is matched at most once.
 
     This is useful for computing precision/recall metrics in beat tracking,
@@ -714,7 +715,7 @@ def intervals_to_durations(intervals):
     ----------
     intervals : np.ndarray, shape=(n, 2)
         An array of time intervals, as returned by
-        :func:``mir_eval.io.load_intervals()``.
+        :func:`mir_eval.io.load_intervals()`.
         The *i* th interval spans time ``intervals[i, 0]`` to
         ``intervals[i, 1]``.
 

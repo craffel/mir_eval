@@ -362,8 +362,9 @@ def split(chord_label, reduce_extended_chords=False):
     ----------
     chord_label : str
         A chord label.
-    reduce_extended_chords :
-         (Default value = False)
+    reduce_extended_chords : bool
+        Whether to map the upper voicings of extended chords (9's, 11's, 13's)
+        to semitone extensions. (Default value = False)
 
     Returns
     -------
@@ -422,13 +423,13 @@ def join(chord_root, quality='', extensions=None, bass=''):
         Root pitch class of the chord, e.g. 'C', 'Eb'
     quality : str
         Quality of the chord, e.g. 'maj', 'hdim7'
-         (Default value = '')
+        (Default value = '')
     extensions : list
         Any added or absent scaled degrees for this chord, e.g. ['4', '\*3']
-         (Default value = None)
+        (Default value = None)
     bass : str
         Scale degree of the bass note, e.g. '5'.
-         (Default value = '')
+        (Default value = '')
 
     Returns
     -------
@@ -457,8 +458,8 @@ def encode(chord_label, reduce_extended_chords=False,
     chord_label : str
         Chord label to encode.
     reduce_extended_chords : bool
-        Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
-        extensions.
+        Whether to map the upper voicings of extended chords (9's, 11's, 13's)
+        to semitone extensions.
         (Default value = False)
     strict_bass_intervals : bool
         Whether to require that the bass scale degree is present in the chord.
@@ -510,8 +511,8 @@ def encode_many(chord_labels, reduce_extended_chords=False):
     chord_labels : list
         Set of chord labels to encode.
     reduce_extended_chords : bool
-        Map the upper voicings of extended chords (9's, 11's, 13's) to semitone
-        extensions.
+        Whether to map the upper voicings of extended chords (9's, 11's, 13's)
+        to semitone extensions.
         (Default value = False)
 
     Returns
@@ -930,7 +931,7 @@ def tetrads(reference_labels, estimated_labels):
 
 
 def tetrads_inv(reference_labels, estimated_labels):
-    """Compare chords along seventh (root, quality) relationships.
+    """Compare chords along tetrad (root, full quality, & bass) relationships.
 
     Examples
     --------

@@ -89,7 +89,7 @@ def validate_voicing(ref_voicing, est_voicing):
 
 def validate(ref_voicing, ref_cent, est_voicing, est_cent):
     """Checks that voicing and frequency arrays are well-formed.  To be used in
-    conjunction with validate_voicing
+    conjunction with :func:`mir_eval.melody.validate_voicing`
 
     Parameters
     ----------
@@ -163,14 +163,15 @@ def freq_to_voicing(frequencies):
 
 
 def constant_hop_timebase(hop, end_time):
-    """Generates a time series from 0 to end_time with times spaced hop apart
+    """Generates a time series from 0 to ``end_time`` with times spaced ``hop``
+    apart
 
     Parameters
     ----------
     hop : float
         Spacing of samples in the time series
     end_time : float
-        Time series will span [0, end_time]
+        Time series will span ``[0, end_time]``
 
     Returns
     -------

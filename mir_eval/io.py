@@ -28,12 +28,11 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
     filename : str
         Path to the annotation file
     converters : list of functions
-        Each entry in column n of the file will be cast by the function
-        converters[n].
+        Each entry in column ``n`` of the file will be cast by the function
+        ``converters[n]``.
     delimiter : str
         Separator regular expression.
-        By default, lines will be split by any amount of whitespace
-        (Default value = r'\s+')
+        By default, lines will be split by any amount of whitespace.
 
     Returns
     -------
@@ -114,8 +113,7 @@ def load_events(filename, delimiter=r'\s+'):
         Path to the annotation file
     delimiter : str
         Separator regular expression.
-        By default, lines will be split by any amount of whitespace
-        (Default value = r'\s+')
+        By default, lines will be split by any amount of whitespace.
 
     Returns
     -------
@@ -148,8 +146,7 @@ def load_labeled_events(filename, delimiter=r'\s+'):
         Path to the annotation file
     delimiter : str
         Separator regular expression.
-        By default, lines will be split by any amount of whitespace ('\s+')
-        (Default value = r'\s+')
+        By default, lines will be split by any amount of whitespace.
 
     Returns
     -------
@@ -183,8 +180,7 @@ def load_intervals(filename, delimiter=r'\s+'):
         Path to the annotation file
     delimiter : str
         Separator regular expression.
-        By default, lines will be split by any amount of whitespace ('\s+')
-        (Default value = r'\s+')
+        By default, lines will be split by any amount of whitespace.
 
     Returns
     -------
@@ -218,8 +214,7 @@ def load_labeled_intervals(filename, delimiter=r'\s+'):
         Path to the annotation file
     delimiter : str
         Separator regular expression.
-        By default, lines will be split by any amount of whitespace ('\s+')
-        (Default value = r'\s+')
+        By default, lines will be split by any amount of whitespace.
 
     Returns
     -------
@@ -254,8 +249,7 @@ def load_time_series(filename, delimiter=r'\s+'):
         Path to the annotation file
     delimiter : str
         Separator regular expression.
-        By default, lines will be split by any amount of whitespace ('\s+')
-        (Default value = r'\s+')
+        By default, lines will be split by any amount of whitespace.
 
     Returns
     -------
@@ -279,19 +273,19 @@ def load_patterns(filename):
     occurrence being a list of (onset, midi) pairs.
 
     The input file must be formatted as described in MIREX 2013:
-        http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_%26_Sections
+    http://www.music-ir.org/mirex/wiki/2013:Discovery_of_Repeated_Themes_%26_Sections
 
     Parameters
     ----------
     filename : str
-        The input file path containing the patterns of a given
-        given piece using the MIREX 2013 format.
+        The input file path containing the patterns of a given piece using the
+        MIREX 2013 format.
 
     Returns
     -------
     pattern_list : list
         The list of patterns, containing all their occurrences,
-        using the following format:
+        using the following format::
 
             onset_midi = (onset_time, midi_number)
             occurrence = [onset_midi1, ..., onset_midiO]
@@ -300,9 +294,8 @@ def load_patterns(filename):
 
         where `N` is the number of patterns, `M[i]` is the number of
         occurrences of the `i`'th pattern, and `O[j]` is the number of onsets
-        in the `j`'th occurrence.
+        in the `j`'th occurrence.  E.g.::
 
-        E.g.:
             occ1 = [(0.5, 67.0), (1.0, 67.0), (1.5, 67.0), (2.0, 64.0)]
             occ2 = [(4.5, 65.0), (5.0, 65.0), (5.5, 65.0), (6.0, 62.0)]
             pattern1 = [occ1, occ2]
@@ -380,8 +373,7 @@ def load_wav(path, mono=True):
         Path to a .wav file
     mono : bool
         If the provided .wav has more than one channel, it will be
-        converted to mono if mono=True.  Defaults to True.
-        (Default value = True)
+        converted to mono if ``mono=True``. (Default value = True)
 
     Returns
     -------

@@ -7,7 +7,7 @@ transitions to a refrain.  Metrics for boundary annotation compare estimated
 segment boundaries to reference boundaries.  Structural annotation is the task
 of assigning labels to detected segments.  The estimated labels may be
 arbitrary strings - such as A, B, C, - and they need not describe functional
-concepts.  Metrics for structural annotation are similar to those use for
+concepts.  Metrics for structural annotation are similar to those used for
 clustering data.
 
 Conventions

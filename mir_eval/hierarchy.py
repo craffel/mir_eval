@@ -5,7 +5,7 @@
 Hierarchical structure analysis seeks to annotate a track with a nested
 decomposition of the temporal elements of the piece, effectively providing
 a kind of "parse tree" of the composition.  Unlike the flat segmentation
-metrics defined in `mir_eval.segment`, which can only encode one level of
+metrics defined in :mod:`mir_eval.segment`, which can only encode one level of
 analysis, hierarchical annotations expose the relationships between short
 segments and the larger compositional elements to which they belong.
 
@@ -18,9 +18,9 @@ labels applied to segments.
 Conventions
 -----------
 Annotations are assumed to take the form of an ordered list of segmentations.
-As in the `mir_eval.segment` metrics, each segmentation itself consists of an
-`n-by-2` array of interval times, so that the i'th segment spans time
-`intervals[i, 0]` to `intervals[i, 1]`.
+As in the :mod:`mir_eval.segment` metrics, each segmentation itself consists of
+an n-by-2 array of interval times, so that the ``i`` th segment spans time
+``intervals[i, 0]`` to ``intervals[i, 1]``.
 
 Hierarchical annotations are ordered by increasing specificity, so that the
 first segmentation should contain the fewest segments, and the last
@@ -31,7 +31,8 @@ Metrics
 * :func:`mir_eval.hierarchy.tmeasure`: Precision, recall, and F-measure of
   triplet-based frame accuracy.
 
-:references:
+References
+----------
   .. [#mcfee2015] Brian McFee, Oriol Nieto, and Juan P. Bello.
     "Hierarchical evaluation of segment boundary detection",
     International Society for Music Information Retrieval (ISMIR) conference,
@@ -146,8 +147,8 @@ def _gauc(ref_lca, est_lca, transitive, window):
     '''Generalized area under the curve (GAUC)
 
     This function computes the normalized recall score for correctly
-    ordering triples `(q, i, j)` where frames `(q, i)` are closer than
-    `(q, j)` in the reference annotation.
+    ordering triples ``(q, i, j)`` where frames ``(q, i)`` are closer than
+    ``(q, j)`` in the reference annotation.
 
     Parameters
     ----------
@@ -157,10 +158,11 @@ def _gauc(ref_lca, est_lca, transitive, window):
         estimated annotations
 
     transitive : bool
-        If True, then transitive comparisons are counted, meaning that `(q, i)`
-        and `(q, j)` can differ by any number of levels.
+        If True, then transitive comparisons are counted, meaning that
+        ``(q, i)`` and ``(q, j)`` can differ by any number of levels.
 
-        If False, then `(q, i)` and `(q, j)` can differ by exactly one level.
+        If False, then ``(q, i)`` and ``(q, j)`` can differ by exactly one
+        level.
 
     window : number or None
         The maximum number of frames to consider for each query.
@@ -175,7 +177,7 @@ def _gauc(ref_lca, est_lca, transitive, window):
     Raises
     ------
     ValueError
-        If `ref_lca` and `est_lca` have different shapes
+        If ``ref_lca`` and ``est_lca`` have different shapes
     '''
     # Make sure we have the right number of frames
 
@@ -257,12 +259,6 @@ def validate_hier_intervals(intervals_hier):
         segmentation.
 
         If any segmentation does not start at 0.
-
-
-    Warnings
-    --------
-        If any segmentation contains boundaries that do not exist at a
-        deeper level in the hierarchy.
     '''
 
     # Synthesize a label array for the top layer.
@@ -293,7 +289,7 @@ def tmeasure(reference_intervals_hier, estimated_intervals_hier,
     ----------
     reference_intervals_hier : list of ndarray
         ``reference_intervals_hier[i]`` contains the segment intervals
-        (in seconds) for the ``i``th layer of the annotations.  Layers are
+        (in seconds) for the ``i`` th layer of the annotations.  Layers are
         ordered from top to bottom, so that the last list of intervals should
         be the most specific.
 
@@ -323,7 +319,7 @@ def tmeasure(reference_intervals_hier, estimated_intervals_hier,
         T-measure Recall
 
     t_measure : number [0, 1]
-        F-beta measure for `(t_precision, t_recall)`
+        F-beta measure for ``(t_precision, t_recall)``
 
     Raises
     ------
@@ -332,7 +328,7 @@ def tmeasure(reference_intervals_hier, estimated_intervals_hier,
 
         If the input hierarchies have different time durations
 
-        If `frame_size > window` or `frame_size <= 0`
+        If ``frame_size > window`` or ``frame_size <= 0``
     '''
 
     # Compute the number of frames in the window
@@ -424,8 +420,8 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
 
-        T-measures are computed in both the `full` (transitive=True) and
-        `reduced` (transitive=False) modes.
+        T-measures are computed in both the "full" (``transitive=True``) and
+        "reduced" (``transitive=False``) modes.
 
     Raises
     ------
