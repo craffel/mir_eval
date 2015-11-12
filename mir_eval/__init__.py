@@ -15,4 +15,4 @@ from . import pattern
 from . import tempo
 from . import hierarchy
 
-__version__ = '0.1'
+__version__ = '0.2'
