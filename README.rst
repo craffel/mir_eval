@@ -1,3 +1,8 @@
+.. image:: https://travis-ci.org/craffel/mir_eval.svg?branch=master
+    :target: https://travis-ci.org/craffel/mir_eval
+.. image:: https://coveralls.io/repos/craffel/mir_eval/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/craffel/mir_eval?branch=master
+
 mir_eval
 ========
 
