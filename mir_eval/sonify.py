@@ -81,12 +81,21 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     Returns
     -------
     output : np.ndarray
-        synthetized version of the piano roll
+        synthesized version of the piano roll
 
     """
     # Default value for length
+    if times.ndim == 1:
+        # Convert to intervals
+        times = util.boundaries_to_intervals(times)
+
     if length is None:
-        length = int(times[-1]*fs)
+        length = int(times[-1, 1] * fs)
+
+    times, _ = util.adjust_intervals(times, t_max=length)
+
+    # Truncate times so that the shape matches gram
+    times = times[:gram.shape[1]]
 
     def _fast_synthesize(frequency):
         """A faster (approximate) way to synthesize a signal
@@ -104,13 +113,11 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     for n, frequency in enumerate(frequencies):
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
-        # Zero out up to first time
-        wave[:int(times[0]*fs)] = 0
         # Scale each time interval by the piano roll magnitude
-        for m, (start, end) in enumerate(zip(times[:-1], times[1:])):
-            wave[int(start*fs):int(end*fs)] *= gram[n, m]
-        # Sume into the aggregate output waveform
-        output += wave
+        for m, (start, end) in enumerate((times * fs).astype(int)):
+            # Sum into the aggregate output waveform
+            output[start:end] += wave[start:end] * gram[n, m]
+
     # Normalize
     output /= np.abs(output).max()
     return output
