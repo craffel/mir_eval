@@ -19,7 +19,6 @@ before_install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
-    - conda config --add channels pypi
     - conda info -a
     - deps='pip numpy scipy sphinx nose six future pep8'
     - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps 
