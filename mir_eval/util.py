@@ -684,7 +684,7 @@ def validate_events(events, max_time=30000.):
         raise ValueError('Events should be in increasing order.')
 
 
-def filter_kwargs(function, *args, **kwargs):
+def filter_kwargs(_function, *args, **kwargs):
     """Given a function and args and keyword args to pass to it, call the function
     but using only the keyword arguments which it accepts.  This is equivalent
     to redefining the function with an additional \*\*kwargs to accept slop
@@ -692,12 +692,12 @@ def filter_kwargs(function, *args, **kwargs):
 
     Parameters
     ----------
-    function : function
+    _function : callable
         Function to call.  Can take in any number of args or kwargs
 
     """
     # Get the list of function arguments
-    func_code = six.get_function_code(function)
+    func_code = six.get_function_code(_function)
     function_args = func_code.co_varnames[:func_code.co_argcount]
     # Construct a dict of those kwargs which appear in the function
     filtered_kwargs = {}
@@ -705,7 +705,7 @@ def filter_kwargs(function, *args, **kwargs):
         if kwarg in function_args:
             filtered_kwargs[kwarg] = value
     # Call the function with the supplied args and the filtered kwarg dict
-    return function(*args, **filtered_kwargs)
+    return _function(*args, **filtered_kwargs)
 
 
 def intervals_to_durations(intervals):
