@@ -20,7 +20,7 @@ before_install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     - conda info -a
-    - deps='pip numpy scipy sphinx nose six future pep8'
+    - deps='pip atlas numpy scipy sphinx nose six future pep8'
     - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps 
     - source activate test-environment
     - pip install python-coveralls
@@ -33,7 +33,7 @@ before_script:
     - pep8 mir_eval tests evaluators
 
 script:
-    - nosetests --with-coverage --cover-package=mir_eval
+    - nosetests -v --with-coverage --cover-package=mir_eval
     - python setup.py build_sphinx
     - python setup.py egg_info -b.dev sdist --formats gztar
 
