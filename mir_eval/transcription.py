@@ -22,9 +22,9 @@ tracking, task 2" criteria:
 "A ground truth note is assumed to be correctly transcribed if the system
 returns a note that is within a half semitone of that note AND the returned
 note's onset is within a 100 ms range (+- 50ms) of the onset of the ground
-truth note, and its offset is within 20% [of the note's duration] range of the
-ground truth note's offset. Again, one ground truth note can only be associated
-with one transcribed note."
+truth note, and its offset is within 20% [of the ground truth note's duration]
+range of the ground truth note's offset. Again, one ground truth note can only
+be associated with one transcribed note."
 
 Since note offsets are considerably harder to estimate than onsets, an option
 is provided to only consider onsets for determining matches in the evaluation.
@@ -103,7 +103,8 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
                       "value")
 
 
-def prf(ref_intervals, ref_pitches, est_intervals, est_pitches):
+def prf(ref_intervals, ref_pitches, est_intervals, est_pitches,
+        onset_tolerance=0.05, offest_ratio=0.2, pitch_tolerance=50.0):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes. "Correctness" is determined based on note onset, offset
     and pitch as detailed at the top of this document.
@@ -149,10 +150,32 @@ def prf(ref_intervals, ref_pitches, est_intervals, est_pitches):
     ind_ref = 0
     ind_est = 0
 
+    # while ind_ref < len(ref_pitches) and ind_est < len(est_pitches):
+
     # precision = float(len(matching))/len(est_pitches)
     # recall = float(len(matching))/len(ref_pitches)
     # f_measure = util.f_measure(precision, recall)
     # return precision, recall, f_measure
+
+
+def _note_match(ref_onset, ref_offset, ref_pitch, est_onset, est_offset,
+                est_pitch, onset_tolerance=0.05, offset_ratio=0.2,
+                pitch_tolerance=50.0):
+    """Determine whether two notes are a match based on their onset, offset,
+    and pitch value, given an onset tolerance (default +- 50 ms), offset
+    tolerance (which is given by a fraction of the reference note's duration:
+    default is a range that is 20% of the duration of the reference note
+    centered on the reference note's offset), and a pitch tolerance (default is
+    half a semitone, i.e. +- 50 cents).
+    """
+
+    if np.abs(ref_onset - est_onset) < onset_tolerance and \
+        np.abs(ref_offset - est_offset) < 0.5 * offset_ratio * \
+        (ref_offset-ref_onset) and \
+        np.abs(1200*np.log2(ref_pitch/est_pitch)) < pitch_tolerance:
+        return True
+    else:
+        return False
 
 
 def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
