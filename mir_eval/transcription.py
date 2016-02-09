@@ -48,9 +48,10 @@ values, represented by their fundamental frequency (f0) in Hertz.
 Metrics
 -------
 
-* :func:`mir_eval.transcription.prf`: The precision, recall, and F-measure of
-  the note transcription, where an estimated note is considered correct if its
-  pitch, onset and offset are sufficiently close to a reference note
+* :func:`mir_eval.transcription.precision_recall_f1`: The precision, recall,
+  and F-measure of the note transcription, where an estimated note is
+  considered correct if its pitch, onset and offset are sufficiently close to
+  a reference note
 
 '''
 
@@ -101,7 +102,7 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
                       "value")
 
 
-def prf(ref_intervals, ref_pitches, est_intervals, est_pitches,
+def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
         onset_tolerance=0.05, offset_ratio=0.2, pitch_tolerance=50.0):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes. "Correctness" is determined based on note onset, offset
@@ -113,8 +114,9 @@ def prf(ref_intervals, ref_pitches, est_intervals, est_pitches,
     ... 'reference.txt')
     >>> est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
     ... 'estimated.txt')
-    >>> precision, recall, f_measure = mir_eval.transcription.prf(
-    ... ref_intervals, ref_pitches, est_intervals, est_pitches)
+    >>> precision, recall, f_measure =
+    ... mir_eval.transcription.precision_recall_f1(ref_intervals, ref_pitches,
+    ... est_intervals, est_pitches)
 
     Parameters
     ----------
@@ -201,7 +203,8 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     # All metrics
     (scores['Precision'],
      scores['Recall'],
-     scores['F-measure']) = util.filter_kwargs(prf, ref_intervals, ref_pitches,
+     scores['F-measure']) = util.filter_kwargs(precision_recall_f1,
+                                               ref_intervals, ref_pitches,
                                                est_intervals, est_pitches,
                                                **kwargs)
 
