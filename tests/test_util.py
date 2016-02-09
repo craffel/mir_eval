@@ -163,9 +163,9 @@ def test_bipartite_match():
 def test_match_notes():
 
     ref_int, ref_pitch = mir_eval.io.load_valued_intervals(
-        'data/transcription/ref00.txt')
+        'tests/data/transcription/ref00.txt')
     est_int, est_pitch = mir_eval.io.load_valued_intervals(
-        'data/transcription/est00.txt')
+        'tests/data/transcription/est00.txt')
     matching = mir_eval.util.match_notes(ref_int, ref_pitch, est_int,
                                          est_pitch)
     assert matching == [(0, 0), (3, 4)]
