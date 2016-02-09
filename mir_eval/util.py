@@ -621,9 +621,9 @@ def match_events(ref, est, window):
     # Construct the graph input
     G = {}
     for ref_i, est_i in zip(*hits):
-        if ref_i not in G:
-            G[ref_i] = []
-        G[ref_i].append(est_i)
+        if est_i not in G:
+            G[est_i] = []
+        G[est_i].append(ref_i)
 
     # Compute the maximum matching
     matching = sorted(_bipartite_match(G).items())
@@ -632,47 +632,61 @@ def match_events(ref, est, window):
 
 
 def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
-                onset_tolerance=0.05, offset_ratio=0.2, pitch_tolerance=50.0):
+                onset_tolerance=0.05, pitch_tolerance=50.0, offset_ratio=0.2,
+                with_offset=False):
     """Compute a maximum matching between reference and estimated notes,
-    subject to onset, offset, and pitch constraints.
+    subject to onset, pitch and (optionally) offset constraints.
 
-    Given two note lists represented by ``ref_intervals``, ``ref_pitches``,
+    Given two note sequences represented by ``ref_intervals``, ``ref_pitches``,
     ``est_intervals`` and ``est_pitches`` (see ``io.load_valued_intervals``),
     we seek the largest set of correspondences ``(i, j)`` such that:
     1. The onset of ref note i is within ``onset_tolerance`` of the onset of
     est note j.
-    2. The offset of ref note i is within ``offset_tolerance`` of the offset of
-    est note j, where ``offset_tolerance`` is equal to half the window given by
-    taking ``offset_ratio`` of the ref note's duration, i.e.
-    ``0.5 * offset_ratio * ref_duration[i]`` where ``ref_duration[i] =
-    ref_intervals[i, 1] - ref_intervals[i, 0]``.
-    3. The pitch of ref note i is within ``pitch_tolerance`` of the pitch of
+    2. The pitch of ref note i is within ``pitch_tolerance`` of the pitch of
     est note j.
+    3. If with_offset=True:
+          The offset of ref note i is within ``offset_tolerance`` of the offset
+          of est note j, where ``offset_tolerance`` is equal to half the window
+          given by taking ``offset_ratio`` of the ref note's duration, i.e.
+          ``0.5 * offset_ratio * ref_duration[i]`` where ``ref_duration[i] =
+          ref_intervals[i, 1] - ref_intervals[i, 0]``. If the resulting
+          ``offset_tolerance`` is less than 0.05 (50 ms), 0.05 is used instead.
+       If with_offset=False:
+          Note offsets are ignored, and only criteria 1 and 2 are taken into
+          consideration.
+
     Every ref note is matched against at most one est note.
 
-    This is useful for computing precision/recall metrics in note transcription.
+    This is useful for computing precision/recall metrics for note
+    transcription.
 
     Parameters
     ----------
     ref_intervals : np.ndarray, shape=(n,2)
         Array of reference notes time intervals (onset and offset times)
-    ref_pitches: list, len=n
-        List of reference pitch values in Hertz
+    ref_pitches: np.ndarray, shape=(n,)
+        Array of reference pitch values in Hertz
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
-    est_pitches : list, len=m
-        List of estimated pitch values in Hertz
+    est_pitches : np.ndarray, shape=(m,)
+        Array of estimated pitch values in Hertz
     onset_tolerance : float > 0
-        The tolerance for an estimated note's onset deviating from the reference
-        note's onset, in seconds. Default is 0.05 (50 ms).
+        The tolerance for an estimated note's onset deviating from the
+        reference note's onset, in seconds. Default is 0.05 (50 ms).
+    pitch_tolerance: float > 0
+        The tolerance for an estimated note's pitch deviating from the
+        reference note's pitch, in cents. Default is 50.0 (50 cents).
     offset_ratio: float > 0
         The ratio of the reference note's duration used to define the
         offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
         will equal the ref_duration * 0.2 * 0.5 (0.5 since the window is
-        centered on the reference offset).
-    pitch_tolerance: float > 0
-        The tolerance for an estimated note's pitch deviating from the reference
-        note's pitch, in cents. Default is 50.0 (50 cents).
+        centered on the reference offset), or 0.05 (50 ms), whichever is
+        greater. Note: this parameter only influences the results if
+        with_offset=True.
+    with_offset: bool
+        If True, note offsets are taken into consideration in the matching,
+        where the offset tolerance depends on the offset_ratio parameter. If
+        False, offsets are ignored in the matching.
 
     Returns
     -------
@@ -687,26 +701,29 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     # hits = np.where(np.abs(np.subtract.outer(ref, est)) <= window)
 
     # check for onset matches
-    onset_distances = np.abs(np.subtract.outer(ref_intervals[:,0],
-                                               est_intervals[:,0]))
+    onset_distances = np.abs(np.subtract.outer(ref_intervals[:, 0],
+                                               est_intervals[:, 0]))
     onset_hit_matrix = onset_distances < onset_tolerance
-
-    # check for offset matches
-    offset_distances = np.abs(np.subtract.outer(ref_intervals[:,1],
-                                                est_intervals[:,1]))
-    ref_durations = intervals_to_durations(ref_intervals)
-    offset_tolerances = 0.5 * offset_ratio * ref_durations
-    offset_tolerance_matrix = np.tile(offset_tolerances,
-                                      (offset_distances.shape[1], 1)).T
-    offset_hit_matrix = offset_distances < offset_tolerance_matrix
 
     # check for pitch matches
     pitch_distances = np.abs(1200*np.log2(np.divide.outer(ref_pitches,
                                                           est_pitches)))
     pitch_hit_matrix = pitch_distances < pitch_tolerance
 
+    # check for offset matches if offset_ratio is not None
+    if with_offset:
+        offset_distances = np.abs(np.subtract.outer(ref_intervals[:, 1],
+                                                    est_intervals[:, 1]))
+        ref_durations = intervals_to_durations(ref_intervals)
+        offset_tolerances = 0.5 * offset_ratio * ref_durations
+        offset_tolerance_matrix = np.tile(offset_tolerances,
+                                          (offset_distances.shape[1], 1)).T
+        offset_hit_matrix = offset_distances < offset_tolerance_matrix
+    else:
+        offset_hit_matrix = np.ones_like(onset_hit_matrix)
+
     # check for overall matches
-    note_hit_matrix = onset_hit_matrix * offset_hit_matrix * pitch_hit_matrix
+    note_hit_matrix = onset_hit_matrix * pitch_hit_matrix * offset_hit_matrix
     hits = np.where(note_hit_matrix)
 
     # Construct the graph input

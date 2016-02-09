@@ -166,6 +166,13 @@ def test_match_notes():
         'tests/data/transcription/ref00.txt')
     est_int, est_pitch = mir_eval.io.load_valued_intervals(
         'tests/data/transcription/est00.txt')
+
     matching = mir_eval.util.match_notes(ref_int, ref_pitch, est_int,
                                          est_pitch)
+
+    assert matching == [(0, 0), (1, 1), (3, 3)]
+
+    matching = mir_eval.util.match_notes(ref_int, ref_pitch, est_int,
+                                         est_pitch, with_offset=True)
+
     assert matching == [(0, 0), (3, 4)]

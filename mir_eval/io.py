@@ -402,9 +402,9 @@ def load_wav(path, mono=True):
 
 
 def load_valued_intervals(filename, delimiter=r'\s+'):
-    r"""Import valued intervals from an annotation file. The file should consist
-    of three columns: Two consisting of numeric values corresponding to start
-    and end time of each interval and a third, also of numeric values,
+    r"""Import valued intervals from an annotation file. The file should
+    consist of three columns: Two consisting of numeric values corresponding to
+    start and end time of each interval and a third, also of numeric values,
     corresponding to the value of each interval. This is primarily useful for
     processing events which span a duration and have a numeric value, such as
     piano-roll notes which have an onset, offset, and a pitch value.
@@ -420,9 +420,9 @@ def load_valued_intervals(filename, delimiter=r'\s+'):
     Returns
     -------
     intervals : np.ndarray, shape=(n_events, 2)
-        array of event start and end time
-    values : list of float
-        list of values
+        Array of event start and end times
+    values : np.ndarray, shape=(n_events,)
+        Array of values
 
     """
     # Use our universal function to load in the events
@@ -435,5 +435,8 @@ def load_valued_intervals(filename, delimiter=r'\s+'):
         util.validate_intervals(intervals)
     except ValueError as error:
         warnings.warn(error.args[0])
+
+    # return values as np.ndarray
+    values = np.array(values)
 
     return intervals, values
