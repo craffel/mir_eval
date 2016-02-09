@@ -158,26 +158,6 @@ def prf(ref_intervals, ref_pitches, est_intervals, est_pitches,
     # return precision, recall, f_measure
 
 
-def _note_match(ref_onset, ref_offset, ref_pitch, est_onset, est_offset,
-                est_pitch, onset_tolerance=0.05, offset_ratio=0.2,
-                pitch_tolerance=50.0):
-    """Determine whether two notes are a match based on their onset, offset,
-    and pitch value, given an onset tolerance (default +- 50 ms), offset
-    tolerance (which is given by a fraction of the reference note's duration:
-    default is a range that is 20% of the duration of the reference note
-    centered on the reference note's offset), and a pitch tolerance (default is
-    half a semitone, i.e. +- 50 cents).
-    """
-
-    if np.abs(ref_onset - est_onset) < onset_tolerance and \
-        np.abs(ref_offset - est_offset) < 0.5 * offset_ratio * \
-        (ref_offset-ref_onset) and \
-        np.abs(1200*np.log2(ref_pitch/est_pitch)) < pitch_tolerance:
-        return True
-    else:
-        return False
-
-
 def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
