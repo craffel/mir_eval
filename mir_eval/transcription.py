@@ -139,23 +139,15 @@ def prf(ref_intervals, ref_pitches, est_intervals, est_pitches,
     if len(ref_pitches) == 0 or len(est_pitches) == 0:
         return 0., 0., 0.
 
-    # sort both note sets based on onset time
-    ref_order = np.argsort(ref_intervals[:,0])
-    ref_intervals = ref_intervals[ref_order]
-    ref_pitches = np.asarray(ref_pitches)[ref_order]
-    est_order = np.argsort(est_intervals[:,0])
-    est_intervals = est_intervals[est_order]
-    est_pitches = np.asarray(est_pitches)[est_order]
+    matching = util.match_notes(ref_intervals, ref_pitches, est_intervals,
+                                est_pitches, onset_tolerance=onset_tolerance,
+                                offset_ratio=offest_ratio,
+                                pitch_tolerance=pitch_tolerance)
 
-    ind_ref = 0
-    ind_est = 0
-
-    # while ind_ref < len(ref_pitches) and ind_est < len(est_pitches):
-
-    # precision = float(len(matching))/len(est_pitches)
-    # recall = float(len(matching))/len(ref_pitches)
-    # f_measure = util.f_measure(precision, recall)
-    # return precision, recall, f_measure
+    precision = float(len(matching))/len(est_pitches)
+    recall = float(len(matching))/len(ref_pitches)
+    f_measure = util.f_measure(precision, recall)
+    return precision, recall, f_measure
 
 
 def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
