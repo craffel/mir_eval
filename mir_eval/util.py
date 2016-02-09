@@ -657,11 +657,11 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     ref_intervals : np.ndarray, shape=(n,2)
         Array of reference notes time intervals (onset and offset times)
     ref_pitches: list, len=n
-        List of reference pitch values
+        List of reference pitch values in Hertz
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
     est_pitches : list, len=m
-        List of estimated pitch values
+        List of estimated pitch values in Hertz
     onset_tolerance : float > 0
         The tolerance for an estimated note's onset deviating from the reference
         note's onset, in seconds. Default is 0.05 (50 ms).

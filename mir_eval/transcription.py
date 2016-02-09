@@ -12,12 +12,13 @@ in the reference.
 
 There are many metrics for evaluating transcription algorithms. Here we limit
 ourselves to the most simple and commonly used: given two sets of notes, we
-count how many estimate notes match the reference, and how many do not. Based on
-these counts we compute the precision, recall, and f-measure of the estimate
+count how many estimate notes match the reference, and how many do not. Based
+on these counts we compute the precision, recall, and f-measure of the estimate
 given the reference. The default criteria for considering two notes to be a
 match are adopted from the MIREX "Multiple fundamental frequency estimation and
 tracking, task 2" criteria:
-(http://www.music-ir.org/mirex/wiki/2015:Multiple_Fundamental_Frequency_Estimation_%26_Tracking#Evaluation):
+(http://www.music-ir.org/mirex/wiki/2015:Multiple_Fundamental_Frequency_
+Estimation_%26_Tracking#Evaluation):
 
 "A ground truth note is assumed to be correctly transcribed if the system
 returns a note that is within a half semitone of that note AND the returned
@@ -65,18 +66,14 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
 
     Parameters
     ----------
-    ref_onsets: np.ndarray
-        reference note onset times, in seconds
-    ref_offsets: np.ndarray
-        reference note offset times, in seconds
-    ref_pitches: np.ndarray
-        reference note pitch values, in Hertz
-    est_onsets : np.ndarray
-        estimated note onset times, in seconds
-    est_offsets: np.ndarray
-        estimated note offset times, in seconds
-    est_pitches: np.ndarray
-        estimated note pitch values, in Hertz
+    ref_intervals : np.ndarray, shape=(n,2)
+        Array of reference notes time intervals (onset and offset times)
+    ref_pitches: list, len=n
+        List of reference pitch values in Hertz
+    est_intervals : np.ndarray, shape=(m,2)
+        Array of estimated notes time intervals (onset and offset times)
+    est_pitches : list, len=m
+        List of estimated pitch values in Hertz
     """
     # If reference or estimated notes are empty, warn
     if ref_intervals.size == 0:
@@ -90,7 +87,8 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
 
     # Make sure intervals and pitches match in length
     if not len(ref_intervals)==len(ref_pitches):
-        warnings.warn("Reference intervals and pitches have different lengths.")
+        warnings.warn("Reference intervals and pitches have different "
+                      "lengths.")
     if not len(est_intervals)==len(est_pitches):
         warnings.warn("Estimate intervals and pitches have different lengths.")
 
@@ -104,7 +102,7 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
 
 
 def prf(ref_intervals, ref_pitches, est_intervals, est_pitches,
-        onset_tolerance=0.05, offest_ratio=0.2, pitch_tolerance=50.0):
+        onset_tolerance=0.05, offset_ratio=0.2, pitch_tolerance=50.0):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes. "Correctness" is determined based on note onset, offset
     and pitch as detailed at the top of this document.
@@ -115,18 +113,30 @@ def prf(ref_intervals, ref_pitches, est_intervals, est_pitches,
     ... 'reference.txt')
     >>> est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
     ... 'estimated.txt')
-    >>> precision, recall, f_measure = mir_eval.transcription.prf(ref_intervals,
-    ... ref_pitches, est_intervals, est_pitches)
+    >>> precision, recall, f_measure = mir_eval.transcription.prf(
+    ... ref_intervals, ref_pitches, est_intervals, est_pitches)
 
-    Parameters (TODO)
+    Parameters
     ----------
-    reference_beats : np.ndarray
-        reference beat times, in seconds
-    estimated_beats : np.ndarray
-        estimated beat times, in seconds
-    f_measure_threshold : float
-        Window size, in seconds
-        (Default value = 0.07)
+    ref_intervals : np.ndarray, shape=(n,2)
+        Array of reference notes time intervals (onset and offset times)
+    ref_pitches: list, len=n
+        List of reference pitch values in Hertz
+    est_intervals : np.ndarray, shape=(m,2)
+        Array of estimated notes time intervals (onset and offset times)
+    est_pitches : list, len=m
+        List of estimated pitch values in Hertz
+    onset_tolerance : float > 0
+        The tolerance for an estimated note's onset deviating from the
+        reference note's onset, in seconds. Default is 0.05 (50 ms).
+    offset_ratio: float > 0
+        The ratio of the reference note's duration used to define the
+        offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
+        will equal the ref_duration * 0.2 * 0.5 (0.5 since the window is
+        centered on the reference offset).
+    pitch_tolerance: float > 0
+        The tolerance for an estimated note's pitch deviating from the
+        reference note's pitch, in cents. Default is 50.0 (50 cents).
 
     Returns (TODO)
     -------
@@ -141,7 +151,7 @@ def prf(ref_intervals, ref_pitches, est_intervals, est_pitches,
 
     matching = util.match_notes(ref_intervals, ref_pitches, est_intervals,
                                 est_pitches, onset_tolerance=onset_tolerance,
-                                offset_ratio=offest_ratio,
+                                offset_ratio=offset_ratio,
                                 pitch_tolerance=pitch_tolerance)
 
     precision = float(len(matching))/len(est_pitches)
@@ -162,17 +172,21 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     >>> scores = mir_eval.transcription.evaluate(ref_intervals, ref_pitches,
     ... est_intervals, est_pitches)
 
-    Parameters (TODO)
+    Parameters
     ----------
-    reference_beats : np.ndarray
-        Reference beat times, in seconds
-    estimated_beats : np.ndarray
-        Query beat times, in seconds
+    ref_intervals : np.ndarray, shape=(n,2)
+        Array of reference notes time intervals (onset and offset times)
+    ref_pitches: list, len=n
+        List of reference pitch values in Hertz
+    est_intervals : np.ndarray, shape=(m,2)
+        Array of estimated notes time intervals (onset and offset times)
+    est_pitches : list, len=m
+        List of estimated pitch values in Hertz
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 
-    Returns (TODO)
+    Returns
     -------
     scores : dict
         Dictionary of scores, where the key is the metric name (str) and
