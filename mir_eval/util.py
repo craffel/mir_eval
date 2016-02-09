@@ -631,6 +631,100 @@ def match_events(ref, est, window):
     return matching
 
 
+def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
+                onset_tolerance=0.05, offset_ratio=0.2, pitch_tolerance=50.0):
+    """Compute a maximum matching between reference and estimated notes,
+    subject to onset, offset, and pitch constraints.
+
+    Given two note lists represented by ``ref_intervals``, ``ref_pitches``,
+    ``est_intervals`` and ``est_pitches`` (see ``io.load_valued_intervals``),
+    we seek the largest set of correspondences ``(i, j)`` such that:
+    1. The onset of ref note i is within ``onset_tolerance`` of the onset of
+    est note j.
+    2. The offset of ref note i is within ``offset_tolerance`` of the offset of
+    est note j, where ``offset_tolerance`` is equal to half the window given by
+    taking ``offset_ratio`` of the ref note's duration, i.e.
+    ``0.5 * offset_ratio * ref_duration[i]`` where ``ref_duration[i] =
+    ref_intervals[i, 1] - ref_intervals[i, 0]``.
+    3. The pitch of ref note i is within ``pitch_tolerance`` of the pitch of
+    est note j.
+    Every ref note is matched against at most one est note.
+
+    This is useful for computing precision/recall metrics in note transcription.
+
+    Parameters
+    ----------
+    ref_intervals : np.ndarray, shape=(n,2)
+        Array of reference notes time intervals (onset and offset times)
+    ref_pitches: list, len=n
+        List of reference pitch values in Hertz
+    est_intervals : np.ndarray, shape=(m,2)
+        Array of estimated notes time intervals (onset and offset times)
+    est_pitches : list, len=m
+        List of estimated pitch values in Hertz
+    onset_tolerance : float > 0
+        The tolerance for an estimated note's onset deviating from the reference
+        note's onset, in seconds. Default is 0.05 (50 ms).
+    offset_ratio: float > 0
+        The ratio of the reference note's duration used to define the
+        offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
+        will equal the ref_duration * 0.2 * 0.5 (0.5 since the window is
+        centered on the reference offset).
+    pitch_tolerance: float > 0
+        The tolerance for an estimated note's pitch deviating from the reference
+        note's pitch, in cents. Default is 50.0 (50 cents).
+
+    Returns
+    -------
+    matching : list of tuples
+        A list of matched reference and estimated notes.
+        ``matching[i] == (i, j)`` where reference note i matches estimate note
+        j.
+
+    """
+
+    # Compute the indices of feasible pairings
+    # hits = np.where(np.abs(np.subtract.outer(ref, est)) <= window)
+
+    # check for onset matches
+    onset_distances = np.abs(np.subtract.outer(ref_intervals[:,0],
+                                               est_intervals[:,0]))
+    onset_hit_matrix = onset_distances < onset_tolerance
+
+    # check for offset matches
+    offset_distances = np.abs(np.subtract.outer(ref_intervals[:,1],
+                                                est_intervals[:,1]))
+    ref_durations = intervals_to_durations(ref_intervals)
+    offset_tolerances = 0.5 * offset_ratio * ref_durations
+    offset_tolerance_matrix = np.tile(offset_tolerances,
+                                      (offset_distances.shape[1], 1)).T
+    offset_hit_matrix = offset_distances < offset_tolerance_matrix
+
+    # check for pitch matches
+    pitch_distances = np.abs(1200*np.log2(np.divide.outer(ref_pitches,
+                                                          est_pitches)))
+    pitch_hit_matrix = pitch_distances < pitch_tolerance
+
+    # check for overall matches
+    note_hit_matrix = onset_hit_matrix * offset_hit_matrix * pitch_hit_matrix
+    hits = np.where(note_hit_matrix)
+
+    # Construct the graph input
+    # Flip graph so that 'matching' is a list of tuples where the first item
+    # in each tuple is the reference note index, and the second item is the
+    # estimate note index.
+    G = {}
+    for ref_i, est_i in zip(*hits):
+        if est_i not in G:
+            G[est_i] = []
+        G[est_i].append(ref_i)
+
+    # Compute the maximum matching
+    matching = sorted(_bipartite_match(G).items())
+
+    return matching
+
+
 def validate_intervals(intervals):
     """Checks that an (n, 2) interval ndarray is well-formed, and raises errors
     if not.
