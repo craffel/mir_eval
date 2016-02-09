@@ -4,6 +4,7 @@ All functions return a raw signal at the specified sampling rate.
 '''
 
 import numpy as np
+from numpy.lib.stride_tricks import as_strided
 from . import util
 from . import chord
 
@@ -81,36 +82,59 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     Returns
     -------
     output : np.ndarray
-        synthetized version of the piano roll
+        synthesized version of the piano roll
 
     """
     # Default value for length
+    if times.ndim == 1:
+        # Convert to intervals
+        times = util.boundaries_to_intervals(times)
+
     if length is None:
-        length = int(times[-1]*fs)
+        length = int(times[-1, 1] * fs)
+
+    times, _ = util.adjust_intervals(times, t_max=length)
+
+    # Truncate times so that the shape matches gram
+    times = times[:gram.shape[1]]
 
     def _fast_synthesize(frequency):
-        """A faster (approximate) way to synthesize a signal
-            synthesize a few periods then repeat that signal
+        """A faster way to synthesize a signal.
+            Generate one cycle, and simulate arbitrary repetitions
+            using array indexing tricks.
         """
+        frequency = float(frequency)
+
         # Generate ten periods at this frequency
-        ten_periods = int(10*fs*(1./frequency))
-        short_signal = function(2*np.pi*np.arange(ten_periods)*frequency/fs)
-        # Repeat the signal until it's of the desired length
+        n_samples = int(10.0 * fs / frequency)
+
+        short_signal = function(2.0 * np.pi * np.arange(n_samples) *
+                                frequency / fs)
+
+        # Calculate the number of loops we need to fill the duration
         n_repeats = int(np.ceil(length/float(short_signal.shape[0])))
-        return np.tile(short_signal, n_repeats)[:length]
+
+        # Simulate tiling the short buffer by using stride tricks
+        long_signal = as_strided(short_signal,
+                                 shape=(n_repeats, len(short_signal)),
+                                 strides=(0, short_signal.itemsize))
+
+        # Use a flatiter to simulate a long 1D buffer
+        return long_signal.flat
 
     # Pre-allocate output signal
     output = np.zeros(length)
     for n, frequency in enumerate(frequencies):
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
-        # Zero out up to first time
-        wave[:int(times[0]*fs)] = 0
         # Scale each time interval by the piano roll magnitude
-        for m, (start, end) in enumerate(zip(times[:-1], times[1:])):
-            wave[int(start*fs):int(end*fs)] *= gram[n, m]
-        # Sume into the aggregate output waveform
-        output += wave
+        for m, (start, end) in enumerate((times * fs).astype(int)):
+            # Clip the timings to make sure the indices are valid
+            start, end = max(start, 0), min(end, length)
+
+            # Sum into the aggregate output waveform
+            output[start:end] += wave[start:end] * gram[n, m]
+
     # Normalize
     output /= np.abs(output).max()
     return output
