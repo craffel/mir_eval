@@ -134,17 +134,25 @@ def prf(ref_intervals, ref_pitches, est_intervals, est_pitches):
 
     """
     validate(ref_intervals, ref_pitches, est_intervals, est_pitches)
-    # # When estimated beats are empty, no beats are correct; metric is 0
-    # if ref_onsets.size == 0 or reference_beats.size == 0:
-    #     return 0.
-    # # Compute the best-case matching between reference and estimated locations
-    # matching = util.match_events(reference_beats,
-    #                              estimated_beats,
-    #                              f_measure_threshold)
-    #
-    # precision = float(len(matching))/len(estimated_beats)
-    # recall = float(len(matching))/len(reference_beats)
-    # return util.f_measure(precision, recall)
+    # When reference notes are empty, metrics are undefined, return 0's
+    if len(ref_pitches) == 0 or len(est_pitches) == 0:
+        return 0., 0., 0.
+
+    # sort both note sets based on onset time
+    ref_order = np.argsort(ref_intervals[:,0])
+    ref_intervals = ref_intervals[ref_order]
+    ref_pitches = np.asarray(ref_pitches)[ref_order]
+    est_order = np.argsort(est_intervals[:,0])
+    est_intervals = est_intervals[est_order]
+    est_pitches = np.asarray(est_pitches)[est_order]
+
+    ind_ref = 0
+    ind_est = 0
+
+    # precision = float(len(matching))/len(est_pitches)
+    # recall = float(len(matching))/len(ref_pitches)
+    # f_measure = util.f_measure(precision, recall)
+    # return precision, recall, f_measure
 
 
 def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
