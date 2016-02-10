@@ -88,10 +88,10 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
         warnings.warn("Estimate note pitches are empty.")
 
     # Make sure intervals and pitches match in length
-    if not len(ref_intervals)==len(ref_pitches):
+    if not len(ref_intervals) == len(ref_pitches):
         warnings.warn("Reference intervals and pitches have different "
                       "lengths.")
-    if not len(est_intervals)==len(est_pitches):
+    if not len(est_intervals) == len(est_pitches):
         warnings.warn("Estimate intervals and pitches have different lengths.")
 
     # Make sure all pitch values are positive
@@ -103,10 +103,9 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
                       "value")
 
 
-def precision_recall_f1(ref_intervals, ref_pitches, est_intervals,
-                                   est_pitches, onset_tolerance=0.05,
-                                   pitch_tolerance=50.0, offset_ratio=0.2,
-                                   with_offset=False):
+def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
+                        onset_tolerance=0.05, pitch_tolerance=50.0,
+                        offset_ratio=0.2, with_offset=False):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes. "Correctness" is determined based on note onset, pitch
     and (optionally) offset: an estimated note is assumed correct if its onset

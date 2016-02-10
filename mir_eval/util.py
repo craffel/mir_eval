@@ -657,7 +657,8 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
 
     Every ref note is matched against at most one est note.
 
-    This is useful for computing precision/recall metrics in note transcription.
+    This is useful for computing precision/recall metrics for note
+    transcription.
 
     Parameters
     ----------
@@ -670,11 +671,11 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     est_pitches : list, len=m
         List of estimated pitch values in Hertz
     onset_tolerance : float > 0
-        The tolerance for an estimated note's onset deviating from the reference
-        note's onset, in seconds. Default is 0.05 (50 ms).
+        The tolerance for an estimated note's onset deviating from the
+        reference note's onset, in seconds. Default is 0.05 (50 ms).
     pitch_tolerance: float > 0
-        The tolerance for an estimated note's pitch deviating from the reference
-        note's pitch, in cents. Default is 50.0 (50 cents).
+        The tolerance for an estimated note's pitch deviating from the
+        reference note's pitch, in cents. Default is 50.0 (50 cents).
     offset_ratio: float > 0
         The ratio of the reference note's duration used to define the
         offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
@@ -700,8 +701,8 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     # hits = np.where(np.abs(np.subtract.outer(ref, est)) <= window)
 
     # check for onset matches
-    onset_distances = np.abs(np.subtract.outer(ref_intervals[:,0],
-                                               est_intervals[:,0]))
+    onset_distances = np.abs(np.subtract.outer(ref_intervals[:, 0],
+                                               est_intervals[:, 0]))
     onset_hit_matrix = onset_distances < onset_tolerance
 
     # check for pitch matches
@@ -711,8 +712,8 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
 
     # check for offset matches if offset_ratio is not None
     if with_offset:
-        offset_distances = np.abs(np.subtract.outer(ref_intervals[:,1],
-                                                    est_intervals[:,1]))
+        offset_distances = np.abs(np.subtract.outer(ref_intervals[:, 1],
+                                                    est_intervals[:, 1]))
         ref_durations = intervals_to_durations(ref_intervals)
         offset_tolerances = 0.5 * offset_ratio * ref_durations
         offset_tolerance_matrix = np.tile(offset_tolerances,

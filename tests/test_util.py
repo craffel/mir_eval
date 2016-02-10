@@ -170,7 +170,7 @@ def test_match_notes():
     matching = mir_eval.util.match_notes(ref_int, ref_pitch, est_int,
                                          est_pitch)
 
-    assert matching == [(0, 0), (1, 1), (3,3)]
+    assert matching == [(0, 0), (1, 1), (3, 3)]
 
     matching = mir_eval.util.match_notes(ref_int, ref_pitch, est_int,
                                          est_pitch, with_offset=True)
