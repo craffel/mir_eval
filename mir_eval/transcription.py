@@ -49,14 +49,10 @@ fundamental frequency (f0) in Hertz.
 Metrics
 -------
 
-* :func:`mir_eval.transcription.precision_recall_f1`: The precision, recall,
-  and F-measure of the note transcription, where an estimated note is
-  considered correct if its pitch and onset are sufficiently close to a
-  reference note
-* :func:`mir_eval.transcription.precision_recall_f1_withoffset`: The precision,
+* :func:`mir_eval.transcription.precision_recall_f1`: The precision,
   recall, and F-measure of the note transcription, where an estimated note is
-  considered correct if its pitch, onset AND offset are sufficiently close to
-  a reference note
+  considered correct if its pitch, onset and (optionally) offset are
+  sufficiently close to a reference note
 
 '''
 
@@ -107,11 +103,20 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
                       "value")
 
 
-def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
-                        onset_tolerance=0.05, pitch_tolerance=50.0):
+def precision_recall_f1(ref_intervals, ref_pitches, est_intervals,
+                                   est_pitches, onset_tolerance=0.05,
+                                   pitch_tolerance=50.0, offset_ratio=0.2,
+                                   with_offset=False):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
-    transcribed notes. "Correctness" is determined based on note onset and
-    pitch as detailed at the top of this document.
+    transcribed notes. "Correctness" is determined based on note onset, pitch
+    and (optionally) offset: an estimated note is assumed correct if its onset
+    is within +-50ms of a ref note and its pitch (F0) is within +- quarter tone
+    (50 cents) of the corresponding reference note. If with_offset is False,
+    note offsets are ignored in the comparison. It with_offset is True,
+    on top of the above requirements, a correct returned note is required to
+    have an offset value within 20% (by default, adjustable via the
+    offset_ratio parameter) of the ref note's duration around the ref note's
+    offset, or within 50ms, whichever is larger.
 
     Examples
     --------
@@ -122,67 +127,9 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     >>> precision, recall, f_measure =
     ... mir_eval.transcription.precision_recall_f1(ref_intervals, ref_pitches,
     ... est_intervals, est_pitches)
-
-    Parameters
-    ----------
-    ref_intervals : np.ndarray, shape=(n,2)
-        Array of reference notes time intervals (onset and offset times)
-    ref_pitches: list, len=n
-        List of reference pitch values in Hertz
-    est_intervals : np.ndarray, shape=(m,2)
-        Array of estimated notes time intervals (onset and offset times)
-    est_pitches : list, len=m
-        List of estimated pitch values in Hertz
-    onset_tolerance : float > 0
-        The tolerance for an estimated note's onset deviating from the
-        reference note's onset, in seconds. Default is 0.05 (50 ms).
-    pitch_tolerance: float > 0
-        The tolerance for an estimated note's pitch deviating from the
-        reference note's pitch, in cents. Default is 50.0 (50 cents).
-
-    Returns
-    -------
-    precision : float
-        The computed precision score
-    recall : float
-        The computed recall score
-    f_measure : float
-        The computed F-measure score
-
-    """
-    validate(ref_intervals, ref_pitches, est_intervals, est_pitches)
-    # When reference notes are empty, metrics are undefined, return 0's
-    if len(ref_pitches) == 0 or len(est_pitches) == 0:
-        return 0., 0., 0.
-
-    # Note that offset_ratio=None, this is key for ignoring offsets!
-    matching = util.match_notes(ref_intervals, ref_pitches, est_intervals,
-                                est_pitches, onset_tolerance=onset_tolerance,
-                                pitch_tolerance=pitch_tolerance,
-                                offset_ratio=None)
-
-    precision = float(len(matching))/len(est_pitches)
-    recall = float(len(matching))/len(ref_pitches)
-    f_measure = util.f_measure(precision, recall)
-    return precision, recall, f_measure
-
-
-def precision_recall_f1_withoffset(ref_intervals, ref_pitches, est_intervals,
-                                   est_pitches, onset_tolerance=0.05,
-                                   pitch_tolerance=50.0, offset_ratio=0.2):
-    """Compute the Precision, Recall and F-measure of correct vs incorrectly
-    transcribed notes. "Correctness" is determined based on note onset, pitch
-    AND offset as detailed at the top of this document.
-
-    Examples
-    --------
-    >>> ref_intervals, ref_pitches = mir_eval.io.load_valued_intervals(
-    ... 'reference.txt')
-    >>> est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
-    ... 'estimated.txt')
-    >>> precision, recall, f_measure =
-    ... mir_eval.transcription.precision_recall_f1_withoffset(ref_intervals,
-    ... ref_pitches, est_intervals, est_pitches)
+    >>> precision_withoffset, recall_withoffset, f_measure_withoffset =
+    ... mir_eval.transcription.precision_recall_f1(ref_intervals, ref_pitches,
+    ... est_intervals, est_pitches, with_offset=True)
 
     Parameters
     ----------
@@ -202,19 +149,24 @@ def precision_recall_f1_withoffset(ref_intervals, ref_pitches, est_intervals,
         reference note's pitch, in cents. Default is 50.0 (50 cents).
     offset_ratio: float > 0
         The ratio of the reference note's duration used to define the
-        offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
-        will equal the ref_duration * 0.2 * 0.5 (0.5 since the window is
-        centered on the reference offset), or 0.05 (50 ms), whichever is
-        greater.
+        offset_tolerance. Default is 0.2 (20%), meaning
+        the offset_tolerance will equal the ref_duration * 0.2 * 0.5
+        (0.5 since the window is centered on the reference offset), or 0.05
+        (50 ms), whichever is greater. Note: this parameter only influences
+        the results if with_offset=True.
+    with_offset: bool
+        If True, note offsets are taken into consideration in the evaluation,
+        where the offset tolerance depends on the offset_ratio parameter. If
+        False, offsets are ignored in the evaluation.
 
     Returns
     -------
-    precision_withoffset : float
-        The computed precision score, taking offsets into account
-    recall_withoffset : float
-        The computed recall score, taking offsets into account
-    f_measure_withoffset : float
-        The computed F-measure score, taking offsets into account
+    precision : float
+        The computed precision score
+    recall : float
+        The computed recall score
+    f_measure : float
+        The computed F-measure score
 
     """
     validate(ref_intervals, ref_pitches, est_intervals, est_pitches)
@@ -225,13 +177,13 @@ def precision_recall_f1_withoffset(ref_intervals, ref_pitches, est_intervals,
     matching = util.match_notes(ref_intervals, ref_pitches, est_intervals,
                                 est_pitches, onset_tolerance=onset_tolerance,
                                 pitch_tolerance=pitch_tolerance,
-                                offset_ratio=offset_ratio)
+                                offset_ratio=offset_ratio,
+                                with_offset=with_offset)
 
-    precision_withoffset = float(len(matching))/len(est_pitches)
-    recall_withoffset = float(len(matching))/len(ref_pitches)
-    f_measure_withoffset = util.f_measure(precision_withoffset,
-                                          recall_withoffset)
-    return precision_withoffset, recall_withoffset, f_measure_withoffset
+    precision = float(len(matching))/len(est_pitches)
+    recall = float(len(matching))/len(ref_pitches)
+    f_measure = util.f_measure(precision, recall)
+    return precision, recall, f_measure
 
 
 def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
@@ -273,6 +225,7 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     scores = collections.OrderedDict()
 
     # Precision, recall and f-measure NOT taking note offsets into account
+    kwargs['with_offset'] = False
     (scores['Precision'],
      scores['Recall'],
      scores['F-measure']) = util.filter_kwargs(precision_recall_f1,
@@ -281,10 +234,11 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
                                                **kwargs)
 
     # Precision, recall and f-measure taking note offsets into account
+    kwargs['with_offset'] = True
     (scores['Precision_with_offset'],
      scores['Recall_with_offset'],
      scores['F-measure_with_offset']) = util.filter_kwargs(
-        precision_recall_f1_withoffset, ref_intervals, ref_pitches,
-        est_intervals, est_pitches, **kwargs)
+        precision_recall_f1, ref_intervals, ref_pitches, est_intervals,
+        est_pitches, **kwargs)
 
     return scores

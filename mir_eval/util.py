@@ -632,7 +632,8 @@ def match_events(ref, est, window):
 
 
 def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
-                onset_tolerance=0.05, pitch_tolerance=50.0, offset_ratio=0.2):
+                onset_tolerance=0.05, pitch_tolerance=50.0, offset_ratio=0.2,
+                with_offset=False):
     """Compute a maximum matching between reference and estimated notes,
     subject to onset, pitch and (optionally) offset constraints.
 
@@ -643,14 +644,14 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     est note j.
     2. The pitch of ref note i is within ``pitch_tolerance`` of the pitch of
     est note j.
-    3. If offset_ratio is not None:
-          the offset of ref note i is within ``offset_tolerance`` of the offset
+    3. If with_offset=True:
+          The offset of ref note i is within ``offset_tolerance`` of the offset
           of est note j, where ``offset_tolerance`` is equal to half the window
           given by taking ``offset_ratio`` of the ref note's duration, i.e.
           ``0.5 * offset_ratio * ref_duration[i]`` where ``ref_duration[i] =
           ref_intervals[i, 1] - ref_intervals[i, 0]``. If the resulting
           ``offset_tolerance`` is less than 0.05 (50 ms), 0.05 is used instead.
-       If offset_ratio is None:
+       If with_offset=False:
           Note offsets are ignored, and only criteria 1 and 2 are taken into
           consideration.
 
@@ -674,12 +675,17 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     pitch_tolerance: float > 0
         The tolerance for an estimated note's pitch deviating from the reference
         note's pitch, in cents. Default is 50.0 (50 cents).
-    offset_ratio: float > 0 or None
+    offset_ratio: float > 0
         The ratio of the reference note's duration used to define the
         offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
         will equal the ref_duration * 0.2 * 0.5 (0.5 since the window is
         centered on the reference offset), or 0.05 (50 ms), whichever is
-        greater. If set to None, note offsets will be ignored.
+        greater. Note: this parameter only influences the results if
+        with_offset=True.
+    with_offset: bool
+        If True, note offsets are taken into consideration in the matching,
+        where the offset tolerance depends on the offset_ratio parameter. If
+        False, offsets are ignored in the matching.
 
     Returns
     -------
@@ -704,7 +710,7 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     pitch_hit_matrix = pitch_distances < pitch_tolerance
 
     # check for offset matches if offset_ratio is not None
-    if offset_ratio is not None:
+    if with_offset:
         offset_distances = np.abs(np.subtract.outer(ref_intervals[:,1],
                                                     est_intervals[:,1]))
         ref_durations = intervals_to_durations(ref_intervals)
