@@ -437,4 +437,3 @@ def load_valued_intervals(filename, delimiter=r'\s+'):
         warnings.warn(error.args[0])
 
     return intervals, values
-

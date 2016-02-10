@@ -25,4 +25,3 @@ def test_precision_recall_f1():
     assert precision == 2/5.
     assert recall == 2/4.
     assert f_measure == 2 * precision * recall / (precision + recall)
-
