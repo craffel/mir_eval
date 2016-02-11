@@ -68,9 +68,9 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     frequencies : np.ndarray
         array of size ``gram.shape[0]`` denoting the frequency of
         each row of gram
-    times : np.ndarray
-        array of size ``gram.shape[1]`` denoting the start time of each
-        column of gram
+    times: np.ndarray, shape=(len(chord_labels),) or (len(chord_labels), 2)
+        Either the start time of each column in the gram,
+        or the time interval corresponding to each column.
     fs : int
         desired sampling rate of the output signal
     function : function
@@ -149,8 +149,9 @@ def chroma(chromagram, times, fs, **kwargs):
         Chromagram matrix, where each row represents a semitone [C->Bb]
         i.e., ``chromagram[3, j]`` is the magnitude of D# from ``times[j]`` to
         ``times[j + 1]``
-    times : np.ndarray
-        The start time of each column in the chromagram
+    times: np.ndarray, shape=(len(chord_labels),) or (len(chord_labels), 2)
+        Either the start time of each column in the chromagram,
+        or the time interval corresponding to each column.
     fs : int
         Sampling rate to synthesize audio data at
     kwargs
@@ -208,17 +209,11 @@ def chords(chord_labels, intervals, fs, **kwargs):
 
     """
     util.validate_intervals(intervals)
-    # We need to convert from intervals to label start times
-    times = intervals.flatten()
-    _, unique = np.unique(times, return_index=True)
-    # Create a new chord_labels list with 'N' for the newly created times
-    chord_labels = [x for t in zip(chord_labels, ['N']*len(chord_labels))
-                    for x in t]
-    times = times[unique]
-    chord_labels = [chord_labels[n - 1] for n in unique[1:]]
+
     # Convert from labels to chroma
     roots, interval_bitmaps, _ = chord.encode_many(chord_labels)
     chromagram = np.array([np.roll(interval_bitmap, root)
                            for (interval_bitmap, root)
                            in zip(interval_bitmaps, roots)]).T
-    return chroma(chromagram, times, fs, **kwargs)
+
+    return chroma(chromagram, intervals, fs, **kwargs)
