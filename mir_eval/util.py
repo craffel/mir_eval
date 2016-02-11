@@ -7,6 +7,8 @@ import numpy as np
 import os
 import six
 
+import inspect
+
 
 def index_labels(labels, case_sensitive=False):
     """Convert a list of string identifiers into numerical indices.
@@ -684,11 +686,40 @@ def validate_events(events, max_time=30000.):
         raise ValueError('Events should be in increasing order.')
 
 
+def has_kwargs(function):
+    r'''Determine whether a function has **kwargs.
+
+    Parameters
+    ----------
+    function: callable
+        The function to test
+
+    Returns
+    -------
+    True if function accepts arbitrary keyword arguments.
+    False otherwise.
+    '''
+
+    if six.PY2:
+        return inspect.getargspec(function).keywords is not None
+    else:
+        sig = inspect.signature(function)
+
+        for param in sig.parameters.values():
+            if param.kind == param.VAR_KEYWORD:
+                return True
+
+        return False
+
+
 def filter_kwargs(_function, *args, **kwargs):
     """Given a function and args and keyword args to pass to it, call the function
     but using only the keyword arguments which it accepts.  This is equivalent
     to redefining the function with an additional \*\*kwargs to accept slop
     keyword args.
+
+    If the target function already accepts \*\*kwargs parameters, no filtering
+    is performed.
 
     Parameters
     ----------
@@ -696,6 +727,10 @@ def filter_kwargs(_function, *args, **kwargs):
         Function to call.  Can take in any number of args or kwargs
 
     """
+
+    if has_kwargs(_function):
+        return _function(*args, **kwargs)
+
     # Get the list of function arguments
     func_code = six.get_function_code(_function)
     function_args = func_code.co_varnames[:func_code.co_argcount]
