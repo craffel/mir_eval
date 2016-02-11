@@ -158,3 +158,30 @@ def test_bipartite_match():
     for k in matching:
         v = matching[k]
         assert v in G[k] or k in G[v]
+
+
+def test_has_kwargs():
+
+    def __test(target, f):
+        assert target == mir_eval.util.has_kwargs(f)
+
+    def f1(_):
+        return None
+
+    def f2(_=5):
+        return None
+
+    def f3(*_):
+        return None
+
+    def f4(_, **kw):
+        return None
+
+    def f5(_=5, **kw):
+        return None
+
+    yield __test, False, f1
+    yield __test, False, f2
+    yield __test, False, f3
+    yield __test, True, f4
+    yield __test, True, f5
