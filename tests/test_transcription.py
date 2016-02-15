@@ -35,7 +35,7 @@ def test_precision_recall_f1():
         'tests/data/transcription/est00.txt')
 
     # load expected results
-    scores = json.load(open('tests/data/transcription/output00.json', 'rb'))
+    scores = json.load(open('tests/data/transcription/output00.json', 'r'))
 
     precision, recall, f_measure = \
         mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
