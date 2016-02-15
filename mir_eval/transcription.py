@@ -119,15 +119,15 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     Examples
     --------
     >>> ref_intervals, ref_pitches = mir_eval.io.load_valued_intervals(
-    ... 'reference.txt')
+    ...     'reference.txt')
     >>> est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
-    ... 'estimated.txt')
+    ...     'estimated.txt')
     >>> precision, recall, f_measure =
-    ... mir_eval.transcription.precision_recall_f1(ref_intervals, ref_pitches,
-    ... est_intervals, est_pitches)
+    ...     mir_eval.transcription.precision_recall_f1(ref_intervals,
+    ...     ref_pitches, est_intervals, est_pitches)
     >>> precision_withoffset, recall_withoffset, f_measure_withoffset =
-    ... mir_eval.transcription.precision_recall_f1(ref_intervals, ref_pitches,
-    ... est_intervals, est_pitches, with_offset=True)
+    ...     mir_eval.transcription.precision_recall_f1(ref_intervals,
+    ...     ref_pitches, est_intervals, est_pitches, with_offset=True)
 
     Parameters
     ----------
@@ -196,11 +196,11 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     Examples
     --------
     >>> ref_intervals, ref_pitches = mir_eval.io.load_valued_intervals(
-    ... 'reference.txt')
+    ...     'reference.txt')
     >>> est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
-    ... 'estimate.txt')
+    ...     'estimate.txt')
     >>> scores = mir_eval.transcription.evaluate(ref_intervals, ref_pitches,
-    ... est_intervals, est_pitches)
+    ...     est_intervals, est_pitches)
 
     Parameters
     ----------
