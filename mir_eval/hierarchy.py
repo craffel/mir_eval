@@ -362,7 +362,8 @@ def tmeasure(reference_intervals_hier, estimated_intervals_hier,
     return t_precision, t_recall, t_measure
 
 
-def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
+def evaluate(ref_intervals_hier, ref_labels_hier,
+             est_intervals_hier, est_labels_hier, **kwargs):
     '''Compute all hierarchical structure metrics for the given reference and
     estimated annotations.
 
@@ -370,9 +371,11 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
     --------
     A toy example with two two-layer annotations
 
-    >>> ref = [[[0, 30], [30, 60]], [[0, 15], [15, 30], [30, 45], [45, 60]]]
-    >>> est = [[[0, 45], [45, 60]], [[0, 15], [15, 30], [30, 45], [45, 60]]]
-    >>> scores = mir_eval.hierarchy.evaluate(ref, est)
+    >>> ref_i = [[[0, 30], [30, 60]], [[0, 15], [15, 30], [30, 45], [45, 60]]]
+    >>> est_i = [[[0, 45], [45, 60]], [[0, 15], [15, 30], [30, 45], [45, 60]]]
+    >>> ref_l = [ ['A', 'B'], ['a', 'b', 'a', 'c'] ]
+    >>> est_l = [ ['A', 'B'], ['a', 'a', 'b', 'b'] ]
+    >>> scores = mir_eval.hierarchy.evaluate(ref_i, ref_l, est_i, est_l)
     >>> dict(scores)
     {'T-Measure full': 0.94822745804853459,
      'T-Measure reduced': 0.8732458222764804,
@@ -384,16 +387,22 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
     A more realistic example, using SALAMI pre-parsed annotations
 
     >>> def load_salami(filename):
-    ...     "load SALAMI event format as unlabeled intervals"
-    ...     events = mir_eval.io.load_labeled_events(filename)[0]
-    ...     return mir_eval.util.boundaries_to_intervals(events)[0]
+    ...     "load SALAMI event format as labeled intervals"
+    ...     events, labels = mir_eval.io.load_labeled_events(filename)
+    ...     intervals = mir_eval.util.boundaries_to_intervals(events)[0]
+    ...     return intervals, labels[:len(intervals)]
     >>> ref_files = ['data/10/parsed/textfile1_uppercase.txt',
     ...              'data/10/parsed/textfile1_lowercase.txt']
     >>> est_files = ['data/10/parsed/textfile2_uppercase.txt',
     ...              'data/10/parsed/textfile2_lowercase.txt']
-    >>> ref_hier = [load_salami(fname) for fname in ref_files]
-    >>> est_hier = [load_salami(fname) for fname in est_files]
-    >>> scores = mir_eval.hierarchy.evaluate(ref_hier, est_hier)
+    >>> ref = [load_salami(fname) for fname in ref_files]
+    >>> ref_int = [seg[0] for seg in ref]
+    >>> ref_lab = [seg[1] for seg in ref]
+    >>> est = [load_salami(fname) for fname in est_files]
+    >>> est_int = [seg[0] for seg in est]
+    >>> est_lab = [seg[1] for seg in est]
+    >>> scores = mir_eval.hierarchy.evaluate(ref_int, ref_lab,
+    ...                                      est_hier, est_lab)
     >>> dict(scores)
     {'T-Measure full': 0.66029225561405358,
      'T-Measure reduced': 0.62001868041578034,
@@ -406,10 +415,13 @@ def evaluate(ref_intervals_hier, est_intervals_hier, **kwargs):
     Parameters
     ----------
     ref_intervals_hier : list of list-like
+    ref_labels_hier : list of str
     est_intervals_hier : list of list-like
+    est_labels_hier : list of str
         Hierarchical annotations are encoded as an ordered list
         of segmentations.  Each segmentation itself is a list (or list-like)
-        of intervals.
+        of intervals (*_intervals_hier) and a list of lists of labels
+        (*_labels_hier).
 
     kwargs
         additional keyword arguments to the evaluation metrics.
