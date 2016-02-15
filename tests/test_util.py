@@ -158,4 +158,3 @@ def test_bipartite_match():
     for k in matching:
         v = matching[k]
         assert v in G[k] or k in G[v]
-
