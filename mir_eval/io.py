@@ -420,9 +420,9 @@ def load_valued_intervals(filename, delimiter=r'\s+'):
     Returns
     -------
     intervals : np.ndarray, shape=(n_events, 2)
-        array of event start and end time
-    values : list of float
-        list of values
+        Array of event start and end times
+    values : np.ndarray, shape=(n_events,)
+        Array of values
 
     """
     # Use our universal function to load in the events
@@ -435,5 +435,8 @@ def load_valued_intervals(filename, delimiter=r'\s+'):
         util.validate_intervals(intervals)
     except ValueError as error:
         warnings.warn(error.args[0])
+
+    # return values as np.ndarray
+    values = np.array(values)
 
     return intervals, values

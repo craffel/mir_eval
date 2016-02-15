@@ -637,7 +637,7 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     """Compute a maximum matching between reference and estimated notes,
     subject to onset, pitch and (optionally) offset constraints.
 
-    Given two note lists represented by ``ref_intervals``, ``ref_pitches``,
+    Given two note sequences represented by ``ref_intervals``, ``ref_pitches``,
     ``est_intervals`` and ``est_pitches`` (see ``io.load_valued_intervals``),
     we seek the largest set of correspondences ``(i, j)`` such that:
     1. The onset of ref note i is within ``onset_tolerance`` of the onset of
@@ -664,12 +664,12 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     ----------
     ref_intervals : np.ndarray, shape=(n,2)
         Array of reference notes time intervals (onset and offset times)
-    ref_pitches: list, len=n
-        List of reference pitch values in Hertz
+    ref_pitches: np.ndarray, shape=(n,)
+        Array of reference pitch values in Hertz
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
-    est_pitches : list, len=m
-        List of estimated pitch values in Hertz
+    est_pitches : np.ndarray, shape=(m,)
+        Array of estimated pitch values in Hertz
     onset_tolerance : float > 0
         The tolerance for an estimated note's onset deviating from the
         reference note's onset, in seconds. Default is 0.05 (50 ms).

@@ -40,11 +40,11 @@ For further details see Salamon, 2013 (page 186), and references therein:
 Conventions
 -----------
 
-Notes should be provided in the form of an interval array and a pitch list.
+Notes should be provided in the form of an interval array and a pitch array.
 The interval array contains two columns, one for note onsets and the second
-for note offsets (each row represents a single note). The pitch list contains
-the corresponding note pitch values (one value per note), represented by their
-fundamental frequency (f0) in Hertz.
+for note offsets (each row represents a single note). The pitch array contains
+one column with the corresponding note pitch values (one value per note),
+represented by their fundamental frequency (f0) in Hertz.
 
 Metrics
 -------
@@ -70,28 +70,28 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
     ----------
     ref_intervals : np.ndarray, shape=(n,2)
         Array of reference notes time intervals (onset and offset times)
-    ref_pitches: list, len=n
-        List of reference pitch values in Hertz
+    ref_pitches: np.ndarray, shape=(n,)
+        Array of reference pitch values in Hertz
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
-    est_pitches : list, len=m
-        List of estimated pitch values in Hertz
+    est_pitches : np.ndarray, shape=(m,)
+        Array of estimated pitch values in Hertz
     """
     # If reference or estimated notes are empty, warn
     if ref_intervals.size == 0:
         warnings.warn("Reference note intervals are empty.")
-    if len(ref_pitches) == 0:
+    if ref_pitches.size == 0:
         warnings.warn("Reference note pitches are empty.")
     if est_intervals.size == 0:
         warnings.warn("Estimate note intervals are empty.")
-    if len(est_pitches) == 0:
+    if est_pitches.size == 0:
         warnings.warn("Estimate note pitches are empty.")
 
     # Make sure intervals and pitches match in length
-    if not len(ref_intervals) == len(ref_pitches):
+    if not ref_intervals.shape[0] == ref_pitches.shape[0]:
         warnings.warn("Reference intervals and pitches have different "
                       "lengths.")
-    if not len(est_intervals) == len(est_pitches):
+    if not est_intervals.shape[0] == est_pitches.shape[0]:
         warnings.warn("Estimate intervals and pitches have different lengths.")
 
     # Make sure all pitch values are positive
@@ -134,12 +134,12 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     ----------
     ref_intervals : np.ndarray, shape=(n,2)
         Array of reference notes time intervals (onset and offset times)
-    ref_pitches: list, len=n
-        List of reference pitch values in Hertz
+    ref_pitches: np.ndarray, shape=(n,)
+        Array of reference pitch values in Hertz
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
-    est_pitches : list, len=m
-        List of estimated pitch values in Hertz
+    est_pitches : np.ndarray, shape=(m,)
+        Array of estimated pitch values in Hertz
     onset_tolerance : float > 0
         The tolerance for an estimated note's onset deviating from the
         reference note's onset, in seconds. Default is 0.05 (50 ms).
@@ -201,12 +201,12 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     ----------
     ref_intervals : np.ndarray, shape=(n,2)
         Array of reference notes time intervals (onset and offset times)
-    ref_pitches: list, len=n
-        List of reference pitch values in Hertz
+    ref_pitches: np.ndarray, shape=(n,)
+        Array of reference pitch values in Hertz
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
-    est_pitches : list, len=m
-        List of estimated pitch values in Hertz
+    est_pitches : np.ndarray, shape=(m,)
+        Array of estimated pitch values in Hertz
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
