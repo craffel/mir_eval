@@ -1,8 +1,0 @@
-{
-  "Precision": 0.4,
-  "Recall": 0.5,
-  "F-measure": 0.4444444444444445,
-  "Precision_nooffset": 0.6,
-  "Recall_nooffset": 0.75,
-  "F-measure_nooffset": 0.6666666666666665
-}
