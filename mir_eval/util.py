@@ -633,7 +633,7 @@ def match_events(ref, est, window):
 
 def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
                 onset_tolerance=0.05, pitch_tolerance=50.0, offset_ratio=0.2,
-                with_offset=False):
+                offset_min_tolerance=0.05, with_offset=False):
     """Compute a maximum matching between reference and estimated notes,
     subject to onset, pitch and (optionally) offset constraints.
 
@@ -683,6 +683,10 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
         centered on the reference offset), or 0.05 (50 ms), whichever is
         greater. Note: this parameter only influences the results if
         with_offset=True.
+    offset_min_tolerance: float > 0
+        The minimum tolerance for offset matching. See offset_ratio description
+        for an explanation of how the offset tolerance is determined. Note:
+        this parameter only influences the results if with_offset=True.
     with_offset: bool
         If True, note offsets are taken into consideration in the matching,
         where the offset tolerance depends on the offset_ratio parameter. If
@@ -718,6 +722,8 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
         offset_tolerances = 0.5 * offset_ratio * ref_durations
         offset_tolerance_matrix = np.tile(offset_tolerances,
                                           (offset_distances.shape[1], 1)).T
+        min_tolerance_inds = offset_tolerance_matrix < offset_min_tolerance
+        offset_tolerance_matrix[min_tolerance_inds] = offset_min_tolerance
         offset_hit_matrix = offset_distances < offset_tolerance_matrix
     else:
         offset_hit_matrix = np.ones_like(onset_hit_matrix)

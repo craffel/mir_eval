@@ -106,7 +106,8 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
 
 def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
                         onset_tolerance=0.05, pitch_tolerance=50.0,
-                        offset_ratio=0.2, with_offset=False):
+                        offset_ratio=0.2, offset_min_tolerance=0.05,
+                        with_offset=False):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes. "Correctness" is determined based on note onset, pitch
     and (optionally) offset: an estimated note is assumed correct if its onset
@@ -116,7 +117,8 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     on top of the above requirements, a correct returned note is required to
     have an offset value within 20% (by default, adjustable via the
     offset_ratio parameter) of the ref note's duration around the ref note's
-    offset, or within 50ms, whichever is larger.
+    offset, or within offset_min_tolerance (50ms by default), whichever is
+    larger.
 
     Examples
     --------
@@ -151,9 +153,14 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
         The ratio of the reference note's duration used to define the
         offset_tolerance. Default is 0.2 (20%), meaning
         the offset_tolerance will equal the ref_duration * 0.2 * 0.5
-        (0.5 since the window is centered on the reference offset), or 0.05
-        (50 ms), whichever is greater. Note: this parameter only influences
-        the results if with_offset=True.
+        (0.5 since the window is centered on the reference offset), or
+        min_offset_tolerance (0.05 by default, i.e. 50 ms), whichever is
+        greater. Note: this parameter only influences the results if
+        with_offset=True.
+    offset_min_tolerance: float > 0
+        The minimum tolerance for offset matching. See offset_ratio description
+        for an explanation of how the offset tolerance is determined. Note:
+        this parameter only influences the results if with_offset=True.
     with_offset: bool
         If True, note offsets are taken into consideration in the evaluation,
         where the offset tolerance depends on the offset_ratio parameter. If
@@ -178,6 +185,7 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
                                 est_pitches, onset_tolerance=onset_tolerance,
                                 pitch_tolerance=pitch_tolerance,
                                 offset_ratio=offset_ratio,
+                                offset_min_tolerance=offset_min_tolerance,
                                 with_offset=with_offset)
 
     precision = float(len(matching))/len(est_pitches)
