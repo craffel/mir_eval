@@ -143,6 +143,54 @@ def _lca(intervals_hier, frame_size):
     return lca_matrix.tocsr()
 
 
+def _meet(intervals_hier, labels_hier, frame_size):
+    '''Compute the (sparse) least-common-ancestor (LCA) matrix for a
+    hierarchical segmentation.
+
+    For any pair of frames ``(s, t)``, the LCA is the deepest level in
+    the hierarchy such that ``(s, t)`` are contained within a single
+    segment at that level.
+
+    Parameters
+    ----------
+    intervals_hier : list of ndarray
+        An ordered list of segment interval arrays.
+        The list is assumed to be ordered by increasing specificity (depth).
+
+    frame_size : number
+        The length of the sample frames (in seconds)
+
+    Returns
+    -------
+    meet_matrix : scipy.sparse.csr_matrix
+        A sparse matrix such that ``meet_matrix[i, j]`` contains the depth
+        of the deepest segment label containing both ``i`` and ``j``.
+    '''
+
+    frame_size = float(frame_size)
+
+    # Figure out how many frames we need
+
+    n_start, n_end = _hierarchy_bounds(intervals_hier)
+
+    n = int((_round(n_end, frame_size) -
+             _round(n_start, frame_size)) / frame_size)
+
+    # Initialize the meet matrix
+    meet_matrix = np.zeros((n, n), dtype=np.uint8)
+
+    for level, (intervals, labels) in enumerate(zip(intervals_hier,
+                                                    labels_hier), 1):
+
+        # For each unique label at this level, build the (sparse) agreement matrix
+        y_est = util.intervals_to_samples(intervals, labels, sample_size=frame_size)[-1]
+        y_est = util.index_labels(y_est)[0]
+        agreement = np.equal.outer(y_est, y_est)
+        meet_matrix = np.maximum(meet_matrix, level * agreement)
+
+    return scipy.sparse.csr_matrix(meet_matrix)
+
+
 def _gauc(ref_lca, est_lca, transitive, window):
     '''Generalized area under the curve (GAUC)
 
@@ -360,6 +408,72 @@ def tmeasure(reference_intervals_hier, estimated_intervals_hier,
     t_measure = util.f_measure(t_precision, t_recall, beta=beta)
 
     return t_precision, t_recall, t_measure
+
+
+def lmeasure(reference_intervals_hier, reference_labels_hier,
+             estimated_intervals_hier, estimated_labels_hier,
+             frame_size=0.1, beta=1.0):
+    '''Computes the tree measures for hierarchical segment annotations.
+
+    Parameters
+    ----------
+    reference_intervals_hier : list of ndarray
+        ``reference_intervals_hier[i]`` contains the segment intervals
+        (in seconds) for the ``i`` th layer of the annotations.  Layers are
+        ordered from top to bottom, so that the last list of intervals should
+        be the most specific.
+
+    estimated_intervals_hier : list of ndarray
+        Like ``reference_intervals_hier`` but for the estimated annotation
+
+    frame_size : float > 0
+        length (in seconds) of frames.  The frame size cannot be longer than
+        the window.
+
+    beta : float > 0
+        beta parameter for the F-measure.
+
+    Returns
+    -------
+    l_precision : number [0, 1]
+        L-measure Precision
+
+    l_recall : number [0, 1]
+        L-measure Recall
+
+    l_measure : number [0, 1]
+        F-beta measure for ``(l_precision, l_recall)``
+
+    Raises
+    ------
+    ValueError
+        If either of the input hierarchies are inconsistent
+
+        If the input hierarchies have different time durations
+
+        If ``frame_size > window`` or ``frame_size <= 0``
+    '''
+
+    # Compute the number of frames in the window
+    if frame_size <= 0:
+        raise ValueError('frame_size ({:.2f}) must be a positive '
+                         'number.'.format(frame_size))
+
+    # Validate the hierarchical segmentations
+    validate_hier_intervals(reference_intervals_hier)
+    validate_hier_intervals(estimated_intervals_hier)
+
+    # Build the least common ancestor matrices
+    ref_meet = _meet(reference_intervals_hier, reference_labels_hier, frame_size)
+    est_meet = _meet(estimated_intervals_hier, estimated_labels_hier, frame_size)
+
+    # Compute precision and recall
+    l_recall = _gauc(ref_meet, est_meet, True, None)
+    l_precision = _gauc(est_meet, ref_meet, True, None)
+
+    l_measure = util.f_measure(l_precision, l_recall, beta=beta)
+
+    return l_precision, l_recall, l_measure
 
 
 def evaluate(ref_intervals_hier, ref_labels_hier,
