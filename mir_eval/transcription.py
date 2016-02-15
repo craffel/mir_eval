@@ -91,7 +91,6 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
     if not ref_intervals.shape[0] == ref_pitches.shape[0]:
         raise ValueError('Reference intervals and pitches have different '
                          'lengths.')
-
     if not est_intervals.shape[0] == est_pitches.shape[0]:
         raise ValueError('Estimate intervals and pitches have different '
                          'lengths.')
