@@ -74,11 +74,16 @@ if __name__ == '__main__':
     ref_files = parameters['reference_file']
     est_files = parameters['estimated_file']
 
-    ref_intervals = [load_labeled_intervals(_)[0] for _ in ref_files]
-    est_intervals = [load_labeled_intervals(_)[0] for _ in est_files]
+    ref = [load_labeled_intervals(_) for _ in ref_files]
+    est = [load_labeled_intervals(_) for _ in est_files]
+    ref_intervals = [seg[0] for seg in ref]
+    ref_labels = [seg[1] for seg in ref]
+    est_intervals = [seg[0] for seg in est]
+    est_labels = [seg[1] for seg in est]
 
     # Compute all the scores
-    scores = mir_eval.hierarchy.evaluate(ref_intervals, est_intervals,
+    scores = mir_eval.hierarchy.evaluate(ref_intervals, ref_labels,
+                                         est_intervals, est_labels,
                                          window=parameters['window'])
     print("{} [...] vs. {} [...]".format(
         basename(parameters['reference_file'][0]),
