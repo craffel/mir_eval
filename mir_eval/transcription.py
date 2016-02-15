@@ -111,21 +111,18 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     we seek the largest set of correspondences ``(i, j)`` such that:
 
     1. The onset of ref note i is within ``onset_tolerance`` of the onset of
-    est note j.
-
+       est note j.
     2. The pitch of ref note i is within ``pitch_tolerance`` of the pitch of
-    est note j.
-
+       est note j.
     3. If ``offset_ratio`` is not ``None``, the offset of ref note i has to be
-     within ``offset_tolerance`` of the offset of est note j, where
-    ``offset_tolerance`` is equal to half the window given by taking
-    ``offset_ratio`` of the ref note's duration, i.e. ``0.5 * offset_ratio *
-    ref_duration[i]`` where ``ref_duration[i] = ref_intervals[i, 1] -
-    ref_intervals[i, 0]``. If the resulting ``offset_tolerance`` is less than
-    0.05 (50 ms), 0.05 is used instead.
-
+       within ``offset_tolerance`` of the offset of est note j, where
+       ``offset_tolerance`` is equal to half the window given by taking
+       ``offset_ratio`` of the ref note's duration, i.e. ``0.5 * offset_ratio *
+       ref_duration[i]`` where ``ref_duration[i] = ref_intervals[i, 1] -
+       ref_intervals[i, 0]``. If the resulting ``offset_tolerance`` is less
+       than 0.05 (50 ms), 0.05 is used instead.
     4. If ``offset_ratio`` is ``None``, note offsets are ignored, and only
-    criteria 1 and 2 are taken into consideration.
+       criteria 1 and 2 are taken into consideration.
 
     Every ref note is matched against at most one est note.
 
@@ -161,16 +158,13 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
         this parameter only influences the results if ``offset_ratio`` is not
         ``None``.
 
-
     Returns
     -------
     matching : list of tuples
         A list of matched reference and estimated notes.
         ``matching[i] == (i, j)`` where reference note i matches estimate note
         j.
-
     """
-
     # check for onset matches
     onset_distances = np.abs(np.subtract.outer(ref_intervals[:, 0],
                                                est_intervals[:, 0]))
@@ -270,8 +264,7 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
         The minimum tolerance for offset matching. See offset_ratio description
         for an explanation of how the offset tolerance is determined. Note:
         this parameter only influences the results if offset_ratio is not
-        `None`.
-
+        ``None``.
 
     Returns
     -------
@@ -281,7 +274,6 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
         The computed recall score
     f_measure : float
         The computed F-measure score
-
     """
     validate(ref_intervals, ref_pitches, est_intervals, est_pitches)
     # When reference notes are empty, metrics are undefined, return 0's
@@ -331,11 +323,8 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     scores : dict
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
-
     """
-
-    # Now compute all the metrics
-
+    # Compute all the metrics
     scores = collections.OrderedDict()
 
     # # Precision, recall and f-measure NOT taking note offsets into account
