@@ -15,10 +15,10 @@ ourselves to the most simple and commonly used: given two sets of notes, we
 count how many estimate notes match the reference, and how many do not. Based
 on these counts we compute the precision, recall, and f-measure of the estimate
 given the reference. The default criteria for considering two notes to be a
-match are adopted from the MIREX "Multiple fundamental frequency estimation and
-tracking, task 2" criteria:
-(http://www.music-ir.org/mirex/wiki/2015:Multiple_Fundamental_Frequency_\
-Estimation_%26_Tracking_Results_-_MIREX_Dataset#Task_2:Note_Tracking_.28NT.29):
+match are adopted from the `MIREX Multiple fundamental frequency estimation and
+tracking, Note Tracking subtask (task 2) <http://www.music-ir.org/mirex/wiki/\
+2015:Multiple_Fundamental_Frequency_Estimation_%26_Tracking_Results_-_MIREX_\
+Dataset#Task_2:Note_Tracking_.28NT.29>`_:
 
 "This subtask is evaluated in two different ways. In the first setup , a
 returned note is assumed correct if its onset is within +-50ms of a ref note
@@ -79,33 +79,31 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
     """
     # If reference or estimated notes are empty, warn
     if ref_intervals.size == 0:
-        warnings.warn("Reference note intervals are empty.")
-    if ref_pitches.size == 0:
-        warnings.warn("Reference note pitches are empty.")
+        warnings.warn("Reference notes are empty.")
     if est_intervals.size == 0:
-        warnings.warn("Estimate note intervals are empty.")
-    if est_pitches.size == 0:
-        warnings.warn("Estimate note pitches are empty.")
+        warnings.warn("Estimate notes are empty.")
 
     # Make sure intervals and pitches match in length
     if not ref_intervals.shape[0] == ref_pitches.shape[0]:
-        warnings.warn("Reference intervals and pitches have different "
-                      "lengths.")
+        raise ValueError('Reference intervals and pitches have different '
+                         'lengths.')
     if not est_intervals.shape[0] == est_pitches.shape[0]:
-        warnings.warn("Estimate intervals and pitches have different lengths.")
+        raise ValueError('Estimate intervals and pitches have different '
+                         'lengths.')
 
     # Make sure all pitch values are positive
     if np.min(ref_pitches) <= 0:
-        warnings.warn("Reference contains at least one non-positive pitch "
-                      "value")
+        raise ValueError("Reference contains at least one non-positive pitch "
+                         "value")
     if np.min(est_pitches) <= 0:
-        warnings.warn("Estimate contains at least one non-positive pitch "
-                      "value")
+        raise ValueError("Estimate contains at least one non-positive pitch "
+                         "value")
 
 
 def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
                         onset_tolerance=0.05, pitch_tolerance=50.0,
-                        offset_ratio=0.2, with_offset=False):
+                        offset_ratio=0.2, offset_min_tolerance=0.05,
+                        with_offset=False):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes. "Correctness" is determined based on note onset, pitch
     and (optionally) offset: an estimated note is assumed correct if its onset
@@ -115,20 +113,21 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     on top of the above requirements, a correct returned note is required to
     have an offset value within 20% (by default, adjustable via the
     offset_ratio parameter) of the ref note's duration around the ref note's
-    offset, or within 50ms, whichever is larger.
+    offset, or within offset_min_tolerance (50ms by default), whichever is
+    larger.
 
     Examples
     --------
     >>> ref_intervals, ref_pitches = mir_eval.io.load_valued_intervals(
-    ... 'reference.txt')
+    ...     'reference.txt')
     >>> est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
-    ... 'estimated.txt')
+    ...     'estimated.txt')
     >>> precision, recall, f_measure =
-    ... mir_eval.transcription.precision_recall_f1(ref_intervals, ref_pitches,
-    ... est_intervals, est_pitches)
+    ...     mir_eval.transcription.precision_recall_f1(ref_intervals,
+    ...     ref_pitches, est_intervals, est_pitches)
     >>> precision_withoffset, recall_withoffset, f_measure_withoffset =
-    ... mir_eval.transcription.precision_recall_f1(ref_intervals, ref_pitches,
-    ... est_intervals, est_pitches, with_offset=True)
+    ...     mir_eval.transcription.precision_recall_f1(ref_intervals,
+    ...     ref_pitches, est_intervals, est_pitches, with_offset=True)
 
     Parameters
     ----------
@@ -150,9 +149,14 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
         The ratio of the reference note's duration used to define the
         offset_tolerance. Default is 0.2 (20%), meaning
         the offset_tolerance will equal the ref_duration * 0.2 * 0.5
-        (0.5 since the window is centered on the reference offset), or 0.05
-        (50 ms), whichever is greater. Note: this parameter only influences
-        the results if with_offset=True.
+        (0.5 since the window is centered on the reference offset), or
+        min_offset_tolerance (0.05 by default, i.e. 50 ms), whichever is
+        greater. Note: this parameter only influences the results if
+        with_offset=True.
+    offset_min_tolerance: float > 0
+        The minimum tolerance for offset matching. See offset_ratio description
+        for an explanation of how the offset tolerance is determined. Note:
+        this parameter only influences the results if with_offset=True.
     with_offset: bool
         If True, note offsets are taken into consideration in the evaluation,
         where the offset tolerance depends on the offset_ratio parameter. If
@@ -177,6 +181,7 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
                                 est_pitches, onset_tolerance=onset_tolerance,
                                 pitch_tolerance=pitch_tolerance,
                                 offset_ratio=offset_ratio,
+                                offset_min_tolerance=offset_min_tolerance,
                                 with_offset=with_offset)
 
     precision = float(len(matching))/len(est_pitches)
@@ -191,11 +196,11 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     Examples
     --------
     >>> ref_intervals, ref_pitches = mir_eval.io.load_valued_intervals(
-    ... 'reference.txt')
+    ...     'reference.txt')
     >>> est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
-    ... 'estimate.txt')
+    ...     'estimate.txt')
     >>> scores = mir_eval.transcription.evaluate(ref_intervals, ref_pitches,
-    ... est_intervals, est_pitches)
+    ...     est_intervals, est_pitches)
 
     Parameters
     ----------
