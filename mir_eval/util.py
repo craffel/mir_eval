@@ -701,9 +701,6 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
 
     """
 
-    # Compute the indices of feasible pairings
-    # hits = np.where(np.abs(np.subtract.outer(ref, est)) <= window)
-
     # check for onset matches
     onset_distances = np.abs(np.subtract.outer(ref_intervals[:, 0],
                                                est_intervals[:, 0]))
