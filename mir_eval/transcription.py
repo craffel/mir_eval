@@ -15,10 +15,10 @@ ourselves to the most simple and commonly used: given two sets of notes, we
 count how many estimate notes match the reference, and how many do not. Based
 on these counts we compute the precision, recall, and f-measure of the estimate
 given the reference. The default criteria for considering two notes to be a
-match are adopted from the MIREX "Multiple fundamental frequency estimation and
-tracking, task 2" criteria:
-(http://www.music-ir.org/mirex/wiki/2015:Multiple_Fundamental_Frequency_\
-Estimation_%26_Tracking_Results_-_MIREX_Dataset#Task_2:Note_Tracking_.28NT.29):
+match are adopted from the `MIREX Multiple fundamental frequency estimation and
+tracking, Note Tracking subtask (task 2) <http://www.music-ir.org/mirex/wiki/\
+2015:Multiple_Fundamental_Frequency_Estimation_%26_Tracking_Results_-_MIREX_\
+Dataset#Task_2:Note_Tracking_.28NT.29>`_:
 
 "This subtask is evaluated in two different ways. In the first setup , a
 returned note is assumed correct if its onset is within +-50ms of a ref note
