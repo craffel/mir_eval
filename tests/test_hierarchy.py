@@ -122,12 +122,19 @@ def test_tmeasure_regression():
     est_files = sorted(glob('tests/data/hierarchy/est*.lab'))
     out_files = sorted(glob('tests/data/hierarchy/output*.json'))
 
-    ref_hier = [mir_eval.io.load_labeled_intervals(_)[0] for _ in ref_files]
-    est_hier = [mir_eval.io.load_labeled_intervals(_)[0] for _ in est_files]
+    ref_hier = [mir_eval.io.load_labeled_intervals(_) for _ in ref_files]
+    est_hier = [mir_eval.io.load_labeled_intervals(_) for _ in est_files]
 
-    def __test(w, ref, est, target):
+    ref_ints = [seg[0] for seg in ref_hier]
+    ref_labs = [seg[1] for seg in ref_hier]
+    est_ints = [seg[0] for seg in est_hier]
+    est_labs = [seg[1] for seg in est_hier]
 
-        outputs = mir_eval.hierarchy.evaluate(ref, est, window=w)
+    def __test(w, ref_i, ref_l, est_i, est_l, target):
+
+        outputs = mir_eval.hierarchy.evaluate(ref_i, ref_l,
+                                              est_i, est_l,
+                                              window=w)
 
         for key in target:
             assert np.allclose(target[key], outputs[key], atol=A_TOL)
@@ -138,4 +145,4 @@ def test_tmeasure_regression():
 
         # Extract the window parameter
         window = float(re.match('.*output_w=(\d+).json$', out).groups()[0])
-        yield __test, window, ref_hier, est_hier, target
+        yield __test, window, ref_ints, ref_labs, est_ints, est_labs, target
