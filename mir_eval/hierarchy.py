@@ -332,16 +332,16 @@ def tmeasure(reference_intervals_hier, estimated_intervals_hier,
     '''
 
     # Compute the number of frames in the window
+    if frame_size <= 0:
+        raise ValueError('frame_size ({:.2f}) must be a positive '
+                         'number.'.format(frame_size))
+
     if window is None:
         window_frames = None
     else:
         if frame_size > window:
             raise ValueError('frame_size ({:.2f}) cannot exceed '
                              'window ({:.2f})'.format(frame_size, window))
-
-        if frame_size <= 0:
-            raise ValueError('frame_size ({:.2f}) must be a positive '
-                             'number.'.format(frame_size))
 
         window_frames = int(_round(window, frame_size) / frame_size)
 

@@ -109,9 +109,11 @@ def test_tmeasure_fail_frame_size():
                                     window=window,
                                     frame_size=frame_size)
 
-    for window in [15, 30]:
-        for frame_size in [-1, 0, 2 * window]:
+    for window in [None, 15, 30]:
+        for frame_size in [-1, 0]:
             yield __test, window, frame_size
+        if window is not None:
+            yield __test, window, 2 * window
 
 
 def test_tmeasure_regression():
