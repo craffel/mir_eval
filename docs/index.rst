@@ -194,7 +194,7 @@ The following subsections document each submodule.
    :member-order: bysource
 
 :mod:`mir_eval.transcription`
-----------------------
+-----------------------------
 .. automodule:: mir_eval.transcription
    :members:
    :undoc-members:

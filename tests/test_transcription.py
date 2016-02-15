@@ -6,6 +6,7 @@ import numpy as np
 
 A_TOL = 1e-12
 
+
 def test_precision_recall_f1():
 
     ref_int, ref_pitch = mir_eval.io.load_valued_intervals(
@@ -14,7 +15,7 @@ def test_precision_recall_f1():
         'tests/data/transcription/est00.txt')
 
     # load expected results
-    scores = json.load(open('tests/data/transcription/output00.json','rb'))
+    scores = json.load(open('tests/data/transcription/output00.json', 'rb'))
 
     precision, recall, f_measure = \
         mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
@@ -27,10 +28,11 @@ def test_precision_recall_f1():
 
     precision, recall, f_measure = \
         mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
-                                                   est_pitch, with_offset=True)
+                                                   est_pitch,
+                                                   offset_ratio=None)
 
     scores_gen = np.array([precision, recall, f_measure])
-    scores_exp = np.array([scores['Precision_with_offset'],
-                           scores['Recall_with_offset'],
-                           scores['F-measure_with_offset']])
+    scores_exp = np.array([scores['Precision_nooffset'],
+                           scores['Recall_nooffset'],
+                           scores['F-measure_nooffset']])
     assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
