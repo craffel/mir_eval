@@ -233,7 +233,7 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     >>> precision, recall, f_measure =
     ...     mir_eval.transcription.precision_recall_f1(ref_intervals,
     ...     ref_pitches, est_intervals, est_pitches)
-    >>> precision_nooffset, recall_nooffset, f_measure_nooffset =
+    >>> precision_no_offset, recall_no_offset, f_measure_no_offset =
     ...     mir_eval.transcription.precision_recall_f1(ref_intervals,
     ...     ref_pitches, est_intervals, est_pitches, offset_ratio=None)
 
@@ -327,23 +327,6 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     # Compute all the metrics
     scores = collections.OrderedDict()
 
-    # # Precision, recall and f-measure NOT taking note offsets into account
-    # kwargs['with_offset'] = False
-    # (scores['Precision'],
-    #  scores['Recall'],
-    #  scores['F-measure']) = util.filter_kwargs(precision_recall_f1,
-    #                                            ref_intervals, ref_pitches,
-    #                                            est_intervals, est_pitches,
-    #                                            **kwargs)
-    #
-    # # Precision, recall and f-measure taking note offsets into account
-    # kwargs['with_offset'] = True
-    # (scores['Precision_with_offset'],
-    #  scores['Recall_with_offset'],
-    #  scores['F-measure_with_offset']) = util.filter_kwargs(
-    #     precision_recall_f1, ref_intervals, ref_pitches, est_intervals,
-    #     est_pitches, **kwargs)
-
     # Precision, recall and f-measure taking note offsets into account
     offset_ratio = kwargs.get('offset_ratio', .2)
     if offset_ratio is not None:
@@ -355,9 +338,9 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
 
     # Precision, recall and f-measure NOT taking note offsets into account
     kwargs['offset_ratio'] = None
-    (scores['Precision_nooffset'],
-     scores['Recall_nooffset'],
-     scores['F-measure_nooffset']) = \
+    (scores['Precision_no_offset'],
+     scores['Recall_no_offset'],
+     scores['F-measure_no_offset']) = \
         util.filter_kwargs(precision_recall_f1, ref_intervals, ref_pitches,
                            est_intervals, est_pitches, **kwargs)
 

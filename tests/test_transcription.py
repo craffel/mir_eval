@@ -51,7 +51,7 @@ def test_precision_recall_f1():
                                                    offset_ratio=None)
 
     scores_gen = np.array([precision, recall, f_measure])
-    scores_exp = np.array([scores['Precision_nooffset'],
-                           scores['Recall_nooffset'],
-                           scores['F-measure_nooffset']])
+    scores_exp = np.array([scores['Precision_no_offset'],
+                           scores['Recall_no_offset'],
+                           scores['F-measure_no_offset']])
     assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
