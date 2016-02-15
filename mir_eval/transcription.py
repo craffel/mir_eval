@@ -289,10 +289,10 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
         return 0., 0., 0.
 
     matching = match_notes(ref_intervals, ref_pitches, est_intervals,
-                                est_pitches, onset_tolerance=onset_tolerance,
-                                pitch_tolerance=pitch_tolerance,
-                                offset_ratio=offset_ratio,
-                                offset_min_tolerance=offset_min_tolerance)
+                           est_pitches, onset_tolerance=onset_tolerance,
+                           pitch_tolerance=pitch_tolerance,
+                           offset_ratio=offset_ratio,
+                           offset_min_tolerance=offset_min_tolerance)
 
     precision = float(len(matching))/len(est_pitches)
     recall = float(len(matching))/len(ref_pitches)
@@ -368,9 +368,8 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     kwargs['offset_ratio'] = None
     (scores['Precision_nooffset'],
      scores['Recall_nooffset'],
-     scores['F-measure_nooffset']) = util.filter_kwargs(precision_recall_f1,
-                                               ref_intervals, ref_pitches,
-                                               est_intervals, est_pitches,
-                                               **kwargs)
+     scores['F-measure_nooffset']) = \
+        util.filter_kwargs(precision_recall_f1, ref_intervals, ref_pitches,
+                           est_intervals, est_pitches, **kwargs)
 
     return scores
