@@ -177,16 +177,27 @@ def _meet(intervals_hier, labels_hier, frame_size):
              _round(n_start, frame_size)) / frame_size)
 
     # Initialize the meet matrix
-    meet_matrix = np.zeros((n, n), dtype=np.uint8)
+    meet_matrix = scipy.sparse.lil_matrix((n, n), dtype=np.uint8)
 
     for level, (intervals, labels) in enumerate(zip(intervals_hier,
                                                     labels_hier), 1):
 
-        # For each unique label at this level, build the (sparse) agreement matrix
-        y_est = util.intervals_to_samples(intervals, labels, sample_size=frame_size)[-1]
-        y_est = util.index_labels(y_est)[0]
-        agreement = np.equal.outer(y_est, y_est)
-        meet_matrix = np.maximum(meet_matrix, level * agreement)
+        # Encode the labels at this level
+        lab_enc = util.index_labels(labels)[0]
+
+        # Find unique agreements
+        int_agree = np.triu(np.equal.outer(lab_enc, lab_enc))
+
+        # Map intervals to frame indices
+        int_frames = (_round(intervals, frame_size) / frame_size).astype(int)
+
+        # For each intervals i, j where the labels agree, update the meet matrix
+        for (seg_i, seg_j) in zip(*np.where(int_agree)):
+            idx_i = slice(*list(int_frames[seg_i]))
+            idx_j = slice(*list(int_frames[seg_j]))
+            meet_matrix[idx_i, idx_j] = level
+            if seg_i != seg_j:
+                meet_matrix[idx_j, idx_i] = level
 
     return scipy.sparse.csr_matrix(meet_matrix)
 
@@ -560,12 +571,11 @@ def evaluate(ref_intervals_hier, ref_labels_hier,
 
     # Pre-process the intervals to match the range of the reference,
     # and start at 0
-    ref_intervals_hier = [util.adjust_intervals(np.asarray(_), t_min=0.0)[0]
-                          for _ in ref_intervals_hier]
+    ref_intervals_hier, ref_labels_hier = [list(_) for _ in zip(*[util.adjust_intervals(np.asarray(_int),
+        labels=lab, t_min=0.0) for _int, lab in zip(ref_intervals_hier, ref_labels_hier)])]
 
-    est_intervals_hier = [util.adjust_intervals(np.asarray(_), t_min=0.0,
-                                                t_max=t_end)[0]
-                          for _ in est_intervals_hier]
+    est_intervals_hier, est_labels_hier = [list(_) for _ in zip(*[util.adjust_intervals(np.asarray(_int),
+        labels=lab, t_min=0.0, t_max=t_end) for _int, lab in zip(est_intervals_hier, est_labels_hier)])]
 
     scores = collections.OrderedDict()
 
@@ -586,4 +596,12 @@ def evaluate(ref_intervals_hier, ref_labels_hier,
                                                     est_intervals_hier,
                                                     **kwargs)
 
+    (scores['L-Precision'],
+     scores['L-Recall'],
+     scores['L-Measure']) = util.filter_kwargs(lmeasure,
+                                               ref_intervals_hier,
+                                               ref_labels_hier,
+                                               est_intervals_hier,
+                                               est_labels_hier,
+                                               **kwargs)
     return scores
