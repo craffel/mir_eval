@@ -89,18 +89,20 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
 
     # Make sure intervals and pitches match in length
     if not ref_intervals.shape[0] == ref_pitches.shape[0]:
-        warnings.warn("Reference intervals and pitches have different "
-                      "lengths.")
+        raise ValueError('Reference intervals and pitches have different '
+                         'lengths.')
+
     if not est_intervals.shape[0] == est_pitches.shape[0]:
-        warnings.warn("Estimate intervals and pitches have different lengths.")
+        raise ValueError('Estimate intervals and pitches have different '
+                         'lengths.')
 
     # Make sure all pitch values are positive
     if np.min(ref_pitches) <= 0:
-        warnings.warn("Reference contains at least one non-positive pitch "
-                      "value")
+        raise ValueError("Reference contains at least one non-positive pitch "
+                         "value")
     if np.min(est_pitches) <= 0:
-        warnings.warn("Estimate contains at least one non-positive pitch "
-                      "value")
+        raise ValueError("Estimate contains at least one non-positive pitch "
+                         "value")
 
 
 def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
