@@ -79,13 +79,9 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
     """
     # If reference or estimated notes are empty, warn
     if ref_intervals.size == 0:
-        warnings.warn("Reference note intervals are empty.")
-    if ref_pitches.size == 0:
-        warnings.warn("Reference note pitches are empty.")
+        warnings.warn("Reference notes are empty.")
     if est_intervals.size == 0:
-        warnings.warn("Estimate note intervals are empty.")
-    if est_pitches.size == 0:
-        warnings.warn("Estimate note pitches are empty.")
+        warnings.warn("Estimate notes are empty.")
 
     # Make sure intervals and pitches match in length
     if not ref_intervals.shape[0] == ref_pitches.shape[0]:
