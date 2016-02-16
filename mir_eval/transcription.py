@@ -205,11 +205,10 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
                                                     est_intervals[:, 1]))
         ref_durations = util.intervals_to_durations(ref_intervals)
         offset_tolerances = 0.5 * offset_ratio * ref_durations
-        offset_tolerance_matrix = np.tile(offset_tolerances,
-                                          (offset_distances.shape[1], 1)).T
-        min_tolerance_inds = offset_tolerance_matrix < offset_min_tolerance
-        offset_tolerance_matrix[min_tolerance_inds] = offset_min_tolerance
-        offset_hit_matrix = cmp_func(offset_distances, offset_tolerance_matrix)
+        min_tolerance_inds = offset_tolerances < offset_min_tolerance
+        offset_tolerances[min_tolerance_inds] = offset_min_tolerance
+        offset_hit_matrix = \
+            cmp_func(offset_distances, offset_tolerances.reshape(-1, 1))
     else:
         offset_hit_matrix = np.ones_like(onset_hit_matrix)
 
