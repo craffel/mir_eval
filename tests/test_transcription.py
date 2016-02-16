@@ -30,8 +30,8 @@ SCORES = {
 
 def test_match_notes():
 
-    ref_int, ref_pitch = REF[:,:2], REF[:,2]
-    est_int, est_pitch = EST[:,:2], EST[:,2]
+    ref_int, ref_pitch = REF[:, :2], REF[: ,2]
+    est_int, est_pitch = EST[:, :2], EST[: ,2]
 
     matching = \
         mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,
@@ -49,8 +49,8 @@ def test_match_notes():
 def test_precision_recall_f1():
 
     # load test data
-    ref_int, ref_pitch = REF[:,:2], REF[:,2]
-    est_int, est_pitch = EST[:,:2], EST[:,2]
+    ref_int, ref_pitch = REF[:, :2], REF[:, 2]
+    est_int, est_pitch = EST[:, :2], EST[:, 2]
 
     precision, recall, f_measure = \
         mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
