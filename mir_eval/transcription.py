@@ -185,19 +185,19 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     """
     # set the comparison function
     if strict:
-        cmp = np.less
+        cmp_func = np.less
     else:
-        cmp = np.less_equal
+        cmp_func = np.less_equal
 
     # check for onset matches
     onset_distances = np.abs(np.subtract.outer(ref_intervals[:, 0],
                                                est_intervals[:, 0]))
-    onset_hit_matrix = cmp(onset_distances, onset_tolerance)
+    onset_hit_matrix = cmp_func(onset_distances, onset_tolerance)
 
     # check for pitch matches
     pitch_distances = np.abs(1200*np.log2(np.divide.outer(ref_pitches,
                                                           est_pitches)))
-    pitch_hit_matrix = cmp(pitch_distances, pitch_tolerance)
+    pitch_hit_matrix = cmp_func(pitch_distances, pitch_tolerance)
 
     # check for offset matches if offset_ratio is not None
     if offset_ratio is not None:
@@ -209,7 +209,7 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
                                           (offset_distances.shape[1], 1)).T
         min_tolerance_inds = offset_tolerance_matrix < offset_min_tolerance
         offset_tolerance_matrix[min_tolerance_inds] = offset_min_tolerance
-        offset_hit_matrix = cmp(offset_distances, offset_tolerance_matrix)
+        offset_hit_matrix = cmp_func(offset_distances, offset_tolerance_matrix)
     else:
         offset_hit_matrix = np.ones_like(onset_hit_matrix)
 
