@@ -119,8 +119,9 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     subject to onset, pitch and (optionally) offset constraints.
 
     Given two note sequences represented by ``ref_intervals``, ``ref_pitches``,
-    ``est_intervals`` and ``est_pitches`` (see ``io.load_valued_intervals``),
-    we seek the largest set of correspondences ``(i, j)`` such that:
+    ``est_intervals`` and ``est_pitches``
+    (see :func:`mir_eval.io.load_valued_intervals`), we seek the largest set
+    of correspondences ``(i, j)`` such that:
 
     1. The onset of ref note i is within ``onset_tolerance`` of the onset of
        est note j.
