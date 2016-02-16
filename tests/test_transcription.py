@@ -14,7 +14,7 @@ def _load_unit_test_reference():
         [0.500, 0.600, 277.183],
         [0.550, 0.650, 293.665]])
 
-    return ref[:,:2], ref[:,2]
+    return ref[:, :2], ref[:, 2]
 
 
 def _load_unit_test_estimate():
@@ -26,7 +26,7 @@ def _load_unit_test_estimate():
             [0.550,   0.600,   293.665],
             [0.560,   0.650,   293.665]])
 
-    return est[:,:2], est[:,2]
+    return est[:, :2], est[:, 2]
 
 
 def _load_unit_test_scores():
