@@ -43,9 +43,10 @@ onsets is exactly equal to the defined threshold (e.g. 0.05), then the former
 script would not consider the two notes to have matching onsets, whilst the
 latter would. `mir_eval` provides both options: by default the latter
 (``<=``) is used, but you can set ``strict=True`` when calling
-``precision_recall_f1()`` in which case ``<`` will be used. The default value
-(``strict=False``) matches the evaluation code that was used to produce the
-results reported on the MIREX website for the "Su" dataset in 2015.
+:func:`mir_eval.transcription.precision_recall_f1()` in which case ``<`` will
+be used. The default value (``strict=False``) matches the evaluation code that
+was used to produce the results reported on the MIREX website for the "Su"
+dataset in 2015.
 
 
 Conventions
