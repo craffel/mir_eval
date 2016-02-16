@@ -2,7 +2,7 @@
 The aim of a transcription algorithm is to produce a symbolic representation of
 a recorded piece of music in the form of a set of discrete notes. There are
 different ways to represent notes symbolically. Here we use the piano-roll
-convention, meaning each notes has a start time, a duration (or end time), and
+convention, meaning each note has a start time, a duration (or end time), and
 a single, constant, pitch value. Pitch values can be quantized (e.g. to a
 semitone grid tuned to 440 Hz), but do not have to be. Also, the transcription
 can contain the notes of a single instrument or voice (for example the melody),
