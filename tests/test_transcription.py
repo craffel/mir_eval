@@ -13,7 +13,7 @@ REF = np.array([
 
 EST = np.array([
     [0.120,   0.290,   225.000],
-    [0.300,   0.350,   246.942],
+    [0.300,   0.340,   246.942],
     [0.500,   0.600,   500.000],
     [0.550,   0.600,   293.665],
     [0.560,   0.650,   293.665]])
@@ -37,7 +37,7 @@ def test_match_notes():
         mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,
                                            est_pitch)
 
-    assert matching == [(0, 0), (3, 4)]
+    assert matching == [(0, 0), (3, 3)]
 
     matching = \
         mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,

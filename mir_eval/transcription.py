@@ -192,6 +192,10 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     # check for onset matches
     onset_distances = np.abs(np.subtract.outer(ref_intervals[:, 0],
                                                est_intervals[:, 0]))
+    # Round distances to a target precision to avoid the situation where
+    # if the distance is exactly 50ms (and strict=False) it erroneously
+    # doesn't match the notes because of precision issues.
+    onset_distances = np.around(onset_distances, decimals=4)
     onset_hit_matrix = cmp_func(onset_distances, onset_tolerance)
 
     # check for pitch matches
@@ -203,6 +207,10 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     if offset_ratio is not None:
         offset_distances = np.abs(np.subtract.outer(ref_intervals[:, 1],
                                                     est_intervals[:, 1]))
+        # Round distances to a target precision to avoid the situation where
+        # if the distance is exactly 50ms (and strict=False) it erroneously
+        # doesn't match the notes because of precision issues.
+        offset_distances = np.around(offset_distances, decimals=4)
         ref_durations = util.intervals_to_durations(ref_intervals)
         offset_tolerances = 0.5 * offset_ratio * ref_durations
         min_tolerance_inds = offset_tolerances < offset_min_tolerance
@@ -358,13 +366,13 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     scores = collections.OrderedDict()
 
     # Precision, recall and f-measure taking note offsets into account
-    offset_ratio = kwargs.get('offset_ratio', .2)
-    if offset_ratio is not None:
+    kwargs.setdefault('offset_ratio', 0.2)
+    if kwargs['offset_ratio'] is not None:
         (scores['Precision'],
          scores['Recall'],
          scores['F-measure']) = util.filter_kwargs(
             precision_recall_f1, ref_intervals, ref_pitches, est_intervals,
-            est_pitches, offset_ratio=offset_ratio, **kwargs)
+            est_pitches, **kwargs)
 
     # Precision, recall and f-measure NOT taking note offsets into account
     kwargs['offset_ratio'] = None
