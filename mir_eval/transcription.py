@@ -36,17 +36,40 @@ For further details see Salamon, 2013 (page 186), and references therein:
     Salamon, J. (2013). Melody Extraction from Polyphonic Music Signals.
     Ph.D. thesis, Universitat Pompeu Fabra, Barcelona, Spain, 2013.
 
-Note: two different evaluation scripts have been used in MIREX over the years,
-where one uses ``<`` for matching onsets, offsets, and pitch values, whilst
-the other uses ``<=`` for these checks. That is, if the distance between two
-onsets is exactly equal to the defined threshold (e.g. 0.05), then the former
-script would not consider the two notes to have matching onsets, whilst the
-latter would. `mir_eval` provides both options: by default the latter
-(``<=``) is used, but you can set ``strict=True`` when calling
+
+IMPORTANT NOTE: the evaluation code in `mir_eval` contains several important
+differences with respect to the code used in MIREX 2015 for the Note Tracking
+subtask on the Su dataset (henceforth "MIREX"):
+
+1. `mir_eval` uses bipartite graph matching to find the optimal pairing of
+   reference notes to estimated notes. MIREX uses a greedy matching algorithm,
+   which can produce sub-optimal note matching. This will result in `mir_eval`s
+   evaluation metrics being slightly higher compared to MIREX.
+2. MIREX rounds down the onset and offset times of each note to 2 decimal
+   points using `new_time = 0.01 * floor(time*100)`. `mir_eval` doesn't modify
+   the note onset and offset times. This will bring our metrics down a notch
+   compared to the MIREX results.
+3. In the MIREX wiki, the criterion for matching offsets is that they must be
+   within 0.2 * ref_duration **or 0.05 from each other, whichever is greater**
+   (i.e. `offset_dif <= max(0.2 * ref_duration, 0.05). The MIREX code however
+   only uses a threshold of 0.2 * ref_duration, without the 0.05 minimum.
+   Since `mir_eval` does include this minimum, it might produce slightly higher
+   results compared to MIREX.
+
+This means that differences 1 and 3 bring `mir_eval`'s metrics up compared to
+MIREX, whilst 2 brings them down. Based on internal testing, overall the effect
+of these three differences is that the Precision, Recall and F-measure returned
+by `mir_eval` will be higher compared to MIREX by something between 0.01 and
+0.03.
+
+Finally, note that different evaluation scripts have been used for the Multi-F0
+Note Tracking task in MIREX over the years. In particular, some scripts used
+``<`` for matching onsets, offsets, and pitch values, whilst the others used
+``<=`` for these checks. `mir_eval` provides both options: by default the
+latter (``<=``) is used, but you can set ``strict=True`` when calling
 :func:`mir_eval.transcription.precision_recall_f1()` in which case ``<`` will
-be used. The default value (``strict=False``) matches the evaluation code that
-was used to produce the results reported on the MIREX website for the "Su"
-dataset in 2015.
+be used. The default value (``strict=False``) is the same as that used in
+MIREX 2015 for the Note Tracking subtask on the Su dataset.
 
 
 Conventions
@@ -129,11 +152,11 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
        est note j.
     3. If ``offset_ratio`` is not ``None``, the offset of ref note i has to be
        within ``offset_tolerance`` of the offset of est note j, where
-       ``offset_tolerance`` is equal to half the window given by taking
-       ``offset_ratio`` of the ref note's duration, i.e. ``0.5 * offset_ratio *
-       ref_duration[i]`` where ``ref_duration[i] = ref_intervals[i, 1] -
-       ref_intervals[i, 0]``. If the resulting ``offset_tolerance`` is less
-       than 0.05 (50 ms), 0.05 is used instead.
+       ``offset_tolerance`` is equal to ``offset_ratio`` times the ref note's
+       duration, i.e. ``offset_ratio * ref_duration[i]`` where
+       ``ref_duration[i] = ref_intervals[i, 1] - ref_intervals[i, 0]``. If the
+       resulting ``offset_tolerance`` is less than 0.05 (50 ms), 0.05 is used
+       instead.
     4. If ``offset_ratio`` is ``None``, note offsets are ignored, and only
        criteria 1 and 2 are taken into consideration.
 
@@ -161,8 +184,7 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     offset_ratio: float > 0 or None
         The ratio of the reference note's duration used to define the
         offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
-        will equal the ref_duration * 0.2 * 0.5 (0.5 since the window is
-        centered on the reference offset), or 0.05 (50 ms), whichever is
+        will equal the ref_duration * 0.2, or 0.05 (50 ms), whichever is
         greater. If ``offset_ratio`` is set to ``None``, offsets are ignored in
         the matching.
     offset_min_tolerance: float > 0
@@ -212,7 +234,7 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
         # doesn't match the notes because of precision issues.
         offset_distances = np.around(offset_distances, decimals=4)
         ref_durations = util.intervals_to_durations(ref_intervals)
-        offset_tolerances = 0.5 * offset_ratio * ref_durations
+        offset_tolerances = offset_ratio * ref_durations
         min_tolerance_inds = offset_tolerances < offset_min_tolerance
         offset_tolerances[min_tolerance_inds] = offset_min_tolerance
         offset_hit_matrix = \
@@ -253,7 +275,7 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     on top of the above requirements, a correct returned note is required to
     have an offset value within 20% (by default, adjustable via the
     offset_ratio parameter) of the ref note's duration around the ref note's
-    offset, or within offset_min_tolerance (50ms by default), whichever is
+    offset, or within offset_min_tolerance (50 ms by default), whichever is
     larger.
 
     Examples
@@ -288,8 +310,7 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     offset_ratio: float > 0 or None
         The ratio of the reference note's duration used to define the
         offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
-        will equal the ref_duration * 0.2 * 0.5 (*0.5 since the window is
-        centered on the reference offset), or min_offset_tolerance (0.05 by
+        will equal the ref_duration * 0.2, or min_offset_tolerance (0.05 by
         default, i.e. 50 ms), whichever is greater. If ``offset_ratio`` is set
         to ``None``, offsets are ignored in the evaluation.
     offset_min_tolerance: float > 0
@@ -317,10 +338,6 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     if len(ref_pitches) == 0 or len(est_pitches) == 0:
         return 0., 0., 0.
 
-    # Round down onset and offset times
-    ref_intervals = 0.01 * np.floor(ref_intervals * 100)
-    est_intervals = 0.01 * np.floor(est_intervals * 100)
-
     matching = match_notes(ref_intervals, ref_pitches, est_intervals,
                            est_pitches, onset_tolerance=onset_tolerance,
                            pitch_tolerance=pitch_tolerance,
@@ -332,77 +349,6 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     recall = float(len(matching))/len(ref_pitches)
     f_measure = util.f_measure(precision, recall)
     return precision, recall, f_measure
-
-
-def precision_recall_f1_duan(ref_intervals, ref_pitches, est_intervals,
-                             est_pitches, onset_tolerance=0.05,
-                             pitch_tolerance=50.0, offset_ratio=0.2,
-                             offset_min_tolerance=0.05, strict=False):
-
-    def hz2midi(hz):
-        return 12 * (np.log2(hz) - np.log2(440.0)) + 69
-
-    # Round down onset and offset times
-    ref_intervals = 0.01 * np.floor(ref_intervals * 100)
-    est_intervals = 0.01 * np.floor(est_intervals * 100)
-
-    EstNoteNum = len(est_intervals)
-    GTNoteNum = len(ref_intervals)
-
-    nCorrect = 0
-    AOR = 0
-    nChromaCorrect = 0
-    ChromaAOR = 0
-
-    # normal case
-    IsUsedEst = np.zeros(EstNoteNum)
-    for gt_note in range(GTNoteNum):
-        gt_onset = ref_intervals[gt_note, 0]
-        gt_offset = ref_intervals[gt_note, 1]
-        gt_freq = hz2midi(ref_pitches[gt_note])
-        for est_note in range(EstNoteNum):
-            if IsUsedEst[est_note] == 0:
-                est_onset = est_intervals[est_note, 0]
-                est_offset = est_intervals[est_note, 1]
-                est_freq = hz2midi(est_pitches[est_note])
-
-                if offset_ratio is None:
-                    if (np.abs(est_freq - gt_freq) <= 0.5) and \
-                            (np.abs(est_onset - gt_onset) <= onset_tolerance):
-                        nCorrect = nCorrect + 1
-                        AOR = AOR + (min(est_offset, gt_offset) -
-                                     max(est_onset, gt_onset)) / \
-                                    (max(est_offset, gt_offset) -
-                                     min(est_onset, gt_onset))
-                        IsUsedEst[est_note] = 1
-                        # break;
-                else:
-                    if (np.abs(est_freq - gt_freq) <= 0.5) and \
-                            (np.abs(est_onset - gt_onset) <= onset_tolerance) \
-                            and (abs(est_offset - gt_offset) <= offset_ratio *
-                                (gt_offset-gt_onset)):
-                        nCorrect = nCorrect + 1
-                        AOR = AOR + (min(est_offset, gt_offset) -
-                                     max(est_onset, gt_onset)) / \
-                                    (max(est_offset, gt_offset) -
-                                     min(est_onset, gt_onset))
-                        IsUsedEst[est_note] = 1
-                        # break;
-
-    # debug
-    if offset_ratio is not None:
-        print("EstNoteNum, GTNoteNum, nCorrect: %d, %d, %d" %
-              (EstNoteNum, GTNoteNum, nCorrect))
-
-     # calculate statistics
-    Pre = float(nCorrect)/EstNoteNum
-    Rec = float(nCorrect)/GTNoteNum
-    if Pre==0 and Rec==0: # not part of original code
-        Fme = 0
-    else:
-        Fme = 2*Pre*Rec / float(Pre + Rec)
-    # Results_note.AOR = AOR/nCorrect;
-    return Pre, Rec, Fme
 
 
 def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
