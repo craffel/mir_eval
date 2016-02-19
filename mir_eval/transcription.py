@@ -317,6 +317,10 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     if len(ref_pitches) == 0 or len(est_pitches) == 0:
         return 0., 0., 0.
 
+    # Round down onset and offset times
+    ref_intervals = 0.01 * np.floor(ref_intervals * 100)
+    est_intervals = 0.01 * np.floor(est_intervals * 100)
+
     matching = match_notes(ref_intervals, ref_pitches, est_intervals,
                            est_pitches, onset_tolerance=onset_tolerance,
                            pitch_tolerance=pitch_tolerance,
@@ -328,6 +332,77 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     recall = float(len(matching))/len(ref_pitches)
     f_measure = util.f_measure(precision, recall)
     return precision, recall, f_measure
+
+
+def precision_recall_f1_duan(ref_intervals, ref_pitches, est_intervals,
+                             est_pitches, onset_tolerance=0.05,
+                             pitch_tolerance=50.0, offset_ratio=0.2,
+                             offset_min_tolerance=0.05, strict=False):
+
+    def hz2midi(hz):
+        return 12 * (np.log2(hz) - np.log2(440.0)) + 69
+
+    # Round down onset and offset times
+    ref_intervals = 0.01 * np.floor(ref_intervals * 100)
+    est_intervals = 0.01 * np.floor(est_intervals * 100)
+
+    EstNoteNum = len(est_intervals)
+    GTNoteNum = len(ref_intervals)
+
+    nCorrect = 0
+    AOR = 0
+    nChromaCorrect = 0
+    ChromaAOR = 0
+
+    # normal case
+    IsUsedEst = np.zeros(EstNoteNum)
+    for gt_note in range(GTNoteNum):
+        gt_onset = ref_intervals[gt_note, 0]
+        gt_offset = ref_intervals[gt_note, 1]
+        gt_freq = hz2midi(ref_pitches[gt_note])
+        for est_note in range(EstNoteNum):
+            if IsUsedEst[est_note] == 0:
+                est_onset = est_intervals[est_note, 0]
+                est_offset = est_intervals[est_note, 1]
+                est_freq = hz2midi(est_pitches[est_note])
+
+                if offset_ratio is None:
+                    if (np.abs(est_freq - gt_freq) <= 0.5) and \
+                            (np.abs(est_onset - gt_onset) <= onset_tolerance):
+                        nCorrect = nCorrect + 1
+                        AOR = AOR + (min(est_offset, gt_offset) -
+                                     max(est_onset, gt_onset)) / \
+                                    (max(est_offset, gt_offset) -
+                                     min(est_onset, gt_onset))
+                        IsUsedEst[est_note] = 1
+                        # break;
+                else:
+                    if (np.abs(est_freq - gt_freq) <= 0.5) and \
+                            (np.abs(est_onset - gt_onset) <= onset_tolerance) \
+                            and (abs(est_offset - gt_offset) <= offset_ratio *
+                                (gt_offset-gt_onset)):
+                        nCorrect = nCorrect + 1
+                        AOR = AOR + (min(est_offset, gt_offset) -
+                                     max(est_onset, gt_onset)) / \
+                                    (max(est_offset, gt_offset) -
+                                     min(est_onset, gt_onset))
+                        IsUsedEst[est_note] = 1
+                        # break;
+
+    # debug
+    if offset_ratio is not None:
+        print("EstNoteNum, GTNoteNum, nCorrect: %d, %d, %d" %
+              (EstNoteNum, GTNoteNum, nCorrect))
+
+     # calculate statistics
+    Pre = float(nCorrect)/EstNoteNum
+    Rec = float(nCorrect)/GTNoteNum
+    if Pre==0 and Rec==0: # not part of original code
+        Fme = 0
+    else:
+        Fme = 2*Pre*Rec / float(Pre + Rec)
+    # Results_note.AOR = AOR/nCorrect;
+    return Pre, Rec, Fme
 
 
 def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
