@@ -21,3 +21,5 @@ Submission code     Submission name     Contributors
 BW2                 NoteTracking1       Emmanouil Benetos, Tillman Weyde
 
 http://www.music-ir.org/mirex/wiki/2015:Multiple_Fundamental_Frequency_Estimation_%26_Tracking_Results_-_Su_Dataset#General_Legend
+
+IMPORTANT NOTE: the reference files come from the gt_Note folder of the Su dataset. These files actually DO NOT match the MIDI reference files provided with the same dataset. But, since they are used here for regression testing only, this doesn’t really matter.

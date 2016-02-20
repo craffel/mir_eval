@@ -2,8 +2,15 @@
 
 import mir_eval
 import numpy as np
+import glob
+import json
 
 A_TOL = 1e-12
+
+# Path to the fixture files
+REF_GLOB = 'tests/data/transcription/ref*.txt'
+EST_GLOB = 'tests/data/transcription/est*.txt'
+SCORES_GLOB = 'tests/data/transcription/output*.json'
 
 REF = np.array([
     [0.100, 0.300, 220.000],
@@ -71,3 +78,28 @@ def test_precision_recall_f1():
                            SCORES['Recall_no_offset'],
                            SCORES['F-measure_no_offset']])
     assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
+
+
+def __check_score(score, expected_score):
+    assert np.allclose(score, expected_score, atol=A_TOL)
+
+
+def test_regression():
+
+    # Regression tests
+    ref_files = sorted(glob.glob(REF_GLOB))
+    est_files = sorted(glob.glob(EST_GLOB))
+    sco_files = sorted(glob.glob(SCORES_GLOB))
+
+    for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
+        with open(sco_f, 'r') as f:
+            expected_scores = json.load(f)
+        # Load in reference transcription
+        ref_int, ref_pitch = mir_eval.io.load_valued_intervals(ref_f)
+        # Load in estimated transcription
+        est_int, est_pitch= mir_eval.io.load_valued_intervals(est_f)
+        scores = mir_eval.transcription.evaluate(ref_int, ref_pitch, est_int,
+                                                 est_pitch)
+        for metric in scores:
+            # This is a simple hack to make nosetest's messages more useful
+            yield (__check_score, scores[metric], expected_scores[metric])

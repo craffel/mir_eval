@@ -1,1 +1,1 @@
-{"Precision": 0.15104166666666666, "Recall": 0.07231920199501247, "F-measure": 0.09780775716694773, "Precision_no_offset": 0.4270833333333333, "Recall_no_offset": 0.20448877805486285, "F-measure_no_offset": 0.27655986509274877}
+{"Precision": 0.19270833333333334, "Recall": 0.09226932668329177, "F-measure": 0.12478920741989884, "Precision_no_offset": 0.453125, "Recall_no_offset": 0.2169576059850374, "F-measure_no_offset": 0.2934232715008432}
