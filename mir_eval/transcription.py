@@ -37,35 +37,35 @@ For further details see Salamon, 2013 (page 186), and references therein:
     Ph.D. thesis, Universitat Pompeu Fabra, Barcelona, Spain, 2013.
 
 
-IMPORTANT NOTE: the evaluation code in `mir_eval` contains several important
+IMPORTANT NOTE: the evaluation code in ``mir_eval`` contains several important
 differences with respect to the code used in MIREX 2015 for the Note Tracking
 subtask on the Su dataset (henceforth "MIREX"):
 
-1. `mir_eval` uses bipartite graph matching to find the optimal pairing of
+1. ``mir_eval`` uses bipartite graph matching to find the optimal pairing of
    reference notes to estimated notes. MIREX uses a greedy matching algorithm,
-   which can produce sub-optimal note matching. This will result in `mir_eval`s
-   evaluation metrics being slightly higher compared to MIREX.
+   which can produce sub-optimal note matching. This will result in
+   ``mir_eval``'s metrics being slightly higher compared to MIREX.
 2. MIREX rounds down the onset and offset times of each note to 2 decimal
-   points using `new_time = 0.01 * floor(time*100)`. `mir_eval` doesn't modify
-   the note onset and offset times. This will bring our metrics down a notch
-   compared to the MIREX results.
+   points using ``new_time = 0.01 * floor(time*100)``. ``mir_eval`` doesn't
+   modify the note onset and offset times. This will bring our metrics down a
+   notch compared to the MIREX results.
 3. In the MIREX wiki, the criterion for matching offsets is that they must be
    within 0.2 * ref_duration **or 0.05 from each other, whichever is greater**
-   (i.e. `offset_dif <= max(0.2 * ref_duration, 0.05). The MIREX code however
-   only uses a threshold of 0.2 * ref_duration, without the 0.05 minimum.
-   Since `mir_eval` does include this minimum, it might produce slightly higher
-   results compared to MIREX.
+   (i.e. ``offset_dif <= max(0.2 * ref_duration, 0.05)``. The MIREX code
+   however only uses a threshold of 0.2 * ref_duration, without the 0.05
+   minimum. Since ``mir_eval`` does include this minimum, it might produce
+   slightly higher results compared to MIREX.
 
-This means that differences 1 and 3 bring `mir_eval`'s metrics up compared to
+This means that differences 1 and 3 bring ``mir_eval``'s metrics up compared to
 MIREX, whilst 2 brings them down. Based on internal testing, overall the effect
 of these three differences is that the Precision, Recall and F-measure returned
-by `mir_eval` will be higher compared to MIREX by something between 0.01 and
+by ``mir_eval`` will be higher compared to MIREX by something between 0.01 and
 0.03.
 
 Finally, note that different evaluation scripts have been used for the Multi-F0
 Note Tracking task in MIREX over the years. In particular, some scripts used
 ``<`` for matching onsets, offsets, and pitch values, whilst the others used
-``<=`` for these checks. `mir_eval` provides both options: by default the
+``<=`` for these checks. ``mir_eval`` provides both options: by default the
 latter (``<=``) is used, but you can set ``strict=True`` when calling
 :func:`mir_eval.transcription.precision_recall_f1()` in which case ``<`` will
 be used. The default value (``strict=False``) is the same as that used in
@@ -95,6 +95,10 @@ import numpy as np
 import collections
 from . import util
 import warnings
+
+
+# The number of decimals to keep for onset/offset threshold checks
+N_DECIMALS = 4
 
 
 def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
@@ -217,12 +221,12 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     # Round distances to a target precision to avoid the situation where
     # if the distance is exactly 50ms (and strict=False) it erroneously
     # doesn't match the notes because of precision issues.
-    onset_distances = np.around(onset_distances, decimals=4)
+    onset_distances = np.around(onset_distances, decimals=N_DECIMALS)
     onset_hit_matrix = cmp_func(onset_distances, onset_tolerance)
 
     # check for pitch matches
-    pitch_distances = np.abs(1200*np.log2(np.divide.outer(ref_pitches,
-                                                          est_pitches)))
+    pitch_distances = np.abs(1200*np.subtract.outer(np.log2(ref_pitches),
+                                                    np.log2(est_pitches)))
     pitch_hit_matrix = cmp_func(pitch_distances, pitch_tolerance)
 
     # check for offset matches if offset_ratio is not None
@@ -232,15 +236,14 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
         # Round distances to a target precision to avoid the situation where
         # if the distance is exactly 50ms (and strict=False) it erroneously
         # doesn't match the notes because of precision issues.
-        offset_distances = np.around(offset_distances, decimals=4)
+        offset_distances = np.around(offset_distances, decimals=N_DECIMALS)
         ref_durations = util.intervals_to_durations(ref_intervals)
-        offset_tolerances = offset_ratio * ref_durations
-        min_tolerance_inds = offset_tolerances < offset_min_tolerance
-        offset_tolerances[min_tolerance_inds] = offset_min_tolerance
+        offset_tolerances = np.maximum(offset_ratio * ref_durations,
+                                       offset_min_tolerance)
         offset_hit_matrix = \
             cmp_func(offset_distances, offset_tolerances.reshape(-1, 1))
     else:
-        offset_hit_matrix = np.ones_like(onset_hit_matrix)
+        offset_hit_matrix = True
 
     # check for overall matches
     note_hit_matrix = onset_hit_matrix * pitch_hit_matrix * offset_hit_matrix

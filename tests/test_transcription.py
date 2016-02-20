@@ -97,7 +97,7 @@ def test_regression():
         # Load in reference transcription
         ref_int, ref_pitch = mir_eval.io.load_valued_intervals(ref_f)
         # Load in estimated transcription
-        est_int, est_pitch= mir_eval.io.load_valued_intervals(est_f)
+        est_int, est_pitch = mir_eval.io.load_valued_intervals(est_f)
         scores = mir_eval.transcription.evaluate(ref_int, ref_pitch, est_int,
                                                  est_pitch)
         for metric in scores:
