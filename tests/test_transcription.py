@@ -4,6 +4,8 @@ import mir_eval
 import numpy as np
 import glob
 import json
+from nose.tools import raises
+import warnings
 
 A_TOL = 1e-12
 
@@ -51,6 +53,18 @@ def test_match_notes():
                                            est_pitch, offset_ratio=None)
 
     assert matching == [(0, 0), (1, 1), (3, 3)]
+
+
+def test_match_notes_strict():
+
+    ref_int, ref_pitch = np.array([[0, 1]]), np.array([100])
+    est_int, est_pitch = np.array([[0.05, 1]]), np.array([100])
+
+    matching = \
+        mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,
+                                           est_pitch, strict=True)
+
+    assert matching == []
 
 
 def test_precision_recall_f1():
@@ -103,3 +117,85 @@ def test_regression():
         for metric in scores:
             # This is a simple hack to make nosetest's messages more useful
             yield (__check_score, scores[metric], expected_scores[metric])
+
+
+def test_invalid_pitch():
+
+    ref_int, ref_pitch = np.array([[0, 1]]), np.array([-100])
+    est_int, est_pitch = np.array([[0, 1]]), np.array([100])
+
+    yield raises(ValueError)(mir_eval.transcription.validate), \
+        ref_int, ref_pitch, est_int, est_pitch
+    yield raises(ValueError)(mir_eval.transcription.validate), \
+        est_int, est_pitch, ref_int, ref_pitch
+
+
+def test_inconsistent_int_pitch():
+
+    ref_int, ref_pitch = np.array([[0, 1], [2, 3]]), np.array([100])
+    est_int, est_pitch = np.array([[0, 1]]), np.array([100])
+
+    yield raises(ValueError)(mir_eval.transcription.validate), \
+        ref_int, ref_pitch, est_int, est_pitch
+    yield raises(ValueError)(mir_eval.transcription.validate), \
+        est_int, est_pitch, ref_int, ref_pitch
+
+
+def test_empty_ref():
+
+    warnings.resetwarnings()
+    warnings.simplefilter('always')
+    with warnings.catch_warnings(record=True) as out:
+
+        ref_int, ref_pitch = np.array([]), np.array([])
+        est_int, est_pitch = np.array([[0, 1]]), np.array([100])
+
+        mir_eval.transcription.validate(ref_int, ref_pitch, est_int, est_pitch)
+
+        # Make sure that the warning triggered
+        assert len(out) > 0
+
+        # And that the category is correct
+        assert out[0].category is UserWarning
+
+        # And that it says the right thing (roughly)
+        assert 'empty' in str(out[0].message).lower()
+
+
+def test_empty_est():
+
+    warnings.resetwarnings()
+    warnings.simplefilter('always')
+    with warnings.catch_warnings(record=True) as out:
+
+        ref_int, ref_pitch = np.array([[0, 1]]), np.array([100])
+        est_int, est_pitch = np.array([]), np.array([])
+
+        mir_eval.transcription.validate(ref_int, ref_pitch, est_int, est_pitch)
+
+        # Make sure that the warning triggered
+        assert len(out) > 0
+
+        # And that the category is correct
+        assert out[0].category is UserWarning
+
+        # And that it says the right thing (roughly)
+        assert 'empty' in str(out[0].message).lower()
+
+
+def test_precision_recall_f1_empty():
+
+    ref_int, ref_pitch = np.array([]), np.array([])
+    est_int, est_pitch = np.array([[0, 1]]), np.array([100])
+
+    precision, recall, f1 = \
+        mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
+                                                   est_pitch)
+
+    assert (precision, recall, f1) == (0, 0, 0)
+
+    precision, recall, f1 = \
+        mir_eval.transcription.precision_recall_f1(est_int, est_pitch, ref_int,
+                                                   ref_pitch)
+
+    assert (precision, recall, f1) == (0, 0, 0)
