@@ -131,10 +131,10 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
                          'lengths.')
 
     # Make sure all pitch values are positive
-    if np.min(ref_pitches) <= 0:
+    if ref_pitches.size > 0 and np.min(ref_pitches) <= 0:
         raise ValueError("Reference contains at least one non-positive pitch "
                          "value")
-    if np.min(est_pitches) <= 0:
+    if est_pitches.size > 0 and np.min(est_pitches) <= 0:
         raise ValueError("Estimate contains at least one non-positive pitch "
                          "value")
 
