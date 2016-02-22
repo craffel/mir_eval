@@ -65,6 +65,9 @@ if __name__ == '__main__':
                         'tests/data/segment/{}*.lab')
     tasks['separation'] = (mir_eval.separation, load_separation_data,
                            'tests/data/separation/{}*')
+    tasks['transcription'] = (mir_eval.transcription,
+                              mir_eval.io.load_valued_intervals,
+                              'tests/data/transcription/{}*.txt')
     # Get task keys from argv
     for task in sys.argv[1:]:
         print('Generating data for {}'.format(task))

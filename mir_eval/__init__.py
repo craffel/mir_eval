@@ -14,5 +14,6 @@ from . import melody
 from . import pattern
 from . import tempo
 from . import hierarchy
+from . import transcription
 
 __version__ = '0.2'

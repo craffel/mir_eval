@@ -96,3 +96,21 @@ def test_load_labeled_intervals():
             # Make sure intervals were read in correctly
             assert np.all(intervals == [[10, 9], [9, 10]])
             assert labels == ['a', 'b']
+
+
+def test_load_valued_intervals():
+    # Test for a value error when invalid valued events are supplied
+    with tempfile.TemporaryFile('r+') as f:
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            # Non-increasing is invalid
+            f.write('10 9 5\n9 10 6')
+            f.seek(0)
+            intervals, values = mir_eval.io.load_valued_intervals(f)
+            assert len(w) == 1
+            assert issubclass(w[-1].category, UserWarning)
+            assert (str(w[-1].message) ==
+                    'All interval durations must be strictly positive')
+            # Make sure intervals were read in correctly
+            assert np.all(intervals == [[10, 9], [9, 10]])
+            assert np.all(values == [5, 6])

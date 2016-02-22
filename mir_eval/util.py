@@ -623,9 +623,9 @@ def match_events(ref, est, window):
     # Construct the graph input
     G = {}
     for ref_i, est_i in zip(*hits):
-        if ref_i not in G:
-            G[ref_i] = []
-        G[ref_i].append(est_i)
+        if est_i not in G:
+            G[est_i] = []
+        G[est_i].append(ref_i)
 
     # Compute the maximum matching
     matching = sorted(_bipartite_match(G).items())
