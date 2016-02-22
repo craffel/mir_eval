@@ -59,8 +59,7 @@ subtask on the Su dataset (henceforth "MIREX"):
 This means that differences 1 and 3 bring ``mir_eval``'s metrics up compared to
 MIREX, whilst 2 brings them down. Based on internal testing, overall the effect
 of these three differences is that the Precision, Recall and F-measure returned
-by ``mir_eval`` will be higher compared to MIREX by something between 0.01 and
-0.03.
+by ``mir_eval`` will be higher compared to MIREX by about 1%-2%.
 
 Finally, note that different evaluation scripts have been used for the Multi-F0
 Note Tracking task in MIREX over the years. In particular, some scripts used
@@ -240,8 +239,8 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
         ref_durations = util.intervals_to_durations(ref_intervals)
         offset_tolerances = np.maximum(offset_ratio * ref_durations,
                                        offset_min_tolerance)
-        offset_hit_matrix = \
-            cmp_func(offset_distances, offset_tolerances.reshape(-1, 1))
+        offset_hit_matrix = (
+            cmp_func(offset_distances, offset_tolerances.reshape(-1, 1)))
     else:
         offset_hit_matrix = True
 
@@ -287,12 +286,15 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     ...     'reference.txt')
     >>> est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
     ...     'estimated.txt')
-    >>> precision, recall, f_measure =
-    ...     mir_eval.transcription.precision_recall_f1(ref_intervals,
-    ...     ref_pitches, est_intervals, est_pitches)
-    >>> precision_no_offset, recall_no_offset, f_measure_no_offset =
-    ...     mir_eval.transcription.precision_recall_f1(ref_intervals,
-    ...     ref_pitches, est_intervals, est_pitches, offset_ratio=None)
+    >>> (precision,
+    ...  recall,
+    ...  f_measure) = mir_eval.transcription.precision_recall_f1(
+    ...      ref_intervals, ref_pitches, est_intervals, est_pitches)
+    >>> (precision_no_offset,
+    ...  recall_no_offset,
+    ...  f_measure_no_offset) = mir_eval.transcription.precision_recall_f1(
+    ...      ref_intervals, ref_pitches, est_intervals, est_pitches,
+    ...      offset_ratio=None)
 
     Parameters
     ----------
@@ -360,9 +362,9 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     Examples
     --------
     >>> ref_intervals, ref_pitches = mir_eval.io.load_valued_intervals(
-    ...     'reference.txt')
+    ...    'reference.txt')
     >>> est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
-    ...     'estimate.txt')
+    ...    'estimate.txt')
     >>> scores = mir_eval.transcription.evaluate(ref_intervals, ref_pitches,
     ...     est_intervals, est_pitches)
 
@@ -402,8 +404,8 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     kwargs['offset_ratio'] = None
     (scores['Precision_no_offset'],
      scores['Recall_no_offset'],
-     scores['F-measure_no_offset']) = \
+     scores['F-measure_no_offset']) = (
         util.filter_kwargs(precision_recall_f1, ref_intervals, ref_pitches,
-                           est_intervals, est_pitches, **kwargs)
+                           est_intervals, est_pitches, **kwargs))
 
     return scores

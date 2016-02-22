@@ -42,15 +42,15 @@ def test_match_notes():
     ref_int, ref_pitch = REF[:, :2], REF[:, 2]
     est_int, est_pitch = EST[:, :2], EST[:, 2]
 
-    matching = \
+    matching = (
         mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,
-                                           est_pitch)
+                                           est_pitch))
 
     assert matching == [(0, 0), (3, 3)]
 
-    matching = \
+    matching = (
         mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,
-                                           est_pitch, offset_ratio=None)
+                                           est_pitch, offset_ratio=None))
 
     assert matching == [(0, 0), (1, 1), (3, 3)]
 
@@ -60,9 +60,9 @@ def test_match_notes_strict():
     ref_int, ref_pitch = np.array([[0, 1]]), np.array([100])
     est_int, est_pitch = np.array([[0.05, 1]]), np.array([100])
 
-    matching = \
+    matching = (
         mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,
-                                           est_pitch, strict=True)
+                                           est_pitch, strict=True))
 
     assert matching == []
 
@@ -73,19 +73,19 @@ def test_precision_recall_f1():
     ref_int, ref_pitch = REF[:, :2], REF[:, 2]
     est_int, est_pitch = EST[:, :2], EST[:, 2]
 
-    precision, recall, f_measure = \
+    precision, recall, f_measure = (
         mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
-                                                   est_pitch)
+                                                   est_pitch))
 
     scores_gen = np.array([precision, recall, f_measure])
     scores_exp = np.array([SCORES['Precision'], SCORES['Recall'],
                            SCORES['F-measure']])
     assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
 
-    precision, recall, f_measure = \
+    precision, recall, f_measure = (
         mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
                                                    est_pitch,
-                                                   offset_ratio=None)
+                                                   offset_ratio=None))
 
     scores_gen = np.array([precision, recall, f_measure])
     scores_exp = np.array([SCORES['Precision_no_offset'],
@@ -124,10 +124,10 @@ def test_invalid_pitch():
     ref_int, ref_pitch = np.array([[0, 1]]), np.array([-100])
     est_int, est_pitch = np.array([[0, 1]]), np.array([100])
 
-    yield raises(ValueError)(mir_eval.transcription.validate), \
-        ref_int, ref_pitch, est_int, est_pitch
-    yield raises(ValueError)(mir_eval.transcription.validate), \
-        est_int, est_pitch, ref_int, ref_pitch
+    yield (raises(ValueError)(mir_eval.transcription.validate),
+           ref_int, ref_pitch, est_int, est_pitch)
+    yield (raises(ValueError)(mir_eval.transcription.validate),
+           est_int, est_pitch, ref_int, ref_pitch)
 
 
 def test_inconsistent_int_pitch():
@@ -135,10 +135,10 @@ def test_inconsistent_int_pitch():
     ref_int, ref_pitch = np.array([[0, 1], [2, 3]]), np.array([100])
     est_int, est_pitch = np.array([[0, 1]]), np.array([100])
 
-    yield raises(ValueError)(mir_eval.transcription.validate), \
-        ref_int, ref_pitch, est_int, est_pitch
-    yield raises(ValueError)(mir_eval.transcription.validate), \
-        est_int, est_pitch, ref_int, ref_pitch
+    yield (raises(ValueError)(mir_eval.transcription.validate),
+           ref_int, ref_pitch, est_int, est_pitch)
+    yield (raises(ValueError)(mir_eval.transcription.validate),
+           est_int, est_pitch, ref_int, ref_pitch)
 
 
 def test_empty_ref():
@@ -188,14 +188,14 @@ def test_precision_recall_f1_empty():
     ref_int, ref_pitch = np.array([]), np.array([])
     est_int, est_pitch = np.array([[0, 1]]), np.array([100])
 
-    precision, recall, f1 = \
+    precision, recall, f1 = (
         mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
-                                                   est_pitch)
+                                                   est_pitch))
 
     assert (precision, recall, f1) == (0, 0, 0)
 
-    precision, recall, f1 = \
+    precision, recall, f1 = (
         mir_eval.transcription.precision_recall_f1(est_int, est_pitch, ref_int,
-                                                   ref_pitch)
+                                                   ref_pitch))
 
     assert (precision, recall, f1) == (0, 0, 0)
