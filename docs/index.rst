@@ -185,6 +185,14 @@ The following subsections document each submodule.
    :show-inheritance:
    :member-order: bysource
 
+:mod:`mir_eval.key`
+-----------------------------
+.. automodule:: mir_eval.key
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+
 :mod:`mir_eval.util`
 --------------------
 .. automodule:: mir_eval.util
