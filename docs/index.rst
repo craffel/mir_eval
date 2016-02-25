@@ -169,6 +169,14 @@ The following subsections document each submodule.
    :show-inheritance:
    :member-order: bysource
 
+:mod:`mir_eval.transcription`
+-----------------------------
+.. automodule:: mir_eval.transcription
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+
 :mod:`mir_eval.util`
 --------------------
 .. automodule:: mir_eval.util
@@ -192,15 +200,6 @@ The following subsections document each submodule.
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
-
-:mod:`mir_eval.transcription`
------------------------------
-.. automodule:: mir_eval.transcription
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
-
 
 Indices and tables
 ==================
