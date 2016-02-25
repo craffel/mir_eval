@@ -68,6 +68,8 @@ if __name__ == '__main__':
     tasks['transcription'] = (mir_eval.transcription,
                               mir_eval.io.load_valued_intervals,
                               'tests/data/transcription/{}*.txt')
+    tasks['key'] = (mir_eval.key, mir_eval.io.load_key,
+                    'tests/data/key/{}*.txt')
     # Get task keys from argv
     for task in sys.argv[1:]:
         print('Generating data for {}'.format(task))
