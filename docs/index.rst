@@ -169,6 +169,14 @@ The following subsections document each submodule.
    :show-inheritance:
    :member-order: bysource
 
+:mod:`mir_eval.tempo`
+--------------------------
+.. automodule:: mir_eval.tempo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+
 :mod:`mir_eval.transcription`
 -----------------------------
 .. automodule:: mir_eval.transcription
