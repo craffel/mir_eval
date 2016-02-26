@@ -24,7 +24,6 @@ Metrics
 import numpy as np
 import collections
 from . import util
-import warnings
 
 
 def validate_tempi(tempi):
