@@ -16,8 +16,8 @@ The weighting value from the reference must be a float in the range [0, 1].
 
 Metrics
 -------
-:func:`mir_eval.tempo.detection`
-    Relative error, hits, and weighted precision of tempo estimation.
+* :func:`mir_eval.tempo.detection`: Relative error, hits, and weighted
+  precision of tempo estimation.
 
 '''
 
