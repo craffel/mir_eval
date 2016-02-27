@@ -687,11 +687,11 @@ def validate_events(events, max_time=30000.):
 
 
 def has_kwargs(function):
-    r'''Determine whether a function has **kwargs.
+    r'''Determine whether a function has \*\*kwargs.
 
     Parameters
     ----------
-    function: callable
+    function : callable
         The function to test
 
     Returns
