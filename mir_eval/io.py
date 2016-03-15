@@ -477,3 +477,79 @@ def load_key(filename, delimiter=r'\s+'):
         warnings.warn(error.args[0])
 
     return key_string
+
+
+def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+'):
+    r"""Utility function for loading in data from a delimited time series
+    annotation file with a variable number of columns.
+
+    Parameters
+    ----------
+    filename : str
+        Path to the annotation file
+    dtype : function
+        Data type to apply to columns 1 through n.
+    delimiter : str
+        Separator regular expression.
+        By default, lines will be split by any amount of whitespace.
+
+    Returns
+    -------
+    times : np.ndarray
+        array of timestamps (float)
+    values : list of np.ndarrays
+        list of arrays of corresponding values
+
+    """
+    # Initialize empty lists
+    times = []
+    values = []
+
+    # Create re object for splitting lines
+    splitter = re.compile(delimiter)
+
+    # Keep track of whether we create our own file handle
+    own_fh = False
+    # If the filename input is a string, need to open it
+    if isinstance(filename, six.string_types):
+        # Remember that we need to close it later
+        own_fh = True
+        # Open the file for reading
+        input_file = open(filename, 'r')
+    # If the provided has a read attribute, we can use it as a file handle
+    elif hasattr(filename, 'read'):
+        input_file = filename
+    # Raise error otherwise
+    else:
+        raise ValueError('filename must be a string or file handle')
+    for row, line in enumerate(input_file, 1):
+        # Split each line using the supplied delimiter
+        data = splitter.split(line.strip())
+        try:
+            converted_time = float(data[0])
+        except:
+            raise ValueError("Couldn't convert value {} using {} "
+                             "found at {}:{:d}:\n\t{}".format(
+                                 data[0], float.__name__, filename, row,
+                                 line))
+        times.append(converted_time)
+
+        if len(data) > 1:
+            value = data[1:]
+        else:
+            value = []
+
+        try:
+            converted_value = np.array(value, dtype=dtype)
+        except:
+            raise ValueError("Couldn't convert value {} using type {} "
+                             "found at {}:{:d}:\n\t{}".format(
+                                 value, dtype.__name__, filename, row,
+                                 line))
+        values.append(converted_value)
+
+    # Close the file handle if we opened it
+    if own_fh:
+        input_file.close()
+
+    return np.array(times), values
