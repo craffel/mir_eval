@@ -479,7 +479,7 @@ def load_key(filename, delimiter=r'\s+'):
     return key_string
 
 
-def load_ragged_time_series(filename, dtype, delimiter=r'\s+'):
+def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+'):
     r"""Utility function for loading in data from a delimited time series
     annotation file with a variable number of columns.
 
