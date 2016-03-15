@@ -160,6 +160,54 @@ def test_bipartite_match():
         assert v in G[k] or k in G[v]
 
 
+def test_validate_intervals():
+    # Test for ValueError when interval shape is invalid
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_intervals,
+        np.array([[1.], [2.5], [5.]]))
+    # Test for ValueError when times are negative
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_events,
+        np.array([[1., -2.], [2.5, 3.], [5., 6.]]))
+    # Test for ValueError when duration is zero
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_events,
+        np.array([[1., 2.], [2.5, 2.5], [5., 6.]]))
+    # Test for ValueError when duration is negative
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_events,
+        np.array([[1., 2.], [2.5, 1.5], [5., 6.]]))
+
+
+def test_validate_events():
+    # Test for ValueError when max_time is violated
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_events, np.array([100., 100000.]))
+    # Test for ValueError when events aren't 1-d arrays
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_events,
+        np.array([[1., 2.], [3., 4.]]))
+    # Test for ValueError when event times are not increasing
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_events,
+        np.array([1., 2., 5., 3.]))
+
+
+def test_validate_frequencies():
+    # Test for ValueError when max_freq is violated
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_frequencies,
+        np.array([100., 100000.]))
+    # Test for ValueError when min_freq is violated
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_frequencies,
+        np.array([2., 200.]))
+    # Test for ValueError when events aren't 1-d arrays
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_events,
+        np.array([[100., 200.], [300., 400.]]))
+
+
 def test_has_kwargs():
 
     def __test(target, f):
