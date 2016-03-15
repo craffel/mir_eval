@@ -686,6 +686,40 @@ def validate_events(events, max_time=30000.):
         raise ValueError('Events should be in increasing order.')
 
 
+def validate_frequencies(frequencies, max_freq=5000., min_freq=20.):
+    """Checks that a 1-d frequency ndarray is well-formed, and raises
+    errors if not. Allows negative frequency values.
+
+    Parameters
+    ----------
+    frequencies : np.ndarray, shape=(n,)
+        Array of frequency values
+    max_freq : float
+        If a frequency is found above this pitch, a ValueError will be raised.
+        (Default value = 5000.)
+    min_freq : float
+        If a frequency is found below this pitch, a ValueError will be raised.
+        (Default value = 20.)
+
+    """
+    # Make sure no frequency values are huge
+    if (np.abs(frequencies) > max_freq).any():
+        raise ValueError('A frequency of {} was found which is greater than '
+                         'the maximum allowable value of max_freq = {} (did '
+                         'you supply frequency values in '
+                         'Hz?)'.format(frequencies.max(), max_freq))
+    # Make sure no frequency values are tiny
+    if (np.abs(frequencies) < min_freq).any():
+        raise ValueError('A frequency of {} was found which is less than the '
+                         'minimum allowable value of min_freq = {} (did you '
+                         'supply frequency values in '
+                         'Hz?)'.format(frequencies.min(), min_freq))
+    # Make sure frequency values are 1-d np ndarrays
+    if frequencies.ndim != 1:
+        raise ValueError('Frequencies should be 1-d numpy ndarray, '
+                         'but shape={}'.format(frequencies.shape))
+
+
 def has_kwargs(function):
     r'''Determine whether a function has \*\*kwargs.
 
