@@ -57,6 +57,9 @@ if __name__ == '__main__':
                       'tests/data/chord/{}*.lab')
     tasks['melody'] = (mir_eval.melody, mir_eval.io.load_time_series,
                        'tests/data/melody/{}*.txt')
+    tasks['multipitch'] = (mir_eval.multipitch,
+                           mir_eval.io.load_ragged_time_series,
+                           'tests/data/multipitch/()*.txt')
     tasks['onset'] = (mir_eval.onset, mir_eval.io.load_events,
                       'tests/data/onset/{}*.txt')
     tasks['pattern'] = (mir_eval.pattern, mir_eval.io.load_patterns,
