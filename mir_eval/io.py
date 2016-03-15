@@ -479,25 +479,40 @@ def load_key(filename, delimiter=r'\s+'):
     return key_string
 
 
-def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+'):
+def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
+                            header=False):
     r"""Utility function for loading in data from a delimited time series
     annotation file with a variable number of columns.
+    Assumes that column 0 contains time stamps and columns 1 through n contain
+    values. n may be variable from time stamp to time stamp.
+
+    Examples
+    --------
+    >>> # Load a ragged list of tab-delimited multi-f0 midi notes
+    >>> times, vals = load_ragged_time_series('multif0.txt', dtype=int,
+                                              delimiter='\t')
+    >>> # Load a raggled list of space delimited multi-f0 values with a header
+    >>> times, vals = load_ragged_time_series('labeled_events.csv',
+                                              header=True)
 
     Parameters
     ----------
     filename : str
         Path to the annotation file
     dtype : function
-        Data type to apply to columns 1 through n.
+        Data type to apply to values columns.
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+    header : bool
+        Indicates whether a header row is present or not.
+        By default, assumes no header is present.
 
     Returns
     -------
     times : np.ndarray
         array of timestamps (float)
-    values : list of np.ndarrays
+    values : list of np.ndarray
         list of arrays of corresponding values
 
     """
@@ -522,30 +537,31 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+'):
     # Raise error otherwise
     else:
         raise ValueError('filename must be a string or file handle')
-    for row, line in enumerate(input_file, 1):
+    if header:
+        start_row = 1
+    else:
+        start_row = 0
+    for row, line in enumerate(input_file, start_row):
         # Split each line using the supplied delimiter
         data = splitter.split(line.strip())
         try:
             converted_time = float(data[0])
-        except:
-            raise ValueError("Couldn't convert value {} using {} "
-                             "found at {}:{:d}:\n\t{}".format(
-                                 data[0], float.__name__, filename, row,
-                                 line))
+        except (TypeError, ValueError) as exe:
+            six.raise_from(ValueError("Couldn't convert value {} using {} "
+                                      "found at {}:{:d}:\n\t{}".format(
+                                        data[0], float.__name__,
+                                        filename, row, line)), exe)
         times.append(converted_time)
 
-        if len(data) > 1:
-            value = data[1:]
-        else:
-            value = []
-
+        # cast values to a numpy array. time stamps with no values are cast
+        # to an empty array.
         try:
-            converted_value = np.array(value, dtype=dtype)
-        except:
-            raise ValueError("Couldn't convert value {} using type {} "
-                             "found at {}:{:d}:\n\t{}".format(
-                                 value, dtype.__name__, filename, row,
-                                 line))
+            converted_value = np.array(data[1:], dtype=dtype)
+        except (TypeError, ValueError) as exe:
+            six.raise_from(ValueError("Couldn't convert value {} using {} "
+                                      "found at {}:{:d}:\n\t{}".format(
+                                        data[1:], dtype.__name__,
+                                        filename, row, line)), exe)
         values.append(converted_value)
 
     # Close the file handle if we opened it

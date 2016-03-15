@@ -160,6 +160,52 @@ def test_bipartite_match():
         assert v in G[k] or k in G[v]
 
 
+def test_outer_distance_mod_n():
+    ref = [1., 2., 3.]
+    est = [1.1, 6., 1.9, 5., 10.]
+    expected = np.array([
+        [0.1, 5., 0.9, 4., 3.],
+        [0.9, 4., 0.1, 3., 4.],
+        [1.9, 3., 1.1, 2., 5.]])
+    actual = mir_eval.util._outer_distance_mod_n(ref, est)
+    assert np.allclose(actual, expected)
+
+    ref = [13., 14., 15.]
+    est = [1.1, 6., 1.9, 5., 10.]
+    expected = np.array([
+        [0.1, 5., 0.9, 4., 3.],
+        [0.9, 4., 0.1, 3., 4.],
+        [1.9, 3., 1.1, 2., 5.]])
+    actual = mir_eval.util._outer_distance_mod_n(ref, est)
+    assert np.allclose(actual, expected)
+
+
+def test_outer_distance():
+    ref = [1., 2., 3.]
+    est = [1.1, 6., 1.9, 5., 10.]
+    expected = np.array([
+        [0.1, 5., 0.9, 4., 9.],
+        [0.9, 4., 0.1, 3., 8.],
+        [1.9, 3., 1.1, 2., 7.]])
+    actual = mir_eval.util._outer_distance(ref, est)
+    assert np.allclose(actual, expected)
+
+
+def test_match_events():
+    ref = [1., 2., 3.]
+    est = [1.1, 6., 1.9, 5., 10.]
+    expected = [(0, 0), (1, 2)]
+    actual = mir_eval.util.match_events(ref, est, 0.5)
+    assert actual == expected
+
+    ref = [1., 2., 3., 11.9]
+    est = [1.1, 6., 1.9, 5., 10., 0.]
+    expected = [(0, 0), (1, 2), (3, 5)]
+    actual = mir_eval.util.match_events(
+        ref, est, 0.5, distance=mir_eval.util._outer_distance_mod_n)
+    assert actual == expected
+
+
 def test_validate_intervals():
     # Test for ValueError when interval shape is invalid
     nose.tools.assert_raises(
@@ -167,15 +213,15 @@ def test_validate_intervals():
         np.array([[1.], [2.5], [5.]]))
     # Test for ValueError when times are negative
     nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events,
+        ValueError, mir_eval.util.validate_intervals,
         np.array([[1., -2.], [2.5, 3.], [5., 6.]]))
     # Test for ValueError when duration is zero
     nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events,
+        ValueError, mir_eval.util.validate_intervals,
         np.array([[1., 2.], [2.5, 2.5], [5., 6.]]))
     # Test for ValueError when duration is negative
     nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events,
+        ValueError, mir_eval.util.validate_intervals,
         np.array([[1., 2.], [2.5, 1.5], [5., 6.]]))
 
 
@@ -197,15 +243,29 @@ def test_validate_frequencies():
     # Test for ValueError when max_freq is violated
     nose.tools.assert_raises(
         ValueError, mir_eval.util.validate_frequencies,
-        np.array([100., 100000.]))
+        np.array([100., 100000.]), 5000., 20.)
     # Test for ValueError when min_freq is violated
     nose.tools.assert_raises(
         ValueError, mir_eval.util.validate_frequencies,
-        np.array([2., 200.]))
+        np.array([2., 200.]), 5000., 20.)
     # Test for ValueError when events aren't 1-d arrays
     nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events,
-        np.array([[100., 200.], [300., 400.]]))
+        ValueError, mir_eval.util.validate_frequencies,
+        np.array([[100., 200.], [300., 400.]]), 5000., 20.)
+    # Test for ValueError when allow_negatives is false and negative values
+    # are passed
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_frequencies,
+        np.array([[-100., 200.], [300., 400.]]), 5000., 20.,
+        allow_negatives=False)
+    # Test for ValueError when max_freq is violated and allow_negatives=True
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_frequencies,
+        np.array([100., -100000.]), 5000., 20., allow_negatives=True)
+    # Test for ValueError when min_freq is violated and allow_negatives=True
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_frequencies,
+        np.array([-2., 200.]), 5000., 20., allow_negatives=True)
 
 
 def test_has_kwargs():
