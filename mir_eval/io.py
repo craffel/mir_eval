@@ -479,7 +479,7 @@ def load_key(filename, delimiter=r'\s+'):
     return key_string
 
 
-def load_ragged_time_series(filename, converter, delimiter=r'\s+'):
+def load_ragged_time_series(filename, dtype, delimiter=r'\s+'):
     r"""Utility function for loading in data from a delimited time series
     annotation file with a variable number of columns.
 
@@ -487,8 +487,8 @@ def load_ragged_time_series(filename, converter, delimiter=r'\s+'):
     ----------
     filename : str
         Path to the annotation file
-    converter : function
-        Function to apply to columns 1 through n, such as list or np.array
+    dtype : function
+        Data type to apply to columns 1 through n.
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
@@ -497,7 +497,7 @@ def load_ragged_time_series(filename, converter, delimiter=r'\s+'):
     -------
     times : np.ndarray
         array of timestamps (float)
-    values : np.ndarray
+    values : list of np.ndarrays
         list of arrays of corresponding values
 
     """
@@ -540,11 +540,11 @@ def load_ragged_time_series(filename, converter, delimiter=r'\s+'):
             value = []
 
         try:
-            converted_value = converter(value)
+            converted_value = np.array(value, dtype=dtype)
         except:
-            raise ValueError("Couldn't convert value {} using {} "
+            raise ValueError("Couldn't convert value {} using type {} "
                              "found at {}:{:d}:\n\t{}".format(
-                                 value, converter.__name__, filename, row,
+                                 value, dtype.__name__, filename, row,
                                  line))
         values.append(converted_value)
 
