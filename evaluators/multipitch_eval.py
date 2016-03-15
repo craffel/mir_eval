@@ -19,8 +19,8 @@ import mir_eval
 def process_arguments():
     '''Argparse function to get the program parameters'''
 
-    parser = argparse.ArgumentParser(description='mir_eval multipitch detection '
-                                                 'evaluation')
+    parser = argparse.ArgumentParser(description='mir_eval multipitch '
+                                                 'detection evaluation')
 
     parser.add_argument('-o',
                         dest='output_file',

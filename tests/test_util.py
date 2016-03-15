@@ -204,7 +204,7 @@ def test_validate_frequencies():
         np.array([2., 200.]))
     # Test for ValueError when events aren't 1-d arrays
     nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events,
+        ValueError, mir_eval.util.validate_frequencies,
         np.array([[100., 200.], [300., 400.]]))
 
 

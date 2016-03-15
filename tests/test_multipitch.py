@@ -104,8 +104,6 @@ def test_logscale_to_single_octave():
     ]
     actual = mir_eval.multipitch.logscale_to_single_octave(
         logscale_frequencies)
-    print actual
-    print expected
     assert __frequencies_equal(actual, expected)
 
 
@@ -142,7 +140,7 @@ def test_compute_num_true_positives():
     assert np.allclose(actual, expected, atol=A_TOL)
 
 
-def test_compute_accuracy_metrics():
+def test_accuracy_metrics():
     true_positives = np.array([1, 0, 0, 3, 2])
     n_ref = np.array([2, 0, 1, 3, 2])
     n_est = np.array([1, 0, 2, 3, 2])
@@ -153,7 +151,7 @@ def test_compute_accuracy_metrics():
 
     (actual_precision,
      actual_recall,
-     actual_accuarcy) = mir_eval.multipitch.compute_accuracy_metrics(
+     actual_accuarcy) = mir_eval.multipitch.accuracy(
          true_positives, n_ref, n_est)
 
     assert np.allclose(actual_precision, expected_precision, atol=A_TOL)
@@ -161,7 +159,7 @@ def test_compute_accuracy_metrics():
     assert np.allclose(actual_accuarcy, expected_accuracy, atol=A_TOL)
 
 
-def test_compute_error_score_metrics():
+def test_error_score_metrics():
     true_positives = np.array([1, 0, 0, 3, 2])
     n_ref = np.array([2, 0, 1, 3, 2])
     n_est = np.array([1, 0, 2, 3, 2])
@@ -174,7 +172,7 @@ def test_compute_error_score_metrics():
     (actual_esub,
      actual_emiss,
      actual_efa,
-     actual_etot) = mir_eval.multipitch.compute_error_score_metrics(
+     actual_etot) = mir_eval.multipitch.error_score(
          true_positives, n_ref, n_est)
 
     assert np.allclose(actual_esub, expected_esub, atol=A_TOL)

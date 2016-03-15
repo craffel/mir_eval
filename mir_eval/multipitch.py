@@ -1,19 +1,42 @@
 '''
 The goal of multiple f0 (multipitch) estimation and tracking is to identify
-the active fundamental frequencies in each time frame in a complex music
+all of the active fundamental frequencies in each time frame in a complex music
 signal.
-
-For a detailed explanation of the measures please refer to:
-    G. E. Poliner, and D. P. W. Ellis, "A Discriminative Model for Polyphonic
-    Piano Transription", EURASIP Journal on Advances in Signal Processing,
-    2007(1):154-163, Jan. 2007.
 
 Conventions
 -----------
+Multipitch estimates are represented by a time series, and a corresponding list
+of arrays of frequency estimates. Frequency estimates may have any number of
+frequency values, including (represented by an empty array). Time values are in
+units of seconds and frequency estimates are in units of Hz.
+
+Estimate time series should ideally be equal to reference time series, but if
+this is not the case, the estimate time series is resampled using a nearest
+neighbor interpolation to match the estimate. Time values in the estimate time
+series that are outside of the range of the reference time series are given
+null (empty array) frequencies.
+
+By default, a frequency is "correct" if it is within 0.5 semitones of a
+reference frequency. The metrics are based on those described in
+[#poliner2007]_ and [#bay2009]_.
 
 Metrics
 -------
+* :func:`mir_eval.multipitch.accuracy`: Precision, Recall, and Accuracy scores
+  based on the number of esimated frequencies which are sufficiently close to
+  the reference frequencies.
 
+* :func:`mir_eval.multipitch.error_score`: Substitution, Miss, False Alarm and
+  Total Error scores based on the number of esimated frequencies which are
+  sufficiently close to the reference frequencies.
+
+
+:references:
+    .. [#poliner2007] G. E. Poliner, and D. P. W. Ellis, "A Discriminative
+    Model for Polyphonic Piano Transription", EURASIP Journal on Advances in
+    Signal Processing, 2007(1):154-163, Jan. 2007.
+    .. [#bay2009] Bay, M., Ehmann, A. F., & Downie, J. S. (2009). Evaluation of
+    Multiple-F0 Estimation and Tracking Systems. In ISMIR (pp. 315-320).
 '''
 
 import numpy as np
@@ -23,12 +46,9 @@ from . import util
 import warnings
 
 
-# The maximum allowable time stamp (seconds)
-MAX_TIME = 30000.
-
-# The maximum allowable frequency (Hz)
-MAX_FREQ = 5000.
-MIN_FREQ = 20.
+MAX_TIME = 30000.  # The maximum allowable time stamp (seconds)
+MAX_FREQ = 5000.  # The maximum allowable frequency (Hz)
+MIN_FREQ = 20.  # The minimum allowable frequency (Hz)
 
 
 def validate(ref_time, ref_freqs, est_time, est_freqs):
@@ -120,10 +140,35 @@ def frequencies_to_logscale(frequencies):
 
 
 def logscale_to_single_octave(frequencies_logscale):
+    """Wrap log scale frequencies to a single octave.
+
+    Parameters
+    ----------
+    frequencies_logscale : list of np.ndarrays
+        Log scale frequency values
+
+    Returns
+    -------
+    frequencies_logscale_chroma : list of np.ndarrays
+        Log scale frequency values wrapped to one octave.
+
+    """
     return [np.mod(freqs, 12) for freqs in frequencies_logscale]
 
 
 def compute_num_freqs(frequencies):
+    """Computes the number of frequencies for each time point.
+
+    Parameters
+    ----------
+    frequencies : list of np.ndarrays
+        Frequency values
+
+    Returns
+    -------
+    num_freqs : np.ndarray
+        Number of frequencies at each time point.
+    """
     return np.array([f.size for f in frequencies])
 
 
@@ -161,7 +206,29 @@ def compute_num_true_positives(ref_freqs, est_freqs, window=0.5):
     return true_positives
 
 
-def compute_accuracy_metrics(true_positives, n_ref, n_est):
+def accuracy(true_positives, n_ref, n_est):
+    """Compute accuracy metrics.
+
+    Parameters
+    ----------
+    true_positives : np.ndarray
+        Array containing the number of true positives at each time point.
+    n_ref : np.ndarray
+        Array containing the number of reference frequencies at each time
+        point.
+    n_est : np.ndarray
+        Array containing the number of estimate frequencies at each time point.
+
+    Returns
+    -------
+    precision : float
+        sum(true_positives)/sum(n_est)
+    recall : float
+        sum(true_positives)/sum(n_ref)
+    acc : float
+        sum(true_positives)/sum(n_est + n_ref - true_positives)
+
+    """
     true_positive_sum = float(true_positives.sum())
 
     n_est_sum = n_est.sum()
@@ -180,14 +247,38 @@ def compute_accuracy_metrics(true_positives, n_ref, n_est):
 
     acc_denom = (n_est + n_ref - true_positives).sum()
     if acc_denom > 0:
-        accuracy = true_positive_sum/acc_denom
+        acc = true_positive_sum/acc_denom
     else:
-        accuracy = 0.0
+        acc = 0.0
 
-    return precision, recall, accuracy
+    return precision, recall, acc
 
 
-def compute_error_score_metrics(true_positives, n_ref, n_est):
+def error_score(true_positives, n_ref, n_est):
+    """Compute error score metrics.
+
+    Parameters
+    ----------
+    true_positives : np.ndarray
+        Array containing the number of true positives at each time point.
+    n_ref : np.ndarray
+        Array containing the number of reference frequencies at each time
+        point.
+    n_est : np.ndarray
+        Array containing the number of estimate frequencies at each time point.
+
+    Returns
+    -------
+    e_sub : float
+        Substitution error
+    e_miss : float
+        Miss error
+    e_fa : float
+        False alarm error
+    e_tot : float
+        Total error
+
+    """
     n_ref_sum = float(n_ref.sum())
 
     if n_ref_sum == 0:
@@ -210,13 +301,47 @@ def compute_error_score_metrics(true_positives, n_ref, n_est):
 
 
 def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
+    """Evaluate two multipitch (multi-f0) transcriptions, where the first is
+    treated as the reference (ground truth) and the second as the estimate to
+    be evaluated (prediction).
 
+    Examples
+    --------
+    >>> ref_time, ref_freq = mir_eval.io.load_ragged_time_series('ref.txt')
+    >>> est_time, est_freq = mir_eval.io.load_ragged_time_series('est.txt')
+    >>> scores = mir_eval.multipitch.evaluate(ref_time, ref_freq,
+    ...                                       est_time, est_freq)
+
+    Parameters
+    ----------
+    ref_time : np.ndarray
+        Time of each reference frequency value
+    ref_freqs : list of np.ndarrays
+        List of np.ndarrays of reference frequency values
+    est_time : np.ndarray
+        Time of each estimated frequency value
+    est_freqs : list of np.ndarrays
+        List of np.ndarrays of estimate frequency values
+    kwargs
+        Additional keyword arguments which will be passed to the
+        appropriate metric or preprocessing functions.
+
+    Returns
+    -------
+    scores : dict
+        Dictionary of scores, where the key is the metric name (str) and
+        the value is the (float) score achieved.
+
+    """
     validate(ref_time, ref_freqs, est_time, est_freqs)
 
-    est_freqs_resampled = resample_multipitch(est_time, est_freqs, ref_time)
+    if est_time.size != ref_time.size or not np.allclose(est_time, ref_time):
+        warnings.warn("Estimate times not equal to reference times. "
+                      "Resampling to common time base.")
+        est_freqs = resample_multipitch(est_time, est_freqs, ref_time)
 
     ref_freqs_log = frequencies_to_logscale(ref_freqs)
-    est_freqs_log = frequencies_to_logscale(est_freqs_resampled)
+    est_freqs_log = frequencies_to_logscale(est_freqs)
 
     ref_freqs_log_chroma = logscale_to_single_octave(ref_freqs_log)
     est_freqs_log_chroma = logscale_to_single_octave(est_freqs_log)
@@ -235,24 +360,24 @@ def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
 
     (scores['Precision'],
      scores['Recall'],
-     scores['Accuracy']) = compute_accuracy_metrics(
+     scores['Accuracy']) = accuracy(
          true_positives, n_ref, n_est)
 
     (scores['Chroma Precision'],
      scores['Chroma Recall'],
-     scores['Chroma Accuracy']) = compute_accuracy_metrics(
+     scores['Chroma Accuracy']) = accuracy(
          true_positives_chroma, n_ref, n_est)
 
     (scores['Substitution Error'],
      scores['Miss Error'],
      scores['False Alarm Error'],
-     scores['Total Error']) = compute_error_score_metrics(
+     scores['Total Error']) = error_score(
          true_positives, n_ref, n_est)
 
     (scores['Chroma Substitution Error'],
      scores['Chroma Miss Error'],
      scores['Chroma False Alarm Error'],
-     scores['Chroma Total Error']) = compute_error_score_metrics(
+     scores['Chroma Total Error']) = error_score(
          true_positives_chroma, n_ref, n_est)
 
     return scores
