@@ -131,4 +131,4 @@ def test_load_ragged_time_series():
         f.write('a 10 30')
         f.seek(0)
         nose.tools.assert_raises(
-            ValueError, mir_eval.io.load_ragged_time_series, f, list)    
+            ValueError, mir_eval.io.load_ragged_time_series, f, list)
