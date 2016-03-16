@@ -212,6 +212,14 @@ def test_validate_frequencies():
         ValueError, mir_eval.util.validate_frequencies,
         np.array([[-100., 200.], [300., 400.]]), 5000., 20.,
         allow_negatives=False)
+    # Test for ValueError when max_freq is violated and allow_negatives=True
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_frequencies,
+        np.array([100., -100000.]), 5000., 20., allow_negatives=True)
+    # Test for ValueError when min_freq is violated and allow_negatives=True
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_frequencies,
+        np.array([-2., 200.]), 5000., 20., allow_negatives=True)
 
 
 def test_has_kwargs():

@@ -119,16 +119,26 @@ def test_load_valued_intervals():
 def test_load_ragged_time_series():
     # Test for ValueError when a non-string or file handle is passed
     nose.tools.assert_raises(
-        ValueError, mir_eval.io.load_ragged_time_series, None, float)
+        ValueError, mir_eval.io.load_ragged_time_series, None, float,
+        header=False)
     # Test for a value error on conversion failure
     with tempfile.TemporaryFile('r+') as f:
         f.write('10 a 30')
         f.seek(0)
         nose.tools.assert_raises(
-            ValueError, mir_eval.io.load_ragged_time_series, f, float)
+            ValueError, mir_eval.io.load_ragged_time_series, f, float,
+            header=False)
     # Test for a value error on invalid time stamp
     with tempfile.TemporaryFile('r+') as f:
         f.write('a 10 30')
         f.seek(0)
         nose.tools.assert_raises(
-            ValueError, mir_eval.io.load_ragged_time_series, f, int)
+            ValueError, mir_eval.io.load_ragged_time_series, f, int,
+            header=False)
+    # Test for a value error on invalid time stamp with header
+    with tempfile.TemporaryFile('r+') as f:
+        f.write('x y z\na 10 30')
+        f.seek(0)
+        nose.tools.assert_raises(
+            ValueError, mir_eval.io.load_ragged_time_series, f, int,
+            header=True)
