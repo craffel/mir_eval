@@ -45,14 +45,17 @@ def __scores_equal(score_a, score_b):
 
 def test_resample_multif0():
     times = np.array([0.00, 0.01, 0.02, 0.03])
+    empty_times = np.array([])
     freqs = [
         np.array([200.]),
         np.array([]),
         np.array([300., 400., 500.]),
         np.array([300., 500.])
     ]
+    empty_freqs = []
     target_times1 = times
     target_times2 = np.array([0.001, 0.002, 0.01, 0.029, 0.05])
+    target_times3 = empty_times
 
     expected_freqs1 = freqs
     expected_freqs2 = [
@@ -62,14 +65,22 @@ def test_resample_multif0():
         np.array([300., 500.]),
         np.array([])
     ]
+    expected_freqs3 = empty_freqs
+    expected_freqs4 = [np.array([])]*4
 
     actual_freqs1 = mir_eval.multipitch.resample_multipitch(
         times, freqs, target_times1)
     actual_freqs2 = mir_eval.multipitch.resample_multipitch(
         times, freqs, target_times2)
+    actual_freqs3 = mir_eval.multipitch.resample_multipitch(
+        times, freqs, target_times3)
+    actual_freqs4 = mir_eval.multipitch.resample_multipitch(
+        empty_times, empty_freqs, target_times1)
 
     assert __frequencies_equal(actual_freqs1, expected_freqs1)
     assert __frequencies_equal(actual_freqs2, expected_freqs2)
+    assert __frequencies_equal(actual_freqs3, expected_freqs3)
+    assert __frequencies_equal(actual_freqs4, expected_freqs4)
 
 
 def test_frequencies_to_logscale():
@@ -188,21 +199,6 @@ def unit_test_evaluate():
     est_time = np.array([0.0, 0.1])
     est_freqs = [np.array([200.]), np.array([])]
 
-    # test all inputs empty
-    nose.tools.assert_raises(
-        ValueError, mir_eval.multipitch.evaluate,
-        empty_array, [], empty_array, [])
-
-    # reference empty
-    nose.tools.assert_raises(
-        ValueError, mir_eval.multipitch.evaluate,
-        empty_array, [], est_time, est_freqs)
-
-    # estimate empty
-    nose.tools.assert_raises(
-        ValueError, mir_eval.multipitch.evaluate,
-        ref_time, ref_freqs, empty_array, [])
-
     # ref sizes unequal
     nose.tools.assert_raises(
         ValueError, mir_eval.multipitch.evaluate,
@@ -222,6 +218,31 @@ def unit_test_evaluate():
         assert len(w) == 6
         assert issubclass(w[-1].category, UserWarning)
         assert str(w[-1].message) == "Reference frequencies are all empty."
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        # Test for warnings on empty values
+        # test all inputs empty
+        mir_eval.multipitch.evaluate(empty_array, [], empty_array, [])
+        assert len(w) == 10
+        assert issubclass(w[-1].category, UserWarning)
+        assert str(w[-1].message) == "Reference frequencies are all empty."
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        # reference empty
+        mir_eval.multipitch.evaluate(empty_array, [], est_time, est_freqs)
+        assert len(w) == 9
+        assert issubclass(w[-1].category, UserWarning)
+        assert str(w[-1].message) == "Reference frequencies are all empty."
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        # estimate empty
+        mir_eval.multipitch.evaluate(ref_time, ref_freqs, empty_array, [])
+        assert len(w) == 5
+        assert issubclass(w[-1].category, UserWarning)
+        assert str(w[-1].message) == "Estimate frequencies are all empty."
 
         expected_score = {
             'Precision': 0.0,

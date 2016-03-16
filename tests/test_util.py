@@ -167,15 +167,15 @@ def test_validate_intervals():
         np.array([[1.], [2.5], [5.]]))
     # Test for ValueError when times are negative
     nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events,
+        ValueError, mir_eval.util.validate_intervals,
         np.array([[1., -2.], [2.5, 3.], [5., 6.]]))
     # Test for ValueError when duration is zero
     nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events,
+        ValueError, mir_eval.util.validate_intervals,
         np.array([[1., 2.], [2.5, 2.5], [5., 6.]]))
     # Test for ValueError when duration is negative
     nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events,
+        ValueError, mir_eval.util.validate_intervals,
         np.array([[1., 2.], [2.5, 1.5], [5., 6.]]))
 
 
@@ -197,15 +197,21 @@ def test_validate_frequencies():
     # Test for ValueError when max_freq is violated
     nose.tools.assert_raises(
         ValueError, mir_eval.util.validate_frequencies,
-        np.array([100., 100000.]))
+        np.array([100., 100000.]), 5000., 20.)
     # Test for ValueError when min_freq is violated
     nose.tools.assert_raises(
         ValueError, mir_eval.util.validate_frequencies,
-        np.array([2., 200.]))
+        np.array([2., 200.]), 5000., 20.)
     # Test for ValueError when events aren't 1-d arrays
     nose.tools.assert_raises(
         ValueError, mir_eval.util.validate_frequencies,
-        np.array([[100., 200.], [300., 400.]]))
+        np.array([[100., 200.], [300., 400.]]), 5000., 20.)
+    # Test for ValueError when allow_negatives is false and negative values
+    # are passed
+    nose.tools.assert_raises(
+        ValueError, mir_eval.util.validate_frequencies,
+        np.array([[-100., 200.], [300., 400.]]), 5000., 20.,
+        allow_negatives=False)
 
 
 def test_has_kwargs():

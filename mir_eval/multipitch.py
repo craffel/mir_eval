@@ -5,10 +5,10 @@ signal.
 
 Conventions
 -----------
-Multipitch estimates are represented by a time series, and a corresponding list
+Multipitch estimates are represented by a timebase and a corresponding list
 of arrays of frequency estimates. Frequency estimates may have any number of
-frequency values, including (represented by an empty array). Time values are in
-units of seconds and frequency estimates are in units of Hz.
+frequency values, including 0 (represented by an empty array). Time values are
+in units of seconds and frequency estimates are in units of Hz.
 
 Estimate time series should ideally be equal to reference time series, but if
 this is not the case, the estimate time series is resampled using a nearest
@@ -17,7 +17,14 @@ series that are outside of the range of the reference time series are given
 null (empty array) frequencies.
 
 By default, a frequency is "correct" if it is within 0.5 semitones of a
-reference frequency. The metrics are based on those described in
+reference frequency. Frequency values are compared by first mapping them to
+log-2 semitone space, where the distance between semitones is constant.
+Chroma-wrapped frequency values are computed by taking the log-2 frequency
+values modulo 12 to map them down to a single octave. A chroma-wrapped
+frequency estimate is correct if it's single-octave value is within 0.5
+semitones of the single-octave reference frequency.
+
+The metrics are based on those described in
 [#poliner2007]_ and [#bay2009]_.
 
 Metrics
@@ -41,7 +48,7 @@ Metrics
 
 import numpy as np
 import collections
-from scipy.interpolate import interp1d
+import scipy.interpolate
 from . import util
 import warnings
 
@@ -58,22 +65,30 @@ def validate(ref_time, ref_freqs, est_time, est_freqs):
     ----------
     ref_time : np.ndarray
         reference time stamps in seconds
-    ref_freqs : list of np.ndarrays
+    ref_freqs : list of np.ndarray
         reference frequencies in Hz
     est_time : np.ndarray
         estimate time stamps in seconds
-    est_freqs : list of np.ndarrays
+    est_freqs : list of np.ndarray
         estimated frequencies in Hz
 
     """
+
+    util.validate_events(ref_time, max_time=MAX_TIME)
+    util.validate_events(est_time, max_time=MAX_TIME)
+
     if ref_time.size == 0:
-        raise ValueError("Reference frequencies are empty.")
+        warnings.warn("Reference times are empty.")
+    if ref_time.ndim != 1:
+        raise ValueError("Reference times have invalid dimension")
     if len(ref_freqs) == 0:
-        raise ValueError("Reference frequencies are empty.")
+        warnings.warn("Reference frequencies are empty.")
     if est_time.size == 0:
-        raise ValueError("Estimated times are empty.")
+        warnings.warn("Estimated times are empty.")
+    if est_time.ndim != 1:
+        raise ValueError("Estimated times have invalid dimension")
     if len(est_freqs) == 0:
-        raise ValueError("Estimated frequencies are empty.")
+        warnings.warn("Estimated frequencies are empty.")
     if ref_time.size != len(ref_freqs):
         raise ValueError('Reference times and frequencies have unequal '
                          'lengths.')
@@ -81,25 +96,24 @@ def validate(ref_time, ref_freqs, est_time, est_freqs):
         raise ValueError('Estimate times and frequencies have unequal '
                          'lengths.')
 
-    util.validate_events(ref_time, max_time=MAX_TIME)
-    util.validate_events(est_time, max_time=MAX_TIME)
-
     for freq in ref_freqs:
-        util.validate_frequencies(freq, max_freq=MAX_FREQ, min_freq=MIN_FREQ)
+        util.validate_frequencies(freq, max_freq=MAX_FREQ, min_freq=MIN_FREQ,
+                                  allow_negatives=False)
 
     for freq in est_freqs:
-        util.validate_frequencies(freq)
+        util.validate_frequencies(freq, max_freq=MAX_FREQ, min_freq=MIN_FREQ,
+                                  allow_negatives=False)
 
 
 def resample_multipitch(times, frequencies, target_times):
     """Resamples multipitch time series to a new timescale. Values in
-    'target_times' outside the range of 'times' return no pitch estimate.
+    `target_times` outside the range of `times` return no pitch estimate.
 
     Parameters
     ----------
-    times : np.ndarrayre
+    times : np.ndarray
         Array of time stamps
-    frequencies : list of np.ndarrays
+    frequencies : list of np.ndarray
         List of np.ndarrays of frequency values
     target_times : np.ndarray
         Array of target time stamps
@@ -109,14 +123,31 @@ def resample_multipitch(times, frequencies, target_times):
     frequencies_resampled : list of lists
         Frequency list of lists resampled to new timebase
     """
+    if target_times.size == 0:
+        return []
+
+    if times.size == 0:
+        return [np.array([])]*len(target_times)
+
     n_times = len(frequencies)
 
+    # scipy's interpolate doesn't handle ragged arrays. Instead, we interpolate
+    # the frequency index and then map back to the frequency values.
+    # This only works because we're using a nearest neighbor interpolator!
     frequency_index = np.arange(0, n_times)
-    new_frequency_index = interp1d(
+
+    # assume_sorted=True for efficiency
+    # since we're interpolating the index, fill_value is set to the first index
+    # that is out of range. We handle this in the next line.
+    new_frequency_index = scipy.interpolate.interp1d(
         times, frequency_index, kind='nearest', bounds_error=False,
         assume_sorted=True, fill_value=n_times)(target_times)
 
+    # create array of frequencies plus additional empty element at the end for
+    # target time stamps that are out of the interpolation range
     freq_vals = frequencies + [np.array([])]
+
+    # map interpolated indices back to frequency values
     frequencies_resampled = [
         freq_vals[i] for i in new_frequency_index.astype(int)]
 
@@ -128,12 +159,12 @@ def frequencies_to_logscale(frequencies):
 
     Parameters
     ----------
-    frequencies : list of np.ndarrays
+    frequencies : list of np.ndarray
         Original frequency values
 
     Returns
     -------
-    frequencies_logscale : list of np.ndarrays
+    frequencies_logscale : list of np.ndarray
         Frequency values in semitone log scale.
     """
     return [12.0*np.log2(freqs) for freqs in frequencies]
@@ -144,12 +175,12 @@ def logscale_to_single_octave(frequencies_logscale):
 
     Parameters
     ----------
-    frequencies_logscale : list of np.ndarrays
+    frequencies_logscale : list of np.ndarray
         Log scale frequency values
 
     Returns
     -------
-    frequencies_logscale_chroma : list of np.ndarrays
+    frequencies_logscale_chroma : list of np.ndarray
         Log scale frequency values wrapped to one octave.
 
     """
@@ -161,7 +192,7 @@ def compute_num_freqs(frequencies):
 
     Parameters
     ----------
-    frequencies : list of np.ndarrays
+    frequencies : list of np.ndarray
         Frequency values
 
     Returns
@@ -174,14 +205,14 @@ def compute_num_freqs(frequencies):
 
 def compute_num_true_positives(ref_freqs, est_freqs, window=0.5):
     """Compute the number of true positives in an estimate given a reference.
-    A frequency is correct if it is within a semitone of the
+    A frequency is correct if it is within a quartertone of the
     correct frequency.
 
     Parameters
     ----------
-    ref_freqs : list of np.ndarrays
+    ref_freqs : list of np.ndarray
         reference frequencies in semitones
-    est_freqs : list of np.ndarrays
+    est_freqs : list of np.ndarray
         estimated frequencies in semitones
     window : float
         Window size, in semitones
@@ -197,11 +228,9 @@ def compute_num_true_positives(ref_freqs, est_freqs, window=0.5):
     true_positives = np.zeros((n_frames, ))
 
     for i, (ref_frame, est_frame) in enumerate(zip(ref_freqs, est_freqs)):
-        if len(ref_frame) == 0 or len(est_frame) == 0:
-            true_positives[i] = 0.0
-        else:
-            matching = util.match_events(ref_frame, est_frame, window)
-            true_positives[i] = len(matching)
+        # match frequency events within tolerance window in semitones
+        matching = util.match_events(ref_frame, est_frame, window)
+        true_positives[i] = len(matching)
 
     return true_positives
 
@@ -285,16 +314,22 @@ def error_score(true_positives, n_ref, n_est):
         warnings.warn("Reference frequencies are all empty.")
         return 0., 0., 0., 0.
 
+    # Substitution error
     e_sub = (np.min([n_ref, n_est], axis=0) - true_positives).sum()/n_ref_sum
 
+    # compute the max of (n_ref - n_est) and 0
     e_miss_numerator = n_ref - n_est
     e_miss_numerator[e_miss_numerator < 0] = 0
+    # Miss error
     e_miss = e_miss_numerator.sum()/n_ref_sum
 
+    # compute the max of (n_est - n_ref) and 0
     e_fa_numerator = n_est - n_ref
     e_fa_numerator[e_fa_numerator < 0] = 0
+    # False alarm error
     e_fa = e_fa_numerator.sum()/n_ref_sum
 
+    # total error
     e_tot = (np.max([n_ref, n_est], axis=0) - true_positives).sum()/n_ref_sum
 
     return e_sub, e_miss, e_fa, e_tot
@@ -316,11 +351,11 @@ def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
     ----------
     ref_time : np.ndarray
         Time of each reference frequency value
-    ref_freqs : list of np.ndarrays
+    ref_freqs : list of np.ndarray
         List of np.ndarrays of reference frequency values
     est_time : np.ndarray
         Time of each estimated frequency value
-    est_freqs : list of np.ndarrays
+    est_freqs : list of np.ndarray
         List of np.ndarrays of estimate frequency values
     kwargs
         Additional keyword arguments which will be passed to the

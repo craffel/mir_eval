@@ -686,7 +686,8 @@ def validate_events(events, max_time=30000.):
         raise ValueError('Events should be in increasing order.')
 
 
-def validate_frequencies(frequencies, max_freq=5000., min_freq=20.):
+def validate_frequencies(frequencies, max_freq, min_freq,
+                         allow_negatives=False):
     """Checks that a 1-d frequency ndarray is well-formed, and raises
     errors if not. Allows negative frequency values.
 
@@ -700,8 +701,12 @@ def validate_frequencies(frequencies, max_freq=5000., min_freq=20.):
     min_freq : float
         If a frequency is found below this pitch, a ValueError will be raised.
         (Default value = 20.)
+    allow_negatives : Bool
 
     """
+    # If flag is true, map frequencies to their absolute value.
+    if allow_negatives:
+        frequencies = np.abs(frequencies)
     # Make sure no frequency values are huge
     if (np.abs(frequencies) > max_freq).any():
         raise ValueError('A frequency of {} was found which is greater than '
