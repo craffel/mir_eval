@@ -235,7 +235,7 @@ def compute_num_true_positives(ref_freqs, est_freqs, window=0.5):
     return true_positives
 
 
-def accuracy(true_positives, n_ref, n_est):
+def compute_accuracy(true_positives, n_ref, n_est):
     """Compute accuracy metrics.
 
     Parameters
@@ -283,7 +283,7 @@ def accuracy(true_positives, n_ref, n_est):
     return precision, recall, acc
 
 
-def error_score(true_positives, n_ref, n_est):
+def compute_err_score(true_positives, n_ref, n_est):
     """Compute error score metrics.
 
     Parameters
@@ -335,6 +335,106 @@ def error_score(true_positives, n_ref, n_est):
     return e_sub, e_miss, e_fa, e_tot
 
 
+def metrics(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
+    """Compute multipitch metrics. All metrics are computed at the 'macro' level
+    such that the frame true positive/false positive/false negative rates are
+    summed across time and the metrics are computed on the combined values.
+
+    Examples
+    --------
+    >>> ref_time, ref_freqs = mir_eval.io.load_ragged_time_series(
+    ...     'reference.txt')
+    >>> est_time, est_freqs = mir_eval.io.load_ragged_time_series(
+    ...     'estimated.txt')
+    >>> metris_tuple = mir_eval.multipitch.metrics(
+    ...     ref_time, ref_freqs, est_time, est_freqs)
+
+    Parameters
+    ----------
+    ref_time : np.ndarray
+        Time of each reference frequency value
+    ref_freqs : list of np.ndarray
+        List of np.ndarrays of reference frequency values
+    est_time : np.ndarray
+        Time of each estimated frequency value
+    est_freqs : list of np.ndarray
+        List of np.ndarrays of estimate frequency values
+    kwargs
+        Additional keyword arguments which will be passed to the
+        appropriate metric or preprocessing functions.
+
+    Returns
+    -------
+    precision : float
+        Precision (TP/(TP + FP))
+    recall : float
+        Recall (TP/(TP + FN))
+    accuracy : float
+        Accuracy (TP/(TP + FP + FN))
+    e_sub : float
+        Substitution error
+    e_miss : float
+        Miss error
+    e_fa : float
+        False alarm error
+    e_tot : float
+        Total error
+    precision_chroma : float
+        Chroma precision
+    recall_chroma : float
+        Chroma recall
+    accuracy_chroma : float
+        Chroma accuracy
+    e_sub_chroma : float
+        Chroma substitution error
+    e_miss_chroma : float
+        Chroma miss error
+    e_fa_chroma : float
+        Chroma false alarm error
+    e_tot_chroma : float
+        Chroma total error
+
+    """
+    validate(ref_time, ref_freqs, est_time, est_freqs)
+
+    if est_time.size != ref_time.size or not np.allclose(est_time, ref_time):
+        warnings.warn("Estimate times not equal to reference times. "
+                      "Resampling to common time base.")
+        est_freqs = resample_multipitch(est_time, est_freqs, ref_time)
+
+    ref_freqs_log = frequencies_to_logscale(ref_freqs)
+    est_freqs_log = frequencies_to_logscale(est_freqs)
+
+    ref_freqs_log_chroma = logscale_to_single_octave(ref_freqs_log)
+    est_freqs_log_chroma = logscale_to_single_octave(est_freqs_log)
+
+    n_ref = compute_num_freqs(ref_freqs_log)
+    n_est = compute_num_freqs(est_freqs_log)
+
+    true_positives = util.filter_kwargs(
+        compute_num_true_positives, ref_freqs_log, est_freqs_log, **kwargs)
+
+    true_positives_chroma = util.filter_kwargs(
+        compute_num_true_positives, ref_freqs_log_chroma, est_freqs_log_chroma,
+        **kwargs)
+
+    precision, recall, accuracy = compute_accuracy(
+        true_positives, n_ref, n_est)
+
+    e_sub, e_miss, e_fa, e_tot = compute_err_score(
+        true_positives, n_ref, n_est)
+
+    precision_chroma, recall_chroma, accuracy_chroma = compute_accuracy(
+        true_positives_chroma, n_ref, n_est)
+
+    e_sub_chroma, e_miss_chroma, e_fa_chroma, e_tot_chroma = compute_err_score(
+        true_positives_chroma, n_ref, n_est)
+
+    return (precision, recall, accuracy, e_sub, e_miss, e_fa, e_tot,
+            precision_chroma, recall_chroma, accuracy_chroma, e_sub_chroma,
+            e_miss_chroma, e_fa_chroma, e_tot_chroma)
+
+
 def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
     """Evaluate two multipitch (multi-f0) transcriptions, where the first is
     treated as the reference (ground truth) and the second as the estimate to
@@ -368,51 +468,22 @@ def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
         the value is the (float) score achieved.
 
     """
-    validate(ref_time, ref_freqs, est_time, est_freqs)
-
-    if est_time.size != ref_time.size or not np.allclose(est_time, ref_time):
-        warnings.warn("Estimate times not equal to reference times. "
-                      "Resampling to common time base.")
-        est_freqs = resample_multipitch(est_time, est_freqs, ref_time)
-
-    ref_freqs_log = frequencies_to_logscale(ref_freqs)
-    est_freqs_log = frequencies_to_logscale(est_freqs)
-
-    ref_freqs_log_chroma = logscale_to_single_octave(ref_freqs_log)
-    est_freqs_log_chroma = logscale_to_single_octave(est_freqs_log)
-
-    n_ref = compute_num_freqs(ref_freqs_log)
-    n_est = compute_num_freqs(est_freqs_log)
-
-    true_positives = util.filter_kwargs(
-        compute_num_true_positives, ref_freqs_log, est_freqs_log, **kwargs)
-
-    true_positives_chroma = util.filter_kwargs(
-        compute_num_true_positives, ref_freqs_log_chroma, est_freqs_log_chroma,
-        **kwargs)
-
     scores = collections.OrderedDict()
 
     (scores['Precision'],
      scores['Recall'],
-     scores['Accuracy']) = accuracy(
-         true_positives, n_ref, n_est)
-
-    (scores['Chroma Precision'],
-     scores['Chroma Recall'],
-     scores['Chroma Accuracy']) = accuracy(
-         true_positives_chroma, n_ref, n_est)
-
-    (scores['Substitution Error'],
+     scores['Accuracy'],
+     scores['Substitution Error'],
      scores['Miss Error'],
      scores['False Alarm Error'],
-     scores['Total Error']) = error_score(
-         true_positives, n_ref, n_est)
-
-    (scores['Chroma Substitution Error'],
+     scores['Total Error'],
+     scores['Chroma Precision'],
+     scores['Chroma Recall'],
+     scores['Chroma Accuracy'],
+     scores['Chroma Substitution Error'],
      scores['Chroma Miss Error'],
      scores['Chroma False Alarm Error'],
-     scores['Chroma Total Error']) = error_score(
-         true_positives_chroma, n_ref, n_est)
+     scores['Chroma Total Error']) = util.filter_kwargs(
+         metrics, ref_time, ref_freqs, est_time, est_freqs, **kwargs)
 
     return scores
