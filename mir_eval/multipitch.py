@@ -235,10 +235,11 @@ def compute_num_true_positives(ref_freqs, est_freqs, window=0.5, chroma=False):
             # match chroma-wrapped frequency events
             matching = util.match_events(
                 ref_frame, est_frame, window,
-                outer_distance=util._outer_distance_mod_n)
+                distance=util._outer_distance_mod_n)
         else:
             # match frequency events within tolerance window in semitones
             matching = util.match_events(ref_frame, est_frame, window)
+
         true_positives[i] = len(matching)
 
     return true_positives

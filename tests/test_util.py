@@ -160,6 +160,52 @@ def test_bipartite_match():
         assert v in G[k] or k in G[v]
 
 
+def test_outer_distance_mod_n():
+    ref = [1., 2., 3.]
+    est = [1.1, 6., 1.9, 5., 10.]
+    expected = np.array([
+        [0.1, 5., 0.9, 4., 3.],
+        [0.9, 4., 0.1, 3., 4.],
+        [1.9, 3., 1.1, 2., 5.]])
+    actual = mir_eval.util._outer_distance_mod_n(ref, est)
+    assert np.allclose(actual, expected)
+
+    ref = [13., 14., 15.]
+    est = [1.1, 6., 1.9, 5., 10.]
+    expected = np.array([
+        [0.1, 5., 0.9, 4., 3.],
+        [0.9, 4., 0.1, 3., 4.],
+        [1.9, 3., 1.1, 2., 5.]])
+    actual = mir_eval.util._outer_distance_mod_n(ref, est)
+    assert np.allclose(actual, expected)
+
+
+def test_outer_distance():
+    ref = [1., 2., 3.]
+    est = [1.1, 6., 1.9, 5., 10.]
+    expected = np.array([
+        [0.1, 5., 0.9, 4., 9.],
+        [0.9, 4., 0.1, 3., 8.],
+        [1.9, 3., 1.1, 2., 7.]])
+    actual = mir_eval.util._outer_distance(ref, est)
+    assert np.allclose(actual, expected)
+
+
+def test_match_events():
+    ref = [1., 2., 3.]
+    est = [1.1, 6., 1.9, 5., 10.]
+    expected = [(0, 0), (1, 2)]
+    actual = mir_eval.util.match_events(ref, est, 0.5)
+    assert actual == expected
+
+    ref = [1., 2., 3., 11.9]
+    est = [1.1, 6., 1.9, 5., 10., 0.]
+    expected = [(0, 0), (1, 2), (3, 5)]
+    actual = mir_eval.util.match_events(
+        ref, est, 0.5, distance=mir_eval.util._outer_distance_mod_n)
+    assert actual == expected
+
+
 def test_validate_intervals():
     # Test for ValueError when interval shape is invalid
     nose.tools.assert_raises(

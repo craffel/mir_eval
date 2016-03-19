@@ -148,6 +148,7 @@ def test_compute_num_true_positives():
     actual = mir_eval.multipitch.compute_num_true_positives(
         ref_freqs, est_freqs)
     assert np.allclose(actual, expected, atol=A_TOL)
+
     ref_freqs_chroma = [
         np.array([0., 1.5]),
         np.array([]),

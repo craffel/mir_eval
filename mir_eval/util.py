@@ -589,13 +589,60 @@ def _bipartite_match(graph):
             recurse(v)
 
 
-def match_events(ref, est, window):
+def _outer_distance_mod_n(ref, est, modulus=12):
+    """Compute the absolute outer distance modulo n.
+    Using this distance, d(11, 0) = 1 (modulo 12)
+
+    Parameters
+    ----------
+    ref : np.ndarray, shape=(n,)
+        Array of reference values.
+    est : np.ndarray, shape=(m,)
+        Array of estimated values.
+    modulus : int
+        The modulus.
+        12 by default for octave equivalence.
+
+    Returns
+    -------
+    outer_distance : np.ndarray, shape=(n, m)
+        The outer circular distance modulo n.
+
+    """
+    ref_mod_n = np.mod(ref, modulus)
+    est_mod_n = np.mod(est, modulus)
+    abs_diff = np.abs(np.subtract.outer(ref_mod_n, est_mod_n))
+    return np.minimum(abs_diff, modulus - abs_diff)
+
+
+def _outer_distance(ref, est):
+    """Compute the absolute outer distance.
+    Computes |ref[i] - est[j]| for each i and j.
+
+    Parameters
+    ----------
+    ref : np.ndarray, shape=(n,)
+        Array of reference values.
+    est : np.ndarray, shape=(m,)
+        Array of estimated values.
+
+    Returns
+    -------
+    outer_distance : np.ndarray, shape=(n, m)
+        The outer 1d-euclidean distance.
+
+    """
+    return np.abs(np.subtract.outer(ref, est))
+
+
+def match_events(ref, est, window, distance=_outer_distance):
     """Compute a maximum matching between reference and estimated event times,
     subject to a window constraint.
 
     Given two lists of event times ``ref`` and ``est``, we seek the largest set
-    of correspondences ``(ref[i], est[j])`` such that ``|ref[i] - est[j]| <=
-    window``, and each ``ref[i]`` and ``est[j]`` is matched at most once.
+    of correspondences ``(ref[i], est[j])`` such that
+    ``distance(ref[i], est[j]) <= window``, and each
+    ``ref[i]`` and ``est[j]`` is matched at most once.
 
     This is useful for computing precision/recall metrics in beat tracking,
     onset detection, and segmentation.
@@ -603,11 +650,14 @@ def match_events(ref, est, window):
     Parameters
     ----------
     ref : np.ndarray, shape=(n,)
-        Array of reference event times
+        Array of reference values
     est : np.ndarray, shape=(m,)
-        Array of estimated event times
+        Array of estimated values
     window : float > 0
         Size of the window.
+    distance : function
+        function that computes the outer distance of ref and est.
+        By default uses _outer_distance, |ref[i] - est[j]|
 
     Returns
     -------
@@ -616,9 +666,11 @@ def match_events(ref, est, window):
         ``matching[i] == (i, j)`` where ``ref[i]`` matches ``est[j]``.
 
     """
+    if distance is None:
+        distance = _outer_distance
 
     # Compute the indices of feasible pairings
-    hits = np.where(np.abs(np.subtract.outer(ref, est)) <= window)
+    hits = np.where(distance(ref, est) <= window)
 
     # Construct the graph input
     G = {}
