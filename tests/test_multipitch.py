@@ -83,38 +83,37 @@ def test_resample_multif0():
     assert __frequencies_equal(actual_freqs4, expected_freqs4)
 
 
-def test_frequencies_to_logscale():
+def test_frequencies_to_midi():
     frequencies = [
-        np.array([256.]),
+        np.array([440.]),
         np.array([]),
-        np.array([362.03867196751236, 128., 512.]),
+        np.array([220., 660., 512.]),
         np.array([300., 512.])
     ]
     expected = [
-        np.array([96.]),
+        np.array([69.]),
         np.array([]),
-        np.array([102., 84., 108.]),
-        np.array([98.745824285950576, 108.])
+        np.array([57., 76.01955000865388, 71.623683437704088]),
+        np.array([62.369507723654657, 71.623683437704088])
     ]
-    actual = mir_eval.multipitch.frequencies_to_logscale(frequencies)
+    actual = mir_eval.multipitch.frequencies_to_midi(frequencies)
     assert __frequencies_equal(actual, expected)
 
 
-def test_logscale_to_single_octave():
-    logscale_frequencies = [
-        np.array([96.]),
+def test_midi_to_chroma():
+    midi_frequencies = [
+        np.array([69.]),
         np.array([]),
-        np.array([102., 84., 108.]),
-        np.array([98.745824285950576, 108.])
+        np.array([57., 76.01955000865388, 71.623683437704088]),
+        np.array([62.369507723654657, 71.623683437704088])
     ]
     expected = [
-        np.array([0.]),
+        np.array([9.]),
         np.array([]),
-        np.array([6., 0., 0.]),
-        np.array([2.745824285950576, 0.])
+        np.array([9., 4.01955000865388, 11.623683437704088]),
+        np.array([2.3695077236546567, 11.623683437704088])
     ]
-    actual = mir_eval.multipitch.logscale_to_single_octave(
-        logscale_frequencies)
+    actual = mir_eval.multipitch.midi_to_chroma(midi_frequencies)
     assert __frequencies_equal(actual, expected)
 
 
@@ -148,6 +147,24 @@ def test_compute_num_true_positives():
     expected = np.array([1, 0, 0, 3, 2])
     actual = mir_eval.multipitch.compute_num_true_positives(
         ref_freqs, est_freqs)
+    assert np.allclose(actual, expected, atol=A_TOL)
+    ref_freqs_chroma = [
+        np.array([0., 1.5]),
+        np.array([]),
+        np.array([2.]),
+        np.array([5.1, 6., 11.]),
+        np.array([11.9, 11.9])
+    ]
+    est_freqs_chroma = [
+        np.array([0.]),
+        np.array([]),
+        np.array([5., 2.6]),
+        np.array([5.1, 6., 11.]),
+        np.array([0.2, 11.5])
+    ]
+    expected = np.array([1, 0, 0, 3, 2])
+    actual = mir_eval.multipitch.compute_num_true_positives(
+        ref_freqs_chroma, est_freqs_chroma, chroma=True)
     assert np.allclose(actual, expected, atol=A_TOL)
 
 

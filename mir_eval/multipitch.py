@@ -154,8 +154,8 @@ def resample_multipitch(times, frequencies, target_times):
     return frequencies_resampled
 
 
-def frequencies_to_logscale(frequencies):
-    """Converts frequencies to semitone log scale.
+def frequencies_to_midi(frequencies, ref_frequency=440.0):
+    """Converts frequencies to continuous midi values.
 
     Parameters
     ----------
@@ -164,27 +164,27 @@ def frequencies_to_logscale(frequencies):
 
     Returns
     -------
-    frequencies_logscale : list of np.ndarray
-        Frequency values in semitone log scale.
+    frequencies_midi : list of np.ndarray
+        Continuous midi frequency values.
     """
-    return [12.0*np.log2(freqs) for freqs in frequencies]
+    return [69.0 + 12.0*np.log2(freqs/ref_frequency) for freqs in frequencies]
 
 
-def logscale_to_single_octave(frequencies_logscale):
-    """Wrap log scale frequencies to a single octave.
+def midi_to_chroma(frequencies_midi):
+    """Wrap midi frequencies to a single octave (chroma).
 
     Parameters
     ----------
-    frequencies_logscale : list of np.ndarray
-        Log scale frequency values
+    frequencies_midi : list of np.ndarray
+        Continuous midi note frequency values.
 
     Returns
     -------
-    frequencies_logscale_chroma : list of np.ndarray
-        Log scale frequency values wrapped to one octave.
+    frequencies_chroma : list of np.ndarray
+        Midi values wrapped to one octave.
 
     """
-    return [np.mod(freqs, 12) for freqs in frequencies_logscale]
+    return [np.mod(freqs, 12) for freqs in frequencies_midi]
 
 
 def compute_num_freqs(frequencies):
@@ -203,7 +203,7 @@ def compute_num_freqs(frequencies):
     return np.array([f.size for f in frequencies])
 
 
-def compute_num_true_positives(ref_freqs, est_freqs, window=0.5):
+def compute_num_true_positives(ref_freqs, est_freqs, window=0.5, chroma=False):
     """Compute the number of true positives in an estimate given a reference.
     A frequency is correct if it is within a quartertone of the
     correct frequency.
@@ -211,11 +211,14 @@ def compute_num_true_positives(ref_freqs, est_freqs, window=0.5):
     Parameters
     ----------
     ref_freqs : list of np.ndarray
-        reference frequencies in semitones
+        reference frequencies (midi)
     est_freqs : list of np.ndarray
-        estimated frequencies in semitones
+        estimated frequencies (midi)
     window : float
         Window size, in semitones
+    chroma : bool
+        If true, computes distances modulo n.
+        If true, ref_freqs and est_freqs should be wrapped modulo n.
 
     Returns
     -------
@@ -228,8 +231,14 @@ def compute_num_true_positives(ref_freqs, est_freqs, window=0.5):
     true_positives = np.zeros((n_frames, ))
 
     for i, (ref_frame, est_frame) in enumerate(zip(ref_freqs, est_freqs)):
-        # match frequency events within tolerance window in semitones
-        matching = util.match_events(ref_frame, est_frame, window)
+        if chroma:
+            # match chroma-wrapped frequency events
+            matching = util.match_events(
+                ref_frame, est_frame, window,
+                outer_distance=util._outer_distance_mod_n)
+        else:
+            # match frequency events within tolerance window in semitones
+            matching = util.match_events(ref_frame, est_frame, window)
         true_positives[i] = len(matching)
 
     return true_positives
@@ -397,36 +406,46 @@ def metrics(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
     """
     validate(ref_time, ref_freqs, est_time, est_freqs)
 
+    # resample est_freqs if est_times is different from ref_times
     if est_time.size != ref_time.size or not np.allclose(est_time, ref_time):
         warnings.warn("Estimate times not equal to reference times. "
                       "Resampling to common time base.")
         est_freqs = resample_multipitch(est_time, est_freqs, ref_time)
 
-    ref_freqs_log = frequencies_to_logscale(ref_freqs)
-    est_freqs_log = frequencies_to_logscale(est_freqs)
+    # convert frequencies from Hz to continuous midi note number
+    ref_freqs_midi = frequencies_to_midi(ref_freqs)
+    est_freqs_midi = frequencies_to_midi(est_freqs)
 
-    ref_freqs_log_chroma = logscale_to_single_octave(ref_freqs_log)
-    est_freqs_log_chroma = logscale_to_single_octave(est_freqs_log)
+    # compute chroma wrapped midi number
+    ref_freqs_chroma = midi_to_chroma(ref_freqs_midi)
+    est_freqs_chroma = midi_to_chroma(est_freqs_midi)
 
-    n_ref = compute_num_freqs(ref_freqs_log)
-    n_est = compute_num_freqs(est_freqs_log)
+    # count number of occurences
+    n_ref = compute_num_freqs(ref_freqs_midi)
+    n_est = compute_num_freqs(est_freqs_midi)
 
+    # compute the number of true positives
     true_positives = util.filter_kwargs(
-        compute_num_true_positives, ref_freqs_log, est_freqs_log, **kwargs)
+        compute_num_true_positives, ref_freqs_midi, est_freqs_midi, **kwargs)
 
+    # compute the number of true positives ignoring octave mistakes
     true_positives_chroma = util.filter_kwargs(
-        compute_num_true_positives, ref_freqs_log_chroma, est_freqs_log_chroma,
-        **kwargs)
+        compute_num_true_positives, ref_freqs_chroma,
+        est_freqs_chroma, chroma=True, **kwargs)
 
+    # compute accuracy metrics
     precision, recall, accuracy = compute_accuracy(
         true_positives, n_ref, n_est)
 
+    # compute error metrics
     e_sub, e_miss, e_fa, e_tot = compute_err_score(
         true_positives, n_ref, n_est)
 
+    # compute accuracy metrics ignoring octave mistakes
     precision_chroma, recall_chroma, accuracy_chroma = compute_accuracy(
         true_positives_chroma, n_ref, n_est)
 
+    # compute error metrics ignoring octave mistakes
     e_sub_chroma, e_miss_chroma, e_fa_chroma, e_tot_chroma = compute_err_score(
         true_positives_chroma, n_ref, n_est)
 
