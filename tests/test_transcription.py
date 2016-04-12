@@ -37,6 +37,50 @@ SCORES = {
 }
 
 
+def test_match_offsets():
+
+    ref_int = REF[:, :2]
+    est_int = EST[:, :2]
+
+    matching = (
+        mir_eval.transcription.match_offsets(ref_int, est_int))
+
+    assert matching == [(0, 0), (2, 2), (3, 3)]
+
+
+def test_match_offsets_strict():
+
+    ref_int = REF[:, :2]
+    est_int = EST[:, :2]
+
+    matching = (
+        mir_eval.transcription.match_offsets(ref_int, est_int, strict=True))
+
+    assert matching == [(0, 0), (2, 2), (3, 4)]
+
+
+def test_match_onsets():
+
+    ref_int = REF[:, :2]
+    est_int = EST[:, :2]
+
+    matching = (
+        mir_eval.transcription.match_onsets(ref_int, est_int))
+
+    assert matching == [(0, 0), (1, 1), (2, 2), (3, 3)]
+
+
+def test_match_onsets_strict():
+
+    ref_int = REF[:, :2]
+    est_int = EST[:, :2]
+
+    matching = (
+        mir_eval.transcription.match_onsets(ref_int, est_int, strict=True))
+
+    assert matching == [(0, 0), (1, 1), (2, 2), (3, 3)]
+
+
 def test_match_notes():
 
     ref_int, ref_pitch = REF[:, :2], REF[:, 2]

@@ -138,6 +138,155 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
                          "value")
 
 
+def match_offsets(ref_intervals, est_intervals, offset_ratio=0.2,
+                  offset_min_tolerance=0.05, strict=False):
+    """Compute a maximum matching between reference and estimated notes,
+    only taking note offsets into account.
+
+    Given two note sequences represented by ``ref_intervals`` and
+    ``est_intervals`` (see :func:`mir_eval.io.load_valued_intervals`), we seek
+    the largest set of correspondences ``(i, j)`` such that the offset of
+    ref note i has to be within ``offset_tolerance`` of the offset of est note
+    j, where ``offset_tolerance`` is equal to ``offset_ratio`` times the ref
+    note's duration, i.e. ``offset_ratio * ref_duration[i]`` where
+    ``ref_duration[i] = ref_intervals[i, 1] - ref_intervals[i, 0]``. If the
+    resulting ``offset_tolerance`` is less than ``offset_min_tolerance``
+    (50 ms by default) then ``offset_min_tolerance`` is used instead.
+
+    Every ref note is matched against at most one est note.
+
+    Parameters
+    ----------
+    ref_intervals : np.ndarray, shape=(n,2)
+        Array of reference notes time intervals (onset and offset times)
+    est_intervals : np.ndarray, shape=(m,2)
+        Array of estimated notes time intervals (onset and offset times)
+    offset_ratio: float > 0
+        The ratio of the reference note's duration used to define the
+        offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
+        will equal the ref_duration * 0.2, or 0.05 (50 ms), whichever is
+        greater.
+    offset_min_tolerance: float > 0
+        The minimum tolerance for offset matching. See offset_ratio description
+        for an explanation of how the offset tolerance is determined.
+    strict: bool
+        If ``strict=False`` (the default), threshold checks for offset
+        matching are performed using ``<=`` (less than or equal). If
+        ``strict=True``, the threshold checks are performed using ``<`` (less
+        than).
+
+    Returns
+    -------
+    matching : list of tuples
+        A list of matched reference and estimated notes.
+        ``matching[i] == (i, j)`` where reference note i matches estimate note
+        j.
+    """
+    # set the comparison function
+    if strict:
+        cmp_func = np.less
+    else:
+        cmp_func = np.less_equal
+
+    # check for offset matches
+    offset_distances = np.abs(np.subtract.outer(ref_intervals[:, 1],
+                                                est_intervals[:, 1]))
+    # Round distances to a target precision to avoid the situation where
+    # if the distance is exactly 50ms (and strict=False) it erroneously
+    # doesn't match the notes because of precision issues.
+    offset_distances = np.around(offset_distances, decimals=N_DECIMALS)
+    ref_durations = util.intervals_to_durations(ref_intervals)
+    offset_tolerances = np.maximum(offset_ratio * ref_durations,
+                                   offset_min_tolerance)
+    offset_hit_matrix = (
+        cmp_func(offset_distances, offset_tolerances.reshape(-1, 1)))
+
+    # check for hits
+    hits = np.where(offset_hit_matrix)
+
+    # Construct the graph input
+    # Flip graph so that 'matching' is a list of tuples where the first item
+    # in each tuple is the reference note index, and the second item is the
+    # estimate note index.
+    G = {}
+    for ref_i, est_i in zip(*hits):
+        if est_i not in G:
+            G[est_i] = []
+        G[est_i].append(ref_i)
+
+    # Compute the maximum matching
+    matching = sorted(util._bipartite_match(G).items())
+
+    return matching
+
+
+def match_onsets(ref_intervals, est_intervals, onset_tolerance=0.05,
+                 strict=False):
+    """Compute a maximum matching between reference and estimated notes,
+    only taking note onsets into account.
+
+    Given two note seqeunces represented by ``ref_intervals`` and
+    ``est_intervals`` (see :func:`mir_eval.oi.load_valued_intervals`), we see
+    the largest set of correspondences ``(i,j)`` such that the onset of ref
+    note i is within ``onset_tolerance`` of the onset of est note j.
+
+    Every ref note is matched against at most one est note.
+
+    Parameters
+    ----------
+    ref_intervals : np.ndarray, shape=(n,2)
+        Array of reference notes time intervals (onset and offset times)
+    est_intervals : np.ndarray, shape=(m,2)
+        Array of estimated notes time intervals (onset and offset times)
+    onset_tolerance : float > 0
+        The tolerance for an estimated note's onset deviating from the
+        reference note's onset, in seconds. Default is 0.05 (50 ms).
+    strict: bool
+        If ``strict=False`` (the default), threshold checks for onset matching
+        are performed using ``<=`` (less than or equal). If ``strict=True``,
+        the threshold checks are performed using ``<`` (less than).
+
+    Returns
+    -------
+    matching : list of tuples
+        A list of matched reference and estimated notes.
+        ``matching[i] == (i, j)`` where reference note i matches estimate note
+        j.
+    """
+    # set the comparison function
+    if strict:
+        cmp_func = np.less
+    else:
+        cmp_func = np.less_equal
+
+    # check for onset matches
+    onset_distances = np.abs(np.subtract.outer(ref_intervals[:, 0],
+                                               est_intervals[:, 0]))
+    # Round distances to a target precision to avoid the situation where
+    # if the distance is exactly 50ms (and strict=False) it erroneously
+    # doesn't match the notes because of precision issues.
+    onset_distances = np.around(onset_distances, decimals=N_DECIMALS)
+    onset_hit_matrix = cmp_func(onset_distances, onset_tolerance)
+
+    # find hits
+    hits = np.where(onset_hit_matrix)
+
+    # Construct the graph input
+    # Flip graph so that 'matching' is a list of tuples where the first item
+    # in each tuple is the reference note index, and the second item is the
+    # estimate note index.
+    G = {}
+    for ref_i, est_i in zip(*hits):
+        if est_i not in G:
+            G[est_i] = []
+        G[est_i].append(ref_i)
+
+    # Compute the maximum matching
+    matching = sorted(util._bipartite_match(G).items())
+
+    return matching
+
+
 def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
                 onset_tolerance=0.05, pitch_tolerance=50.0, offset_ratio=0.2,
                 offset_min_tolerance=0.05, strict=False):
