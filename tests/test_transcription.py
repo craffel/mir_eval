@@ -31,9 +31,11 @@ SCORES = {
     "Precision": 0.4,
     "Recall": 0.5,
     "F-measure": 0.4444444444444445,
+    "Average_Overlap_Ratio": 0.675,
     "Precision_no_offset": 0.6,
     "Recall_no_offset": 0.75,
-    "F-measure_no_offset": 0.6666666666666665
+    "F-measure_no_offset": 0.6666666666666665,
+    "Average_Overlap_Ratio_no_offset": 0.5833333333333333
 }
 
 ONSET_SCORES = {
@@ -123,30 +125,31 @@ def test_match_notes_strict():
     assert matching == []
 
 
-def test_precision_recall_f1():
+def test_precision_recall_f1_overlap():
 
     # load test data
     ref_int, ref_pitch = REF[:, :2], REF[:, 2]
     est_int, est_pitch = EST[:, :2], EST[:, 2]
 
-    precision, recall, f_measure = (
-        mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
-                                                   est_pitch))
+    precision, recall, f_measure, avg_overlap_ratio = (
+        mir_eval.transcription.precision_recall_f1_overlap(
+            ref_int, ref_pitch, est_int, est_pitch))
 
-    scores_gen = np.array([precision, recall, f_measure])
+    scores_gen = np.array([precision, recall, f_measure, avg_overlap_ratio])
     scores_exp = np.array([SCORES['Precision'], SCORES['Recall'],
-                           SCORES['F-measure']])
+                           SCORES['F-measure'],
+                           SCORES['Average_Overlap_Ratio']])
     assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
 
-    precision, recall, f_measure = (
-        mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
-                                                   est_pitch,
-                                                   offset_ratio=None))
+    precision, recall, f_measure, avg_overlap_ratio = (
+        mir_eval.transcription.precision_recall_f1_overlap(
+            ref_int, ref_pitch, est_int, est_pitch, offset_ratio=None))
 
-    scores_gen = np.array([precision, recall, f_measure])
+    scores_gen = np.array([precision, recall, f_measure, avg_overlap_ratio])
     scores_exp = np.array([SCORES['Precision_no_offset'],
                            SCORES['Recall_no_offset'],
-                           SCORES['F-measure_no_offset']])
+                           SCORES['F-measure_no_offset'],
+                           SCORES['Average_Overlap_Ratio_no_offset']])
     assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
 
 
@@ -271,20 +274,20 @@ def test_empty_est():
         assert 'empty' in str(out[0].message).lower()
 
 
-def test_precision_recall_f1_empty():
+def test_precision_recall_f1_overlap_empty():
 
     ref_int, ref_pitch = np.array([]), np.array([])
     est_int, est_pitch = np.array([[0, 1]]), np.array([100])
 
-    precision, recall, f1 = (
-        mir_eval.transcription.precision_recall_f1(ref_int, ref_pitch, est_int,
-                                                   est_pitch))
+    precision, recall, f1, avg_overlap_ratio = (
+        mir_eval.transcription.precision_recall_f1_overlap(
+            ref_int, ref_pitch, est_int, est_pitch))
 
     assert (precision, recall, f1) == (0, 0, 0)
 
-    precision, recall, f1 = (
-        mir_eval.transcription.precision_recall_f1(est_int, est_pitch, ref_int,
-                                                   ref_pitch))
+    precision, recall, f1, avg_overlap_ratio = (
+        mir_eval.transcription.precision_recall_f1_overlap(
+            est_int, est_pitch, ref_int, ref_pitch))
 
     assert (precision, recall, f1) == (0, 0, 0)
 
