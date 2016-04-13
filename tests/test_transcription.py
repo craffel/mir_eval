@@ -287,3 +287,35 @@ def test_precision_recall_f1_empty():
                                                    ref_pitch))
 
     assert (precision, recall, f1) == (0, 0, 0)
+
+
+def test_onset_precision_recall_f1_empty():
+
+    ref_int = np.array([])
+    est_int = np.array([[0, 1]])
+
+    precision, recall, f1 = (
+        mir_eval.transcription.onset_precision_recall_f1(ref_int, est_int))
+
+    assert (precision, recall, f1) == (0, 0, 0)
+
+    precision, recall, f1 = (
+        mir_eval.transcription.onset_precision_recall_f1(est_int, ref_int))
+
+    assert (precision, recall, f1) == (0, 0, 0)
+
+
+def test_offset_precision_recall_f1_empty():
+
+    ref_int = np.array([])
+    est_int = np.array([[0, 1]])
+
+    precision, recall, f1 = (
+        mir_eval.transcription.offset_precision_recall_f1(ref_int, est_int))
+
+    assert (precision, recall, f1) == (0, 0, 0)
+
+    precision, recall, f1 = (
+        mir_eval.transcription.offset_precision_recall_f1(est_int, ref_int))
+
+    assert (precision, recall, f1) == (0, 0, 0)
