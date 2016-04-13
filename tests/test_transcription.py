@@ -36,6 +36,12 @@ SCORES = {
     "F-measure_no_offset": 0.6666666666666665
 }
 
+ONSET_SCORES = {
+    "Onset_Precision": 0.8,
+    "Onset_Recall": 1.0,
+    "Onset_F-measure": 0.8888888888888889,
+}
+
 
 def test_match_offsets():
 
@@ -140,6 +146,22 @@ def test_precision_recall_f1():
 
 def __check_score(score, expected_score):
     assert np.allclose(score, expected_score, atol=A_TOL)
+
+
+def test_onset_precision_recall_f1():
+
+    # load test data
+    ref_int = REF[:, :2]
+    est_int = EST[:, :2]
+
+    precision, recall, f_measure = (
+        mir_eval.transcription.onset_precision_recall_f1(ref_int, est_int))
+
+    scores_gen = np.array([precision, recall, f_measure])
+    scores_exp = np.array([ONSET_SCORES['Onset_Precision'],
+                           ONSET_SCORES['Onset_Recall'],
+                           ONSET_SCORES['Onset_F-measure']])
+    assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
 
 
 def test_regression():
