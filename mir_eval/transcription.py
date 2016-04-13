@@ -138,6 +138,24 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
                          "value")
 
 
+def validate_intervals(ref_intervals, est_intervals):
+    """Checks that the input annotations to a metric look like time intervals,
+    and throws helpful errors if not.
+
+    Parameters
+    ----------
+    ref_intervals : np.ndarray, shape=(n,2)
+        Array of reference notes time intervals (onset and offset times)
+    est_intervals : np.ndarray, shape=(m,2)
+        Array of estimated notes time intervals (onset and offset times)
+    """
+    # If reference or estimated notes are empty, warn
+    if ref_intervals.size == 0:
+        warnings.warn("Reference notes are empty.")
+    if est_intervals.size == 0:
+        warnings.warn("Estimate notes are empty.")
+
+
 def match_offsets(ref_intervals, est_intervals, offset_ratio=0.2,
                   offset_min_tolerance=0.05, strict=False):
     """Compute a maximum matching between reference and estimated notes,
@@ -503,6 +521,131 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     recall = float(len(matching))/len(ref_pitches)
     f_measure = util.f_measure(precision, recall)
     return precision, recall, f_measure
+
+
+def onset_precision_recall_f1(ref_intervals, est_intervals,
+                              onset_tolerance=0.05, strict=False):
+    """Compute the Precision, Recall and F-measure of note onsets: an estimated
+    onset is considered correct if it is within +-50ms of a ref onset. Note
+    that this metric completely ignores note offset and note pitch. This means
+    an estimated onset will be considered correct if it matches a
+    reference onset, even if the onsets come from notes with completely
+    different pitches (i.e. notes that would not match with `match_notes`).
+
+
+    Examples
+    --------
+    >>> ref_intervals, _ = mir_eval.io.load_valued_intervals(
+    ...     'reference.txt')
+    >>> est_intervals, _ = mir_eval.io.load_valued_intervals(
+    ...     'estimated.txt')
+    >>> (onset_precision,
+    ...  onset_recall,
+    ...  onset_f_measure) = mir_eval.transcription.onset_precision_recall_f1(
+    ...      ref_intervals, est_intervals)
+
+    Parameters
+    ----------
+    ref_intervals : np.ndarray, shape=(n,2)
+        Array of reference notes time intervals (onset and offset times)
+    est_intervals : np.ndarray, shape=(m,2)
+        Array of estimated notes time intervals (onset and offset times)
+    onset_tolerance : float > 0
+        The tolerance for an estimated note's onset deviating from the
+        reference note's onset, in seconds. Default is 0.05 (50 ms).
+    strict: bool
+        If ``strict=False`` (the default), threshold checks for onset matching
+        are performed using ``<=`` (less than or equal). If ``strict=True``,
+        the threshold checks are performed using ``<`` (less than).
+
+    Returns
+    -------
+    precision : float
+        The computed precision score
+    recall : float
+        The computed recall score
+    f_measure : float
+        The computed F-measure score
+    """
+    validate_intervals(ref_intervals, est_intervals)
+    # When reference notes are empty, metrics are undefined, return 0's
+    if len(ref_intervals) == 0 or len(est_intervals) == 0:
+        return 0., 0., 0.
+
+    matching = match_onsets(ref_intervals, est_intervals,
+                            onset_tolerance=onset_tolerance,
+                            strict=strict)
+
+    onset_precision = float(len(matching))/len(est_intervals)
+    onset_recall = float(len(matching))/len(ref_intervals)
+    onset_f_measure = util.f_measure(onset_precision, onset_recall)
+    return onset_precision, onset_recall, onset_f_measure
+
+
+def offset_precision_recall_f1(ref_intervals, est_intervals, offset_ratio=0.2,
+                               offset_min_tolerance=0.05, strict=False):
+    """Compute the Precision, Recall and F-measure of note offsets: an
+    estimated offset is considered correct if it is within +-50ms (or 20% of
+    the ref note duration, which ever is greater) of a ref offset. Note
+    that this metric completely ignores note onsets and note pitch. This means
+    an estimated offset will be considered correct if it matches a
+    reference offset, even if the offsetes come from notes with completely
+    different pitches (i.e. notes that would not match with `match_notes`).
+
+
+    Examples
+    --------
+    >>> ref_intervals, _ = mir_eval.io.load_valued_intervals(
+    ...     'reference.txt')
+    >>> est_intervals, _ = mir_eval.io.load_valued_intervals(
+    ...     'estimated.txt')
+    >>> (offset_precision,
+    ...  offset_recall,
+    ...  offset_f_measure) = mir_eval.transcription.offset_precision_recall_f1(
+    ...      ref_intervals, est_intervals)
+
+    Parameters
+    ----------
+    ref_intervals : np.ndarray, shape=(n,2)
+        Array of reference notes time intervals (onset and offset times)
+    est_intervals : np.ndarray, shape=(m,2)
+        Array of estimated notes time intervals (onset and offset times)
+    offset_ratio: float > 0 or None
+        The ratio of the reference note's duration used to define the
+        offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
+        will equal the ref_duration * 0.2, or min_offset_tolerance (0.05 by
+        default, i.e. 50 ms), whichever is greater.
+    offset_min_tolerance: float > 0
+        The minimum tolerance for offset matching. See offset_ratio description
+        for an explanation of how the offset tolerance is determined.
+    strict: bool
+        If ``strict=False`` (the default), threshold checks for onset matching
+        are performed using ``<=`` (less than or equal). If ``strict=True``,
+        the threshold checks are performed using ``<`` (less than).
+
+    Returns
+    -------
+    precision : float
+        The computed precision score
+    recall : float
+        The computed recall score
+    f_measure : float
+        The computed F-measure score
+    """
+    validate_intervals(ref_intervals, est_intervals)
+    # When reference notes are empty, metrics are undefined, return 0's
+    if len(ref_intervals) == 0 or len(est_intervals) == 0:
+        return 0., 0., 0.
+
+    matching = match_offsets(ref_intervals, est_intervals,
+                             offset_ratio=offset_ratio,
+                             offset_min_tolerance=offset_min_tolerance,
+                             strict=strict)
+
+    offset_precision = float(len(matching))/len(est_intervals)
+    offset_recall = float(len(matching))/len(ref_intervals)
+    offset_f_measure = util.f_measure(offset_precision, offset_recall)
+    return offset_precision, offset_recall, offset_f_measure
 
 
 def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):

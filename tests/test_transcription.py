@@ -36,6 +36,18 @@ SCORES = {
     "F-measure_no_offset": 0.6666666666666665
 }
 
+ONSET_SCORES = {
+    "Onset_Precision": 0.8,
+    "Onset_Recall": 1.0,
+    "Onset_F-measure": 0.8888888888888889,
+}
+
+OFFSET_SCORES = {
+    "Offset_Precision": 0.6,
+    "Offset_Recall": 0.75,
+    "Offset_F-measure": 0.6666666666666665,
+}
+
 
 def test_match_offsets():
 
@@ -142,6 +154,38 @@ def __check_score(score, expected_score):
     assert np.allclose(score, expected_score, atol=A_TOL)
 
 
+def test_onset_precision_recall_f1():
+
+    # load test data
+    ref_int = REF[:, :2]
+    est_int = EST[:, :2]
+
+    precision, recall, f_measure = (
+        mir_eval.transcription.onset_precision_recall_f1(ref_int, est_int))
+
+    scores_gen = np.array([precision, recall, f_measure])
+    scores_exp = np.array([ONSET_SCORES['Onset_Precision'],
+                           ONSET_SCORES['Onset_Recall'],
+                           ONSET_SCORES['Onset_F-measure']])
+    assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
+
+
+def test_offset_precision_recall_f1():
+
+    # load test data
+    ref_int = REF[:, :2]
+    est_int = EST[:, :2]
+
+    precision, recall, f_measure = (
+        mir_eval.transcription.offset_precision_recall_f1(ref_int, est_int))
+
+    scores_gen = np.array([precision, recall, f_measure])
+    scores_exp = np.array([OFFSET_SCORES['Offset_Precision'],
+                           OFFSET_SCORES['Offset_Recall'],
+                           OFFSET_SCORES['Offset_F-measure']])
+    assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
+
+
 def test_regression():
 
     # Regression tests
@@ -241,5 +285,37 @@ def test_precision_recall_f1_empty():
     precision, recall, f1 = (
         mir_eval.transcription.precision_recall_f1(est_int, est_pitch, ref_int,
                                                    ref_pitch))
+
+    assert (precision, recall, f1) == (0, 0, 0)
+
+
+def test_onset_precision_recall_f1_empty():
+
+    ref_int = np.array([])
+    est_int = np.array([[0, 1]])
+
+    precision, recall, f1 = (
+        mir_eval.transcription.onset_precision_recall_f1(ref_int, est_int))
+
+    assert (precision, recall, f1) == (0, 0, 0)
+
+    precision, recall, f1 = (
+        mir_eval.transcription.onset_precision_recall_f1(est_int, ref_int))
+
+    assert (precision, recall, f1) == (0, 0, 0)
+
+
+def test_offset_precision_recall_f1_empty():
+
+    ref_int = np.array([])
+    est_int = np.array([[0, 1]])
+
+    precision, recall, f1 = (
+        mir_eval.transcription.offset_precision_recall_f1(ref_int, est_int))
+
+    assert (precision, recall, f1) == (0, 0, 0)
+
+    precision, recall, f1 = (
+        mir_eval.transcription.offset_precision_recall_f1(est_int, ref_int))
 
     assert (precision, recall, f1) == (0, 0, 0)
