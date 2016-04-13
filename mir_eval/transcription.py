@@ -431,21 +431,22 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     return matching
 
 
-def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
-                        onset_tolerance=0.05, pitch_tolerance=50.0,
-                        offset_ratio=0.2, offset_min_tolerance=0.05,
-                        strict=False):
+def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
+                                est_pitches, onset_tolerance=0.05,
+                                pitch_tolerance=50.0, offset_ratio=0.2,
+                                offset_min_tolerance=0.05, strict=False):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
-    transcribed notes. "Correctness" is determined based on note onset, pitch
-    and (optionally) offset: an estimated note is assumed correct if its onset
-    is within +-50ms of a ref note and its pitch (F0) is within +- quarter tone
-    (50 cents) of the corresponding reference note. If with_offset is False,
-    note offsets are ignored in the comparison. It with_offset is True,
-    on top of the above requirements, a correct returned note is required to
-    have an offset value within 20% (by default, adjustable via the
-    offset_ratio parameter) of the ref note's duration around the ref note's
-    offset, or within offset_min_tolerance (50 ms by default), whichever is
-    larger.
+    transcribed notes, and the Average Overlap Ratio for correctly transcribed
+    notes (see :func:`average_overlap_ratio`). "Correctness" is determined
+    based on note onset, pitch and (optionally) offset: an estimated note is
+    assumed correct if its onset is within +-50ms of a ref note and its pitch
+    (F0) is within +- quarter tone (50 cents) of the corresponding reference
+    note. If with_offset is False, note offsets are ignored in the comparison.
+    It with_offset is True, on top of the above requirements, a correct
+    returned note is required to have an offset value within 20% (by default,
+    adjustable via the offset_ratio parameter) of the ref note's duration
+    around the ref note's offset, or within offset_min_tolerance (50 ms by
+    default), whichever is larger.
 
     Examples
     --------
@@ -504,11 +505,13 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
         The computed recall score
     f_measure : float
         The computed F-measure score
+    avg_overlap_ratio: float
+        The computed Average Overlap Ratio score
     """
     validate(ref_intervals, ref_pitches, est_intervals, est_pitches)
     # When reference notes are empty, metrics are undefined, return 0's
     if len(ref_pitches) == 0 or len(est_pitches) == 0:
-        return 0., 0., 0.
+        return 0., 0., 0., 0.
 
     matching = match_notes(ref_intervals, ref_pitches, est_intervals,
                            est_pitches, onset_tolerance=onset_tolerance,
@@ -520,7 +523,54 @@ def precision_recall_f1(ref_intervals, ref_pitches, est_intervals, est_pitches,
     precision = float(len(matching))/len(est_pitches)
     recall = float(len(matching))/len(ref_pitches)
     f_measure = util.f_measure(precision, recall)
-    return precision, recall, f_measure
+
+    avg_overlap_ratio = average_overlap_ratio(ref_intervals, est_intervals,
+                                              matching)
+
+    return precision, recall, f_measure, avg_overlap_ratio
+
+
+def average_overlap_ratio(ref_intervals, est_intervals, matching):
+    """Compute the Average Overlap Ratio between a reference and estimate
+    note transcription. Given a reference and corresponding estimate note,
+    their overlap ratio (OR) is defined as the ratio between the duration of
+    the time segment in which the two notes overlap and the time segment
+    spanned by the two notes combined (earliest onset to latest offset): OR =
+    (min(ref_offset, est_offset) - max(ref_onset, est_onset)) /
+    (max(ref_offset, est_offset) - min(ref_onset, est_onset)). The Average
+    Overlap Ratio (AOR) is given the mean OR computed over all matching
+    reference and estimate notes. The metric goes from 0 (worst) to 1 (best).
+
+    Note: this function assumes the matching of reference and estimate notes
+    (see :func:`match_notes`) has already been performed and is provided by the
+    `matching` parameter.
+
+    Parameters
+    ----------
+    ref_intervals : np.ndarray, shape=(n,2)
+        Array of reference notes time intervals (onset and offset times)
+    est_intervals : np.ndarray, shape=(m,2)
+        Array of estimated notes time intervals (onset and offset times)
+    matching : list of tuples
+        A list of matched reference and estimated notes.
+        ``matching[i] == (i, j)`` where reference note i matches estimate note
+        j.
+
+    Returns
+    -------
+    avg_overlap_ratio: float
+        The computed Average Overlap Ratio score
+    """
+    ratios = []
+    for match in matching:
+        ref_int = ref_intervals[match[0]]
+        est_int = est_intervals[match[1]]
+        overlap_ratio = (
+            (min(ref_int[1], est_int[1]) - max(ref_int[0], est_int[0])) /
+            (max(ref_int[1], est_int[1]) - min(ref_int[0], est_int[0])))
+        ratios.append(overlap_ratio)
+
+    return np.mean(ratios)
 
 
 def onset_precision_recall_f1(ref_intervals, est_intervals,
@@ -688,16 +738,19 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     if kwargs['offset_ratio'] is not None:
         (scores['Precision'],
          scores['Recall'],
-         scores['F-measure']) = util.filter_kwargs(
-            precision_recall_f1, ref_intervals, ref_pitches, est_intervals,
-            est_pitches, **kwargs)
+         scores['F-measure'],
+         scores['Average_Overlap_Ratio']) = util.filter_kwargs(
+            precision_recall_f1_overlap, ref_intervals, ref_pitches,
+            est_intervals, est_pitches, **kwargs)
 
     # Precision, recall and f-measure NOT taking note offsets into account
     kwargs['offset_ratio'] = None
     (scores['Precision_no_offset'],
      scores['Recall_no_offset'],
-     scores['F-measure_no_offset']) = (
-        util.filter_kwargs(precision_recall_f1, ref_intervals, ref_pitches,
+     scores['F-measure_no_offset'],
+     scores['Average_Overlap_Ratio']) = (
+        util.filter_kwargs(precision_recall_f1_overlap,
+                           ref_intervals, ref_pitches,
                            est_intervals, est_pitches, **kwargs))
 
     return scores
