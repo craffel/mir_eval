@@ -738,6 +738,7 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
 
     # Precision, recall and f-measure taking note offsets into account
     kwargs.setdefault('offset_ratio', 0.2)
+    orig_offset_ratio = kwargs['offset_ratio']
     if kwargs['offset_ratio'] is not None:
         (scores['Precision'],
          scores['Recall'],
@@ -755,5 +756,21 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
         util.filter_kwargs(precision_recall_f1_overlap,
                            ref_intervals, ref_pitches,
                            est_intervals, est_pitches, **kwargs))
+
+    # onset-only metrics
+    (scores['Onset_Precision'],
+     scores['Onset_Recall'],
+     scores['Onset_F-measure']) = (
+        util.filter_kwargs(onset_precision_recall_f1,
+                           ref_intervals, est_intervals, **kwargs))
+
+    # offset-only metrics
+    kwargs['offset_ratio'] = orig_offset_ratio
+    if kwargs['offset_ratio'] is not None:
+        (scores['Offset_Precision'],
+         scores['Offset_Recall'],
+         scores['Offset_F-measure']) = (
+            util.filter_kwargs(offset_precision_recall_f1,
+                               ref_intervals, est_intervals, **kwargs))
 
     return scores
