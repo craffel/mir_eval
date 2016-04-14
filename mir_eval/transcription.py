@@ -570,7 +570,10 @@ def average_overlap_ratio(ref_intervals, est_intervals, matching):
             (max(ref_int[1], est_int[1]) - min(ref_int[0], est_int[0])))
         ratios.append(overlap_ratio)
 
-    return np.mean(ratios)
+    if len(ratios) == 0:
+        return 0
+    else:
+        return np.mean(ratios)
 
 
 def onset_precision_recall_f1(ref_intervals, est_intervals,
@@ -748,7 +751,7 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     (scores['Precision_no_offset'],
      scores['Recall_no_offset'],
      scores['F-measure_no_offset'],
-     scores['Average_Overlap_Ratio']) = (
+     scores['Average_Overlap_Ratio_no_offset']) = (
         util.filter_kwargs(precision_recall_f1_overlap,
                            ref_intervals, ref_pitches,
                            est_intervals, est_pitches, **kwargs))
