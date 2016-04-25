@@ -115,11 +115,8 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
     est_pitches : np.ndarray, shape=(m,)
         Array of estimated pitch values in Hertz
     """
-    # If reference or estimated notes are empty, warn
-    if ref_intervals.size == 0:
-        warnings.warn("Reference notes are empty.")
-    if est_intervals.size == 0:
-        warnings.warn("Estimate notes are empty.")
+    # Validate intervals
+    validate_intervals(ref_intervals, est_intervals)
 
     # Make sure intervals and pitches match in length
     if not ref_intervals.shape[0] == ref_pitches.shape[0]:
@@ -155,9 +152,13 @@ def validate_intervals(ref_intervals, est_intervals):
     if est_intervals.size == 0:
         warnings.warn("Estimate notes are empty.")
 
+    # Validate intervals
+    util.validate_intervals(ref_intervals)
+    util.validate_intervals(est_intervals)
 
-def match_offsets(ref_intervals, est_intervals, offset_ratio=0.2,
-                  offset_min_tolerance=0.05, strict=False):
+
+def match_note_offsets(ref_intervals, est_intervals, offset_ratio=0.2,
+                       offset_min_tolerance=0.05, strict=False):
     """Compute a maximum matching between reference and estimated notes,
     only taking note offsets into account.
 
@@ -172,6 +173,11 @@ def match_offsets(ref_intervals, est_intervals, offset_ratio=0.2,
     (50 ms by default) then ``offset_min_tolerance`` is used instead.
 
     Every ref note is matched against at most one est note.
+
+    Note there are separate functions :func:`match_note_onsets` and
+    :func:`match_notes` for matching notes based on onsets only or based on
+    onset, offset, and pitch, respectively. This is because the rules for
+    matching note onsets and matching note offsets are different.
 
     Parameters
     ----------
@@ -238,17 +244,22 @@ def match_offsets(ref_intervals, est_intervals, offset_ratio=0.2,
     return matching
 
 
-def match_onsets(ref_intervals, est_intervals, onset_tolerance=0.05,
-                 strict=False):
+def match_note_onsets(ref_intervals, est_intervals, onset_tolerance=0.05,
+                      strict=False):
     """Compute a maximum matching between reference and estimated notes,
     only taking note onsets into account.
 
-    Given two note seqeunces represented by ``ref_intervals`` and
+    Given two note sequences represented by ``ref_intervals`` and
     ``est_intervals`` (see :func:`mir_eval.oi.load_valued_intervals`), we see
     the largest set of correspondences ``(i,j)`` such that the onset of ref
     note i is within ``onset_tolerance`` of the onset of est note j.
 
     Every ref note is matched against at most one est note.
+
+    Note there are separate functions :func:`match_note_offsets` and
+    :func:`match_notes` for matching notes based on offsets only or based on
+    onset, offset, and pitch, respectively. This is because the rules for
+    matching note onsets and matching note offsets are different.
 
     Parameters
     ----------
@@ -334,6 +345,10 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
 
     This is useful for computing precision/recall metrics for note
     transcription.
+
+    Note there are separate functions :func:`match_note_onsets` and
+    :func:`match_note_offsets` for matching notes based on onsets only or based
+    on offsets only, respectively.
 
     Parameters
     ----------
@@ -434,19 +449,20 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
 def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
                                 est_pitches, onset_tolerance=0.05,
                                 pitch_tolerance=50.0, offset_ratio=0.2,
-                                offset_min_tolerance=0.05, strict=False):
+                                offset_min_tolerance=0.05, strict=False,
+                                beta=1.0):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes, and the Average Overlap Ratio for correctly transcribed
     notes (see :func:`average_overlap_ratio`). "Correctness" is determined
     based on note onset, pitch and (optionally) offset: an estimated note is
     assumed correct if its onset is within +-50ms of a ref note and its pitch
     (F0) is within +- quarter tone (50 cents) of the corresponding reference
-    note. If with_offset is False, note offsets are ignored in the comparison.
-    It with_offset is True, on top of the above requirements, a correct
-    returned note is required to have an offset value within 20% (by default,
-    adjustable via the offset_ratio parameter) of the ref note's duration
-    around the ref note's offset, or within offset_min_tolerance (50 ms by
-    default), whichever is larger.
+    note. If offset_ratio is None, note offsets are ignored in the comparison.
+    Otherwise, on top of the above requirements, a correct returned note is
+    required to have an offset value within 20% (by default, adjustable via the
+    offset_ratio parameter) of the ref note's duration around the ref note's
+    offset, or within offset_min_tolerance (50 ms by default), whichever is
+    larger.
 
     Examples
     --------
@@ -496,6 +512,8 @@ def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
         and pitch matching are performed using ``<=`` (less than or equal). If
         ``strict=True``, the threshold checks are performed using ``<`` (less
         than).
+    beta : float > 0
+        Weighting factor for f-measure (default value = 1.0).
 
     Returns
     -------
@@ -522,7 +540,7 @@ def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
 
     precision = float(len(matching))/len(est_pitches)
     recall = float(len(matching))/len(ref_pitches)
-    f_measure = util.f_measure(precision, recall)
+    f_measure = util.f_measure(precision, recall, beta=beta)
 
     avg_overlap_ratio = average_overlap_ratio(ref_intervals, est_intervals,
                                               matching)
@@ -535,15 +553,21 @@ def average_overlap_ratio(ref_intervals, est_intervals, matching):
     note transcription. Given a reference and corresponding estimate note,
     their overlap ratio (OR) is defined as the ratio between the duration of
     the time segment in which the two notes overlap and the time segment
-    spanned by the two notes combined (earliest onset to latest offset): OR =
-    (min(ref_offset, est_offset) - max(ref_onset, est_onset)) /
-    (max(ref_offset, est_offset) - min(ref_onset, est_onset)). The Average
-    Overlap Ratio (AOR) is given the mean OR computed over all matching
-    reference and estimate notes. The metric goes from 0 (worst) to 1 (best).
+    spanned by the two notes combined (earliest onset to latest offset):
+
+    OR = ((min(ref_offset, est_offset) - max(ref_onset, est_onset)) /
+               (max(ref_offset, est_offset) - min(ref_onset, est_onset))).
+
+    The Average Overlap Ratio (AOR) is given the mean OR computed over all
+    matching reference and estimate notes. The metric goes from 0 (worst) to 1
+    (best).
 
     Note: this function assumes the matching of reference and estimate notes
     (see :func:`match_notes`) has already been performed and is provided by the
-    `matching` parameter.
+    `matching` parameter. Furthermore, it is highly recommended to validate the
+    intervals (see :func:`validate_intervals`) before calling this function,
+    otherwise it is possible (though unlikely) for this function to
+    attempt a divide-by-zero operation.
 
     Parameters
     ----------
@@ -577,7 +601,7 @@ def average_overlap_ratio(ref_intervals, est_intervals, matching):
 
 
 def onset_precision_recall_f1(ref_intervals, est_intervals,
-                              onset_tolerance=0.05, strict=False):
+                              onset_tolerance=0.05, strict=False, beta=1.0):
     """Compute the Precision, Recall and F-measure of note onsets: an estimated
     onset is considered correct if it is within +-50ms of a ref onset. Note
     that this metric completely ignores note offset and note pitch. This means
@@ -610,6 +634,8 @@ def onset_precision_recall_f1(ref_intervals, est_intervals,
         If ``strict=False`` (the default), threshold checks for onset matching
         are performed using ``<=`` (less than or equal). If ``strict=True``,
         the threshold checks are performed using ``<`` (less than).
+    beta : float > 0
+        Weighting factor for f-measure (default value = 1.0).
 
     Returns
     -------
@@ -625,18 +651,19 @@ def onset_precision_recall_f1(ref_intervals, est_intervals,
     if len(ref_intervals) == 0 or len(est_intervals) == 0:
         return 0., 0., 0.
 
-    matching = match_onsets(ref_intervals, est_intervals,
-                            onset_tolerance=onset_tolerance,
-                            strict=strict)
+    matching = match_note_onsets(ref_intervals, est_intervals,
+                                 onset_tolerance=onset_tolerance,
+                                 strict=strict)
 
     onset_precision = float(len(matching))/len(est_intervals)
     onset_recall = float(len(matching))/len(ref_intervals)
-    onset_f_measure = util.f_measure(onset_precision, onset_recall)
+    onset_f_measure = util.f_measure(onset_precision, onset_recall, beta=beta)
     return onset_precision, onset_recall, onset_f_measure
 
 
 def offset_precision_recall_f1(ref_intervals, est_intervals, offset_ratio=0.2,
-                               offset_min_tolerance=0.05, strict=False):
+                               offset_min_tolerance=0.05, strict=False,
+                               beta=1.0):
     """Compute the Precision, Recall and F-measure of note offsets: an
     estimated offset is considered correct if it is within +-50ms (or 20% of
     the ref note duration, which ever is greater) of a ref offset. Note
@@ -675,6 +702,8 @@ def offset_precision_recall_f1(ref_intervals, est_intervals, offset_ratio=0.2,
         If ``strict=False`` (the default), threshold checks for onset matching
         are performed using ``<=`` (less than or equal). If ``strict=True``,
         the threshold checks are performed using ``<`` (less than).
+    beta : float > 0
+        Weighting factor for f-measure (default value = 1.0).
 
     Returns
     -------
@@ -690,14 +719,15 @@ def offset_precision_recall_f1(ref_intervals, est_intervals, offset_ratio=0.2,
     if len(ref_intervals) == 0 or len(est_intervals) == 0:
         return 0., 0., 0.
 
-    matching = match_offsets(ref_intervals, est_intervals,
-                             offset_ratio=offset_ratio,
-                             offset_min_tolerance=offset_min_tolerance,
-                             strict=strict)
+    matching = match_note_offsets(ref_intervals, est_intervals,
+                                  offset_ratio=offset_ratio,
+                                  offset_min_tolerance=offset_min_tolerance,
+                                  strict=strict)
 
     offset_precision = float(len(matching))/len(est_intervals)
     offset_recall = float(len(matching))/len(ref_intervals)
-    offset_f_measure = util.f_measure(offset_precision, offset_recall)
+    offset_f_measure = util.f_measure(offset_precision, offset_recall,
+                                      beta=beta)
     return offset_precision, offset_recall, offset_f_measure
 
 

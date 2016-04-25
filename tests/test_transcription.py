@@ -51,46 +51,46 @@ OFFSET_SCORES = {
 }
 
 
-def test_match_offsets():
+def test_match_note_offsets():
 
     ref_int = REF[:, :2]
     est_int = EST[:, :2]
 
     matching = (
-        mir_eval.transcription.match_offsets(ref_int, est_int))
+        mir_eval.transcription.match_note_offsets(ref_int, est_int))
 
     assert matching == [(0, 0), (2, 2), (3, 3)]
 
 
-def test_match_offsets_strict():
+def test_match_note_offsets_strict():
 
     ref_int = REF[:, :2]
     est_int = EST[:, :2]
 
     matching = (
-        mir_eval.transcription.match_offsets(ref_int, est_int, strict=True))
+        mir_eval.transcription.match_note_offsets(ref_int, est_int, strict=True))
 
     assert matching == [(0, 0), (2, 2), (3, 4)]
 
 
-def test_match_onsets():
+def test_match_note_onsets():
 
     ref_int = REF[:, :2]
     est_int = EST[:, :2]
 
     matching = (
-        mir_eval.transcription.match_onsets(ref_int, est_int))
+        mir_eval.transcription.match_note_onsets(ref_int, est_int))
 
     assert matching == [(0, 0), (1, 1), (2, 2), (3, 3)]
 
 
-def test_match_onsets_strict():
+def test_match_note_onsets_strict():
 
     ref_int = REF[:, :2]
     est_int = EST[:, :2]
 
     matching = (
-        mir_eval.transcription.match_onsets(ref_int, est_int, strict=True))
+        mir_eval.transcription.match_note_onsets(ref_int, est_int, strict=True))
 
     assert matching == [(0, 0), (1, 1), (2, 2), (3, 3)]
 
@@ -238,7 +238,7 @@ def test_empty_ref():
     warnings.simplefilter('always')
     with warnings.catch_warnings(record=True) as out:
 
-        ref_int, ref_pitch = np.array([]), np.array([])
+        ref_int, ref_pitch = np.empty(shape=(0, 2)), np.array([])
         est_int, est_pitch = np.array([[0, 1]]), np.array([100])
 
         mir_eval.transcription.validate(ref_int, ref_pitch, est_int, est_pitch)
@@ -260,7 +260,7 @@ def test_empty_est():
     with warnings.catch_warnings(record=True) as out:
 
         ref_int, ref_pitch = np.array([[0, 1]]), np.array([100])
-        est_int, est_pitch = np.array([]), np.array([])
+        est_int, est_pitch = np.empty(shape=(0, 2)), np.array([])
 
         mir_eval.transcription.validate(ref_int, ref_pitch, est_int, est_pitch)
 
@@ -276,7 +276,7 @@ def test_empty_est():
 
 def test_precision_recall_f1_overlap_empty():
 
-    ref_int, ref_pitch = np.array([]), np.array([])
+    ref_int, ref_pitch = np.empty(shape=(0, 2)), np.array([])
     est_int, est_pitch = np.array([[0, 1]]), np.array([100])
 
     precision, recall, f1, avg_overlap_ratio = (
@@ -294,7 +294,7 @@ def test_precision_recall_f1_overlap_empty():
 
 def test_onset_precision_recall_f1_empty():
 
-    ref_int = np.array([])
+    ref_int = np.empty(shape=(0, 2))
     est_int = np.array([[0, 1]])
 
     precision, recall, f1 = (
@@ -310,7 +310,7 @@ def test_onset_precision_recall_f1_empty():
 
 def test_offset_precision_recall_f1_empty():
 
-    ref_int = np.array([])
+    ref_int = np.empty(shape=(0, 2))
     est_int = np.array([[0, 1]])
 
     precision, recall, f1 = (
