@@ -68,7 +68,8 @@ def test_match_note_offsets_strict():
     est_int = EST[:, :2]
 
     matching = (
-        mir_eval.transcription.match_note_offsets(ref_int, est_int, strict=True))
+        mir_eval.transcription.match_note_offsets(
+            ref_int, est_int, strict=True))
 
     assert matching == [(0, 0), (2, 2), (3, 4)]
 
@@ -90,7 +91,8 @@ def test_match_note_onsets_strict():
     est_int = EST[:, :2]
 
     matching = (
-        mir_eval.transcription.match_note_onsets(ref_int, est_int, strict=True))
+        mir_eval.transcription.match_note_onsets(
+            ref_int, est_int, strict=True))
 
     assert matching == [(0, 0), (1, 1), (2, 2), (3, 3)]
 
