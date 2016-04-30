@@ -120,7 +120,7 @@ def resample_multipitch(times, frequencies, target_times):
 
     Returns
     -------
-    frequencies_resampled : list of lists
+    frequencies_resampled : list of numpy arrays
         Frequency list of lists resampled to new timebase
     """
     if target_times.size == 0:
@@ -136,7 +136,7 @@ def resample_multipitch(times, frequencies, target_times):
     # This only works because we're using a nearest neighbor interpolator!
     frequency_index = np.arange(0, n_times)
 
-    # assume_sorted=True for efficiency
+    # times are already ordered so assume_sorted=True for efficiency
     # since we're interpolating the index, fill_value is set to the first index
     # that is out of range. We handle this in the next line.
     new_frequency_index = scipy.interpolate.interp1d(
@@ -161,6 +161,8 @@ def frequencies_to_midi(frequencies, ref_frequency=440.0):
     ----------
     frequencies : list of np.ndarray
         Original frequency values
+    ref_frequency : float
+        reference frequency in Hz.
 
     Returns
     -------
