@@ -10,6 +10,29 @@ from matplotlib.ticker import FuncFormatter, MultipleLocator
 from matplotlib.colors import LinearSegmentedColormap, LogNorm
 
 from .melody import freq_to_voicing
+from .util import midi_to_hz, hz_to_midi
+
+
+def __expand_limits(ax, limits, which='x'):
+    '''Helper function to expand axis limits'''
+
+    if which == 'x':
+        getter, setter = ax.get_xlim, ax.set_xlim
+    elif which == 'y':
+        getter, setter = ax.get_ylim, ax.set_ylim
+    else:
+        raise ValueError('invalid axis: {}'.format(which))
+
+    old_lims = getter()
+    new_lims = list(limits)
+
+    if np.isfinite(old_lims[0]):
+        new_lims[0] = min(old_lims[0], limits[0])
+
+    if np.isfinite(old_lims[1]):
+        new_lims[1] = max(old_lims[1], limits[1])
+
+    setter(new_lims)
 
 
 def segments(intervals, labels, base=None, height=None, text=False,
@@ -89,18 +112,14 @@ def segments(intervals, labels, base=None, height=None, text=False,
         seg_map[lab].update(style)
         seg_map[lab]['facecolor'] = seg_map[lab].pop('color')
         seg_map[lab].update(kwargs)
+        seg_map[lab]['label'] = lab
 
-    seen = set()
     for ival, lab in zip(intervals, labels):
-        rect_kwargs = seg_map[lab].copy()
-
-        if lab not in seen:
-            rect_kwargs['label'] = lab
-            seen.add(lab)
-
+        rect_kwargs = seg_map[lab]
         rect = Rectangle((ival[0], base), ival[1] - ival[0], height,
                          **rect_kwargs)
         ax.add_patch(rect)
+        rect_kwargs.pop('label', None)
 
         if text:
             ann = ax.annotate(lab,
@@ -111,7 +130,7 @@ def segments(intervals, labels, base=None, height=None, text=False,
 
     ax.set_yticks([])
 
-    ax.set_xlim([intervals.min(), intervals.max()])
+    __expand_limits(ax, [intervals.min(), intervals.max()], which='x')
 
     return ax
 
@@ -239,7 +258,7 @@ def labeled_intervals(intervals, labels, label_set=None,
         ax.set_yticks(base)
         ax.set_yticklabels(ticks, va='bottom')
 
-    ax.set_xlim([intervals.min(), intervals.max()])
+    __expand_limits(ax, [intervals.min(), intervals.max()], which='x')
 
     return ax
 
@@ -360,6 +379,9 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
         idx = frequencies > 0
         frequencies[idx] = hz_to_midi(frequencies[idx])
 
+        # Tick at integer midi notes
+        ax.yaxis.set_minor_locator(MultipleLocator(1))
+
     for idx in v_slices:
         ax.plot(times[idx], frequencies[idx], **style)
         style.pop('label', None)
@@ -370,8 +392,6 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
         for idx in u_slices:
             ax.plot(times[idx], frequencies[idx], **style)
 
-    # Tick at integer midi notes
-    ax.yaxis.set_minor_locator(MultipleLocator(1))
     return ax
 
 
@@ -462,41 +482,9 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None,
         ax.scatter(unvoiced_times, unvoiced_freqs, **style_unvoiced)
 
     # Tick at integer midi notes
-    ax.yaxis.set_minor_locator(MultipleLocator(1))
+    if midi:
+        ax.yaxis.set_minor_locator(MultipleLocator(1))
     return ax
-
-
-def hz_to_midi(freqs):
-    '''Convert Hz to MIDI numbers
-
-    Parameters
-    ----------
-    freqs : number or ndarray
-        Frequency/frequencies in Hz
-
-    Returns
-    -------
-    midi : number or ndarray
-        MIDI note numbers corresponding to input frequencies.
-        Note that these may be fractional.
-    '''
-    return 12.0 * (np.log2(freqs) - np.log2(440.0)) + 69.0
-
-
-def midi_to_hz(midi):
-    '''Convert MIDI numbers to Hz
-
-    Parameters
-    ----------
-    midi : number or ndarray
-        MIDI notes
-
-    Returns
-    -------
-    freqs : number or ndarray
-        Frequency/frequencies in Hz corresponding to `midi`
-    '''
-    return 440.0 * (2.0 ** ((midi - 69.0)/12.0))
 
 
 def piano_roll(intervals, pitches=None, midi=None, **kwargs):
@@ -535,6 +523,7 @@ def piano_roll(intervals, pitches=None, midi=None, **kwargs):
     # Minor tick at each semitone
     ax.yaxis.set_minor_locator(MultipleLocator(1))
 
+    ax.axis('auto')
     return ax
 
 
@@ -569,8 +558,6 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
 
     if labels is None:
         labels = ['Source {:d}'.format(_) for _ in range(len(sources))]
-
-    cmaps = []
 
     specs = []
     cumspec = None
@@ -609,8 +596,8 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
 
     ax.legend(handles=handles, labels=legend_labels)
 
-    ax.set_ylim([freqs.min(), freqs.max()])
-    ax.set_xlim([times.min(), times.max()])
+    __expand_limits(ax, [times.min(), times.max()], which='x')
+    __expand_limits(ax, [freqs.min(), freqs.max()], which='y')
     return ax
 
 

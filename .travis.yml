@@ -20,17 +20,17 @@ before_install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     - conda info -a
-    - deps='pip atlas numpy scipy sphinx nose six future pep8'
+    - deps='pip atlas numpy scipy sphinx nose six future pep8 matplotlib decorator'
     - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps 
     - source activate test-environment
     - pip install python-coveralls
     - pip install numpydoc
 
 install:
-    - pip install -e .
+    - pip install -e .[display]
 
 before_script:
-    - pep8 mir_eval tests evaluators
+    - pep8 mir_eval evaluators tests
 
 script:
     - nosetests -v --with-coverage --cover-package=mir_eval
