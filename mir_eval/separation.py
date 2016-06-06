@@ -389,7 +389,8 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
-def evaluate(reference_sources, estimated_sources, **kwargs):
+def evaluate(reference_sources, estimated_sources,
+            win=None, hop=None, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -406,6 +407,10 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
+    win : int, optional
+        Window length for framewise evaluation
+    hop : int, optional
+        Hop size for framewise evaluation
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -420,12 +425,22 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
     # Compute all the metrics
     scores = collections.OrderedDict()
 
-    sdr, sir, sar, perm = util.filter_kwargs(
-        bss_eval_sources,
-        reference_sources,
-        estimated_sources,
-        **kwargs
-    )
+    if win is not None and hop is not None:
+        sdr, sir, sar, perm = util.filter_kwargs(
+            bss_eval_sources_framewise,
+            reference_sources,
+            estimated_sources,
+            win,
+            hop,
+            **kwargs
+        )
+    else:
+        sdr, sir, sar, perm = util.filter_kwargs(
+            bss_eval_sources,
+            reference_sources,
+            estimated_sources,
+            **kwargs
+        )
 
     scores['Source to Distortion'] = sdr.tolist()
     scores['Source to Interference'] = sir.tolist()
