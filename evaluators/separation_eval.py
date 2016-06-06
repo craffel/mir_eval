@@ -12,7 +12,6 @@ import argparse
 import sys
 import os
 import glob
-import os
 import numpy as np
 import eval_utilities
 
