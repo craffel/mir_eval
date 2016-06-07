@@ -175,7 +175,7 @@ def bss_eval_sources(reference_sources, estimated_sources):
                 _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
     # select the best ordering
-    perms = list(itertools.permutations(range(nsrc)))
+    perms = list(itertools.permutations(list(range(nsrc))))
     mean_sir = np.empty(len(perms))
     dum = np.arange(nsrc)
     for (i, perm) in enumerate(perms):
