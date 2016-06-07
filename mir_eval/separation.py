@@ -226,11 +226,28 @@ def bss_eval_sources_framewise(
         true source number j)
 
     """
+
+    # make sure the input is of shape (nsrc, nsampl)
+    if estimated_sources.ndim == 1:
+        estimated_sources = estimated_sources[np.newaxis, :]
+    if reference_sources.ndim == 1:
+        reference_sources = reference_sources[np.newaxis, :]
+
+    validate(reference_sources, estimated_sources)
+    # If empty matrices were supplied, return empty lists (special case)
+    if reference_sources.size == 0 or estimated_sources.size == 0:
+        return np.array([]), np.array([]), np.array([]), np.array([])
+
     nsrc = reference_sources.shape[0]
 
     nwin = int(
         np.floor((reference_sources.shape[1] - win + hop) / hop)
     )
+    # make sure that more than 1 window will be evaluated
+    if nwin < 2:
+        raise ValueError('Invalid window size and hop size have been supplied.'
+                         'From these paramters it was determined that {} '
+                         'windows should be used.'.format(nwin))
 
     SDR = np.empty((nsrc, nwin))
     SIR = np.empty((nsrc, nwin))
