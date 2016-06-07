@@ -407,8 +407,13 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
-def evaluate(reference_sources, estimated_sources,
-            win=None, hop=None, **kwargs):
+def evaluate(
+    reference_sources,
+    estimated_sources,
+    win=None,
+    hop=None,
+    **kwargs
+):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples

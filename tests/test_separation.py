@@ -81,8 +81,9 @@ def __unit_test_sources_framewise_function(metric):
                                       "sdr, sir, sar, and perm will all be "
                                       "empty np.ndarrays")
         # And that the metric returns empty arrays
-        assert np.allclose(metric(np.array([]), np.array([]), 40, 20),
-                            np.array([]))
+        assert np.allclose(
+            metric(np.array([]), np.array([]), 40, 20), np.array([])
+        )
 
     # Test for error when there is a silent reference/estimated source
     ref_sources = np.vstack((np.zeros(100),
@@ -98,7 +99,7 @@ def __unit_test_sources_framewise_function(metric):
     ref_sources = np.random.random_sample((4, 100))
     est_sources = np.random.random_sample((3, 100))
     nose.tools.assert_raises(ValueError, metric,
-                            ref_sources, est_sources, 40, 20)
+                             ref_sources, est_sources, 40, 20)
 
     # Test for error when too many sources are provided
     sources = np.random.random_sample((mir_eval.separation.MAX_SOURCES*2, 400))
@@ -106,10 +107,12 @@ def __unit_test_sources_framewise_function(metric):
 
     # Test for invalid win/hop parameter detection
     est_sources = np.random.random_sample((4, 100))
-    nose.tools.assert_raises(ValueError, metric, ref_sources, est_sources,
-                    120, 20) # test with window larger than source lengths
-    nose.tools.assert_raises(ValueError, metric, ref_sources, est_sources,
-                    20, 120) # test with hop larger than source length
+    nose.tools.assert_raises(
+        ValueError, metric, ref_sources, est_sources, 120, 20
+    )  # test with window larger than source lengths
+    nose.tools.assert_raises(
+        ValueError, metric, ref_sources, est_sources, 20, 120
+    )  # test with hop larger than source length
 
 
 def __check_score(sco_f, metric, score, expected_score):
@@ -124,7 +127,7 @@ def test_separation_functions():
     fra_files = sorted(glob.glob(FRAMES_GLOB))
 
     assert len(ref_files) == len(est_files) == len(sco_files) \
-                == len(fra_files) > 0
+        == len(fra_files) > 0
 
     # Unit tests
     for metric in [mir_eval.separation.bss_eval_sources]:
@@ -133,7 +136,7 @@ def test_separation_functions():
         yield (__unit_test_sources_framewise_function, metric)
     # Regression tests
     for ref_f, est_f, sco_f, fra_f in zip(ref_files, est_files,
-                                            sco_files, fra_files):
+                                          sco_files, fra_files):
         with open(sco_f, 'r') as f:
             expected_scores = json.load(f)
         with open(fra_f, 'r') as f:
@@ -143,8 +146,10 @@ def test_separation_functions():
         est_sources = __load_and_stack_wavs(est_f)
         # Compute scores
         scores = mir_eval.separation.evaluate(ref_sources, est_sources)
-        frame_scores = mir_eval.separation.evaluate(ref_sources, est_sources,
-                        expected_frames['win'], expected_frames['hop'])
+        frame_scores = mir_eval.separation.evaluate(
+            ref_sources, est_sources,
+            expected_frames['win'], expected_frames['hop']
+        )
         # Compare them
         for metric in scores:
             # This is a simple hack to make nosetest's messages more useful
@@ -153,5 +158,5 @@ def test_separation_functions():
         for metric in frame_scores:
             if metric is not 'win' or metric is not 'hop':
                 # This is a simple hack to make nosetest's messages more useful
-                yield (__check_score, fra_f, metric, frame_scores[metric],
-                        expected_frames[metric])
+                yield (__check_score, fra_f, metric,
+                       frame_scores[metric], expected_frames[metric])
