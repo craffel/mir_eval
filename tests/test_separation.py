@@ -111,6 +111,7 @@ def __unit_test_sources_framewise_function(metric):
     nose.tools.assert_raises(ValueError, metric, ref_sources, est_sources,
                     20, 120) # test with hop larger than source length
 
+
 def __check_score(sco_f, metric, score, expected_score):
     assert np.allclose(score, expected_score, atol=A_TOL)
 
@@ -120,8 +121,10 @@ def test_separation_functions():
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
+    fra_files = sorted(glob.glob(FRAMES_GLOB))
 
-    assert len(ref_files) == len(est_files) == len(sco_files) > 0
+    assert len(ref_files) == len(est_files) == len(sco_files) \
+                == len(fra_files) > 0
 
     # Unit tests
     for metric in [mir_eval.separation.bss_eval_sources]:
@@ -129,16 +132,26 @@ def test_separation_functions():
     for metric in [mir_eval.separation.bss_eval_sources_framewise]:
         yield (__unit_test_sources_framewise_function, metric)
     # Regression tests
-    for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
+    for ref_f, est_f, sco_f, fra_f in zip(ref_files, est_files,
+                                            sco_files, fra_files):
         with open(sco_f, 'r') as f:
             expected_scores = json.load(f)
+        with open(fra_f, 'r') as f:
+            expected_frames = json.load(f)
         # Load in example source separation data
         ref_sources = __load_and_stack_wavs(ref_f)
         est_sources = __load_and_stack_wavs(est_f)
         # Compute scores
         scores = mir_eval.separation.evaluate(ref_sources, est_sources)
+        frame_scores = mir_eval.separation.evaluate(ref_sources, est_sources,
+                        expected_frames['win'], expected_frames['hop'])
         # Compare them
         for metric in scores:
             # This is a simple hack to make nosetest's messages more useful
             yield (__check_score, sco_f, metric, scores[metric],
                    expected_scores[metric])
+        for metric in frame_scores:
+            if metric is not 'win' or metric is not 'hop':
+                # This is a simple hack to make nosetest's messages more useful
+                yield (__check_score, fra_f, metric, frame_scores[metric],
+                        expected_frames[metric])
