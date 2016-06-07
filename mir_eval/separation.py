@@ -249,6 +249,7 @@ def bss_eval_sources_framewise(
                          'From these paramters it was determined that {} '
                          'windows should be used.'.format(nwin))
 
+    # compute the criteria across all windows
     SDR = np.empty((nsrc, nwin))
     SIR = np.empty((nsrc, nwin))
     SAR = np.empty((nsrc, nwin))
