@@ -175,7 +175,7 @@ def bss_eval_sources(reference_sources, estimated_sources):
                 _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
     # select the best ordering
-    perms = list(itertools.permutations(range(nsrc)))
+    perms = list(itertools.permutations(list(range(nsrc))))
     mean_sir = np.empty(len(perms))
     dum = np.arange(nsrc)
     for (i, perm) in enumerate(perms):
@@ -226,12 +226,30 @@ def bss_eval_sources_framewise(
         true source number j)
 
     """
+
+    # make sure the input is of shape (nsrc, nsampl)
+    if estimated_sources.ndim == 1:
+        estimated_sources = estimated_sources[np.newaxis, :]
+    if reference_sources.ndim == 1:
+        reference_sources = reference_sources[np.newaxis, :]
+
+    validate(reference_sources, estimated_sources)
+    # If empty matrices were supplied, return empty lists (special case)
+    if reference_sources.size == 0 or estimated_sources.size == 0:
+        return np.array([]), np.array([]), np.array([]), np.array([])
+
     nsrc = reference_sources.shape[0]
 
     nwin = int(
         np.floor((reference_sources.shape[1] - win + hop) / hop)
     )
+    # make sure that more than 1 window will be evaluated
+    if nwin < 2:
+        raise ValueError('Invalid window size and hop size have been supplied.'
+                         'From these paramters it was determined that {} '
+                         'windows should be used.'.format(nwin))
 
+    # compute the criteria across all windows
     SDR = np.empty((nsrc, nwin))
     SIR = np.empty((nsrc, nwin))
     SAR = np.empty((nsrc, nwin))
@@ -389,8 +407,13 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
-def evaluate(reference_sources, estimated_sources,
-            win=None, hop=None, **kwargs):
+def evaluate(
+    reference_sources,
+    estimated_sources,
+    win=None,
+    hop=None,
+    **kwargs
+):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples

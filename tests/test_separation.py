@@ -19,6 +19,7 @@ A_TOL = 1e-12
 REF_GLOB = 'tests/data/separation/ref*'
 EST_GLOB = 'tests/data/separation/est*'
 SCORES_GLOB = 'tests/data/separation/output*.json'
+FRAMES_GLOB = 'tests/data/separation/framewise*.json'
 
 
 def __load_and_stack_wavs(directory):
@@ -68,6 +69,52 @@ def __unit_test_separation_function(metric):
     nose.tools.assert_raises(ValueError, metric, sources, sources)
 
 
+def __unit_test_sources_framewise_function(metric):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        # First, test for a warning on empty audio data
+        metric(np.array([]), np.array([]), 400, 200)
+        assert len(w) == 2
+        assert issubclass(w[-1].category, UserWarning)
+        assert str(w[-1].message) == ("estimated_sources is empty, "
+                                      "should be of size (nsrc, nsample).  "
+                                      "sdr, sir, sar, and perm will all be "
+                                      "empty np.ndarrays")
+        # And that the metric returns empty arrays
+        assert np.allclose(
+            metric(np.array([]), np.array([]), 40, 20), np.array([])
+        )
+
+    # Test for error when there is a silent reference/estimated source
+    ref_sources = np.vstack((np.zeros(100),
+                             np.random.random_sample((2, 100))))
+    est_sources = np.vstack((np.zeros(100),
+                             np.random.random_sample((2, 100))))
+    nose.tools.assert_raises(ValueError, metric, ref_sources[:2],
+                             est_sources[1:], 40, 20)
+    nose.tools.assert_raises(ValueError, metric, ref_sources[1:],
+                             est_sources[:2], 40, 20)
+
+    # Test for error when shape is different
+    ref_sources = np.random.random_sample((4, 100))
+    est_sources = np.random.random_sample((3, 100))
+    nose.tools.assert_raises(ValueError, metric,
+                             ref_sources, est_sources, 40, 20)
+
+    # Test for error when too many sources are provided
+    sources = np.random.random_sample((mir_eval.separation.MAX_SOURCES*2, 400))
+    nose.tools.assert_raises(ValueError, metric, sources, sources, 40, 20)
+
+    # Test for invalid win/hop parameter detection
+    est_sources = np.random.random_sample((4, 100))
+    nose.tools.assert_raises(
+        ValueError, metric, ref_sources, est_sources, 120, 20
+    )  # test with window larger than source lengths
+    nose.tools.assert_raises(
+        ValueError, metric, ref_sources, est_sources, 20, 120
+    )  # test with hop larger than source length
+
+
 def __check_score(sco_f, metric, score, expected_score):
     assert np.allclose(score, expected_score, atol=A_TOL)
 
@@ -77,23 +124,39 @@ def test_separation_functions():
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
+    fra_files = sorted(glob.glob(FRAMES_GLOB))
 
-    assert len(ref_files) == len(est_files) == len(sco_files) > 0
+    assert len(ref_files) == len(est_files) == len(sco_files) \
+        == len(fra_files) > 0
 
     # Unit tests
     for metric in [mir_eval.separation.bss_eval_sources]:
         yield (__unit_test_separation_function, metric)
+    for metric in [mir_eval.separation.bss_eval_sources_framewise]:
+        yield (__unit_test_sources_framewise_function, metric)
     # Regression tests
-    for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
+    for ref_f, est_f, sco_f, fra_f in zip(ref_files, est_files,
+                                          sco_files, fra_files):
         with open(sco_f, 'r') as f:
             expected_scores = json.load(f)
+        with open(fra_f, 'r') as f:
+            expected_frames = json.load(f)
         # Load in example source separation data
         ref_sources = __load_and_stack_wavs(ref_f)
         est_sources = __load_and_stack_wavs(est_f)
         # Compute scores
         scores = mir_eval.separation.evaluate(ref_sources, est_sources)
+        frame_scores = mir_eval.separation.evaluate(
+            ref_sources, est_sources,
+            expected_frames['win'], expected_frames['hop']
+        )
         # Compare them
         for metric in scores:
             # This is a simple hack to make nosetest's messages more useful
             yield (__check_score, sco_f, metric, scores[metric],
                    expected_scores[metric])
+        for metric in frame_scores:
+            if metric is not 'win' or metric is not 'hop':
+                # This is a simple hack to make nosetest's messages more useful
+                yield (__check_score, fra_f, metric,
+                       frame_scores[metric], expected_frames[metric])
