@@ -430,6 +430,10 @@ def evaluate(
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
+    win : int, optional
+        Window length for framewise evaluation
+    hop : int, optional
+        Hop size for framewise evaluation
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
