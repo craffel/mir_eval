@@ -62,7 +62,7 @@ def validate(reference_sources, estimated_sources):
     if reference_sources.shape != estimated_sources.shape:
         raise ValueError('The shape of estimated sources and the true '
                          'sources should match.  reference_sources.shape '
-                         '= {}, estimated_sources '
+                         '= {}, estimated_sources.shape '
                          '= {}'.format(reference_sources.shape,
                                        estimated_sources.shape))
 
@@ -88,28 +88,21 @@ def validate(reference_sources, estimated_sources):
                          'source to be non-silent, having a silent estiamted '
                          'source will result in an underdetermined system.')
 
-    if estimated_sources.shape[0] > MAX_SOURCES:
-        raise ValueError('The supplied matrices should be of shape (n_sources,'
-                         ' n_samples) but estimated_sources.shape[0] = {} '
-                         'which is greater than '
-                         'mir_eval.separation.MAX_SOURCES = {}.  To override '
-                         'this check, set mir_eval.separation.MAX_SOURCES to '
-                         'a larger value.'.format(estimated_sources.shape[0],
-                                                  MAX_SOURCES))
-
-    if reference_sources.shape[0] > MAX_SOURCES:
-        raise ValueError('The supplied matrices should be of shape (n_sources,'
-                         ' n_samples) but reference_sources.shape[0] = {} '
-                         'which is greater than '
-                         'mir_eval.separation.MAX_SOURCES = {}.  To override '
-                         'this check, set mir_eval.separation.MAX_SOURCES to '
-                         'a larger value.'.format(estimated_sources.shape[0],
-                                                  MAX_SOURCES))
+    if (estimated_sources.shape[0] > MAX_SOURCES or
+            reference_sources.shape[0] > MAX_SOURCES):
+        raise ValueError('The supplied matrices should be of shape (nsrc,'
+                         ' nsampl) but reference_sources.shape[0] = {} and '
+                         'estimated_sources.shape[0] = {} which is greater '
+                         'than mir_eval.separation.MAX_SOURCES = {}.  To '
+                         'override this check, set '
+                         'mir_eval.separation.MAX_SOURCES to a '
+                         'larger value.'.format(reference_sources.shape[0],
+                                                estimated_sources.shape[0],
+                                                MAX_SOURCES))
 
 
-def bss_eval_sources(
-    reference_sources, estimated_sources, compute_permutation=True
-):
+def bss_eval_sources(reference_sources, estimated_sources,
+                     compute_permutation=True):
     """MATLAB translation of BSS_EVAL Toolbox
 
     Ordering and measurement of the separation quality for estimated source
@@ -131,11 +124,13 @@ def bss_eval_sources(
     Parameters
     ----------
     reference_sources : np.ndarray, shape=(nsrc, nsampl)
-        matrix containing true sources
+        matrix containing true sources (must have same shape as
+        estimated_sources)
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
-        matrix containing estimated sources
-    permute : boolean (True by default)
-        compute permutation of estimate/source combinations
+        matrix containing estimated sources (must have same shape as
+        reference_sources)
+    compute_permutation : bool, optional
+        compute permutation of estimate/source combinations (True by default)
 
     Returns
     -------
@@ -149,6 +144,7 @@ def bss_eval_sources(
         vector containing the best ordering of estimated sources in
         the mean SIR sense (estimated source number perm[j] corresponds to
         true source number j)
+        Note: perm will be [0, 1, ..., nsrc-1] if compute_permutation is False
 
     """
 
@@ -179,6 +175,16 @@ def bss_eval_sources(
                                         jtrue, 512)
                 sdr[jest, jtrue], sir[jest, jtrue], sar[jest, jtrue] = \
                     _bss_source_crit(s_true, e_spat, e_interf, e_artif)
+
+        # select the best ordering
+        perms = list(itertools.permutations(list(range(nsrc))))
+        mean_sir = np.empty(len(perms))
+        dum = np.arange(nsrc)
+        for (i, perm) in enumerate(perms):
+            mean_sir[i] = np.mean(sir[perm, dum])
+        popt = perms[np.argmax(mean_sir)]
+        idx = (popt, dum)
+        return (sdr[idx], sir[idx], sar[idx], np.asarray(popt))
     else:
         # compute criteria for only the simple correspondence
         # (estimate 1 is estimate corresponding to reference source 1, etc.)
@@ -193,30 +199,13 @@ def bss_eval_sources(
             sdr[j], sir[j], sar[j] = \
                 _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
-    # does user desire permutations?
-    if compute_permutation:
-        # select the best ordering
-        perms = list(itertools.permutations(list(range(nsrc))))
-        mean_sir = np.empty(len(perms))
-        dum = np.arange(nsrc)
-        for (i, perm) in enumerate(perms):
-            mean_sir[i] = np.mean(sir[perm, dum])
-        popt = perms[np.argmax(mean_sir)]
-        idx = (popt, dum)
-        return (sdr[idx], sir[idx], sar[idx], popt)
-    else:
         # return the default permutation for compatibility
-        popt = range(nsrc)
+        popt = np.arange(nsrc)
         return (sdr, sir, sar, popt)
 
 
-def bss_eval_sources_framewise(
-    reference_sources,
-    estimated_sources,
-    win,
-    hop,
-    compute_permutation=False
-):
+def bss_eval_sources_framewise(reference_sources, estimated_sources,
+                               window, hop, compute_permutation=False):
     """Framewise computation of bss_eval_sources
 
     Examples
@@ -233,15 +222,18 @@ def bss_eval_sources_framewise(
     Parameters
     ----------
     reference_sources : np.ndarray, shape=(nsrc, nsampl)
-        matrix containing true sources
+        matrix containing true sources (must have the same shape as
+        estimated_sources)
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
-        matrix containing estimated sources
-    win : int
-        window length
+        matrix containing estimated sources (must have the same shape as
+        reference_sources)
+    window : int
+        Window length for framewise evaluation
     hop : int
-        hop size (offset from beginning of previous window)
-    permute : boolean (False by default)
+        Hop size for framewise evaluation
+    compute_permutation : bool, optional
         compute permutation of estimate/source combinations for all windows
+        (False by default)
 
     Returns
     -------
@@ -255,6 +247,8 @@ def bss_eval_sources_framewise(
         vector containing the best ordering of estimated sources in
         the mean SIR sense (estimated source number perm[j] corresponds to
         true source number j)
+        Note: perm will be range(nsrc) for all windows if compute_permutation
+        is False
 
     """
 
@@ -272,29 +266,30 @@ def bss_eval_sources_framewise(
     nsrc = reference_sources.shape[0]
 
     nwin = int(
-        np.floor((reference_sources.shape[1] - win + hop) / hop)
+        np.floor((reference_sources.shape[1] - window + hop) / hop)
     )
     # make sure that more than 1 window will be evaluated
     if nwin < 2:
         raise ValueError('Invalid window size and hop size have been supplied.'
-                         'From these paramters it was determined that {} '
-                         'windows should be used.'.format(nwin))
+                         'From these paramters it was determined that only {} '
+                         'window(s) should be used.'.format(nwin))
 
     # compute the criteria across all windows
-    SDR = np.empty((nsrc, nwin))
-    SIR = np.empty((nsrc, nwin))
-    SAR = np.empty((nsrc, nwin))
+    sdr = np.empty((nsrc, nwin))
+    sir = np.empty((nsrc, nwin))
+    sar = np.empty((nsrc, nwin))
     perm = np.empty((nsrc, nwin))
 
+    # k iterates across all the windows
     for k in range(nwin):
-        K = slice(k * hop, k * hop + win)
-        SDR[:, k], SIR[:, k], SAR[:, k], perm[:, k] = bss_eval_sources(
-            reference_sources[:, K],
-            estimated_sources[:, K],
+        win_slice = slice(k * hop, k * hop + window)
+        sdr[:, k], sir[:, k], sar[:, k], perm[:, k] = bss_eval_sources(
+            reference_sources[:, win_slice],
+            estimated_sources[:, win_slice],
             compute_permutation
         )
 
-    return SDR, SIR, SAR, perm
+    return sdr, sir, sar, perm
 
 
 def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
@@ -440,13 +435,8 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
-def evaluate(
-    reference_sources,
-    estimated_sources,
-    win=None,
-    hop=None,
-    **kwargs
-):
+def evaluate(reference_sources, estimated_sources,
+             window=None, hop=None, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -463,7 +453,7 @@ def evaluate(
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
-    win : int, optional
+    window : int, optional
         Window length for framewise evaluation
     hop : int, optional
         Hop size for framewise evaluation
@@ -481,15 +471,18 @@ def evaluate(
     # Compute all the metrics
     scores = collections.OrderedDict()
 
-    if win is not None and hop is not None:
+    if window is not None and hop is not None:
         sdr, sir, sar, perm = util.filter_kwargs(
             bss_eval_sources_framewise,
             reference_sources,
             estimated_sources,
-            win,
+            window,
             hop,
             **kwargs
         )
+    elif window is not None or hop is not None:
+        raise ValueError('In order to perform windowed evaluation, both window'
+                         'and hop parameters must be supplied.')
     else:
         sdr, sir, sar, perm = util.filter_kwargs(
             bss_eval_sources,
