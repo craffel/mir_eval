@@ -134,8 +134,8 @@ def bss_eval_sources(
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
-    permute : boolean (True by default)
-        compute permutation of estimate/source combinations
+    compute_permutation : bool, optional
+        compute permutation of estimate/source combinations (True by default)
 
     Returns
     -------
@@ -149,6 +149,7 @@ def bss_eval_sources(
         vector containing the best ordering of estimated sources in
         the mean SIR sense (estimated source number perm[j] corresponds to
         true source number j)
+        Note: perm will be range(nsrc) if compute_permutation is False
 
     """
 
@@ -236,12 +237,13 @@ def bss_eval_sources_framewise(
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
-    win : int
-        window length
-    hop : int
-        hop size (offset from beginning of previous window)
-    permute : boolean (False by default)
+    win : int, optional
+        Window length for framewise evaluation
+    hop : int, optional
+        Hop size for framewise evaluation
+    compute_permutation : bool, optional
         compute permutation of estimate/source combinations for all windows
+        (False by default)
 
     Returns
     -------
@@ -255,6 +257,8 @@ def bss_eval_sources_framewise(
         vector containing the best ordering of estimated sources in
         the mean SIR sense (estimated source number perm[j] corresponds to
         true source number j)
+        Note: perm will be range(nsrc) for all windows if compute_permutation
+        is False
 
     """
 
