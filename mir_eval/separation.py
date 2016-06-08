@@ -108,7 +108,7 @@ def validate(reference_sources, estimated_sources):
 
 
 def bss_eval_sources(
-    reference_sources, estimated_sources, permute=True
+    reference_sources, estimated_sources, compute_permutation=True
 ):
     """MATLAB translation of BSS_EVAL Toolbox
 
@@ -166,7 +166,7 @@ def bss_eval_sources(
     nsrc = estimated_sources.shape[0]
 
     # does user desire permutations?
-    if permute:
+    if compute_permutation:
         # compute criteria for all possible pair matches
         sdr = np.empty((nsrc, nsrc))
         sir = np.empty((nsrc, nsrc))
@@ -194,7 +194,7 @@ def bss_eval_sources(
                 _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
     # does user desire permutations?
-    if permute:
+    if compute_permutation:
         # select the best ordering
         perms = list(itertools.permutations(list(range(nsrc))))
         mean_sir = np.empty(len(perms))
@@ -211,7 +211,11 @@ def bss_eval_sources(
 
 
 def bss_eval_sources_framewise(
-    reference_sources, estimated_sources, win, hop, permute=False
+    reference_sources,
+    estimated_sources,
+    win,
+    hop,
+    compute_permutation=False
 ):
     """Framewise computation of bss_eval_sources
 
@@ -285,7 +289,9 @@ def bss_eval_sources_framewise(
     for k in range(nwin):
         K = slice(k * hop, k * hop + win)
         SDR[:, k], SIR[:, k], SAR[:, k], perm[:, k] = bss_eval_sources(
-            reference_sources[:, K], estimated_sources[:, K], permute
+            reference_sources[:, K],
+            estimated_sources[:, K],
+            compute_permutation
         )
 
     return SDR, SIR, SAR, perm
