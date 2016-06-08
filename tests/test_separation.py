@@ -19,7 +19,6 @@ A_TOL = 1e-12
 REF_GLOB = 'tests/data/separation/ref*'
 EST_GLOB = 'tests/data/separation/est*'
 SCORES_GLOB = 'tests/data/separation/output*.json'
-FRAMES_GLOB = 'tests/data/separation/framewise*.json'
 
 
 def __load_and_stack_wavs(directory):
@@ -124,10 +123,8 @@ def test_separation_functions():
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
     sco_files = sorted(glob.glob(SCORES_GLOB))
-    fra_files = sorted(glob.glob(FRAMES_GLOB))
 
-    assert len(ref_files) == len(est_files) == len(sco_files) \
-        == len(fra_files) > 0
+    assert len(ref_files) == len(est_files) == len(sco_files) > 0
 
     # Unit tests
     for metric in [mir_eval.separation.bss_eval_sources]:
@@ -135,12 +132,11 @@ def test_separation_functions():
     for metric in [mir_eval.separation.bss_eval_sources_framewise]:
         yield (__unit_test_sources_framewise_function, metric)
     # Regression tests
-    for ref_f, est_f, sco_f, fra_f in zip(ref_files, est_files,
-                                          sco_files, fra_files):
+    for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
-            expected_scores = json.load(f)
-        with open(fra_f, 'r') as f:
-            expected_frames = json.load(f)
+            expected_results = json.load(f)
+            expected_scores = expected_results['Sources']
+            expected_frames = expected_results['Framewise']
         # Load in example source separation data
         ref_sources = __load_and_stack_wavs(ref_f)
         est_sources = __load_and_stack_wavs(est_f)
@@ -158,5 +154,5 @@ def test_separation_functions():
         for metric in frame_scores:
             if metric is not 'win' or metric is not 'hop':
                 # This is a simple hack to make nosetest's messages more useful
-                yield (__check_score, fra_f, metric,
+                yield (__check_score, sco_f, metric,
                        frame_scores[metric], expected_frames[metric])
