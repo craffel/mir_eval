@@ -5,6 +5,8 @@ All functions return a raw signal at the specified sampling rate.
 
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
+from scipy.interpolate import interp1d
+
 from . import util
 from . import chord
 
@@ -138,6 +140,59 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     # Normalize
     output /= np.abs(output).max()
     return output
+
+
+def pitch_contour(times, frequencies, fs, function=np.sin, length=None,
+                  kind='linear'):
+    '''Sonify a pitch contour.
+
+    Parameters
+    ----------
+    times : np.ndarray
+        time indices for each frequency measurement, in seconds
+
+    frequencies : np.ndarray
+        frequency measurements, in Hz.
+        Non-positive measurements will be interpreted as un-voiced samples.
+
+    fs : int
+        desired sampling rate of the output signal
+
+    function : function
+        function to use to synthesize notes, should be 2pi-periodic
+
+    length : int
+        desired number of samples in the output signal,
+        defaults to ``max(times)*fs``
+
+    kind : str
+        Interpolation mode for the frequency estimator.
+        See: ``scipy.interpolate.interp1d`` for valid settings.
+
+    Returns
+    -------
+    output : np.ndarray
+        synthesized version of the pitch contour
+    '''
+
+    fs = float(fs)
+
+    if length is None:
+        length = int(times.max() * fs)
+
+    # Squash the negative frequencies.
+    # wave(0) = 0, so clipping here will un-voice the corresponding instants
+    frequencies = np.maximum(frequencies, 0.0)
+
+    # Build a frequency interpolator
+    f_interp = interp1d(times * fs, 2 * np.pi * frequencies / fs, kind=kind,
+                        fill_value=0.0, bounds_error=False, copy=False)
+
+    # Estimate frequency at sample points
+    f_est = f_interp(np.arange(length))
+
+    # Sonify the waveform
+    return function(np.cumsum(f_est))
 
 
 def chroma(chromagram, times, fs, **kwargs):
