@@ -107,7 +107,9 @@ def validate(reference_sources, estimated_sources):
                                                   MAX_SOURCES))
 
 
-def bss_eval_sources(reference_sources, estimated_sources):
+def bss_eval_sources(
+    reference_sources, estimated_sources, compute_permutation=True
+):
     """MATLAB translation of BSS_EVAL Toolbox
 
     Ordering and measurement of the separation quality for estimated source
@@ -132,6 +134,8 @@ def bss_eval_sources(reference_sources, estimated_sources):
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
+    permute : boolean (True by default)
+        compute permutation of estimate/source combinations
 
     Returns
     -------
@@ -161,32 +165,57 @@ def bss_eval_sources(reference_sources, estimated_sources):
 
     nsrc = estimated_sources.shape[0]
 
-    # compute criteria for all possible pair matches
-    sdr = np.empty((nsrc, nsrc))
-    sir = np.empty((nsrc, nsrc))
-    sar = np.empty((nsrc, nsrc))
-    for jest in range(nsrc):
-        for jtrue in range(nsrc):
+    # does user desire permutations?
+    if compute_permutation:
+        # compute criteria for all possible pair matches
+        sdr = np.empty((nsrc, nsrc))
+        sir = np.empty((nsrc, nsrc))
+        sar = np.empty((nsrc, nsrc))
+        for jest in range(nsrc):
+            for jtrue in range(nsrc):
+                s_true, e_spat, e_interf, e_artif = \
+                    _bss_decomp_mtifilt(reference_sources,
+                                        estimated_sources[jest],
+                                        jtrue, 512)
+                sdr[jest, jtrue], sir[jest, jtrue], sar[jest, jtrue] = \
+                    _bss_source_crit(s_true, e_spat, e_interf, e_artif)
+    else:
+        # compute criteria for only the simple correspondence
+        # (estimate 1 is estimate corresponding to reference source 1, etc.)
+        sdr = np.empty(nsrc)
+        sir = np.empty(nsrc)
+        sar = np.empty(nsrc)
+        for j in range(nsrc):
             s_true, e_spat, e_interf, e_artif = \
                 _bss_decomp_mtifilt(reference_sources,
-                                    estimated_sources[jest],
-                                    jtrue, 512)
-            sdr[jest, jtrue], sir[jest, jtrue], sar[jest, jtrue] = \
+                                    estimated_sources[j],
+                                    j, 512)
+            sdr[j], sir[j], sar[j] = \
                 _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
-    # select the best ordering
-    perms = list(itertools.permutations(list(range(nsrc))))
-    mean_sir = np.empty(len(perms))
-    dum = np.arange(nsrc)
-    for (i, perm) in enumerate(perms):
-        mean_sir[i] = np.mean(sir[perm, dum])
-    popt = perms[np.argmax(mean_sir)]
-    idx = (popt, dum)
-    return (sdr[idx], sir[idx], sar[idx], popt)
+    # does user desire permutations?
+    if compute_permutation:
+        # select the best ordering
+        perms = list(itertools.permutations(list(range(nsrc))))
+        mean_sir = np.empty(len(perms))
+        dum = np.arange(nsrc)
+        for (i, perm) in enumerate(perms):
+            mean_sir[i] = np.mean(sir[perm, dum])
+        popt = perms[np.argmax(mean_sir)]
+        idx = (popt, dum)
+        return (sdr[idx], sir[idx], sar[idx], popt)
+    else:
+        # return the default permutation for compatibility
+        popt = range(nsrc)
+        return (sdr, sir, sar, popt)
 
 
 def bss_eval_sources_framewise(
-    reference_sources, estimated_sources, win, hop
+    reference_sources,
+    estimated_sources,
+    win,
+    hop,
+    compute_permutation=False
 ):
     """Framewise computation of bss_eval_sources
 
@@ -208,9 +237,11 @@ def bss_eval_sources_framewise(
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
     win : int
-        Window length
+        window length
     hop : int
-        Hop size
+        hop size (offset from beginning of previous window)
+    permute : boolean (False by default)
+        compute permutation of estimate/source combinations for all windows
 
     Returns
     -------
@@ -258,7 +289,9 @@ def bss_eval_sources_framewise(
     for k in range(nwin):
         K = slice(k * hop, k * hop + win)
         SDR[:, k], SIR[:, k], SAR[:, k], perm[:, k] = bss_eval_sources(
-            reference_sources[:, K], estimated_sources[:, K]
+            reference_sources[:, K],
+            estimated_sources[:, K],
+            compute_permutation
         )
 
     return SDR, SIR, SAR, perm
