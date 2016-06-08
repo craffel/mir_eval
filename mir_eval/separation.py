@@ -134,6 +134,8 @@ def bss_eval_sources(
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
+    permute : boolean (True by default)
+        compute permutation of estimate/source combinations
 
     Returns
     -------
@@ -209,7 +211,7 @@ def bss_eval_sources(
 
 
 def bss_eval_sources_framewise(
-    reference_sources, estimated_sources, win, hop
+    reference_sources, estimated_sources, win, hop, permute=False
 ):
     """Framewise computation of bss_eval_sources
 
@@ -231,9 +233,11 @@ def bss_eval_sources_framewise(
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
     win : int
-        Window length
+        window length
     hop : int
-        Hop size
+        hop size (offset from beginning of previous window)
+    permute : boolean (False by default)
+        compute permutation of estimate/source combinations for all windows
 
     Returns
     -------
@@ -281,7 +285,7 @@ def bss_eval_sources_framewise(
     for k in range(nwin):
         K = slice(k * hop, k * hop + win)
         SDR[:, k], SIR[:, k], SAR[:, k], perm[:, k] = bss_eval_sources(
-            reference_sources[:, K], estimated_sources[:, K], False
+            reference_sources[:, K], estimated_sources[:, K], permute
         )
 
     return SDR, SIR, SAR, perm
