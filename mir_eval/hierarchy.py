@@ -40,11 +40,12 @@ References
 
 '''
 
-import numpy as np
-import scipy.sparse
 import collections
 import itertools
 import warnings
+
+import numpy as np
+import scipy.sparse
 
 from . import util
 from .segment import validate_structure
@@ -191,7 +192,7 @@ def _meet(intervals_hier, labels_hier, frame_size):
         # Map intervals to frame indices
         int_frames = (_round(intervals, frame_size) / frame_size).astype(int)
 
-        # For each intervals i, j where the labels agree, update the meet matrix
+        # For each intervals i, j where labels agree, update the meet matrix
         for (seg_i, seg_j) in zip(*np.where(int_agree)):
             idx_i = slice(*list(int_frames[seg_i]))
             idx_j = slice(*list(int_frames[seg_j]))
@@ -269,30 +270,35 @@ def _gauc(ref_lca, est_lca, transitive, window):
         ref_score = np.asarray(ref_score.todense()).squeeze()
         est_score = np.asarray(est_score.todense()).squeeze()
 
-        if transitive:
-            # Transitive: count comparisons across any level
-            ref_rank = np.greater.outer(ref_score, ref_score)
-        else:
-            # Non-transitive: count comparisons only across immediate levels
-            ref_rank = np.equal.outer(ref_score, ref_score + 1)
-
-        est_rank = np.greater.outer(est_score, est_score)
-
         # Don't count the query as a result
         # when query < window, query itself is the index within the slice
         # otherwise, query is located at the center of the slice, window
         # (this also holds when the slice goes off the end of the array.)
         idx = min(query, window)
-        ref_rank[idx, :] = False
-        ref_rank[:, idx] = False
 
-        # Compute normalization constant
-        normalizer = float(ref_rank.sum())
+        ref_score = np.concatenate((ref_score[:idx], ref_score[idx+1:]))
+        est_score = np.concatenate((est_score[:idx], est_score[idx+1:]))
 
-        # Add up agreement for frames
-        if normalizer > 0:
-            score += np.sum(np.logical_and(ref_rank, est_rank)) / normalizer
-            num_frames += 1
+        # For each level, how frames != q do we have at that level?
+        ref_map = collections.defaultdict(lambda: 0)
+        ref_map.update(dict(zip(*np.unique(ref_score, return_counts=True))))
+
+        if transitive:
+            normalizer = sum([ref_map[i] * ref_map[j] for i, j in
+                              itertools.combinations(ref_map.keys(), 2)])
+        else:
+            normalizer = sum([ref_map[i] * ref_map[i+1] for i in
+                              list(ref_map.keys())])
+
+        # If there are no comparisons to be made, move to the next frame
+        if normalizer == 0:
+            continue
+
+        inversions = _compare_frame_rankings(ref_score, est_score,
+                                             transitive=transitive)
+
+        score += 1.0 - inversions / float(normalizer)
+        num_frames += 1
 
     # Normalize by the number of frames counted.
     # If no frames are counted, take the convention 0/0 -> 0
@@ -302,6 +308,91 @@ def _gauc(ref_lca, est_lca, transitive, window):
         score = 0.0
 
     return score
+
+
+def _count_inversions(a, b):
+    '''Count the number of inversions in two numpy arrays:
+
+    # points i, j where a[i] >= b[j]
+
+    Parameters
+    ----------
+    a, b : np.ndarray, shape=(n,) (m,)
+        The arrays to be compared.
+
+        This implementation is optimized for arrays with many
+        repeated values.
+
+    Returns
+    -------
+    inversions : int
+    '''
+
+    a, a_counts = np.unique(a, return_counts=True)
+    b, b_counts = np.unique(b, return_counts=True)
+
+    inversions = 0
+    i = 0
+    j = 0
+
+    while i < len(a) and j < len(b):
+        if a[i] < b[j]:
+            i += 1
+        elif a[i] >= b[j]:
+            inversions += sum(a_counts[i:]) * b_counts[j]
+            j += 1
+
+    return inversions
+
+
+def _compare_frame_rankings(ref, est, transitive=False):
+    '''Compute the number of ranking disagreements in two lists.
+
+    Parameters
+    ----------
+    ref : np.ndarray, shape=(n,)
+    est : np.ndarray, shape=(n,)
+        Reference and estimate ranked lists.
+        `ref[i]` is the relevance score for point `i`.
+
+    transitive : bool
+        If true, all pairs of reference levels are compared.
+        If false, only adjacent pairs of reference levels are compared.
+
+    Returns
+    -------
+    inversions : int
+        The number of pairs of indices `i, j` where
+        `ref[i] < ref[j]` but `est[i] >= est[j]`.
+    '''
+
+    idx = np.argsort(ref)
+    ref_sorted = ref[idx]
+    est_sorted = est[idx]
+
+    # Find the break-points in ref_sorted
+    levels, positions = np.unique(ref_sorted, return_index=True)
+
+    positions = list(positions) + [len(ref_sorted)]
+
+    index = collections.defaultdict(lambda: slice(0))
+    for level, start, end in zip(levels, positions[:-1], positions[1:]):
+        index[level] = slice(start, end)
+
+    # Now that we have values sorted, apply the inversion-counter to
+    # pairs of reference values
+    if transitive:
+        level_pairs = itertools.combinations(levels, 2)
+    else:
+        level_pairs = [(i, i+1) for i in levels]
+
+    inversions = 0
+
+    for level_1, level_2 in level_pairs:
+        inversions += _count_inversions(est_sorted[index[level_1]],
+                                        est_sorted[index[level_2]])
+
+    return inversions
 
 
 def validate_hier_intervals(intervals_hier):
@@ -475,8 +566,10 @@ def lmeasure(reference_intervals_hier, reference_labels_hier,
     validate_hier_intervals(estimated_intervals_hier)
 
     # Build the least common ancestor matrices
-    ref_meet = _meet(reference_intervals_hier, reference_labels_hier, frame_size)
-    est_meet = _meet(estimated_intervals_hier, estimated_labels_hier, frame_size)
+    ref_meet = _meet(reference_intervals_hier, reference_labels_hier,
+                     frame_size)
+    est_meet = _meet(estimated_intervals_hier, estimated_labels_hier,
+                     frame_size)
 
     # Compute precision and recall
     l_recall = _gauc(ref_meet, est_meet, True, None)
