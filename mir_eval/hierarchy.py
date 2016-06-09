@@ -99,6 +99,29 @@ def _hierarchy_bounds(intervals_hier):
     return min(boundaries), max(boundaries)
 
 
+def _align_intervals(int_hier, lab_hier, t_min=0.0, t_max=None):
+    '''Align a hierarchical annotation to span a fixed start and end time.
+
+    Parameters
+    ----------
+    int_hier : list of list of intervals
+    lab_hier : list of list of str
+        Hierarchical segment annotations, encoded as a
+        list of list of intervals (int_hier) and list of
+        list of strings (lab_hier)
+
+    Returns
+    -------
+    intervals_hier, labels_hier
+        int_hier and lab_hier aligned to span `[t_min, t_max]`.
+    '''
+    return [list(_) for _ in zip(*[util.adjust_intervals(np.asarray(ival),
+                                                         labels=lab,
+                                                         t_min=t_min,
+                                                         t_max=t_max)
+                                   for ival, lab in zip(int_hier, lab_hier)])]
+
+
 def _lca(intervals_hier, frame_size):
     '''Compute the (sparse) least-common-ancestor (LCA) matrix for a
     hierarchical segmentation.
@@ -382,7 +405,7 @@ def _compare_frame_rankings(ref, est, transitive=False):
         level_pairs = [(i, i+1) for i in levels]
 
     level_pairs, lcounter = itertools.tee(level_pairs)
-    
+
     normalizer = float(sum([ref_map[i] * ref_map[j] for (i, j) in lcounter]))
 
     if normalizer == 0:
@@ -666,11 +689,15 @@ def evaluate(ref_intervals_hier, ref_labels_hier,
 
     # Pre-process the intervals to match the range of the reference,
     # and start at 0
-    ref_intervals_hier, ref_labels_hier = [list(_) for _ in zip(*[util.adjust_intervals(np.asarray(_int),
-        labels=lab, t_min=0.0) for _int, lab in zip(ref_intervals_hier, ref_labels_hier)])]
+    ref_intervals_hier, ref_labels_hier = _align_intervals(ref_intervals_hier,
+                                                           ref_labels_hier,
+                                                           t_min=0.0,
+                                                           t_max=None)
 
-    est_intervals_hier, est_labels_hier = [list(_) for _ in zip(*[util.adjust_intervals(np.asarray(_int),
-        labels=lab, t_min=0.0, t_max=t_end) for _int, lab in zip(est_intervals_hier, est_labels_hier)])]
+    est_intervals_hier, est_labels_hier = _align_intervals(est_intervals_hier,
+                                                           est_labels_hier,
+                                                           t_min=0.0,
+                                                           t_max=t_end)
 
     scores = collections.OrderedDict()
 
