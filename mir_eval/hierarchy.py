@@ -279,26 +279,14 @@ def _gauc(ref_lca, est_lca, transitive, window):
         ref_score = np.concatenate((ref_score[:idx], ref_score[idx+1:]))
         est_score = np.concatenate((est_score[:idx], est_score[idx+1:]))
 
-        # For each level, how frames != q do we have at that level?
-        ref_map = collections.defaultdict(lambda: 0)
-        ref_map.update(dict(zip(*np.unique(ref_score, return_counts=True))))
-
-        if transitive:
-            normalizer = sum([ref_map[i] * ref_map[j] for i, j in
-                              itertools.combinations(ref_map.keys(), 2)])
-        else:
-            normalizer = sum([ref_map[i] * ref_map[i+1] for i in
-                              list(ref_map.keys())])
-
         # If there are no comparisons to be made, move to the next frame
-        if normalizer == 0:
-            continue
 
-        inversions = _compare_frame_rankings(ref_score, est_score,
-                                             transitive=transitive)
+        inversions, normalizer = _compare_frame_rankings(ref_score, est_score,
+                                                         transitive=transitive)
 
-        score += 1.0 - inversions / float(normalizer)
-        num_frames += 1
+        if normalizer:
+            score += 1.0 - inversions / float(normalizer)
+            num_frames += 1
 
     # Normalize by the number of frames counted.
     # If no frames are counted, take the convention 0/0 -> 0
@@ -339,7 +327,7 @@ def _count_inversions(a, b):
         if a[i] < b[j]:
             i += 1
         elif a[i] >= b[j]:
-            inversions += sum(a_counts[i:]) * b_counts[j]
+            inversions += np.sum(a_counts[i:]) * b_counts[j]
             j += 1
 
     return inversions
@@ -371,13 +359,20 @@ def _compare_frame_rankings(ref, est, transitive=False):
     est_sorted = est[idx]
 
     # Find the break-points in ref_sorted
-    levels, positions = np.unique(ref_sorted, return_index=True)
+    levels, positions, counts = np.unique(ref_sorted,
+                                          return_index=True,
+                                          return_counts=True)
 
-    positions = list(positions) + [len(ref_sorted)]
+    positions = list(positions)
+    positions.append(len(ref_sorted))
 
     index = collections.defaultdict(lambda: slice(0))
-    for level, start, end in zip(levels, positions[:-1], positions[1:]):
+    ref_map = collections.defaultdict(lambda: 0)
+
+    for level, cnt, start, end in zip(levels, counts,
+                                      positions[:-1], positions[1:]):
         index[level] = slice(start, end)
+        ref_map[level] = cnt
 
     # Now that we have values sorted, apply the inversion-counter to
     # pairs of reference values
@@ -386,13 +381,20 @@ def _compare_frame_rankings(ref, est, transitive=False):
     else:
         level_pairs = [(i, i+1) for i in levels]
 
+    level_pairs, lcounter = itertools.tee(level_pairs)
+    
+    normalizer = float(sum([ref_map[i] * ref_map[j] for (i, j) in lcounter]))
+
+    if normalizer == 0:
+        return 0, 0.0
+
     inversions = 0
 
     for level_1, level_2 in level_pairs:
         inversions += _count_inversions(est_sorted[index[level_1]],
                                         est_sorted[index[level_2]])
 
-    return inversions
+    return inversions, float(normalizer)
 
 
 def validate_hier_intervals(intervals_hier):
