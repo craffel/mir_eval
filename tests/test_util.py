@@ -1,12 +1,12 @@
 ''' Unit tests for utils
 '''
 
+import collections
 
 import numpy as np
 import nose.tools
 import mir_eval
 from mir_eval import util
-import collections
 
 
 def test_interpolate_intervals():
@@ -293,3 +293,26 @@ def test_has_kwargs():
     yield __test, False, f3
     yield __test, True, f4
     yield __test, True, f5
+
+
+def test_sort_labeled_intervals():
+
+    def __test_labeled(x, labels, x_true, lab_true):
+        xs, ls = mir_eval.util.sort_labeled_intervals(x, labels)
+
+        assert np.allclose(xs, x_true)
+        nose.tools.eq_(ls, lab_true)
+
+    def __test(x, x_true):
+        xs = mir_eval.util.sort_labeled_intervals(x)
+        assert np.allclose(xs, x_true)
+
+    x1 = np.asarray([[10, 20], [0, 10]])
+    x1_true = np.asarray([[0, 10], [10, 20]])
+    labels = ['a', 'b']
+    labels_true = ['b', 'a']
+
+    yield __test_labeled, x1, labels, x1_true, labels_true
+    yield __test, x1, x1_true
+    yield __test_labeled, x1_true, labels_true, x1_true, labels_true
+    yield __test, x1_true, x1_true
