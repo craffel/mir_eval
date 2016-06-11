@@ -26,6 +26,7 @@ def __expand_limits(ax, limits, which='x'):
     old_lims = getter()
     new_lims = list(limits)
 
+    # infinite limits occur on new axis objects with no data
     if np.isfinite(old_lims[0]):
         new_lims[0] = min(old_lims[0], limits[0])
 
@@ -55,7 +56,7 @@ def segments(intervals, labels, base=None, height=None, text=False,
         By default, this will be the bottom of the plot.
 
     height : number
-        The height of the base of the rectangles.
+        The height of the rectangles.
         By default, this will be the top of the plot (minus `base`).
 
     text : bool
@@ -65,7 +66,7 @@ def segments(intervals, labels, base=None, height=None, text=False,
     text_kw : dict
         If `text==True`, the properties of the text
         object can be specified here.
-        See `matplotlib.pyplot.text` for valid parameters
+        See `matplotlib.pyplot.Text` for valid parameters
 
     ax : matplotlib.pyplot.axes
         An axis handle on which to draw the segmentation.
@@ -110,16 +111,16 @@ def segments(intervals, labels, base=None, height=None, text=False,
         style = next(cycler)
         seg_map[lab] = seg_def_style.copy()
         seg_map[lab].update(style)
+        # Swap color -> facecolor here so we preserve edgecolor on rects
         seg_map[lab]['facecolor'] = seg_map[lab].pop('color')
         seg_map[lab].update(kwargs)
         seg_map[lab]['label'] = lab
 
     for ival, lab in zip(intervals, labels):
-        rect_kwargs = seg_map[lab]
         rect = Rectangle((ival[0], base), ival[1] - ival[0], height,
-                         **rect_kwargs)
+                         **seg_map[lab])
         ax.add_patch(rect)
-        rect_kwargs.pop('label', None)
+        seg_map[lab].pop('label', None)
 
         if text:
             ann = ax.annotate(lab,
@@ -153,16 +154,18 @@ def labeled_intervals(intervals, labels, label_set=None,
 
     label_set : list
         An (ordered) list of labels to determine the plotting order.
-        If not provided, the labels will be inferred from existing
-        `yticklabels`.
+        If not provided, the labels will be inferred from
+        `ax.get_yticklabels()`.
         If no `yticklabels` exist, then the sorted set of unique values
         in `labels` is taken as the label set.
 
     base : np.ndarray, shape=(n,), optional
-        Vertical positions of each label
+        Vertical positions of each label.
+        By default, labels are positioned at integers `np.arange(len(labels))`.
 
     height : np.ndarray, shape=(n,), optional
-        Height for each label
+        Height for each label.
+        By default, each label has `height=1`.
 
     extend_labels : bool
         If `False`, only values of `labels` that also exist in `label_set`
@@ -197,6 +200,7 @@ def labeled_intervals(intervals, labels, label_set=None,
     if label_set is None:
         # If we have non-empty pre-existing tick labels, use them
         label_set = [_.get_text() for _ in ax.get_yticklabels()]
+        # If none of the label strings have content, treat it as empty
         if not any(label_set):
             label_set = []
     else:
@@ -226,6 +230,7 @@ def labeled_intervals(intervals, labels, label_set=None,
         seg_map[lab] = dict(label=lab)
         seg_map[lab].update(seg_def_style)
         seg_map[lab].update(style)
+        # Swap color->facecolor to preserve edge color on rects
         seg_map[lab]['facecolor'] = seg_map[lab].pop('color')
         seg_map[lab].update(kwargs)
 
@@ -263,7 +268,7 @@ def labeled_intervals(intervals, labels, label_set=None,
     return ax
 
 
-def hierarchy(intervals_hier, labels_hier, levels=None, **kwargs):
+def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
     '''Plot a hierarchical segmentation
 
     Parameters
@@ -284,7 +289,7 @@ def hierarchy(intervals_hier, labels_hier, levels=None, **kwargs):
         Each element `levels[i]` is a label for the `i`th segmentation.
         This is typically used to denote the levels in a segment hierarchy.
 
-    kwargs:
+    kwargs :
         Additional keyword arguments to `labeled_intervals`.
 
     Returns
@@ -298,8 +303,8 @@ def hierarchy(intervals_hier, labels_hier, levels=None, **kwargs):
         levels = list(range(len(intervals_hier)))
 
     # Get the axis handle up front
-    kwargs.setdefault('ax', plt.gca())
-    ax = kwargs['ax']
+    if ax is None:
+        ax = plt.gca()
 
     # Count the pre-existing patches
     n_patches = len(ax.patches)
@@ -307,12 +312,12 @@ def hierarchy(intervals_hier, labels_hier, levels=None, **kwargs):
     for ints, labs, key in zip(intervals_hier[::-1],
                                labels_hier[::-1],
                                levels[::-1]):
-        labeled_intervals(ints, labs, label=key, **kwargs)
+        labeled_intervals(ints, labs, label=key, ax=ax, **kwargs)
 
     # Reverse the patch ordering for anything we've added.
     # This way, intervals are listed in the legend from top to bottom
     ax.patches[n_patches:] = ax.patches[n_patches:][::-1]
-    return kwargs['ax']
+    return ax
 
 
 def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
@@ -347,8 +352,8 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
 
     Returns
     -------
-    ax
-        Handle to the plotting axes
+    ax : matplotlib.pyplot.axes._subplots.AxesSubplot
+        A handle to the (possibly constructed) plot axes
     '''
 
     if ax is None:
@@ -362,9 +367,12 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
     v_changes = 1 + np.flatnonzero(voicings[1:] != voicings[:-1])
     v_changes = np.unique(np.concatenate([[0], v_changes, [len(voicings)]]))
 
+    # Set up arrays of slices for voiced and unvoiced regions
     v_slices, u_slices = [], []
     for start, end in zip(v_changes, v_changes[1:]):
         idx = slice(start, end)
+        # A region is voiced if its starting sample is voiced
+        # It's unvoiced if none of the samples in the region are voiced.
         if voicings[start]:
             v_slices.append(idx)
         elif frequencies[idx].all():
@@ -409,7 +417,7 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None,
         Voicing is indicated by sign (positive for voiced,
         non-positive for non-voiced).
 
-        `times` and `pitches` should be in the format produced by
+        `times` and `frequencies` should be in the format produced by
         :func:`mir_eval.io.load_ragged_time_series`
 
     midi : bool
@@ -431,8 +439,8 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None,
 
     Returns
     -------
-    ax
-        Handle to the plotting axes
+    ax : matplotlib.pyplot.axes._subplots.AxesSubplot
+        A handle to the (possibly constructed) plot axes
     '''
 
     if ax is None:
@@ -508,8 +516,8 @@ def piano_roll(intervals, pitches=None, midi=None, **kwargs):
 
     Returns
     -------
-    ax :
-        Handle to the plotting axis
+    ax : matplotlib.pyplot.axes._subplots.AxesSubplot
+        A handle to the (possibly constructed) plot axes
     '''
 
     if midi is None:
@@ -542,7 +550,7 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
         An optional list of descriptors corresponding to each source
 
     ax : matplotlib.pyplot.axes
-        An axis handle on which to draw the intervals.
+        An axis handle on which to draw the spectrograms.
         If none is provided, a new set of axes is created.
 
     kwargs :
@@ -559,10 +567,13 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
     if labels is None:
         labels = ['Source {:d}'.format(_) for _ in range(len(sources))]
 
-    specs = []
-    cumspec = None
     kwargs.setdefault('scaling', 'spectrum')
 
+    # The cumulative spectrogram across sources
+    # is used to establish the reference power
+    # for each individual source
+    cumspec = None
+    specs = []
     for i, src in enumerate(sources):
         freqs, times, spec = spectrogram(src, fs=fs, **kwargs)
         specs.append(spec)
@@ -577,6 +588,9 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
     legend_entries = []
     for i, spec in enumerate(specs):
 
+        # For each source, grab a new color from the cycler
+        # Then construct a colormap that interpolates from
+        # [transparent white -> new color]
         color = next(ax._get_lines.prop_cycler)['color']
         cmap = LinearSegmentedColormap.from_list(labels[i],
                                                  [(1.0, 1.0, 1.0, 0.0),
