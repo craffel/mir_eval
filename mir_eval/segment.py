@@ -45,13 +45,14 @@ Metrics
   estimated segments
 '''
 
+import collections
+import warnings
+
 import numpy as np
 import scipy.stats
 import scipy.sparse
 import scipy.misc
 import scipy.special
-import collections
-import warnings
 
 from . import util
 
@@ -131,7 +132,7 @@ def validate_structure(reference_intervals, reference_labels,
         # Check only when intervals are non-empty
         if intervals.size > 0:
             # Make sure intervals start at 0
-            if not np.allclose(intervals[0, 0], 0.0):
+            if not np.allclose(intervals.min(), 0.0):
                 raise ValueError('Segment intervals do not start at 0')
 
     if reference_intervals.size == 0:
@@ -140,8 +141,8 @@ def validate_structure(reference_intervals, reference_labels,
         warnings.warn("Estimated intervals are empty.")
     # Check only when intervals are non-empty
     if reference_intervals.size > 0 and estimated_intervals.size > 0:
-        if not np.allclose(reference_intervals[-1, 1],
-                           estimated_intervals[-1, 1]):
+        if not np.allclose(reference_intervals.max(),
+                           estimated_intervals.max()):
             raise ValueError('End times do not match')
 
 
@@ -348,7 +349,6 @@ def pairwise(reference_intervals, reference_labels,
         F-measure of detecting whether frames belong in the same cluster
 
     """
-
     validate_structure(reference_intervals, reference_labels,
                        estimated_intervals, estimated_labels)
 
@@ -1072,7 +1072,7 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
 
     est_intervals, est_labels = \
         util.adjust_intervals(est_intervals, labels=est_labels, t_min=0.0,
-                              t_max=ref_intervals[-1, -1])
+                              t_max=ref_intervals.max())
 
     # Now compute all the metrics
     scores = collections.OrderedDict()

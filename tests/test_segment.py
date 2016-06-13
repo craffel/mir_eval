@@ -110,6 +110,23 @@ def __check_score(sco_f, metric, score, expected_score):
     assert np.allclose(score, expected_score, atol=A_TOL)
 
 
+def __unit_test_permuted_segments(sco_f, ref_int, ref_lab,
+                                  est_int, est_lab, scores):
+    # Test for issue #202
+
+    # Generate a random permutation of the reference segments
+    idx = np.random.permutation(np.arange(len(ref_int)))
+
+    perm_int = ref_int[idx]
+    perm_lab = [ref_lab[_] for _ in idx]
+
+    perm_scores = mir_eval.segment.evaluate(perm_int, perm_lab,
+                                            est_int, est_lab)
+
+    for metric in scores:
+        __check_score(sco_f, metric, perm_scores[metric], scores[metric])
+
+
 def test_segment_functions():
     # Load in all files in the same order
     ref_files = sorted(glob.glob(REF_GLOB))
@@ -137,6 +154,7 @@ def test_segment_functions():
         ref_intervals, ref_labels = mir_eval.io.load_labeled_intervals(ref_f)
         # Load in an example segmentation tracker output
         est_intervals, est_labels = mir_eval.io.load_labeled_intervals(est_f)
+
         # Compute scores
         scores = mir_eval.segment.evaluate(ref_intervals, ref_labels,
                                            est_intervals, est_labels)
@@ -145,3 +163,7 @@ def test_segment_functions():
             # This is a simple hack to make nosetest's messages more useful
             yield (__check_score, sco_f, metric, scores[metric],
                    expected_scores[metric])
+
+        yield (__unit_test_permuted_segments, sco_f,
+               ref_intervals, ref_labels,
+               est_intervals, est_labels, scores)

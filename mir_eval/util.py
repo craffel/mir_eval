@@ -3,11 +3,11 @@ This submodule collects useful functionality required across the task
 submodules, such as preprocessing, validation, and common computations.
 '''
 
-import numpy as np
 import os
+import inspect
 import six
 
-import inspect
+import numpy as np
 
 
 def index_labels(labels, case_sensitive=False):
@@ -138,6 +138,8 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
         The ``i`` th interval spans time ``intervals[i, 0]`` to
         ``intervals[i, 1]``.
 
+        Intervals are assumed to be disjoint.
+
     labels : list, shape=(n,)
         The annotation for each interval
 
@@ -154,14 +156,50 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
         Labels corresponding to the given time points.
 
     """
+
+    # Sort the intervals by start time
+    intervals, labels = sort_labeled_intervals(intervals, labels)
+
+    start, end = intervals.min(), intervals.max()
+
     aligned_labels = []
+
     for tpoint in time_points:
-        if tpoint < intervals.min() or tpoint > intervals.max():
-            aligned_labels.append(fill_value)
-        else:
+        # This logic isn't correct if there's a gap in intervals
+        if start <= tpoint <= end:
             index = np.argmax(intervals[:, 0] > tpoint) - 1
             aligned_labels.append(labels[index])
+        else:
+            aligned_labels.append(fill_value)
     return aligned_labels
+
+
+def sort_labeled_intervals(intervals, labels=None):
+    '''Sort intervals, and optionally, their corresponding labels
+    according to start time.
+
+    Parameters
+    ----------
+    intervals : np.ndarray, shape=(n, 2)
+        The input intervals
+
+    labels : list, optional
+        Labels for each interval
+
+    Returns
+    -------
+    intervals_sorted or (intervals_sorted, labels_sorted)
+        Labels are only returned if provided as input
+    '''
+
+    idx = np.argsort(intervals[:, 0])
+
+    intervals_sorted = intervals[idx]
+
+    if labels is None:
+        return intervals_sorted
+    else:
+        return intervals_sorted, [labels[_] for _ in idx]
 
 
 def f_measure(precision, recall, beta=1.0):
@@ -302,10 +340,10 @@ def adjust_intervals(intervals,
             intervals = intervals[int(first_idx[0]):]
         intervals = np.maximum(t_min, intervals)
 
-        if intervals[0, 0] > t_min:
+        if intervals.min() > t_min:
             # Lowest boundary is higher than t_min:
             # add a new boundary and label
-            intervals = np.vstack(([t_min, intervals[0, 0]], intervals))
+            intervals = np.vstack(([t_min, intervals.min()], intervals))
             if labels is not None:
                 labels.insert(0, start_label)
 
@@ -323,9 +361,9 @@ def adjust_intervals(intervals,
 
         intervals = np.minimum(t_max, intervals)
 
-        if intervals[-1, -1] < t_max:
+        if intervals.max() < t_max:
             # Last boundary is below t_max: add a new boundary and label
-            intervals = np.vstack((intervals, [intervals[-1, -1], t_max]))
+            intervals = np.vstack((intervals, [intervals.max(), t_max]))
             if labels is not None:
                 labels.append(end_label)
 
