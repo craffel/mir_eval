@@ -163,8 +163,9 @@ def labeled_intervals(intervals, labels, label_set=None,
         Vertical positions of each label.
         By default, labels are positioned at integers `np.arange(len(labels))`.
 
-    height : np.ndarray, shape=(n,), optional
+    height : scalar or np.ndarray, shape=(n,), optional
         Height for each label.
+        If scalar, the same value is applied to all labels.
         By default, each label has `height=1`.
 
     extend_labels : bool
@@ -224,7 +225,10 @@ def labeled_intervals(intervals, labels, label_set=None,
         base = np.arange(len(ticks))
 
     if height is None:
-        height = np.ones(len(base))
+        height = 1
+
+    if np.isscalar(height):
+        height = height * np.ones_like(base)
 
     for y0, yi, lab in zip(base, height, ticks):
         seg_map[lab] = dict(label=lab)
