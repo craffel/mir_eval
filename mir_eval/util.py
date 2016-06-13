@@ -746,7 +746,7 @@ def validate_intervals(intervals):
         raise ValueError('Negative interval times found')
 
     # Make sure all intervals have strictly positive duration
-    if (intervals[:, 1] < intervals[:, 0]).any():
+    if (intervals[:, 1] <= intervals[:, 0]).any():
         raise ValueError('All interval durations must be strictly positive')
 
 
