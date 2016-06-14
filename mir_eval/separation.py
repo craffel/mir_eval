@@ -107,9 +107,8 @@ def validate(reference_sources, estimated_sources):
                                                   MAX_SOURCES))
 
 
-def bss_eval_sources(
-    reference_sources, estimated_sources, compute_permutation=True
-):
+def bss_eval_sources(reference_sources, estimated_sources,
+                     compute_permutation=True):
     """MATLAB translation of BSS_EVAL Toolbox
 
     Ordering and measurement of the separation quality for estimated source
@@ -211,13 +210,8 @@ def bss_eval_sources(
         return (sdr, sir, sar, popt)
 
 
-def bss_eval_sources_framewise(
-    reference_sources,
-    estimated_sources,
-    win,
-    hop,
-    compute_permutation=False
-):
+def bss_eval_sources_framewise(reference_sources, estimated_sources,
+                               win, hop, compute_permutation=False):
     """Framewise computation of bss_eval_sources
 
     Examples
@@ -444,13 +438,8 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
-def evaluate(
-    reference_sources,
-    estimated_sources,
-    win=None,
-    hop=None,
-    **kwargs
-):
+def evaluate(reference_sources, estimated_sources,
+             win=None, hop=None, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
