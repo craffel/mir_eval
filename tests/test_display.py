@@ -343,3 +343,31 @@ def test_separation_label():
 
     mir_eval.display.separation([x0, x1, x2], fs=fs,
                                 labels=['Alice', 'Bob', 'Carol'])
+
+
+@image_comparison(baseline_images=['events'], extensions=['png'])
+@styled
+def test_events():
+    plt.figure()
+
+    # Load some event data
+    beats_ref = mir_eval.io.load_events('tests/data/beat/ref00.txt')[:30]
+    beats_est = mir_eval.io.load_events('tests/data/beat/est00.txt')[:30]
+
+    # Plot both with labels
+    mir_eval.display.events(beats_ref, label='reference')
+    mir_eval.display.events(beats_est, label='estimate')
+    plt.legend()
+
+
+@image_comparison(baseline_images=['labeled_events'], extensions=['png'])
+@styled
+def test_labeled_events():
+    plt.figure()
+
+    # Load some event data
+    beats_ref = mir_eval.io.load_events('tests/data/beat/ref00.txt')[:10]
+
+    labels = list('abcdefghijklmnop')
+    # Plot both with labels
+    mir_eval.display.events(beats_ref, labels)

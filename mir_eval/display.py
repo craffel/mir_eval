@@ -36,6 +36,44 @@ def __expand_limits(ax, limits, which='x'):
     setter(new_lims)
 
 
+def __get_axes(ax=None, fig=None):
+    '''Get or construct the target axes object for a new plot.
+
+    Parameters
+    ----------
+    ax : matplotlib.pyplot.axes, optional
+        If provided, return this axes object directly.
+
+    fig : matplotlib.figure.Figure, optional
+        The figure to query for axes.
+        By default, uses the current figure `plt.gcf()`.
+
+    Returns
+    -------
+    ax : matplotlib.pyplot.axes
+        An axis handle on which to draw the segmentation.
+        If none is provided, a new set of axes is created.
+
+    new_axes : bool
+        If `True`, the axis object was newly constructed.
+        If `False`, the axis object already existed.
+
+    '''
+
+    new_axes = False
+
+    if ax is not None:
+        return ax, new_axes
+
+    if fig is None:
+        fig = plt.gcf()
+
+    if not fig.get_axes():
+        new_axes = True
+
+    return fig.gca(), new_axes
+
+
 def segments(intervals, labels, base=None, height=None, text=False,
              text_kw=None, ax=None, **kwargs):
     '''Plot a segmentation as a set of disjoint rectangles.
@@ -88,9 +126,9 @@ def segments(intervals, labels, base=None, height=None, text=False,
 
     seg_def_style = dict(linewidth=1)
 
-    if ax is None:
-        # Create a new axis
-        ax = plt.gca()
+    ax, new_axes = __get_axes(ax=ax)
+
+    if new_axes:
         ax.set_ylim([0, 1])
 
     # Infer height
@@ -129,7 +167,8 @@ def segments(intervals, labels, base=None, height=None, text=False,
                               **text_kw)
             ann.set_clip_path(rect)
 
-    ax.set_yticks([])
+    if new_axes:
+        ax.set_yticks([])
 
     __expand_limits(ax, [intervals.min(), intervals.max()], which='x')
 
@@ -194,9 +233,8 @@ def labeled_intervals(intervals, labels, label_set=None,
         A handle to the (possibly constructed) plot axes
     '''
 
-    if ax is None:
-        # Create a new axis
-        ax = plt.gca()
+    # Get the axes handle
+    ax, _ = __get_axes(ax=ax)
 
     if label_set is None:
         # If we have non-empty pre-existing tick labels, use them
@@ -306,9 +344,8 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
     if levels is None:
         levels = list(range(len(intervals_hier)))
 
-    # Get the axis handle up front
-    if ax is None:
-        ax = plt.gca()
+    # Get the axes handle
+    ax, new_axes = __get_axes(ax=ax)
 
     # Count the pre-existing patches
     n_patches = len(ax.patches)
@@ -321,6 +358,89 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
     # Reverse the patch ordering for anything we've added.
     # This way, intervals are listed in the legend from top to bottom
     ax.patches[n_patches:] = ax.patches[n_patches:][::-1]
+    return ax
+
+
+def events(times, labels=None, base=None, height=None, ax=None, text_kw=None,
+           **kwargs):
+    '''Plot event times as a set of vertical lines
+
+    Parameters
+    ----------
+    times : np.ndarray, shape=(n,)
+        event times, in the format returned by
+        :func:`mir_eval.io.load_events` or
+        :func:`mir_eval.io.load_labeled_events`.
+
+    labels : list, shape=(n,), optional
+        event labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_events`.
+
+    base : number
+        The vertical position of the base of the line.
+        By default, this will be the bottom of the plot.
+
+    height : number
+        The height of the lines.
+        By default, this will be the top of the plot (minus `base`).
+
+    ax : matplotlib.pyplot.axes
+        An axis handle on which to draw the segmentation.
+        If none is provided, a new set of axes is created.
+
+    text_kw : dict
+        If `labels` is provided, the properties of the text
+        objects can be specified here.
+        See `matplotlib.pyplot.Text` for valid parameters
+
+    kwargs
+        Additional keyword arguments to pass to
+        `matplotlib.pyplot.vlines`.
+
+    Returns
+    -------
+    ax : matplotlib.pyplot.axes._subplots.AxesSubplot
+        A handle to the (possibly constructed) plot axes
+    '''
+    if text_kw is None:
+        text_kw = dict(va='top',
+                       clip_on=True,
+                       bbox=dict(boxstyle='round', facecolor='white'))
+
+    # Get the axes handle
+    ax, new_axes = __get_axes(ax=ax)
+
+    # If we have fresh axes, set the limits
+    if new_axes:
+        ax.set_ylim([0, 1])
+
+    # Infer height
+    if base is None:
+        base = ax.get_ylim()[0]
+
+    if height is None:
+        height = ax.get_ylim()[1]
+
+    cycler = ax._get_patches_for_fill.prop_cycler
+
+    style = next(cycler).copy()
+    style.update(kwargs)
+
+    lines = ax.vlines(times, base, height, **style)
+
+    if labels:
+        for path, lab in zip(lines.get_paths(), labels):
+            ann = ax.annotate(lab,
+                              xy=(path.vertices[0][0], height),
+                              xycoords='data',
+                              xytext=(8, -10), textcoords='offset points',
+                              **text_kw)
+
+    if new_axes:
+        ax.set_yticks([])
+
+    __expand_limits(ax, [times.min(), times.max()], which='x')
+
     return ax
 
 
@@ -360,8 +480,7 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
         A handle to the (possibly constructed) plot axes
     '''
 
-    if ax is None:
-        ax = plt.gca()
+    ax, _ = __get_axes(ax=ax)
 
     # First, segment into contiguously voiced contours
     frequencies, voicings = freq_to_voicing(np.asarray(frequencies,
@@ -447,8 +566,8 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None,
         A handle to the (possibly constructed) plot axes
     '''
 
-    if ax is None:
-        ax = plt.gca()
+    # Get the axes handle
+    ax, _ = __get_axes(ax=ax)
 
     # Set up a style for the plot
     style_voiced = dict()
@@ -499,7 +618,7 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None,
     return ax
 
 
-def piano_roll(intervals, pitches=None, midi=None, **kwargs):
+def piano_roll(intervals, pitches=None, midi=None, ax=None, **kwargs):
     '''Plot a quantized piano roll as intervals
 
     Parameters
@@ -514,6 +633,10 @@ def piano_roll(intervals, pitches=None, midi=None, **kwargs):
         pitches of notes (in MIDI numbers).
 
         At least one of `pitches` or `midi` must be provided.
+
+    ax : matplotlib.pyplot.axes
+        An axis handle on which to draw the intervals.
+        If none is provided, a new set of axes is created.
 
     kwargs :
         Additional keyword arguments to `labeled_intervals`.
@@ -530,7 +653,9 @@ def piano_roll(intervals, pitches=None, midi=None, **kwargs):
     scale = np.arange(128)
     ax = labeled_intervals(intervals, np.round(midi).astype(int),
                            label_set=scale,
-                           tick=False, **kwargs)
+                           tick=False,
+                           ax=ax,
+                           **kwargs)
 
     # Minor tick at each semitone
     ax.yaxis.set_minor_locator(MultipleLocator(1))
@@ -565,8 +690,9 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
     ax
         The axis handle for this plot
     '''
-    if ax is None:
-        ax = plt.gca()
+
+    # Get the axes handle
+    ax, _ = __get_axes(ax=ax)
 
     if labels is None:
         labels = ['Source {:d}'.format(_) for _ in range(len(sources))]
@@ -661,8 +787,7 @@ def ticker_notes(ax=None):
         By default, uses the current axes handle.
 
     '''
-    if ax is None:
-        ax = plt.gca()
+    ax, _ = __get_axes(ax=ax)
 
     ax.yaxis.set_major_formatter(FMT_MIDI_NOTE)
     # Get the tick labels and reset the vertical alignment
@@ -679,8 +804,7 @@ def ticker_pitch(ax=None):
         The axes handle to apply the ticker.
         By default, uses the current axes handle.
     '''
-    if ax is None:
-        ax = plt.gca()
+    ax, _ = __get_axes(ax=ax)
 
     ax.yaxis.set_major_formatter(FMT_MIDI_HZ)
 
