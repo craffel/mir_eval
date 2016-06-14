@@ -68,10 +68,10 @@ def __unit_test_separation_function(metric):
     results = metric(ref_sources, est_sources, compute_permutation=False)
     assert results[3] == [0, 1, 2, 3]
 
-    # Test for error when too many sources are provided
+    # Test for error when too many sources or references are provided
     sources = np.random.random_sample((mir_eval.separation.MAX_SOURCES*2, 400))
-    nose.tools.assert_raises(ValueError, metric, sources, sources)
-
+    nose.tools.assert_raises(ValueError, metric, sources, ref_sources)
+    nose.tools.assert_raises(ValueError, metric, est_sources, sources)
 
 def __unit_test_sources_framewise_function(metric):
     with warnings.catch_warnings(record=True) as w:
@@ -150,6 +150,11 @@ def test_separation_functions():
         frame_scores = mir_eval.separation.evaluate(
             ref_sources, est_sources,
             expected_frames['win'], expected_frames['hop']
+        )
+        # For reasons of coverage
+        nose.tools.assert_raises(
+            ValueError, mir_eval.separation.evaluate, ref_sources, est_sources,
+            expected_frames['win']
         )
         # Compare them
         for metric in scores:
