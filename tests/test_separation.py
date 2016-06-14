@@ -73,6 +73,7 @@ def __unit_test_separation_function(metric):
     nose.tools.assert_raises(ValueError, metric, sources, ref_sources)
     nose.tools.assert_raises(ValueError, metric, est_sources, sources)
 
+
 def __unit_test_sources_framewise_function(metric):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
