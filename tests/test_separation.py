@@ -63,6 +63,11 @@ def __unit_test_separation_function(metric):
     est_sources = np.random.random_sample((3, 100))
     nose.tools.assert_raises(ValueError, metric, ref_sources, est_sources)
 
+    # Test for default permutation matrix when not computing permutation
+    est_sources = np.random.random_sample((4, 100))
+    results = metric(ref_sources, est_sources, compute_permutation=False)
+    assert results[3] == [0,1,2,3]
+
     # Test for error when too many sources are provided
     sources = np.random.random_sample((mir_eval.separation.MAX_SOURCES*2, 400))
     nose.tools.assert_raises(ValueError, metric, sources, sources)
