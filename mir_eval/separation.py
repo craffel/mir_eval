@@ -213,13 +213,8 @@ def bss_eval_sources(
         return (sdr, sir, sar, popt)
 
 
-def bss_eval_sources_framewise(
-        reference_sources,
-        estimated_sources,
-        window,
-        hop,
-        compute_permutation=False
-):
+def bss_eval_sources_framewise(reference_sources, estimated_sources,
+                               window, hop, compute_permutation=False):
     """Framewise computation of bss_eval_sources
 
     Examples
@@ -449,13 +444,8 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
-def evaluate(
-        reference_sources,
-        estimated_sources,
-        window=None,
-        hop=None,
-        **kwargs
-):
+def evaluate(reference_sources, estimated_sources,
+             window=None, hop=None, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
