@@ -107,9 +107,8 @@ def validate(reference_sources, estimated_sources):
                                                   MAX_SOURCES))
 
 
-def bss_eval_sources(
-        reference_sources, estimated_sources, compute_permutation=True
-):
+def bss_eval_sources(reference_sources, estimated_sources,
+                     compute_permutation=True):
     """MATLAB translation of BSS_EVAL Toolbox
 
     Ordering and measurement of the separation quality for estimated source
