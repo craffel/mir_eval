@@ -345,7 +345,7 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
         levels = list(range(len(intervals_hier)))
 
     # Get the axes handle
-    ax, new_axes = __get_axes(ax=ax)
+    ax, _ = __get_axes(ax=ax)
 
     # Count the pre-existing patches
     n_patches = len(ax.patches)
@@ -430,11 +430,11 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None,
 
     if labels:
         for path, lab in zip(lines.get_paths(), labels):
-            ann = ax.annotate(lab,
-                              xy=(path.vertices[0][0], height),
-                              xycoords='data',
-                              xytext=(8, -10), textcoords='offset points',
-                              **text_kw)
+            ax.annotate(lab,
+                        xy=(path.vertices[0][0], height),
+                        xycoords='data',
+                        xytext=(8, -10), textcoords='offset points',
+                        **text_kw)
 
     if new_axes:
         ax.set_yticks([])
