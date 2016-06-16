@@ -120,9 +120,10 @@ def segments(intervals, labels, base=None, height=None, text=False,
         A handle to the (possibly constructed) plot axes
     '''
     if text_kw is None:
-        text_kw = dict(va='top',
-                       clip_on=True,
-                       bbox=dict(boxstyle='round', facecolor='white'))
+        text_kw = dict()
+    text_kw.setdefault('va', 'top')
+    text_kw.setdefault('clip_on', True)
+    text_kw.setdefault('bbox', dict(boxstyle='round', facecolor='white'))
 
     seg_def_style = dict(linewidth=1)
 
@@ -403,9 +404,10 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None,
         A handle to the (possibly constructed) plot axes
     '''
     if text_kw is None:
-        text_kw = dict(va='top',
-                       clip_on=True,
-                       bbox=dict(boxstyle='round', facecolor='white'))
+        text_kw = dict()
+    text_kw.setdefault('va', 'top')
+    text_kw.setdefault('clip_on', True)
+    text_kw.setdefault('bbox', dict(boxstyle='round', facecolor='white'))
 
     # Get the axes handle
     ax, new_axes = __get_axes(ax=ax)
