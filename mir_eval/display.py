@@ -694,7 +694,7 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
     '''
 
     # Get the axes handle
-    ax, _ = __get_axes(ax=ax)
+    ax, new_axes = __get_axes(ax=ax)
 
     if labels is None:
         labels = ['Source {:d}'.format(_) for _ in range(len(sources))]
@@ -708,6 +708,7 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
     specs = []
     for i, src in enumerate(sources):
         freqs, times, spec = spectrogram(src, fs=fs, **kwargs)
+
         specs.append(spec)
         if cumspec is None:
             cumspec = spec.copy()
@@ -742,8 +743,9 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
 
     ax.legend(handles=handles, labels=legend_labels)
 
-    __expand_limits(ax, [times.min(), times.max()], which='x')
-    __expand_limits(ax, [freqs.min(), freqs.max()], which='y')
+    if new_axes:
+        ax.axis('tight')
+
     return ax
 
 
