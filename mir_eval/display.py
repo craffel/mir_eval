@@ -763,7 +763,7 @@ def __ticker_midi_note(x, pos):
 
     idx = int(x % 12)
 
-    octave = int(np.round(x / 12.0))
+    octave = int(x / 12) - 1
 
     if cents == 0:
         return '{:s}{:2d}'.format(NOTES[idx], octave)
