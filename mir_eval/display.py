@@ -756,11 +756,12 @@ def __ticker_midi_note(x, pos):
 
     NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
-    idx = int(x % 12)
     cents = float(np.mod(x, 1.0))
     if cents >= 0.5:
         cents = cents - 1.0
-        idx += 1
+        x = x + 0.5
+
+    idx = int(x % 12)
 
     octave = int(np.round(x / 12.0))
 
