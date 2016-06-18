@@ -66,11 +66,11 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     ----------
     gram : np.ndarray
         ``gram[n, m]`` is the magnitude of ``frequencies[n]``
-        from ``times[n]`` to ``times[n + 1]``
+        from ``times[m]`` to ``times[m + 1]``
     frequencies : np.ndarray
         array of size ``gram.shape[0]`` denoting the frequency of
         each row of gram
-    times: np.ndarray, shape=(len(chord_labels),) or (len(chord_labels), 2)
+    times: np.ndarray, shape=``(gram.shape[1],)`` or ``(gram.shape[1], 2)``
         Either the start time of each column in the gram,
         or the time interval corresponding to each column.
     fs : int
