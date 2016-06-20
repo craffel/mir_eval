@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 '''Display functions'''
 
+from collections import defaultdict
+
 import numpy as np
 from scipy.signal import spectrogram
 
@@ -8,6 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Patch
 from matplotlib.ticker import FuncFormatter, MultipleLocator
 from matplotlib.colors import LinearSegmentedColormap, LogNorm
+from matplotlib.collections import BrokenBarHCollection
 
 from .melody import freq_to_voicing
 from .util import midi_to_hz, hz_to_midi
@@ -226,7 +229,7 @@ def labeled_intervals(intervals, labels, label_set=None,
 
     kwargs
         Additional keyword arguments to pass to
-        `matplotlib.patches.Rectangle`.
+        `matplotlib.collection.BrokenBarHCollection`.
 
     Returns
     -------
@@ -254,12 +257,13 @@ def labeled_intervals(intervals, labels, label_set=None,
     else:
         ticks = sorted(set(labels))
 
-    seg_def_style = dict(linewidth=1)
+    style = dict(linewidth=1)
 
-    seg_map = dict()
-    seg_y = dict()
+    style.update(next(ax._get_patches_for_fill.prop_cycler))
+    # Swap color -> facecolor here so we preserve edgecolor on rects
+    style['facecolor'] = style.pop('color')
+    style.update(kwargs)
 
-    style = next(ax._get_patches_for_fill.prop_cycler)
     if base is None:
         base = np.arange(len(ticks))
 
@@ -269,31 +273,22 @@ def labeled_intervals(intervals, labels, label_set=None,
     if np.isscalar(height):
         height = height * np.ones_like(base)
 
-    for y0, yi, lab in zip(base, height, ticks):
-        seg_map[lab] = dict(label=lab)
-        seg_map[lab].update(seg_def_style)
-        seg_map[lab].update(style)
-        # Swap color->facecolor to preserve edge color on rects
-        seg_map[lab]['facecolor'] = seg_map[lab].pop('color')
-        seg_map[lab].update(kwargs)
+    seg_y = dict()
+    for ybase, yheight, lab in zip(base, height, ticks):
+        seg_y[lab] = (ybase, yheight)
 
-        seg_y[lab] = (y0, yi)
-
-    seen = set()
+    xvals = defaultdict(list)
     for ival, lab in zip(intervals, labels):
-        if lab not in seg_map:
+        if lab not in seg_y:
             continue
-        over_lab = seg_map[lab].get('label', lab)
+        xvals[lab].append((ival[0], ival[1] - ival[0]))
 
-        # If we've already seen this label, remove it
-        # This way, it only appears once in the legend
-        if over_lab in seen:
-            seg_map[lab].pop('label', None)
-
-        seen.add(over_lab)
-        ax.add_patch(Rectangle((ival[0], seg_y[lab][0]),
-                               ival[1] - ival[0],
-                               seg_y[lab][1], **seg_map[lab]))
+    for lab in seg_y:
+        ax.add_collection(BrokenBarHCollection(xvals[lab], seg_y[lab],
+                                               **style))
+        # Pop the label after the first time we see it, so we only get
+        # one legend entry
+        style.pop('label', None)
 
     # Draw a line separating the new labels from pre-existing labels
     if label_set != ticks:
