@@ -470,11 +470,11 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
         Otherwise, unvoiced pitch contours are omitted from the display.
 
     ax : matplotlib.pyplot.axes
-        An axis handle on which to draw the intervals.
+        An axis handle on which to draw the pitch contours.
         If none is provided, a new set of axes is created.
 
     kwargs :
-        Additional keyword arguments to `labeled_intervals`.
+        Additional keyword arguments to `matplotlib.pyplot.plot`.
 
     Returns
     -------
@@ -556,7 +556,7 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None,
         Otherwise, unvoiced pitches are omitted from the display.
 
     ax : matplotlib.pyplot.axes
-        An axis handle on which to draw the intervals.
+        An axis handle on which to draw the pitch contours.
         If none is provided, a new set of axes is created.
 
     kwargs :
