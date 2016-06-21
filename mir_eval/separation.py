@@ -208,7 +208,7 @@ def bss_eval_sources(reference_sources, estimated_sources,
         return (sdr[idx], sir[idx], sar[idx], np.asarray(popt))
     else:
         # return the default permutation for compatibility
-        popt = np.asarray(list(range(nsrc)))
+        popt = np.arange(nsrc)
         return (sdr, sir, sar, popt)
 
 
