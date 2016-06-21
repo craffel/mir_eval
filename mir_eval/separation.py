@@ -150,7 +150,7 @@ def bss_eval_sources(reference_sources, estimated_sources,
         vector containing the best ordering of estimated sources in
         the mean SIR sense (estimated source number perm[j] corresponds to
         true source number j)
-        Note: perm will be range(nsrc) if compute_permutation is False
+        Note: perm will be [0, 1, ..., nsrc-1] if compute_permutation is False
 
     """
 
@@ -205,10 +205,10 @@ def bss_eval_sources(reference_sources, estimated_sources,
             mean_sir[i] = np.mean(sir[perm, dum])
         popt = perms[np.argmax(mean_sir)]
         idx = (popt, dum)
-        return (sdr[idx], sir[idx], sar[idx], popt)
+        return (sdr[idx], sir[idx], sar[idx], np.asarray(popt))
     else:
         # return the default permutation for compatibility
-        popt = list(range(nsrc))
+        popt = np.asarray(list(range(nsrc)))
         return (sdr, sir, sar, popt)
 
 
