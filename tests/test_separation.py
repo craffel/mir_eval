@@ -89,15 +89,12 @@ def __unit_test_too_many_sources(metric):
     # Test for error when too many sources or references are provided
     many_sources = np.random.random_sample((mir_eval.separation.MAX_SOURCES*2,
                                             400))
-    sources = np.random.random_sample((4, 400))
     if metric == mir_eval.separation.bss_eval_sources:
-        args1 = [many_sources, sources]
-        args2 = [sources, many_sources]
+        nose.tools.assert_raises(ValueError, metric, many_sources,
+                                 many_sources)
     elif metric == mir_eval.separation.bss_eval_sources_framewise:
-        args1 = [many_sources, sources, 40, 20]
-        args2 = [sources, many_sources, 40, 20]
-    nose.tools.assert_raises(ValueError, metric, *args1)
-    nose.tools.assert_raises(ValueError, metric, *args2)
+        nose.tools.assert_raises(ValueError, metric, many_sources,
+                                 many_sources, 40, 20)
 
 
 def __unit_test_default_permutation(metric):

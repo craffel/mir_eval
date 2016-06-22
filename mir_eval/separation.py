@@ -88,19 +88,10 @@ def validate(reference_sources, estimated_sources):
                          'source to be non-silent, having a silent estiamted '
                          'source will result in an underdetermined system.')
 
-    if estimated_sources.shape[0] > MAX_SOURCES:
+    if estimated_sources.shape[0] > MAX_SOURCES or \
+            reference_sources.shape[0] > MAX_SOURCES:
         raise ValueError('The supplied matrices should be of shape (n_sources,'
-                         ' n_samples) but estimated_sources.shape[0] = {} '
-                         'which is greater than '
-                         'mir_eval.separation.MAX_SOURCES = {}.  To override '
-                         'this check, set mir_eval.separation.MAX_SOURCES to '
-                         'a larger value.'.format(estimated_sources.shape[0],
-                                                  MAX_SOURCES))
-
-    if reference_sources.shape[0] > MAX_SOURCES:
-        raise ValueError('The supplied matrices should be of shape (n_sources,'
-                         ' n_samples) but reference_sources.shape[0] = {} '
-                         'which is greater than '
+                         ' n_samples) but n_sources = {} which is greater than'
                          'mir_eval.separation.MAX_SOURCES = {}.  To override '
                          'this check, set mir_eval.separation.MAX_SOURCES to '
                          'a larger value.'.format(estimated_sources.shape[0],
