@@ -9,7 +9,7 @@ from scipy.signal import spectrogram
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Patch
 from matplotlib.ticker import FuncFormatter, MultipleLocator
-from matplotlib.colors import LinearSegmentedColormap, LogNorm
+from matplotlib.colors import LinearSegmentedColormap, LogNorm, ColorConverter
 from matplotlib.collections import BrokenBarHCollection
 
 from .melody import freq_to_voicing
@@ -682,7 +682,7 @@ def piano_roll(intervals, pitches=None, midi=None, ax=None, **kwargs):
     return ax
 
 
-def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
+def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
     '''Source-separation visualization
 
     Parameters
@@ -695,6 +695,9 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
 
     labels : list of strings
         An optional list of descriptors corresponding to each source
+
+    alpha : float in [0, 1]
+        Maximum alpha (opacity) of spectrogram values.
 
     ax : matplotlib.pyplot.axes
         An axis handle on which to draw the spectrograms.
@@ -737,13 +740,15 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
     ref_max = cumspec.max()
     ref_min = ref_max * 1e-6
 
-    legend_entries = []
+    color_conv = ColorConverter()
+
     for i, spec in enumerate(specs):
 
         # For each source, grab a new color from the cycler
         # Then construct a colormap that interpolates from
         # [transparent white -> new color]
         color = next(ax._get_lines.prop_cycler)['color']
+        color = color_conv.to_rgba(color, alpha=alpha)
         cmap = LinearSegmentedColormap.from_list(labels[i],
                                                  [(1.0, 1.0, 1.0, 0.0),
                                                   color])
