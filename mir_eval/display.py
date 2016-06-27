@@ -297,10 +297,10 @@ def labeled_intervals(intervals, labels, label_set=None,
     if tick:
         ax.set_yticks([])
         ax.grid('on', axis='y')
-        ax.set_ylim([0, len(ticks)])
         ax.set_yticks(base)
         ax.set_yticklabels(ticks, va='bottom')
 
+    __expand_limits(ax, [base.min(), (base + height).max()], which='y')
     __expand_limits(ax, [intervals.min(), intervals.max()], which='x')
 
     return ax
@@ -325,7 +325,7 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
 
     levels : list of string
         Each element `levels[i]` is a label for the `i`th segmentation.
-        This is typically used to denote the levels in a segment hierarchy.
+        This is used in the legend to denote the levels in a segment hierarchy.
 
     kwargs :
         Additional keyword arguments to `labeled_intervals`.
@@ -666,7 +666,7 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
 
     Parameters
     ----------
-    sources : list of np.ndarray
+    sources : np.ndarray, shape=(nsrc, nsampl)
         A list of waveform buffers corresponding to each source
 
     fs : number > 0
