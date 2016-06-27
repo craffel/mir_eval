@@ -435,8 +435,11 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None,
 
     style = next(cycler).copy()
     style.update(kwargs)
+    # If the user provided 'colors', don't override it with 'color'
+    if 'colors' in style:
+        style.pop('color', None)
 
-    lines = ax.vlines(times, base, height, **style)
+    lines = ax.vlines(times, base, base + height, **style)
 
     if labels:
         for path, lab in zip(lines.get_paths(), labels):
@@ -448,6 +451,8 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None,
 
     if new_axes:
         ax.set_yticks([])
+
+    __expand_limits(ax, [base, base + height], which='y')
 
     if times.size:
         __expand_limits(ax, [times.min(), times.max()], which='x')
