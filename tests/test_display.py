@@ -344,6 +344,7 @@ def test_separation_label():
     mir_eval.display.separation([x0, x1, x2], fs=fs,
                                 labels=['Alice', 'Bob', 'Carol'])
 
+    plt.legend()
 
 @image_comparison(baseline_images=['events'], extensions=['png'])
 @styled

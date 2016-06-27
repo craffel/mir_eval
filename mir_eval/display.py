@@ -754,13 +754,9 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
                       shading='gouraud',
                       label=labels[i])
 
-        legend_entries.append(Patch(color=color, label=labels[i]))
-
-    handles, legend_labels = ax.get_legend_handles_labels()
-    handles.extend(legend_entries)
-    legend_labels.extend(labels)
-
-    ax.legend(handles=handles, labels=legend_labels)
+        # Attach a 0x0 rect to the axis with the corresponding label
+        # This way, it will show up in the legend
+        ax.add_patch(Rectangle((0, 0), 0, 0, color=color, label=labels[i]))
 
     if new_axes:
         ax.axis('tight')
