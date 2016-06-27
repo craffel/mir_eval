@@ -346,6 +346,7 @@ def test_separation_label():
 
     plt.legend()
 
+
 @image_comparison(baseline_images=['events'], extensions=['png'])
 @styled
 def test_events():
