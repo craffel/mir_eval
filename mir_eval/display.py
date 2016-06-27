@@ -128,6 +128,9 @@ def segments(intervals, labels, base=None, height=None, text=False,
     text_kw.setdefault('clip_on', True)
     text_kw.setdefault('bbox', dict(boxstyle='round', facecolor='white'))
 
+    # Make sure we have a numpy array
+    intervals = np.atleast_2d(intervals)
+
     seg_def_style = dict(linewidth=1)
 
     ax, new_axes = __get_axes(ax=ax)
@@ -174,7 +177,9 @@ def segments(intervals, labels, base=None, height=None, text=False,
     if new_axes:
         ax.set_yticks([])
 
-    __expand_limits(ax, [intervals.min(), intervals.max()], which='x')
+    # Only expand if we have data
+    if intervals.size:
+        __expand_limits(ax, [intervals.min(), intervals.max()], which='x')
 
     return ax
 
@@ -240,6 +245,9 @@ def labeled_intervals(intervals, labels, label_set=None,
     # Get the axes handle
     ax, _ = __get_axes(ax=ax)
 
+    # Make sure we have a numpy array
+    intervals = np.atleast_2d(intervals)
+
     if label_set is None:
         # If we have non-empty pre-existing tick labels, use them
         label_set = [_.get_text() for _ in ax.get_yticklabels()]
@@ -300,8 +308,10 @@ def labeled_intervals(intervals, labels, label_set=None,
         ax.set_yticks(base)
         ax.set_yticklabels(ticks, va='bottom')
 
-    __expand_limits(ax, [base.min(), (base + height).max()], which='y')
-    __expand_limits(ax, [intervals.min(), intervals.max()], which='x')
+    if base.size:
+        __expand_limits(ax, [base.min(), (base + height).max()], which='y')
+    if intervals.size:
+        __expand_limits(ax, [intervals.min(), intervals.max()], which='x')
 
     return ax
 
@@ -404,6 +414,9 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None,
     text_kw.setdefault('clip_on', True)
     text_kw.setdefault('bbox', dict(boxstyle='round', facecolor='white'))
 
+    # make sure we have an array for times
+    times = np.asarray(times)
+
     # Get the axes handle
     ax, new_axes = __get_axes(ax=ax)
 
@@ -436,7 +449,8 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None,
     if new_axes:
         ax.set_yticks([])
 
-    __expand_limits(ax, [times.min(), times.max()], which='x')
+    if times.size:
+        __expand_limits(ax, [times.min(), times.max()], which='x')
 
     return ax
 
@@ -478,6 +492,8 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
     '''
 
     ax, _ = __get_axes(ax=ax)
+
+    times = np.asarray(times)
 
     # First, segment into contiguously voiced contours
     frequencies, voicings = freq_to_voicing(np.asarray(frequencies,
@@ -690,6 +706,9 @@ def separation(sources, fs=22050, labels=None, ax=None, **kwargs):
 
     # Get the axes handle
     ax, new_axes = __get_axes(ax=ax)
+
+    # Make sure we have at least two dimensions
+    sources = np.atleast_2d(sources)
 
     if labels is None:
         labels = ['Source {:d}'.format(_) for _ in range(len(sources))]
