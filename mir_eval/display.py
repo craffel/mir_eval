@@ -421,15 +421,21 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None,
     ax, new_axes = __get_axes(ax=ax)
 
     # If we have fresh axes, set the limits
+
     if new_axes:
-        ax.set_ylim([0, 1])
+        # Infer base and height
+        if base is None:
+            base = 0
+        if height is None:
+            height = 1
 
-    # Infer height
-    if base is None:
-        base = ax.get_ylim()[0]
+        ax.set_ylim([base, height])
+    else:
+        if base is None:
+            base = ax.get_ylim()[0]
 
-    if height is None:
-        height = ax.get_ylim()[1]
+        if height is None:
+            height = ax.get_ylim()[1]
 
     cycler = ax._get_patches_for_fill.prop_cycler
 
