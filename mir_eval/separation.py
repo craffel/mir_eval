@@ -175,6 +175,16 @@ def bss_eval_sources(reference_sources, estimated_sources,
                                         jtrue, 512)
                 sdr[jest, jtrue], sir[jest, jtrue], sar[jest, jtrue] = \
                     _bss_source_crit(s_true, e_spat, e_interf, e_artif)
+
+        # select the best ordering
+        perms = list(itertools.permutations(list(range(nsrc))))
+        mean_sir = np.empty(len(perms))
+        dum = np.arange(nsrc)
+        for (i, perm) in enumerate(perms):
+            mean_sir[i] = np.mean(sir[perm, dum])
+        popt = perms[np.argmax(mean_sir)]
+        idx = (popt, dum)
+        return (sdr[idx], sir[idx], sar[idx], np.asarray(popt))
     else:
         # compute criteria for only the simple correspondence
         # (estimate 1 is estimate corresponding to reference source 1, etc.)
@@ -189,18 +199,6 @@ def bss_eval_sources(reference_sources, estimated_sources,
             sdr[j], sir[j], sar[j] = \
                 _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
-    # does user desire permutations?
-    if compute_permutation:
-        # select the best ordering
-        perms = list(itertools.permutations(list(range(nsrc))))
-        mean_sir = np.empty(len(perms))
-        dum = np.arange(nsrc)
-        for (i, perm) in enumerate(perms):
-            mean_sir[i] = np.mean(sir[perm, dum])
-        popt = perms[np.argmax(mean_sir)]
-        idx = (popt, dum)
-        return (sdr[idx], sir[idx], sar[idx], np.asarray(popt))
-    else:
         # return the default permutation for compatibility
         popt = np.arange(nsrc)
         return (sdr, sir, sar, popt)
