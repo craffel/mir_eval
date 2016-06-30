@@ -29,4 +29,8 @@ setup(
         'future',
         'six'
     ],
+    extras_require={
+        'display': ['matplotlib>=1.5.0',
+                    'scipy>=0.16.0']
+    }
 )

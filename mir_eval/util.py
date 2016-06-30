@@ -891,3 +891,36 @@ def intervals_to_durations(intervals):
     """
     validate_intervals(intervals)
     return np.abs(np.diff(intervals, axis=-1)).flatten()
+
+
+def hz_to_midi(freqs):
+    '''Convert Hz to MIDI numbers
+
+    Parameters
+    ----------
+    freqs : number or ndarray
+        Frequency/frequencies in Hz
+
+    Returns
+    -------
+    midi : number or ndarray
+        MIDI note numbers corresponding to input frequencies.
+        Note that these may be fractional.
+    '''
+    return 12.0 * (np.log2(freqs) - np.log2(440.0)) + 69.0
+
+
+def midi_to_hz(midi):
+    '''Convert MIDI numbers to Hz
+
+    Parameters
+    ----------
+    midi : number or ndarray
+        MIDI notes
+
+    Returns
+    -------
+    freqs : number or ndarray
+        Frequency/frequencies in Hz corresponding to `midi`
+    '''
+    return 440.0 * (2.0 ** ((midi - 69.0)/12.0))
