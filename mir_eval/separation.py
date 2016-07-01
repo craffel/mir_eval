@@ -52,9 +52,9 @@ def validate(reference_sources, estimated_sources):
 
     Parameters
     ----------
-    reference_sources : np.ndarray, shape=(nsrc1, nsampl1)
+    reference_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing true sources
-    estimated_sources : np.ndarray, shape=(nsrc2, nsampl2)
+    estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
 
     """
