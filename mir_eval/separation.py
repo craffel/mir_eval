@@ -436,7 +436,7 @@ def _safe_db(num, den):
 
 
 def evaluate(reference_sources, estimated_sources,
-             window=None, hop=None, **kwargs):
+             framewise=False, window=30*44100, hop=15*44100, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -453,10 +453,15 @@ def evaluate(reference_sources, estimated_sources,
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
+    framewise : bool, optional
+        evaluate the performance metrics framewise using the values for window
+        and hop (default value is false)
     window : int, optional
-        Window length for framewise evaluation
+        Window length for framewise evaluation (default value is 30s at a
+        sample rate of 44.1kHz)
     hop : int, optional
-        Hop size for framewise evaluation
+        Hop size for framewise evaluation (default value is 15s at a sample
+        rate of 44.1kHz)
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -471,7 +476,7 @@ def evaluate(reference_sources, estimated_sources,
     # Compute all the metrics
     scores = collections.OrderedDict()
 
-    if window is not None and hop is not None:
+    if framewise:
         sdr, sir, sar, perm = util.filter_kwargs(
             bss_eval_sources_framewise,
             reference_sources,
@@ -480,9 +485,6 @@ def evaluate(reference_sources, estimated_sources,
             hop,
             **kwargs
         )
-    elif window is not None or hop is not None:
-        raise ValueError('In order to perform windowed evaluation, both window'
-                         'and hop parameters must be supplied.')
     else:
         sdr, sir, sar, perm = util.filter_kwargs(
             bss_eval_sources,
