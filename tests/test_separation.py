@@ -155,11 +155,6 @@ def test_separation_functions():
             ref_sources, est_sources, True,
             expected_frames['win'], expected_frames['hop']
         )
-        # For reasons of coverage
-        nose.tools.assert_raises(
-            ValueError, mir_eval.separation.evaluate, ref_sources, est_sources,
-            expected_frames['win']
-        )
         # Compare them
         for metric in scores:
             # This is a simple hack to make nosetest's messages more useful

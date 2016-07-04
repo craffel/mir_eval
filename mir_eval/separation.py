@@ -205,7 +205,8 @@ def bss_eval_sources(reference_sources, estimated_sources,
 
 
 def bss_eval_sources_framewise(reference_sources, estimated_sources,
-                               window, hop, compute_permutation=False):
+                               window=30*44100, hop=15*44100,
+                               compute_permutation=False):
     """Framewise computation of bss_eval_sources
 
     Examples
@@ -227,10 +228,12 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources (must have the same shape as
         reference_sources)
-    window : int
-        Window length for framewise evaluation
-    hop : int
-        Hop size for framewise evaluation
+    window : int, optional
+        Window length for framewise evaluation (default value is 30s at a
+        sample rate of 44.1kHz)
+    hop : int, optionals
+        Hop size for framewise evaluation (default value is 15s at a
+        sample rate of 44.1kHz)
     compute_permutation : bool, optional
         compute permutation of estimate/source combinations for all windows
         (False by default)
