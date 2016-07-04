@@ -205,8 +205,14 @@ def bss_eval_sources(reference_sources, estimated_sources,
 
 
 def bss_eval_sources_framewise(reference_sources, estimated_sources,
-                               window, hop, compute_permutation=False):
+                               window=30*44100, hop=15*44100,
+                               compute_permutation=False):
     """Framewise computation of bss_eval_sources
+
+    NOTE: if reference_sources and estimated_sources would be evaluated using
+    only a single window or are shorter than the window length, the result
+    of bss_eval_sources called on reference_sources and estimated_sources (with
+    the compute_permutation parameter passed to bss_eval_sources) is returned
 
     Examples
     --------
@@ -227,10 +233,12 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources (must have the same shape as
         reference_sources)
-    window : int
-        Window length for framewise evaluation
-    hop : int
-        Hop size for framewise evaluation
+    window : int, optional
+        Window length for framewise evaluation (default value is 30s at a
+        sample rate of 44.1kHz)
+    hop : int, optionals
+        Hop size for framewise evaluation (default value is 15s at a
+        sample rate of 44.1kHz)
     compute_permutation : bool, optional
         compute permutation of estimate/source combinations for all windows
         (False by default)
@@ -268,11 +276,11 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     nwin = int(
         np.floor((reference_sources.shape[1] - window + hop) / hop)
     )
-    # make sure that more than 1 window will be evaluated
+    # if fewer than 2 windows would be evaluated, return the sources result
     if nwin < 2:
-        raise ValueError('Invalid window size and hop size have been supplied.'
-                         'From these paramters it was determined that only {} '
-                         'window(s) should be used.'.format(nwin))
+        return bss_eval_sources(reference_sources,
+                                estimated_sources,
+                                compute_permutation)
 
     # compute the criteria across all windows
     sdr = np.empty((nsrc, nwin))
@@ -435,8 +443,7 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
-def evaluate(reference_sources, estimated_sources,
-             window=None, hop=None, **kwargs):
+def evaluate(reference_sources, estimated_sources, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -453,10 +460,6 @@ def evaluate(reference_sources, estimated_sources,
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
-    window : int, optional
-        Window length for framewise evaluation
-    hop : int, optional
-        Hop size for framewise evaluation
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -471,29 +474,26 @@ def evaluate(reference_sources, estimated_sources,
     # Compute all the metrics
     scores = collections.OrderedDict()
 
-    if window is not None and hop is not None:
-        sdr, sir, sar, perm = util.filter_kwargs(
-            bss_eval_sources_framewise,
-            reference_sources,
-            estimated_sources,
-            window,
-            hop,
-            **kwargs
-        )
-    elif window is not None or hop is not None:
-        raise ValueError('In order to perform windowed evaluation, both window'
-                         'and hop parameters must be supplied.')
-    else:
-        sdr, sir, sar, perm = util.filter_kwargs(
-            bss_eval_sources,
-            reference_sources,
-            estimated_sources,
-            **kwargs
-        )
+    sdr, sir, sar, perm = util.filter_kwargs(
+        bss_eval_sources_framewise,
+        reference_sources,
+        estimated_sources,
+        **kwargs
+    )
+    scores['Sources Frames - Source to Distortion'] = sdr.tolist()
+    scores['Sources Frames - Source to Interference'] = sir.tolist()
+    scores['Sources Frames - Source to Artifact'] = sar.tolist()
+    scores['Sources Frames - Source permutation'] = perm
 
-    scores['Source to Distortion'] = sdr.tolist()
-    scores['Source to Interference'] = sir.tolist()
-    scores['Source to Artifact'] = sar.tolist()
-    scores['Source permutation'] = perm
+    sdr, sir, sar, perm = util.filter_kwargs(
+        bss_eval_sources,
+        reference_sources,
+        estimated_sources,
+        **kwargs
+    )
+    scores['Sources - Source to Distortion'] = sdr.tolist()
+    scores['Sources - Source to Interference'] = sir.tolist()
+    scores['Sources - Source to Artifact'] = sar.tolist()
+    scores['Sources - Source permutation'] = perm
 
     return scores
