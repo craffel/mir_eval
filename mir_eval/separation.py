@@ -438,8 +438,7 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
-def evaluate(reference_sources, estimated_sources,
-             framewise=False, window=30*44100, hop=15*44100, **kwargs):
+def evaluate(reference_sources, estimated_sources, framewise=False, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -456,15 +455,6 @@ def evaluate(reference_sources, estimated_sources,
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources
-    framewise : bool, optional
-        evaluate the performance metrics framewise using the values for window
-        and hop (default value is false)
-    window : int, optional
-        Window length for framewise evaluation (default value is 30s at a
-        sample rate of 44.1kHz)
-    hop : int, optional
-        Hop size for framewise evaluation (default value is 15s at a sample
-        rate of 44.1kHz)
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -484,8 +474,6 @@ def evaluate(reference_sources, estimated_sources,
             bss_eval_sources_framewise,
             reference_sources,
             estimated_sources,
-            window,
-            hop,
             **kwargs
         )
     else:
