@@ -153,7 +153,7 @@ def test_separation_functions():
         scores = mir_eval.separation.evaluate(ref_sources, est_sources)
         frame_scores = mir_eval.separation.evaluate(
             ref_sources, est_sources, True,
-            expected_frames['win'], expected_frames['hop']
+            window=expected_frames['win'], hop=expected_frames['hop']
         )
         # Compare them
         for metric in scores:
