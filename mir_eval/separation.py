@@ -209,6 +209,11 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
                                compute_permutation=False):
     """Framewise computation of bss_eval_sources
 
+    NOTE: if reference_sources and estimated_sources would be evaluated using
+    only a single window or are shorter than the window length, the result
+    of bss_eval_sources called on reference_sources and estimated_sources (with
+    the compute_permutation parameter passed to bss_eval_sources) is returned
+
     Examples
     --------
     >>> # reference_sources[n] should be an ndarray of samples of the
