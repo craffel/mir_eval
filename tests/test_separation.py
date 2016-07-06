@@ -105,16 +105,22 @@ def __unit_test_default_permutation(metric):
     assert np.array_equal(results[-1], np.asarray([0, 1, 2, 3]))
 
 
-def __unit_test_invalid_window(metric):
+def __unit_test_framewise_small_window(metric):
     # Test for invalid win/hop parameter detection
     ref_sources = np.random.random_sample((4, 100))
     est_sources = np.random.random_sample((4, 100))
-    nose.tools.assert_raises(
-        ValueError, metric, ref_sources, est_sources, 120, 20
-    )  # test with window larger than source lengths
-    nose.tools.assert_raises(
-        ValueError, metric, ref_sources, est_sources, 20, 120
-    )  # test with hop larger than source length
+    # Rest with window larger than source lengths
+    assert np.allclose(metric(ref_sources, est_sources, window=120, hop=20),
+                       mir_eval.separation.bss_eval_sources(ref_sources,
+                                                            est_sources,
+                                                            False),
+                       atol=A_TOL)
+    # Test with hop larger than source length
+    assert np.allclose(metric(ref_sources, est_sources, window=20, hop=120),
+                       mir_eval.separation.bss_eval_sources(ref_sources,
+                                                            est_sources,
+                                                            False),
+                       atol=A_TOL)
 
 
 def __check_score(sco_f, metric, score, expected_score):
@@ -139,7 +145,7 @@ def test_separation_functions():
     for metric in [mir_eval.separation.bss_eval_sources]:
         yield (__unit_test_default_permutation, metric)
     for metric in [mir_eval.separation.bss_eval_sources_framewise]:
-        yield (__unit_test_invalid_window, metric)
+        yield (__unit_test_framewise_small_window, metric)
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
@@ -150,18 +156,20 @@ def test_separation_functions():
         ref_sources = __load_and_stack_wavs(ref_f)
         est_sources = __load_and_stack_wavs(est_f)
         # Compute scores
-        scores = mir_eval.separation.evaluate(ref_sources, est_sources)
-        frame_scores = mir_eval.separation.evaluate(
-            ref_sources, est_sources, True,
+        # scores = mir_eval.separation.evaluate(ref_sources, est_sources)
+        scores = mir_eval.separation.evaluate(
+            ref_sources, est_sources,
             window=expected_frames['win'], hop=expected_frames['hop']
         )
         # Compare them
         for metric in scores:
-            # This is a simple hack to make nosetest's messages more useful
-            yield (__check_score, sco_f, metric, scores[metric],
-                   expected_scores[metric])
-        for metric in frame_scores:
-            if metric is not 'win' or metric is not 'hop':
+            if 'Sources - ' in metric:
+                test_data_name = metric.replace('Sources - ', '')
                 # This is a simple hack to make nosetest's messages more useful
-                yield (__check_score, sco_f, metric,
-                       frame_scores[metric], expected_frames[metric])
+                yield (__check_score, sco_f, metric, scores[metric],
+                       expected_scores[test_data_name])
+            elif 'Sources Frames - ' in metric:
+                test_data_name = metric.replace('Sources Frames - ', '')
+                # This is a simple hack to make nosetest's messages more useful
+                yield (__check_score, sco_f, metric, scores[metric],
+                       expected_frames[test_data_name])

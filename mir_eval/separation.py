@@ -271,11 +271,11 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     nwin = int(
         np.floor((reference_sources.shape[1] - window + hop) / hop)
     )
-    # make sure that more than 1 window will be evaluated
+    # if fewer than 2 windows would be evaluated, return the sources result
     if nwin < 2:
-        raise ValueError('Invalid window size and hop size have been supplied.'
-                         'From these paramters it was determined that only {} '
-                         'window(s) should be used.'.format(nwin))
+        return bss_eval_sources(reference_sources,
+                                estimated_sources,
+                                compute_permutation)
 
     # compute the criteria across all windows
     sdr = np.empty((nsrc, nwin))
@@ -438,7 +438,7 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
-def evaluate(reference_sources, estimated_sources, framewise=False, **kwargs):
+def evaluate(reference_sources, estimated_sources, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -469,24 +469,26 @@ def evaluate(reference_sources, estimated_sources, framewise=False, **kwargs):
     # Compute all the metrics
     scores = collections.OrderedDict()
 
-    if framewise:
-        sdr, sir, sar, perm = util.filter_kwargs(
-            bss_eval_sources_framewise,
-            reference_sources,
-            estimated_sources,
-            **kwargs
-        )
-    else:
-        sdr, sir, sar, perm = util.filter_kwargs(
-            bss_eval_sources,
-            reference_sources,
-            estimated_sources,
-            **kwargs
-        )
-
-    scores['Source to Distortion'] = sdr.tolist()
-    scores['Source to Interference'] = sir.tolist()
-    scores['Source to Artifact'] = sar.tolist()
+    sdr, sir, sar, perm = util.filter_kwargs(
+        bss_eval_sources_framewise,
+        reference_sources,
+        estimated_sources,
+        **kwargs
+    )
+    scores['Sources Frames - Source to Distortion'] = sdr.tolist()
+    scores['Sources Frames - Source to Interference'] = sir.tolist()
+    scores['Sources Frames - Source to Artifact'] = sar.tolist()
     scores['Source permutation'] = perm
+
+    sdr, sir, sar, perm = util.filter_kwargs(
+        bss_eval_sources,
+        reference_sources,
+        estimated_sources,
+        **kwargs
+    )
+    scores['Sources - Source to Distortion'] = sdr.tolist()
+    scores['Sources - Source to Interference'] = sir.tolist()
+    scores['Sources - Source to Artifact'] = sar.tolist()
+    scores['Sources - Source permutation'] = perm
 
     return scores
