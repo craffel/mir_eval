@@ -156,7 +156,6 @@ def test_separation_functions():
         ref_sources = __load_and_stack_wavs(ref_f)
         est_sources = __load_and_stack_wavs(est_f)
         # Compute scores
-        # scores = mir_eval.separation.evaluate(ref_sources, est_sources)
         scores = mir_eval.separation.evaluate(
             ref_sources, est_sources,
             window=expected_frames['win'], hop=expected_frames['hop']
