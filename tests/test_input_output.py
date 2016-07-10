@@ -11,7 +11,7 @@ import tempfile
 def test_load_delimited():
     # Test for ValueError when a non-string or file handle is passed
     nose.tools.assert_raises(
-        ValueError, mir_eval.io.load_delimited, None, [int])
+        IOError, mir_eval.io.load_delimited, None, [int])
     # Test for a value error when the wrong number of columns is passed
     with tempfile.TemporaryFile('r+') as f:
         f.write('10 20')
@@ -119,7 +119,7 @@ def test_load_valued_intervals():
 def test_load_ragged_time_series():
     # Test for ValueError when a non-string or file handle is passed
     nose.tools.assert_raises(
-        ValueError, mir_eval.io.load_ragged_time_series, None, float,
+        IOError, mir_eval.io.load_ragged_time_series, None, float,
         header=False)
     # Test for a value error on conversion failure
     with tempfile.TemporaryFile('r+') as f:
