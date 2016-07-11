@@ -483,7 +483,7 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
     scores['Sources Frames - Source to Distortion'] = sdr.tolist()
     scores['Sources Frames - Source to Interference'] = sir.tolist()
     scores['Sources Frames - Source to Artifact'] = sar.tolist()
-    scores['Source permutation'] = perm
+    scores['Sources Frames - Source permutation'] = perm
 
     sdr, sir, sar, perm = util.filter_kwargs(
         bss_eval_sources,
