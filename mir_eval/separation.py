@@ -66,11 +66,27 @@ def validate(reference_sources, estimated_sources):
                          '= {}'.format(reference_sources.shape,
                                        estimated_sources.shape))
 
+    if reference_sources.ndim > 3 or estimated_sources.ndim > 3:
+        raise ValueError('The number of dimensions is too high (must be less '
+                         'than 3). reference_sources.ndim = {}, '
+                         'estimated_sources.ndim '
+                         '= {}'.format(reference_sources.ndim,
+                                       estimated_sources.ndim))
+
     if reference_sources.size == 0:
         warnings.warn("reference_sources is empty, should be of size "
                       "(nsrc, nsample).  sdr, sir, sar, and perm will all "
                       "be empty np.ndarrays")
-    elif np.any(np.all(reference_sources == 0, axis=1)):
+    elif (reference_sources.ndim == 2 and
+            np.any(np.all(reference_sources == 0, axis=1))):
+        raise ValueError('All the reference sources should be non-silent (not '
+                         'all-zeros), but at least one of the reference '
+                         'sources is all 0s, which introduces ambiguity to the'
+                         ' evaluation. (Otherwise we can add infinitely many '
+                         'all-zero sources.)')
+    elif (reference_sources.ndim > 2 and
+            np.any(np.all(np.sum(reference_sources, axis=-1) == 0,
+                          axis=1))):
         raise ValueError('All the reference sources should be non-silent (not '
                          'all-zeros), but at least one of the reference '
                          'sources is all 0s, which introduces ambiguity to the'
@@ -81,7 +97,16 @@ def validate(reference_sources, estimated_sources):
         warnings.warn("estimated_sources is empty, should be of size "
                       "(nsrc, nsample).  sdr, sir, sar, and perm will all "
                       "be empty np.ndarrays")
-    elif np.any(np.all(estimated_sources == 0, axis=1)):
+    elif (estimated_sources.ndim == 2 and
+            np.any(np.all(estimated_sources == 0, axis=1))):
+        raise ValueError('All the estimated sources should be non-silent (not '
+                         'all-zeros), but at least one of the estimated '
+                         'sources is all 0s. Since we require each reference '
+                         'source to be non-silent, having a silent estiamted '
+                         'source will result in an underdetermined system.')
+    elif (estimated_sources.ndim > 2 and
+            np.any(np.all(np.sum(estimated_sources, axis=-1) == 0,
+                          axis=1))):
         raise ValueError('All the estimated sources should be non-silent (not '
                          'all-zeros), but at least one of the estimated '
                          'sources is all 0s. Since we require each reference '
@@ -236,7 +261,7 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     window : int, optional
         Window length for framewise evaluation (default value is 30s at a
         sample rate of 44.1kHz)
-    hop : int, optionals
+    hop : int, optional
         Hop size for framewise evaluation (default value is 15s at a
         sample rate of 44.1kHz)
     compute_permutation : bool, optional
@@ -300,6 +325,141 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     return sdr, sir, sar, perm
 
 
+def bss_eval_images(reference_sources, estimated_sources,
+                    compute_permutation=True):
+    """Implementation of the bss_eval_images function from the
+    BSS_EVAL Matlab toolbox.
+
+    Ordering and measurement of the separation quality for estimated source
+    signals in terms of filtered true source, interference and artifacts.
+    This method also provides the ISR measure.
+
+    The decomposition allows a time-invariant filter distortion of length
+    512, as described in Section III.B of [#vincent2006performance]_.
+
+    Passing True for compute_permutation will much improve the performance of
+    the evaluation; however, it is not always appropriate and is not the
+    way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
+
+    Examples
+    --------
+    >>> # reference_sources[n] should be an ndarray of samples of the
+    >>> # n'th reference source
+    >>> # estimated_sources[n] should be the same for the n'th estimated
+    >>> # source
+    >>> (sdr, isr, sir, sar,
+    ...  perm) = mir_eval.separation.bss_eval_images(reference_sources,
+    ...                                               estimated_sources)
+
+    Parameters
+    ----------
+    reference_sources : np.ndarray, shape=(nsrc, nsampl, nchan)
+        matrix containing true sources
+    estimated_sources : np.ndarray, shape=(nsrc, nsampl, nchan)
+        matrix containing estimated sources
+    compute_permutation : bool, optional
+        compute permutation of estimate/source combinations (True by default)
+
+    Returns
+    -------
+    sdr : np.ndarray, shape=(nsrc,)
+        vector of Signal to Distortion Ratios (SDR)
+    isr : np.ndarray, shape=(nsrc,)
+        vector of source Image to Spatial distortion Ratios (ISR)
+    sir : np.ndarray, shape=(nsrc,)
+        vector of Source to Interference Ratios (SIR)
+    sar : np.ndarray, shape=(nsrc,)
+        vector of Sources to Artifacts Ratios (SAR)
+    perm : np.ndarray, shape=(nsrc,)
+        vector containing the best ordering of estimated sources in
+        the mean SIR sense (estimated source number perm[j] corresponds to
+        true source number j)
+        Note: perm will be (1,2,...,nsrc) if compute_permutation is False
+
+    """
+
+    # make sure the input has 3 dimensions
+    if estimated_sources.ndim != 3 or reference_sources.ndim != 3:
+        if estimated_sources.ndim == 1 and reference_sources.ndim == 1:
+            # assume input is in shape (nsampl)
+            estimated_sources = estimated_sources[np.newaxis, :, np.newaxis]
+            reference_sources = reference_sources[np.newaxis, :, np.newaxis]
+        elif estimated_sources.ndim == 2 and reference_sources.ndim == 2:
+            # assume input is in shape (nsrc, nsampl)
+            estimated_sources = estimated_sources[:, :, np.newaxis]
+            reference_sources = reference_sources[:, :, np.newaxis]
+        # we will ensure input doesn't have more than 3 dimensions in validate
+
+    validate(reference_sources, estimated_sources)
+    # If empty matrices were supplied, return empty lists (special case)
+    if reference_sources.size == 0 or estimated_sources.size == 0:
+        return np.array([]), np.array([]), np.array([]), \
+                         np.array([]), np.array([])
+
+    # determine size parameters
+    nsrc = estimated_sources.shape[0]
+    nsampl = estimated_sources.shape[1]
+    nchan = estimated_sources.shape[2]
+
+    # does the user desire permutation?
+    if compute_permutation:
+        # compute criteria for all possible pair matches
+        sdr = np.empty((nsrc, nsrc))
+        isr = np.empty((nsrc, nsrc))
+        sir = np.empty((nsrc, nsrc))
+        sar = np.empty((nsrc, nsrc))
+        for jest in range(nsrc):
+            for jtrue in range(nsrc):
+                s_true, e_spat, e_interf, e_artif = \
+                    _bss_decomp_mtifilt_images(
+                        reference_sources,
+                        np.reshape(
+                            estimated_sources[jest],
+                            (nsampl, nchan),
+                            order='F'
+                        ),
+                        jtrue,
+                        512
+                    )
+                sdr[jest, jtrue], isr[jest, jtrue], \
+                    sir[jest, jtrue], sar[jest, jtrue] = \
+                    _bss_image_crit(s_true, e_spat, e_interf, e_artif)
+
+        # select the best ordering
+        perms = list(itertools.permutations(range(nsrc)))
+        mean_sir = np.empty(len(perms))
+        dum = np.arange(nsrc)
+        for (i, perm) in enumerate(perms):
+            mean_sir[i] = np.mean(sir[perm, dum])
+        popt = perms[np.argmax(mean_sir)]
+        idx = (popt, dum)
+        return (sdr[idx], isr[idx], sir[idx], sar[idx], np.asarray(popt))
+    else:
+        # compute criteria for only the simple correspondence
+        # (estimate 1 is estimate corresponding to reference source 1, etc.)
+        sdr = np.empty(nsrc)
+        isr = np.empty(nsrc)
+        sir = np.empty(nsrc)
+        sar = np.empty(nsrc)
+        Gj = [0] * nsrc  # prepare G matrics with zeroes
+        G = np.zeros(1)
+        for j in range(nsrc):
+            # save G matrix to avoid recomputing it every call
+            s_true, e_spat, e_interf, e_artif, Gj_temp, G = \
+                _bss_decomp_mtifilt_images(reference_sources,
+                                           np.reshape(estimated_sources[j],
+                                                      (nsampl, nchan),
+                                                      order='F'),
+                                           j, 512, Gj[j], G)
+            Gj[j] = Gj_temp
+            sdr[j], isr[j], sir[j], sar[j] = \
+                _bss_image_crit(s_true, e_spat, e_interf, e_artif)
+
+        # return the default permutation for compatibility
+        popt = np.arange(nsrc)
+        return (sdr, isr, sir, sar, popt)
+
+
 def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
     """Decomposition of an estimated source image into four components
     representing respectively the true source image, spatial (or filtering)
@@ -335,6 +495,51 @@ def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
     e_artif = -s_true - e_spat - e_interf
     e_artif[:nsampl] += estimated_source
     return (s_true, e_spat, e_interf, e_artif)
+
+
+def _bss_decomp_mtifilt_images(reference_sources, estimated_source, j, flen,
+                               Gj=None, G=None):
+    """Decomposition of an estimated source image into four components
+    representing respectively the true source image, spatial (or filtering)
+    distortion, interference and artifacts, derived from the true source
+    images using multichannel time-invariant filters.
+    Adapted version to work with multichannel sources.
+    Improved performance can be gained by passing Gj and G parameters.
+    """
+    nsampl = np.shape(estimated_source)[0]
+    nchan = np.shape(estimated_source)[1]
+    # are we saving the Gj and G parameters?
+    saveg = Gj is not None and G is not None
+    # decomposition
+    # true source image
+    s_true = np.hstack((np.reshape(reference_sources[j],
+                                   (nsampl, nchan),
+                                   order="F").transpose(),
+                        np.zeros((nchan, flen - 1))))
+    # spatial (or filtering) distortion
+    if saveg:
+        e_spat, Gj = _project_images(reference_sources[j, np.newaxis, :],
+                                     estimated_source, flen, Gj)
+    else:
+        e_spat = _project_images(reference_sources[j, np.newaxis, :],
+                                 estimated_source, flen)
+    e_spat = e_spat - s_true
+    # interference
+    if saveg:
+        e_interf, G = _project_images(reference_sources,
+                                      estimated_source, flen, G)
+    else:
+        e_interf = _project_images(reference_sources,
+                                   estimated_source, flen)
+    e_interf = e_interf - s_true - e_spat
+    # artifacts
+    e_artif = -s_true - e_spat - e_interf
+    e_artif[:, :nsampl] += estimated_source.transpose()
+    # return Gj and G only if they were passed in
+    if saveg:
+        return (s_true, e_spat, e_interf, e_artif, Gj, G)
+    else:
+        return (s_true, e_spat, e_interf, e_artif)
 
 
 def _project(reference_sources, estimated_source, flen):
@@ -395,6 +600,79 @@ def _project(reference_sources, estimated_source, flen):
     return sproj
 
 
+def _project_images(reference_sources, estimated_source, flen, G=None):
+    """Least-squares projection of estimated source on the subspace spanned by
+    delayed versions of reference sources, with delays between 0 and flen-1
+    """
+    nsrc, nsampl, nchan = reference_sources.shape
+    reference_sources = np.reshape(np.transpose(reference_sources, (2, 0, 1)),
+                                   (nchan*nsrc, nsampl), order='F')
+
+    # computing coefficients of least squares problem via FFT ##
+    # zero padding and FFT of input data
+    reference_sources = np.hstack((reference_sources,
+                                   np.zeros((nchan*nsrc, flen - 1))))
+    estimated_source = \
+        np.hstack((estimated_source.transpose(), np.zeros((nchan, flen - 1))))
+    n_fft = int(2**np.ceil(np.log2(nsampl + flen - 1.)))
+    sf = scipy.fftpack.fft(reference_sources, n=n_fft, axis=1)
+    sef = scipy.fftpack.fft(estimated_source, n=n_fft)
+
+    # inner products between delayed versions of reference_sources
+    if G is None:
+        saveg = False
+        G = np.zeros((nchan * nsrc * flen, nchan * nsrc * flen))
+        for i in range(nchan * nsrc):
+            for j in range(i+1):
+                ssf = sf[i] * np.conj(sf[j])
+                ssf = np.real(scipy.fftpack.ifft(ssf))
+                ss = toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])),
+                              r=ssf[:flen])
+                G[i * flen: (i+1) * flen, j * flen: (j+1) * flen] = ss
+                G[j * flen: (j+1) * flen, i * flen: (i+1) * flen] = ss.T
+    else:  # avoid recomputing G (only works if no permutation is desired)
+        saveg = True  # return G
+        if np.all(G == 0):  # only compute G if passed as 0
+            G = np.zeros((nchan * nsrc * flen, nchan * nsrc * flen))
+            for i in range(nchan * nsrc):
+                for j in range(i+1):
+                    ssf = sf[i] * np.conj(sf[j])
+                    ssf = np.real(scipy.fftpack.ifft(ssf))
+                    ss = toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])),
+                                  r=ssf[:flen])
+                    G[i * flen: (i+1) * flen, j * flen: (j+1) * flen] = ss
+                    G[j * flen: (j+1) * flen, i * flen: (i+1) * flen] = ss.T
+
+    # inner products between estimated_source and delayed versions of
+    # reference_sources
+    D = np.zeros((nchan * nsrc * flen, nchan))
+    for k in range(nchan * nsrc):
+        for i in range(nchan):
+            ssef = sf[k] * np.conj(sef[i])
+            ssef = np.real(scipy.fftpack.ifft(ssef))
+            D[k * flen: (k+1) * flen, i] = \
+                np.hstack((ssef[0], ssef[-1:-flen:-1])).transpose()
+
+    # Computing projection
+    # Distortion filters
+    try:
+        C = np.linalg.solve(G, D).reshape(flen, nchan*nsrc, nchan, order='F')
+    except np.linalg.linalg.LinAlgError:
+        C = np.linalg.lstsq(G, D)[0].reshape(flen, nchan*nsrc, nchan,
+                                             order='F')
+    # Filtering
+    sproj = np.zeros((nchan, nsampl + flen - 1))
+    for k in range(nchan * nsrc):
+        for i in range(nchan):
+            sproj[i] += fftconvolve(C[:, k, i].transpose(),
+                                    reference_sources[k])[:nsampl + flen - 1]
+    # return G only if it was passed in
+    if saveg:
+        return sproj, G
+    else:
+        return sproj
+
+
 def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
     """Measurement of the separation quality for a given source in terms of
     filtered true source, interference and artifacts.
@@ -420,6 +698,33 @@ def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
     sir = _safe_db(np.sum(s_filt**2), np.sum(e_interf**2))
     sar = _safe_db(np.sum((s_filt + e_interf)**2), np.sum(e_artif**2))
     return (sdr, sir, sar)
+
+
+def _bss_image_crit(s_true, e_spat, e_interf, e_artif):
+    """Measurement of the separation quality for a given image in terms of
+    filtered true source, spatial error, interference and artifacts.
+
+    Parameters
+    ----------
+    s_true :
+
+    e_spat :
+
+    e_interf :
+
+    e_artif :
+
+
+    Returns
+    -------
+
+    """
+    # energy ratios
+    sdr = _safe_db(np.sum(s_true**2), np.sum((e_spat+e_interf+e_artif)**2))
+    isr = _safe_db(np.sum(s_true**2), np.sum(e_spat**2))
+    sir = _safe_db(np.sum((s_true+e_spat)**2), np.sum(e_interf**2))
+    sar = _safe_db(np.sum((s_true+e_spat+e_interf)**2), np.sum(e_artif**2))
+    return (sdr, isr, sir, sar)
 
 
 def _safe_db(num, den):
@@ -456,9 +761,9 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
 
     Parameters
     ----------
-    reference_sources : np.ndarray, shape=(nsrc, nsampl)
+    reference_sources : np.ndarray, shape=(nsrc, nsampl[, nchan])
         matrix containing true sources
-    estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+    estimated_sources : np.ndarray, shape=(nsrc, nsampl[, nchan])
         matrix containing estimated sources
     kwargs
         Additional keyword arguments which will be passed to the
@@ -474,26 +779,40 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
     # Compute all the metrics
     scores = collections.OrderedDict()
 
-    sdr, sir, sar, perm = util.filter_kwargs(
-        bss_eval_sources_framewise,
+    sdr, isr, sir, sar, perm = util.filter_kwargs(
+        bss_eval_images,
         reference_sources,
         estimated_sources,
         **kwargs
     )
-    scores['Sources Frames - Source to Distortion'] = sdr.tolist()
-    scores['Sources Frames - Source to Interference'] = sir.tolist()
-    scores['Sources Frames - Source to Artifact'] = sar.tolist()
-    scores['Sources Frames - Source permutation'] = perm
+    scores['Images - Source to Distortion'] = sdr.tolist()
+    scores['Images - Image to Spatial'] = isr.tolist()
+    scores['Images - Source to Interference'] = sir.tolist()
+    scores['Images - Source to Artifact'] = sar.tolist()
+    scores['Images - Source permutation'] = perm.tolist()
 
-    sdr, sir, sar, perm = util.filter_kwargs(
-        bss_eval_sources,
-        reference_sources,
-        estimated_sources,
-        **kwargs
-    )
-    scores['Sources - Source to Distortion'] = sdr.tolist()
-    scores['Sources - Source to Interference'] = sir.tolist()
-    scores['Sources - Source to Artifact'] = sar.tolist()
-    scores['Sources - Source permutation'] = perm
+    # Verify we can compute sources on this input
+    if reference_sources.ndim < 3 and estimated_sources.ndim < 3:
+        sdr, sir, sar, perm = util.filter_kwargs(
+            bss_eval_sources_framewise,
+            reference_sources,
+            estimated_sources,
+            **kwargs
+        )
+        scores['Sources Frames - Source to Distortion'] = sdr.tolist()
+        scores['Sources Frames - Source to Interference'] = sir.tolist()
+        scores['Sources Frames - Source to Artifact'] = sar.tolist()
+        scores['Sources Frames - Source permutation'] = perm.tolist()
+
+        sdr, sir, sar, perm = util.filter_kwargs(
+            bss_eval_sources,
+            reference_sources,
+            estimated_sources,
+            **kwargs
+        )
+        scores['Sources - Source to Distortion'] = sdr.tolist()
+        scores['Sources - Source to Interference'] = sir.tolist()
+        scores['Sources - Source to Artifact'] = sar.tolist()
+        scores['Sources - Source permutation'] = perm.tolist()
 
     return scores

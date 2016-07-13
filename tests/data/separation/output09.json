@@ -83,5 +83,25 @@
       ],
       "win": 500,
       "hop": 500
+  },
+  "Images": {
+      "Source to Distortion": [
+          -5.124915966181872
+      ],
+      "Image to Spatial": [
+          -4.220713809183423
+      ],
+      "Source to Interference": [
+          Infinity
+      ],
+      "Source to Artifact": [
+          6.533836035573084
+      ],
+      "Source permutation": [
+          0
+      ],
+      "nchan": 2,
+      "gain": 2.2,
+      "reverse": false
   }
 }

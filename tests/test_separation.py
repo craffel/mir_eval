@@ -28,14 +28,37 @@ def __load_and_stack_wavs(directory):
     global_fs = None
     for f in sorted(glob.glob(os.path.join(directory, '*.wav'))):
         audio_data, fs = mir_eval.io.load_wav(f)
-        assert (global_fs is None or fs == global_fs)
+        assert global_fs is None or fs == global_fs
         global_fs = fs
         stacked_audio_data.append(audio_data)
     return np.vstack(stacked_audio_data)
 
 
+def __generate_multichannel(mono_sig, nchan=2, gain=1.0, reverse=False):
+    ''' Turn a single channel (ie. mono) audio sample into a multichannel
+    (e.g. stereo)
+    Note: to achieve channels of silence pass gain=0
+    '''
+    # add the channels dimension
+    if mono_sig.ndim == 2:
+        input_3d = mono_sig[:, :, np.newaxis]
+    elif mono_sig.ndim == 1:
+        input_3d = mono_sig[np.newaxis, :, np.newaxis]
+    else:
+        raise ValueError('Incorrect input dimensions')
+    # get the desired number of channels
+    stackin = [input_3d]*nchan
+    # apply the gain to the new channels
+    stackin[1:] = np.multiply(gain, stackin[1:])
+    if reverse:
+        # reverse the new channels
+        stackin[1:] = stackin[1:][:][::-1]
+    return np.dstack(stackin)
+
+
 def __unit_test_empty_input(metric):
-    if metric == mir_eval.separation.bss_eval_sources:
+    if (metric == mir_eval.separation.bss_eval_sources or
+            metric == mir_eval.separation.bss_eval_images):
         args = [np.array([]), np.array([])]
     elif metric == mir_eval.separation.bss_eval_sources_framewise:
         args = [np.array([]), np.array([]), 40, 20]
@@ -55,11 +78,18 @@ def __unit_test_empty_input(metric):
 
 def __unit_test_silent_input(metric):
     # Test for error when there is a silent reference/estimated source
-    ref_sources = np.vstack((np.zeros(100),
-                             np.random.random_sample((2, 100))))
-    est_sources = np.vstack((np.zeros(100),
-                             np.random.random_sample((2, 100))))
-    if metric == mir_eval.separation.bss_eval_sources:
+    if metric == mir_eval.separation.bss_eval_images:
+        ref_sources = np.vstack((np.zeros((1, 100, 2)),
+                                 np.random.random_sample((2, 100, 2))))
+        est_sources = np.vstack((np.zeros((1, 100, 2)),
+                                 np.random.random_sample((2, 100, 2))))
+    else:
+        ref_sources = np.vstack((np.zeros(100),
+                                 np.random.random_sample((2, 100))))
+        est_sources = np.vstack((np.zeros(100),
+                                 np.random.random_sample((2, 100))))
+    if (metric == mir_eval.separation.bss_eval_sources or
+            metric == mir_eval.separation.bss_eval_images):
         nose.tools.assert_raises(ValueError, metric, ref_sources[:2],
                                  est_sources[1:])
         nose.tools.assert_raises(ValueError, metric, ref_sources[1:],
@@ -73,9 +103,15 @@ def __unit_test_silent_input(metric):
 
 def __unit_test_incompatible_shapes(metric):
     # Test for error when shape is different
-    sources_4 = np.random.random_sample((4, 100))
-    sources_3 = np.random.random_sample((3, 100))
-    if metric == mir_eval.separation.bss_eval_sources:
+    if metric == mir_eval.separation.bss_eval_images:
+        sources_4 = np.random.random_sample((4, 100, 2))
+        sources_3 = np.random.random_sample((3, 100, 2))
+        sources_4_chan = np.random.random_sample((4, 100, 3))
+    else:
+        sources_4 = np.random.random_sample((4, 100))
+        sources_3 = np.random.random_sample((3, 100))
+    if (metric == mir_eval.separation.bss_eval_sources or
+            metric == mir_eval.separation.bss_eval_images):
         args1 = [sources_3, sources_4]
         args2 = [sources_4, sources_3]
     elif metric == mir_eval.separation.bss_eval_sources_framewise:
@@ -83,6 +119,8 @@ def __unit_test_incompatible_shapes(metric):
         args2 = [sources_4, sources_3, 40, 20]
     nose.tools.assert_raises(ValueError, metric, *args1)
     nose.tools.assert_raises(ValueError, metric, *args2)
+    if metric == mir_eval.separation.bss_eval_images:
+        nose.tools.assert_raises(ValueError, metric, sources_4, sources_4_chan)
 
 
 def __unit_test_too_many_sources(metric):
@@ -97,10 +135,21 @@ def __unit_test_too_many_sources(metric):
                                  many_sources, 40, 20)
 
 
+def __unit_test_too_many_dimensions(metric):
+    # Test for detection of too high dimensioned images
+    ref_sources = np.random.random_sample((4, 100, 2, 3))
+    est_sources = np.random.random_sample((4, 100, 2, 3))
+    nose.tools.assert_raises(ValueError, metric, ref_sources, est_sources)
+
+
 def __unit_test_default_permutation(metric):
     # Test for default permutation matrix when not computing permutation
-    ref_sources = np.random.random_sample((4, 100))
-    est_sources = np.random.random_sample((4, 100))
+    if metric == mir_eval.separation.bss_eval_sources:
+        ref_sources = np.random.random_sample((4, 100))
+        est_sources = np.random.random_sample((4, 100))
+    elif metric == mir_eval.separation.bss_eval_images:
+        ref_sources = np.random.random_sample((4, 100, 2))
+        est_sources = np.random.random_sample((4, 100, 2))
     results = metric(ref_sources, est_sources, compute_permutation=False)
     assert np.array_equal(results[-1], np.asarray([0, 1, 2, 3]))
 
@@ -137,12 +186,15 @@ def test_separation_functions():
 
     # Unit tests
     for metric in [mir_eval.separation.bss_eval_sources,
-                   mir_eval.separation.bss_eval_sources_framewise]:
+                   mir_eval.separation.bss_eval_sources_framewise,
+                   mir_eval.separation.bss_eval_images]:
         yield (__unit_test_empty_input, metric)
         yield (__unit_test_silent_input, metric)
         yield (__unit_test_incompatible_shapes, metric)
         yield (__unit_test_too_many_sources, metric)
-    for metric in [mir_eval.separation.bss_eval_sources]:
+        yield (__unit_test_too_many_dimensions, metric)
+    for metric in [mir_eval.separation.bss_eval_sources,
+                   mir_eval.separation.bss_eval_images]:
         yield (__unit_test_default_permutation, metric)
     for metric in [mir_eval.separation.bss_eval_sources_framewise]:
         yield (__unit_test_framewise_small_window, metric)
@@ -150,15 +202,29 @@ def test_separation_functions():
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
             expected_results = json.load(f)
-            expected_scores = expected_results['Sources']
+            expected_sources = expected_results['Sources']
             expected_frames = expected_results['Framewise']
+            expected_images = expected_results['Images']
         # Load in example source separation data
         ref_sources = __load_and_stack_wavs(ref_f)
         est_sources = __load_and_stack_wavs(est_f)
+        # Test inference for single source passed as single dimensional array
+        if ref_sources.shape[0] == 1 and est_sources.shape[0] == 1:
+            ref_sources = ref_sources[0]
+            est_sources = est_sources[0]
         # Compute scores
         scores = mir_eval.separation.evaluate(
             ref_sources, est_sources,
             window=expected_frames['win'], hop=expected_frames['hop']
+        )
+        ref_images = __generate_multichannel(ref_sources,
+                                             expected_images['nchan'])
+        est_images = __generate_multichannel(est_sources,
+                                             expected_images['nchan'],
+                                             expected_images['gain'],
+                                             expected_images['reverse'])
+        image_scores = mir_eval.separation.evaluate(
+            ref_images, est_images
         )
         # Compare them
         for metric in scores:
@@ -166,9 +232,19 @@ def test_separation_functions():
                 test_data_name = metric.replace('Sources - ', '')
                 # This is a simple hack to make nosetest's messages more useful
                 yield (__check_score, sco_f, metric, scores[metric],
-                       expected_scores[test_data_name])
+                       expected_sources[test_data_name])
             elif 'Sources Frames - ' in metric:
                 test_data_name = metric.replace('Sources Frames - ', '')
                 # This is a simple hack to make nosetest's messages more useful
                 yield (__check_score, sco_f, metric, scores[metric],
                        expected_frames[test_data_name])
+        for metric in image_scores:
+            if 'Images - ' in metric:
+                test_data_name = metric.replace('Images - ', '')
+                # This is a simple hack to make nosetest's messages more useful
+                yield (__check_score, sco_f, metric, image_scores[metric],
+                       expected_images[test_data_name])
+    # Catch a few exceptions in the evaluate function
+    image_scores = mir_eval.separation.evaluate(ref_images, est_images)
+    # make sure sources is not being evaluated on images
+    assert 'Sources - Source to Distortion' not in image_scores
