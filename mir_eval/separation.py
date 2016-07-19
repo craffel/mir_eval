@@ -559,7 +559,8 @@ def _project(reference_sources, estimated_source, flen):
     -------
 
     """
-    nsrc, nsampl = reference_sources.shape
+    nsrc = reference_sources.shape[0]
+    nsampl = reference_sources.shape[1]
 
     # computing coefficients of least squares problem via FFT ##
     # zero padding and FFT of input data
@@ -604,7 +605,9 @@ def _project_images(reference_sources, estimated_source, flen, G=None):
     """Least-squares projection of estimated source on the subspace spanned by
     delayed versions of reference sources, with delays between 0 and flen-1
     """
-    nsrc, nsampl, nchan = reference_sources.shape
+    nsrc = reference_sources.shape[0]
+    nsampl = reference_sources.shape[1]
+    nchan = reference_sources.shape[2]
     reference_sources = np.reshape(np.transpose(reference_sources, (2, 0, 1)),
                                    (nchan*nsrc, nsampl), order='F')
 
