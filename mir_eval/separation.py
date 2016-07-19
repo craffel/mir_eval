@@ -85,7 +85,7 @@ def validate(reference_sources, estimated_sources):
         raise ValueError('All the estimated sources should be non-silent (not '
                          'all-zeros), but at least one of the estimated '
                          'sources is all 0s. Since we require each reference '
-                         'source to be non-silent, having a silent estiamted '
+                         'source to be non-silent, having a silent estimated '
                          'source will result in an underdetermined system.')
 
     if (estimated_sources.shape[0] > MAX_SOURCES or
