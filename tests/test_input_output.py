@@ -146,7 +146,7 @@ def test_load_ragged_time_series():
 
 def test_load_tempo():
     # Test the tempo loader
-    tempi, weight = mir_eval.io.load_tempo('data/tempo/ref01.lab')
+    tempi, weight = mir_eval.io.load_tempo('tests/data/tempo/ref01.lab')
 
     assert np.allclose(tempi, [60, 120])
     assert weight == 0.5
@@ -154,19 +154,19 @@ def test_load_tempo():
 
 @nose.tools.raises(ValueError)
 def test_load_tempo_multiline():
-    tempi, weight = mir_eval.io.load_tempo('data/tempo/bad00.lab')
+    tempi, weight = mir_eval.io.load_tempo('tests/data/tempo/bad00.lab')
 
 
 @nose.tools.raises(ValueError)
 def test_load_tempo_badweight():
-    tempi, weight = mir_eval.io.load_tempo('data/tempo/bad01.lab')
+    tempi, weight = mir_eval.io.load_tempo('tests/data/tempo/bad01.lab')
 
 
 def test_load_bad_tempi():
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
-        tempi, weight = mir_eval.io.load_tempo('data/tempo/bad02.lab')
+        tempi, weight = mir_eval.io.load_tempo('tests/data/tempo/bad02.lab')
 
         assert len(w) == 1
         assert issubclass(w[-1].category, UserWarning)
