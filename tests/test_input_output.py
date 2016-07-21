@@ -145,7 +145,7 @@ def test_load_ragged_time_series():
 
 
 def test_load_tempo():
-    
+    # Test the tempo loader
     tempi, weight = mir_eval.io.load_tempo('data/tempo/ref01.lab')
 
     assert np.allclose(tempi, [60, 120])
@@ -171,4 +171,3 @@ def test_load_bad_tempi():
         assert len(w) == 1
         assert issubclass(w[-1].category, UserWarning)
         assert ('non-negative numbers' in str(w[-1].message))
-
