@@ -142,3 +142,11 @@ def test_load_ragged_time_series():
         nose.tools.assert_raises(
             ValueError, mir_eval.io.load_ragged_time_series, f, int,
             header=True)
+
+
+def test_load_tempo():
+    
+    tempi, weight = mir_eval.io.load_tempo('data/tempo/ref01.lab')
+
+    assert np.allclose(tempi, [60, 120])
+    assert weight == 0.5

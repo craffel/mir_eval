@@ -11,6 +11,7 @@ import six
 
 from . import util
 from . import key
+from . import tempo
 
 
 @contextlib.contextmanager
@@ -461,6 +462,50 @@ def load_key(filename, delimiter=r'\s+'):
         warnings.warn(error.args[0])
 
     return key_string
+
+
+def load_tempo(filename, delimiter=r'\s+'):
+    r"""Load tempo estimates from an annotation file in MIREX format.
+    The file should consist of three numeric columns: the first two
+    correspond to tempo estimates (in beats-per-minute), and the third
+    denotes the relative confidence of the first value compared to the
+    second (in the range [0, 1]). The file should contain only one row.
+
+    Parameters
+    ----------
+    filename : str
+        Path to the annotation file
+    delimiter : str
+        Separator regular expression.
+        By default, lines will be split by any amount of whitespace.
+
+    Returns
+    -------
+    tempi : np.ndarray, non-negative
+        The two tempo estimates
+
+    weight : float [0, 1]
+        The confidence of the
+    """
+    # Use our universal function to load the key and mode strings
+    t1, t2, weight = load_delimited(filename, [float, float, float], delimiter)
+
+    weight = weight[0]
+    tempi = np.concatenate([t1, t2])
+
+    if len(t1) != 1:
+        raise ValueError('Key file should contain only one line.')
+
+    # Validate them, but throw a warning in place of an error
+    try:
+        tempo.validate_tempi(tempi)
+    except ValueError as error:
+        warnings.warn(error.args[0])
+
+    if not 0 <= weight <= 1:
+        raise ValueError('Invalid weight for tempo estimate: {}'.format(weight))
+
+    return tempi, weight
 
 
 def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
