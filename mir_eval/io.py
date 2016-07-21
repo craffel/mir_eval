@@ -503,7 +503,7 @@ def load_tempo(filename, delimiter=r'\s+'):
         warnings.warn(error.args[0])
 
     if not 0 <= weight <= 1:
-        raise ValueError('Invalid weight for tempo estimate: {}'.format(weight))
+        raise ValueError('Invalid weight: {}'.format(weight))
 
     return tempi, weight
 
