@@ -485,7 +485,7 @@ def load_tempo(filename, delimiter=r'\s+'):
         The two tempo estimates
 
     weight : float [0, 1]
-        The confidence of the
+        The relative importance of `tempi[0]` compared to `tempi[1]`
     """
     # Use our universal function to load the key and mode strings
     t1, t2, weight = load_delimited(filename, [float, float, float], delimiter)
@@ -494,7 +494,7 @@ def load_tempo(filename, delimiter=r'\s+'):
     tempi = np.concatenate([t1, t2])
 
     if len(t1) != 1:
-        raise ValueError('Key file should contain only one line.')
+        raise ValueError('Tempo file should contain only one line.')
 
     # Validate them, but throw a warning in place of an error
     try:
