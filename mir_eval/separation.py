@@ -380,14 +380,9 @@ def bss_eval_images(reference_sources, estimated_sources,
 
     # make sure the input has 3 dimensions
     if estimated_sources.ndim != 3 or reference_sources.ndim != 3:
-        if estimated_sources.ndim == 1 and reference_sources.ndim == 1:
-            # assume input is in shape (nsampl)
-            estimated_sources = estimated_sources[np.newaxis, :, np.newaxis]
-            reference_sources = reference_sources[np.newaxis, :, np.newaxis]
-        elif estimated_sources.ndim == 2 and reference_sources.ndim == 2:
-            # assume input is in shape (nsrc, nsampl)
-            estimated_sources = estimated_sources[:, :, np.newaxis]
-            reference_sources = reference_sources[:, :, np.newaxis]
+        # assuming input is in shape (nsampl) or (nsrc, nsampl)
+        estimated_sources = np.atleast_3d(estimated_sources)
+        reference_sources = np.atleast_3d(reference_sources)
         # we will ensure input doesn't have more than 3 dimensions in validate
 
     validate(reference_sources, estimated_sources)
