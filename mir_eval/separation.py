@@ -460,21 +460,6 @@ def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
     representing respectively the true source image, spatial (or filtering)
     distortion, interference and artifacts, derived from the true source
     images using multichannel time-invariant filters.
-
-    Parameters
-    ----------
-    reference_sources :
-
-    estimated_source :
-
-    j :
-
-    flen :
-
-
-    Returns
-    -------
-
     """
     nsampl = estimated_source.size
     # decomposition
@@ -540,19 +525,6 @@ def _bss_decomp_mtifilt_images(reference_sources, estimated_source, j, flen,
 def _project(reference_sources, estimated_source, flen):
     """Least-squares projection of estimated source on the subspace spanned by
     delayed versions of reference sources, with delays between 0 and flen-1
-
-    Parameters
-    ----------
-    reference_sources :
-
-    estimated_source :
-
-    flen :
-
-
-    Returns
-    -------
-
     """
     nsrc = reference_sources.shape[0]
     nsampl = reference_sources.shape[1]
@@ -674,21 +646,6 @@ def _project_images(reference_sources, estimated_source, flen, G=None):
 def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
     """Measurement of the separation quality for a given source in terms of
     filtered true source, interference and artifacts.
-
-    Parameters
-    ----------
-    s_true :
-
-    e_spat :
-
-    e_interf :
-
-    e_artif :
-
-
-    Returns
-    -------
-
     """
     # energy ratios
     s_filt = s_true + e_spat
@@ -701,21 +658,6 @@ def _bss_source_crit(s_true, e_spat, e_interf, e_artif):
 def _bss_image_crit(s_true, e_spat, e_interf, e_artif):
     """Measurement of the separation quality for a given image in terms of
     filtered true source, spatial error, interference and artifacts.
-
-    Parameters
-    ----------
-    s_true :
-
-    e_spat :
-
-    e_interf :
-
-    e_artif :
-
-
-    Returns
-    -------
-
     """
     # energy ratios
     sdr = _safe_db(np.sum(s_true**2), np.sum((e_spat+e_interf+e_artif)**2))
@@ -729,17 +671,6 @@ def _safe_db(num, den):
     """Properly handle the potential +Inf db SIR, instead of raising a
     RuntimeWarning. Only denominator is checked because the numerator can never
     be 0.
-
-    Parameters
-    ----------
-    num :
-
-    den :
-
-
-    Returns
-    -------
-
     """
     if den == 0:
         return np.Inf
