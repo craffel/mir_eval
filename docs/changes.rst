@@ -4,6 +4,18 @@ Changes
 v0.4
 ----
 
+- `#196`_: added the `display` submodule
+- `#203`_: support unsorted segment intervals
+- `#205`_: correction in documentation for `sonify.time_frequency`
+- `#208`_: refactored file/buffer loading
+- `#210`_: added `io.load_tempo`
+
+.. _#196: https://github.com/craffel/mir_eval/issues/196
+.. _#203: https://github.com/craffel/mir_eval/issues/203
+.. _#205: https://github.com/craffel/mir_eval/issues/205
+.. _#208: https://github.com/craffel/mir_eval/issues/208
+.. _#210: https://github.com/craffel/mir_eval/issues/210
+
 v0.3
 ----
 
