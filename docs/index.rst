@@ -225,6 +225,13 @@ The following subsections document each submodule.
    :show-inheritance:
    :member-order: bysource
 
+Changes
+=======
+.. toctree::
+   :maxdepth: 1
+
+   changes
+
 Indices and tables
 ==================
 
