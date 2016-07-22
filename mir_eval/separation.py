@@ -472,7 +472,10 @@ def _bss_decomp_mtifilt_images(reference_sources, estimated_source, j, flen,
     distortion, interference and artifacts, derived from the true source
     images using multichannel time-invariant filters.
     Adapted version to work with multichannel sources.
-    Improved performance can be gained by passing Gj and G parameters.
+    Improved performance can be gained by passing Gj and G parameters initially
+    as all zeros. These parameters store the results from the computation of
+    the G matrix in _project_images and then return them for subsequent calls
+    to this function. This only works when not computing permuations.
     """
     nsampl = np.shape(estimated_source)[0]
     nchan = np.shape(estimated_source)[1]
@@ -558,7 +561,10 @@ def _project(reference_sources, estimated_source, flen):
 
 def _project_images(reference_sources, estimated_source, flen, G=None):
     """Least-squares projection of estimated source on the subspace spanned by
-    delayed versions of reference sources, with delays between 0 and flen-1
+    delayed versions of reference sources, with delays between 0 and flen-1.
+    Passing G as all zeros will populate the G matrix and return it so it can
+    be passed into the next call to avoid recomputing G (this will only works
+    if not computing permutations).
     """
     nsrc = reference_sources.shape[0]
     nsampl = reference_sources.shape[1]
