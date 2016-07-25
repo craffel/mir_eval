@@ -55,7 +55,8 @@ def __unit_test_empty_input(metric):
     if (metric == mir_eval.separation.bss_eval_sources or
             metric == mir_eval.separation.bss_eval_images):
         args = [np.array([]), np.array([])]
-    elif metric == mir_eval.separation.bss_eval_sources_framewise:
+    elif (metric == mir_eval.separation.bss_eval_sources_framewise or
+            metric == mir_eval.separation.bss_eval_images_framewise):
         args = [np.array([]), np.array([]), 40, 20]
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
@@ -98,7 +99,8 @@ def __unit_test_silent_input(metric):
 
 def __unit_test_incompatible_shapes(metric):
     # Test for error when shape is different
-    if metric == mir_eval.separation.bss_eval_images:
+    if (metric == mir_eval.separation.bss_eval_images or
+            metric == mir_eval.separation.bss_eval_images_framewise):
         sources_4 = np.random.random_sample((4, 100, 2))
         sources_3 = np.random.random_sample((3, 100, 2))
         sources_4_chan = np.random.random_sample((4, 100, 3))
@@ -109,7 +111,8 @@ def __unit_test_incompatible_shapes(metric):
             metric == mir_eval.separation.bss_eval_images):
         args1 = [sources_3, sources_4]
         args2 = [sources_4, sources_3]
-    elif metric == mir_eval.separation.bss_eval_sources_framewise:
+    elif (metric == mir_eval.separation.bss_eval_sources_framewise or
+            metric == mir_eval.separation.bss_eval_images_framewise):
         args1 = [sources_3, sources_4, 40, 20]
         args2 = [sources_4, sources_3, 40, 20]
     nose.tools.assert_raises(ValueError, metric, *args1)
@@ -151,20 +154,36 @@ def __unit_test_default_permutation(metric):
 
 def __unit_test_framewise_small_window(metric):
     # Test for invalid win/hop parameter detection
-    ref_sources = np.random.random_sample((4, 100))
-    est_sources = np.random.random_sample((4, 100))
-    # Rest with window larger than source lengths
-    assert np.allclose(metric(ref_sources, est_sources, window=120, hop=20),
-                       mir_eval.separation.bss_eval_sources(ref_sources,
-                                                            est_sources,
-                                                            False),
-                       atol=A_TOL)
-    # Test with hop larger than source length
-    assert np.allclose(metric(ref_sources, est_sources, window=20, hop=120),
-                       mir_eval.separation.bss_eval_sources(ref_sources,
-                                                            est_sources,
-                                                            False),
-                       atol=A_TOL)
+    if metric == mir_eval.separation.bss_eval_sources_framewise:
+        ref_sources = np.random.random_sample((4, 100))
+        est_sources = np.random.random_sample((4, 100))
+        # Test with window larger than source length
+        assert np.allclose(metric(ref_sources, est_sources, window=120, hop=20),
+                           mir_eval.separation.bss_eval_sources(ref_sources,
+                                                                est_sources,
+                                                                False),
+                           atol=A_TOL)
+        # Test with hop larger than source length
+        assert np.allclose(metric(ref_sources, est_sources, window=20, hop=120),
+                           mir_eval.separation.bss_eval_sources(ref_sources,
+                                                                est_sources,
+                                                                False),
+                           atol=A_TOL)
+    elif metric == mir_eval.separation.bss_eval_images_framewise:
+        ref_images = np.random.random_sample((4, 100, 2))
+        est_images = np.random.random_sample((4, 100, 2))
+        # Test with window larger than source length
+        assert np.allclose(metric(ref_images, est_images, window=120, hop=20),
+                           mir_eval.separation.bss_eval_images(ref_images,
+                                                               est_images,
+                                                               False),
+                           atol=A_TOL)
+        # Test with hop larger than source length
+        assert np.allclose(metric(ref_images, est_images, window=20, hop=120),
+                           mir_eval.separation.bss_eval_images(ref_images,
+                                                               est_images,
+                                                               False),
+                           atol=A_TOL)
 
 
 def __check_score(sco_f, metric, score, expected_score):
@@ -182,7 +201,8 @@ def test_separation_functions():
     # Unit tests
     for metric in [mir_eval.separation.bss_eval_sources,
                    mir_eval.separation.bss_eval_sources_framewise,
-                   mir_eval.separation.bss_eval_images]:
+                   mir_eval.separation.bss_eval_images,
+                   mir_eval.separation.bss_eval_images_framewise]:
         yield (__unit_test_empty_input, metric)
         yield (__unit_test_silent_input, metric)
         yield (__unit_test_incompatible_shapes, metric)
@@ -191,7 +211,8 @@ def test_separation_functions():
     for metric in [mir_eval.separation.bss_eval_sources,
                    mir_eval.separation.bss_eval_images]:
         yield (__unit_test_default_permutation, metric)
-    for metric in [mir_eval.separation.bss_eval_sources_framewise]:
+    for metric in [mir_eval.separation.bss_eval_sources_framewise,
+                   mir_eval.separation.bss_eval_images_framewise]:
         yield (__unit_test_framewise_small_window, metric)
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
