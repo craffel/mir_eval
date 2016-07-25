@@ -811,6 +811,18 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
     scores['Images - Source to Artifact'] = sar.tolist()
     scores['Images - Source permutation'] = perm.tolist()
 
+    sdr, isr, sir, sar, perm = util.filter_kwargs(
+        bss_eval_images_framewise,
+        reference_sources,
+        estimated_sources,
+        **kwargs
+    )
+    scores['Images Frames - Source to Distortion'] = sdr.tolist()
+    scores['Images Frames - Image to Spatial'] = isr.tolist()
+    scores['Images Frames - Source to Interference'] = sir.tolist()
+    scores['Images Frames - Source to Artifact'] = sar.tolist()
+    scores['Images Frames - Source permutation'] = perm.tolist()
+
     # Verify we can compute sources on this input
     if reference_sources.ndim < 3 and estimated_sources.ndim < 3:
         sdr, sir, sar, perm = util.filter_kwargs(
