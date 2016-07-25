@@ -223,7 +223,7 @@ def test_separation_functions():
             expected_sources = expected_results['Sources']
             expected_frames = expected_results['Framewise']
             expected_images = expected_results['Images']
-            expected_images = expected_results['Images Framewise']
+            expected_image_frames = expected_results['Images Framewise']
         # Load in example source separation data
         ref_sources = __load_and_stack_wavs(ref_f)
         est_sources = __load_and_stack_wavs(est_f)
@@ -267,10 +267,25 @@ def test_separation_functions():
                 # This is a simple hack to make nosetest's messages more useful
                 yield (__check_score, sco_f, metric, image_scores[metric],
                        expected_images[test_data_name])
-            elif 'Images Frames - ' in metric:
+
+        # Compute scores with images framewise
+        ref_images = __generate_multichannel(ref_sources,
+                                             expected_image_frames['nchan'])
+        est_images = __generate_multichannel(est_sources,
+                                             expected_image_frames['nchan'],
+                                             expected_image_frames['gain'],
+                                             expected_image_frames['reverse'])
+        imageframe_scores = mir_eval.separation.evaluate(
+            ref_images, est_images,
+            window=expected_image_frames['win'],
+            hop=expected_image_frames['hop']
+        )
+        # Compare them
+        for metric in imageframe_scores:
+            if 'Images Frames - ' in metric:
                 test_data_name = metric.replace('Images Frames - ', '')
                 # This is a simple hack to make nosetest's messages more useful
-                yield (__check_score, sco_f, metric, images_scores[metric],
+                yield (__check_score, sco_f, metric, imageframe_scores[metric],
                        expected_image_frames[test_data_name])
 
     # Catch a few exceptions in the evaluate function
