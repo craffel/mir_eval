@@ -40,10 +40,7 @@ def __generate_multichannel(mono_sig, nchan=2, gain=1.0, reverse=False):
     Note: to achieve channels of silence pass gain=0
     '''
     # add the channels dimension
-    if mono_sig.ndim <= 2:
-        input_3d = np.atleast_3d(mono_sig)
-    else:
-        raise ValueError('Incorrect input dimensions')
+    input_3d = np.atleast_3d(mono_sig)
     # get the desired number of channels
     stackin = [input_3d]*nchan
     # apply the gain to the new channels

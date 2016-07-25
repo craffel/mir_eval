@@ -367,11 +367,10 @@ def bss_eval_images(reference_sources, estimated_sources,
     """
 
     # make sure the input has 3 dimensions
-    if estimated_sources.ndim != 3 or reference_sources.ndim != 3:
-        # assuming input is in shape (nsampl) or (nsrc, nsampl)
-        estimated_sources = np.atleast_3d(estimated_sources)
-        reference_sources = np.atleast_3d(reference_sources)
-        # we will ensure input doesn't have more than 3 dimensions in validate
+    # assuming input is in shape (nsampl) or (nsrc, nsampl)
+    estimated_sources = np.atleast_3d(estimated_sources)
+    reference_sources = np.atleast_3d(reference_sources)
+    # we will ensure input doesn't have more than 3 dimensions in validate
 
     validate(reference_sources, estimated_sources)
     # If empty matrices were supplied, return empty lists (special case)
