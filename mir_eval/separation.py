@@ -495,11 +495,11 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
 
     """
 
-    # make sure the input is of shape (nsrc, nsampl)
-    if estimated_sources.ndim == 1:
-        estimated_sources = estimated_sources[np.newaxis, :]
-    if reference_sources.ndim == 1:
-        reference_sources = reference_sources[np.newaxis, :]
+    # make sure the input has 3 dimensions
+    # assuming input is in shape (nsampl) or (nsrc, nsampl)
+    estimated_sources = np.atleast_3d(estimated_sources)
+    reference_sources = np.atleast_3d(reference_sources)
+    # we will ensure input doesn't have more than 3 dimensions in validate
 
     validate(reference_sources, estimated_sources)
     # If empty matrices were supplied, return empty lists (special case)
@@ -511,11 +511,11 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
     nwin = int(
         np.floor((reference_sources.shape[1] - window + hop) / hop)
     )
-    # make sure that more than 1 window will be evaluated
+    # if fewer than 2 windows would be evaluated, return the images result
     if nwin < 2:
-        raise ValueError('Invalid window size and hop size have been supplied.'
-                         'From these paramters it was determined that only {} '
-                         'window(s) should be used.'.format(nwin))
+        return bss_eval_images(reference_sources,
+                               estimated_sources,
+                               compute_permutation)
 
     # compute the criteria across all windows
     sdr = np.empty((nsrc, nwin))
