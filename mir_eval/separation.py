@@ -442,6 +442,100 @@ def bss_eval_images(reference_sources, estimated_sources,
         return (sdr, isr, sir, sar, popt)
 
 
+def bss_eval_images_framewise(reference_sources, estimated_sources,
+                              window, hop, compute_permutation=False):
+    """Framewise computation of bss_eval_images
+
+    Examples
+    --------
+    >>> # reference_sources[n] should be an ndarray of samples of the
+    >>> # n'th reference source
+    >>> # estimated_sources[n] should be the same for the n'th estimated
+    >>> # source
+    >>> (sdr, isr, sir, sar,
+    ...  perm) = mir_eval.separation.bss_eval_images_framewise(
+             reference_sources,
+    ...      estimated_sources,
+             window,
+    ....     hop)
+
+    Parameters
+    ----------
+    reference_sources : np.ndarray, shape=(nsrc, nsampl)
+        matrix containing true sources (must have the same shape as
+        estimated_sources)
+    estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+        matrix containing estimated sources (must have the same shape as
+        reference_sources)
+    window : int
+        Window length for framewise evaluation
+    hop : int
+        Hop size for framewise evaluation
+    compute_permutation : bool, optional
+        compute permutation of estimate/source combinations for all windows
+        (False by default)
+
+    Returns
+    -------
+    sdr : np.ndarray, shape=(nsrc, nframes)
+        vector of Signal to Distortion Ratios (SDR)
+    isr : np.ndarray, shape=(nsrc, nframes)
+        vector of source Image to Spatial distortion Ratios (ISR)
+    sir : np.ndarray, shape=(nsrc, nframes)
+        vector of Source to Interference Ratios (SIR)
+    sar : np.ndarray, shape=(nsrc, nframes)
+        vector of Sources to Artifacts Ratios (SAR)
+    perm : np.ndarray, shape=(nsrc, nframes)
+        vector containing the best ordering of estimated sources in
+        the mean SIR sense (estimated source number perm[j] corresponds to
+        true source number j)
+        Note: perm will be range(nsrc) for all windows if compute_permutation
+        is False
+
+    """
+
+    # make sure the input is of shape (nsrc, nsampl)
+    if estimated_sources.ndim == 1:
+        estimated_sources = estimated_sources[np.newaxis, :]
+    if reference_sources.ndim == 1:
+        reference_sources = reference_sources[np.newaxis, :]
+
+    validate(reference_sources, estimated_sources)
+    # If empty matrices were supplied, return empty lists (special case)
+    if reference_sources.size == 0 or estimated_sources.size == 0:
+        return np.array([]), np.array([]), np.array([]), np.array([])
+
+    nsrc = reference_sources.shape[0]
+
+    nwin = int(
+        np.floor((reference_sources.shape[1] - window + hop) / hop)
+    )
+    # make sure that more than 1 window will be evaluated
+    if nwin < 2:
+        raise ValueError('Invalid window size and hop size have been supplied.'
+                         'From these paramters it was determined that only {} '
+                         'window(s) should be used.'.format(nwin))
+
+    # compute the criteria across all windows
+    sdr = np.empty((nsrc, nwin))
+    isr = np.empty((nsrc, nwin))
+    sir = np.empty((nsrc, nwin))
+    sar = np.empty((nsrc, nwin))
+    perm = np.empty((nsrc, nwin))
+
+    # k iterates across all the windows
+    for k in range(nwin):
+        win_slice = slice(k * hop, k * hop + window)
+        sdr[:, k], isr[:, k], sir[:, k], sar[:, k], perm[:, k] = \
+            bss_eval_images(
+                reference_sources[:, win_slice, :],
+                estimated_sources[:, win_slice, :],
+                compute_permutation
+            )
+
+    return sdr, isr, sir, sar, perm
+
+
 def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
     """Decomposition of an estimated source image into four components
     representing respectively the true source image, spatial (or filtering)
