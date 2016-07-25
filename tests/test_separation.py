@@ -228,19 +228,11 @@ def test_separation_functions():
         if ref_sources.shape[0] == 1 and est_sources.shape[0] == 1:
             ref_sources = ref_sources[0]
             est_sources = est_sources[0]
+
         # Compute scores
         scores = mir_eval.separation.evaluate(
             ref_sources, est_sources,
             window=expected_frames['win'], hop=expected_frames['hop']
-        )
-        ref_images = __generate_multichannel(ref_sources,
-                                             expected_images['nchan'])
-        est_images = __generate_multichannel(est_sources,
-                                             expected_images['nchan'],
-                                             expected_images['gain'],
-                                             expected_images['reverse'])
-        image_scores = mir_eval.separation.evaluate(
-            ref_images, est_images
         )
         # Compare them
         for metric in scores:
@@ -254,12 +246,25 @@ def test_separation_functions():
                 # This is a simple hack to make nosetest's messages more useful
                 yield (__check_score, sco_f, metric, scores[metric],
                        expected_frames[test_data_name])
+
+        # Compute scores with images
+        ref_images = __generate_multichannel(ref_sources,
+                                             expected_images['nchan'])
+        est_images = __generate_multichannel(est_sources,
+                                             expected_images['nchan'],
+                                             expected_images['gain'],
+                                             expected_images['reverse'])
+        image_scores = mir_eval.separation.evaluate(
+            ref_images, est_images
+        )
+        # Compare them
         for metric in image_scores:
             if 'Images - ' in metric:
                 test_data_name = metric.replace('Images - ', '')
                 # This is a simple hack to make nosetest's messages more useful
                 yield (__check_score, sco_f, metric, image_scores[metric],
                        expected_images[test_data_name])
+                       
     # Catch a few exceptions in the evaluate function
     image_scores = mir_eval.separation.evaluate(ref_images, est_images)
     # make sure sources is not being evaluated on images
