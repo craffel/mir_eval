@@ -67,6 +67,11 @@ def __unit_test_structure_function(metric):
         # And that the metric is 0
         assert np.allclose(score, 0)
 
+    # Test for non-matching numbers of intervals and labels
+    intervals = np.array([[2, 1], [2, 3]])
+    labels = ['a', 'b', 'c']
+    nose.tools.assert_raises(ValueError, metric, intervals, labels, intervals,
+                             labels)
     # Now test validation function - intervals must be n by 2
     intervals = np.arange(4)
     labels = ['a', 'b', 'c', 'd']
