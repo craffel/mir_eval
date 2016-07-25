@@ -443,7 +443,8 @@ def bss_eval_images(reference_sources, estimated_sources,
 
 
 def bss_eval_images_framewise(reference_sources, estimated_sources,
-                              window, hop, compute_permutation=False):
+                              window=30*44100, hop=15*44100,
+                              compute_permutation=False):
     """Framewise computation of bss_eval_images
 
     Examples
