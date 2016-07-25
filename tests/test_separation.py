@@ -158,13 +158,15 @@ def __unit_test_framewise_small_window(metric):
         ref_sources = np.random.random_sample((4, 100))
         est_sources = np.random.random_sample((4, 100))
         # Test with window larger than source length
-        assert np.allclose(metric(ref_sources, est_sources, window=120, hop=20),
+        assert np.allclose(metric(ref_sources, est_sources,
+                                  window=120, hop=20),
                            mir_eval.separation.bss_eval_sources(ref_sources,
                                                                 est_sources,
                                                                 False),
                            atol=A_TOL)
         # Test with hop larger than source length
-        assert np.allclose(metric(ref_sources, est_sources, window=20, hop=120),
+        assert np.allclose(metric(ref_sources, est_sources,
+                                  window=20, hop=120),
                            mir_eval.separation.bss_eval_sources(ref_sources,
                                                                 est_sources,
                                                                 False),
@@ -221,6 +223,7 @@ def test_separation_functions():
             expected_sources = expected_results['Sources']
             expected_frames = expected_results['Framewise']
             expected_images = expected_results['Images']
+            expected_images = expected_results['Images Framewise']
         # Load in example source separation data
         ref_sources = __load_and_stack_wavs(ref_f)
         est_sources = __load_and_stack_wavs(est_f)
@@ -264,7 +267,12 @@ def test_separation_functions():
                 # This is a simple hack to make nosetest's messages more useful
                 yield (__check_score, sco_f, metric, image_scores[metric],
                        expected_images[test_data_name])
-                       
+            elif 'Images Frames - ' in metric:
+                test_data_name = metric.replace('Images Frames - ', '')
+                # This is a simple hack to make nosetest's messages more useful
+                yield (__check_score, sco_f, metric, images_scores[metric],
+                       expected_image_frames[test_data_name])
+
     # Catch a few exceptions in the evaluate function
     image_scores = mir_eval.separation.evaluate(ref_images, est_images)
     # make sure sources is not being evaluated on images
