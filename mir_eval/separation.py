@@ -463,10 +463,10 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
 
     Parameters
     ----------
-    reference_sources : np.ndarray, shape=(nsrc, nsampl)
+    reference_sources : np.ndarray, shape=(nsrc, nsampl, nchan)
         matrix containing true sources (must have the same shape as
         estimated_sources)
-    estimated_sources : np.ndarray, shape=(nsrc, nsampl)
+    estimated_sources : np.ndarray, shape=(nsrc, nsampl, nchan)
         matrix containing estimated sources (must have the same shape as
         reference_sources)
     window : int
