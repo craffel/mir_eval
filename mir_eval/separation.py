@@ -291,9 +291,10 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     )
     # if fewer than 2 windows would be evaluated, return the sources result
     if nwin < 2:
-        return bss_eval_sources(reference_sources,
+        result = bss_eval_sources(reference_sources,
                                 estimated_sources,
                                 compute_permutation)
+        return [np.expand_dims(score, -1) for score in result]
 
     # compute the criteria across all windows
     sdr = np.empty((nsrc, nwin))
@@ -513,9 +514,10 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
     )
     # if fewer than 2 windows would be evaluated, return the images result
     if nwin < 2:
-        return bss_eval_images(reference_sources,
-                               estimated_sources,
-                               compute_permutation)
+        result = bss_eval_images(reference_sources,
+                                 estimated_sources,
+                                 compute_permutation)
+        return [np.expand_dims(score, -1) for score in result]
 
     # compute the criteria across all windows
     sdr = np.empty((nsrc, nwin))
