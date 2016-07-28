@@ -51,6 +51,10 @@ def __generate_multichannel(mono_sig, nchan=2, gain=1.0, reverse=False):
     return np.dstack(stackin)
 
 
+def __check_score(sco_f, metric, score, expected_score):
+    assert np.allclose(score, expected_score, atol=A_TOL)
+
+
 def __unit_test_empty_input(metric):
     if (metric == mir_eval.separation.bss_eval_sources or
             metric == mir_eval.separation.bss_eval_images):
@@ -74,7 +78,8 @@ def __unit_test_empty_input(metric):
 
 def __unit_test_silent_input(metric):
     # Test for error when there is a silent reference/estimated source
-    if metric == mir_eval.separation.bss_eval_images:
+    if (metric == mir_eval.separation.bss_eval_images or
+            metric == mir_eval.separation.bss_eval_images_framewise):
         ref_sources = np.vstack((np.zeros((1, 100, 2)),
                                  np.random.random_sample((2, 100, 2))))
         est_sources = np.vstack((np.zeros((1, 100, 2)),
@@ -90,11 +95,14 @@ def __unit_test_silent_input(metric):
                                  est_sources[1:])
         nose.tools.assert_raises(ValueError, metric, ref_sources[1:],
                                  est_sources[:2])
-    elif metric == mir_eval.separation.bss_eval_sources_framewise:
+    elif (metric == mir_eval.separation.bss_eval_sources_framewise or
+            metric == mir_eval.separation.bss_eval_images_framewise):
         nose.tools.assert_raises(ValueError, metric, ref_sources[:2],
                                  est_sources[1:], 40, 20)
         nose.tools.assert_raises(ValueError, metric, ref_sources[1:],
                                  est_sources[:2], 40, 20)
+    else:
+        raise ValueError('Unknown metric {}'.format(metric))
 
 
 def __unit_test_incompatible_shapes(metric):
@@ -115,9 +123,12 @@ def __unit_test_incompatible_shapes(metric):
             metric == mir_eval.separation.bss_eval_images_framewise):
         args1 = [sources_3, sources_4, 40, 20]
         args2 = [sources_4, sources_3, 40, 20]
+    else:
+        raise ValueError('Unknown metric {}'.format(metric))
     nose.tools.assert_raises(ValueError, metric, *args1)
     nose.tools.assert_raises(ValueError, metric, *args2)
-    if metric == mir_eval.separation.bss_eval_images:
+    if (metric == mir_eval.separation.bss_eval_images or
+            metric == mir_eval.separation.bss_eval_images_framewise):
         nose.tools.assert_raises(ValueError, metric, sources_4, sources_4_chan)
 
 
@@ -148,6 +159,8 @@ def __unit_test_default_permutation(metric):
     elif metric == mir_eval.separation.bss_eval_images:
         ref_sources = np.random.random_sample((4, 100, 2))
         est_sources = np.random.random_sample((4, 100, 2))
+    else:
+        raise ValueError('Unknown metric {}'.format(metric))
     results = metric(ref_sources, est_sources, compute_permutation=False)
     assert np.array_equal(results[-1], np.asarray([0, 1, 2, 3]))
 
@@ -157,39 +170,21 @@ def __unit_test_framewise_small_window(metric):
     if metric == mir_eval.separation.bss_eval_sources_framewise:
         ref_sources = np.random.random_sample((4, 100))
         est_sources = np.random.random_sample((4, 100))
-        # Test with window larger than source length
-        assert np.allclose(metric(ref_sources, est_sources,
-                                  window=120, hop=20),
-                           mir_eval.separation.bss_eval_sources(ref_sources,
-                                                                est_sources,
-                                                                False),
-                           atol=A_TOL)
-        # Test with hop larger than source length
-        assert np.allclose(metric(ref_sources, est_sources,
-                                  window=20, hop=120),
-                           mir_eval.separation.bss_eval_sources(ref_sources,
-                                                                est_sources,
-                                                                False),
-                           atol=A_TOL)
+        comparison_fcn = mir_eval.separation.bss_eval_sources
     elif metric == mir_eval.separation.bss_eval_images_framewise:
-        ref_images = np.random.random_sample((4, 100, 2))
-        est_images = np.random.random_sample((4, 100, 2))
-        # Test with window larger than source length
-        assert np.allclose(metric(ref_images, est_images, window=120, hop=20),
-                           mir_eval.separation.bss_eval_images(ref_images,
-                                                               est_images,
-                                                               False),
-                           atol=A_TOL)
-        # Test with hop larger than source length
-        assert np.allclose(metric(ref_images, est_images, window=20, hop=120),
-                           mir_eval.separation.bss_eval_images(ref_images,
-                                                               est_images,
-                                                               False),
-                           atol=A_TOL)
-
-
-def __check_score(sco_f, metric, score, expected_score):
-    assert np.allclose(score, expected_score, atol=A_TOL)
+        ref_sources = np.random.random_sample((4, 100, 2))
+        est_sources = np.random.random_sample((4, 100, 2))
+        comparison_fcn = mir_eval.separation.bss_eval_images
+    else:
+        raise ValueError('Unknown metric {}'.format(metric))
+    # Test with window larger than source length
+    assert np.allclose(metric(ref_sources, est_sources, window=120, hop=20),
+                       comparison_fcn(ref_sources, est_sources, False),
+                       atol=A_TOL)
+    # Test with hop larger than source length
+    assert np.allclose(metric(ref_sources, est_sources, window=20, hop=120),
+                       comparison_fcn(ref_sources, est_sources, False),
+                       atol=A_TOL)
 
 
 def test_separation_functions():
