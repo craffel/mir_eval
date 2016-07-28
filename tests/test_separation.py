@@ -178,11 +178,17 @@ def __unit_test_framewise_small_window(metric):
     else:
         raise ValueError('Unknown metric {}'.format(metric))
     # Test with window larger than source length
-    assert np.allclose(metric(ref_sources, est_sources, window=120, hop=20),
+    assert np.allclose(np.squeeze(metric(ref_sources,
+                                         est_sources,
+                                         window=120,
+                                         hop=20)),
                        comparison_fcn(ref_sources, est_sources, False),
                        atol=A_TOL)
     # Test with hop larger than source length
-    assert np.allclose(metric(ref_sources, est_sources, window=20, hop=120),
+    assert np.allclose(np.squeeze(metric(ref_sources,
+                                         est_sources,
+                                         window=20,
+                                         hop=120)),
                        comparison_fcn(ref_sources, est_sources, False),
                        atol=A_TOL)
 
