@@ -124,6 +124,10 @@ def bss_eval_sources(reference_sources, estimated_sources,
     The decomposition allows a time-invariant filter distortion of length
     512, as described in Section III.B of [#vincent2006performance]_.
 
+    Passing False for compute_permutation will improve the computation
+    performance of the evaluation; however, it is not always appropriate and
+    is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
+
     Examples
     --------
     >>> # reference_sources[n] should be an ndarray of samples of the
@@ -326,9 +330,9 @@ def bss_eval_images(reference_sources, estimated_sources,
     The decomposition allows a time-invariant filter distortion of length
     512, as described in Section III.B of [#vincent2006performance]_.
 
-    Passing True for compute_permutation will much improve the performance of
-    the evaluation; however, it is not always appropriate and is not the
-    way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
+    Passing False for compute_permutation will improve the computation
+    performance of the evaluation; however, it is not always appropriate and
+    is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
 
     Examples
     --------
