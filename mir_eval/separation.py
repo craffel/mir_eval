@@ -128,6 +128,13 @@ def bss_eval_sources(reference_sources, estimated_sources,
     performance of the evaluation; however, it is not always appropriate and
     is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
 
+    Further implementation details:
+    Emmanuel Vincent, Shoko Araki, Fabian J. Theis, Guido Nolte, Pau Bofill,
+    Hiroshi Sawada, Alexey Ozerov, B. Vikrham Gowreesunker, Dominik Lutter
+    and Ngoc Q.K. Duong, "The Signal Separation Evaluation Campaign
+    (2007-2010): Achievements and remaining challenges", Signal Processing,
+    92, pp. 1928-1936, 2012.
+
     Examples
     --------
     >>> # reference_sources[n] should be an ndarray of samples of the
@@ -333,6 +340,13 @@ def bss_eval_images(reference_sources, estimated_sources,
     Passing False for compute_permutation will improve the computation
     performance of the evaluation; however, it is not always appropriate and
     is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
+
+    Further implementation details:
+    Emmanuel Vincent, Shoko Araki, Fabian J. Theis, Guido Nolte, Pau Bofill,
+    Hiroshi Sawada, Alexey Ozerov, B. Vikrham Gowreesunker, Dominik Lutter
+    and Ngoc Q.K. Duong, "The Signal Separation Evaluation Campaign
+    (2007-2010): Achievements and remaining challenges", Signal Processing,
+    92, pp. 1928-1936, 2012.
 
     Examples
     --------
