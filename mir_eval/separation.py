@@ -233,6 +233,14 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
                                compute_permutation=False):
     """Framewise computation of bss_eval_sources
 
+    Please be aware that this function does not compute permutations (by
+    default) on the possible relations between reference_sources and
+    estimated_sources due to the dangers of a changing permutation. Therefore
+    (by default), it assumes that reference_sources[i] corresponds to
+    estimated_sources[i]. To enable computing permutations please set
+    compute_permutation to be True and check that the returned perm is
+    identical for all windows.
+
     NOTE: if reference_sources and estimated_sources would be evaluated using
     only a single window or are shorter than the window length, the result
     of bss_eval_sources called on reference_sources and estimated_sources (with
@@ -465,6 +473,14 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
                               window=30*44100, hop=15*44100,
                               compute_permutation=False):
     """Framewise computation of bss_eval_images
+
+    Please be aware that this function does not compute permutations (by
+    default) on the possible relations between reference_sources and
+    estimated_sources due to the dangers of a changing permutation. Therefore
+    (by default), it assumes that reference_sources[i] corresponds to
+    estimated_sources[i]. To enable computing permutations please set
+    compute_permutation to be True and check that the returned perm is
+    identical for all windows.
 
     NOTE: if reference_sources and estimated_sources would be evaluated using
     only a single window or are shorter than the window length, the result
