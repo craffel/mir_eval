@@ -124,6 +124,17 @@ def bss_eval_sources(reference_sources, estimated_sources,
     The decomposition allows a time-invariant filter distortion of length
     512, as described in Section III.B of [#vincent2006performance]_.
 
+    Passing False for compute_permutation will improve the computation
+    performance of the evaluation; however, it is not always appropriate and
+    is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
+
+    Further implementation details:
+    Emmanuel Vincent, Shoko Araki, Fabian J. Theis, Guido Nolte, Pau Bofill,
+    Hiroshi Sawada, Alexey Ozerov, B. Vikrham Gowreesunker, Dominik Lutter
+    and Ngoc Q.K. Duong, "The Signal Separation Evaluation Campaign
+    (2007-2010): Achievements and remaining challenges", Signal Processing,
+    92, pp. 1928-1936, 2012.
+
     Examples
     --------
     >>> # reference_sources[n] should be an ndarray of samples of the
@@ -222,6 +233,14 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
                                compute_permutation=False):
     """Framewise computation of bss_eval_sources
 
+    Please be aware that this function does not compute permutations (by
+    default) on the possible relations between reference_sources and
+    estimated_sources due to the dangers of a changing permutation. Therefore
+    (by default), it assumes that reference_sources[i] corresponds to
+    estimated_sources[i]. To enable computing permutations please set
+    compute_permutation to be True and check that the returned perm is
+    identical for all windows.
+
     NOTE: if reference_sources and estimated_sources would be evaluated using
     only a single window or are shorter than the window length, the result
     of bss_eval_sources called on reference_sources and estimated_sources (with
@@ -291,9 +310,10 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     )
     # if fewer than 2 windows would be evaluated, return the sources result
     if nwin < 2:
-        return bss_eval_sources(reference_sources,
-                                estimated_sources,
-                                compute_permutation)
+        result = bss_eval_sources(reference_sources,
+                                  estimated_sources,
+                                  compute_permutation)
+        return [np.expand_dims(score, -1) for score in result]
 
     # compute the criteria across all windows
     sdr = np.empty((nsrc, nwin))
@@ -325,9 +345,16 @@ def bss_eval_images(reference_sources, estimated_sources,
     The decomposition allows a time-invariant filter distortion of length
     512, as described in Section III.B of [#vincent2006performance]_.
 
-    Passing True for compute_permutation will much improve the performance of
-    the evaluation; however, it is not always appropriate and is not the
-    way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
+    Passing False for compute_permutation will improve the computation
+    performance of the evaluation; however, it is not always appropriate and
+    is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
+
+    Further implementation details:
+    Emmanuel Vincent, Shoko Araki, Fabian J. Theis, Guido Nolte, Pau Bofill,
+    Hiroshi Sawada, Alexey Ozerov, B. Vikrham Gowreesunker, Dominik Lutter
+    and Ngoc Q.K. Duong, "The Signal Separation Evaluation Campaign
+    (2007-2010): Achievements and remaining challenges", Signal Processing,
+    92, pp. 1928-1936, 2012.
 
     Examples
     --------
@@ -440,6 +467,115 @@ def bss_eval_images(reference_sources, estimated_sources,
         # return the default permutation for compatibility
         popt = np.arange(nsrc)
         return (sdr, isr, sir, sar, popt)
+
+
+def bss_eval_images_framewise(reference_sources, estimated_sources,
+                              window=30*44100, hop=15*44100,
+                              compute_permutation=False):
+    """Framewise computation of bss_eval_images
+
+    Please be aware that this function does not compute permutations (by
+    default) on the possible relations between reference_sources and
+    estimated_sources due to the dangers of a changing permutation. Therefore
+    (by default), it assumes that reference_sources[i] corresponds to
+    estimated_sources[i]. To enable computing permutations please set
+    compute_permutation to be True and check that the returned perm is
+    identical for all windows.
+
+    NOTE: if reference_sources and estimated_sources would be evaluated using
+    only a single window or are shorter than the window length, the result
+    of bss_eval_sources called on reference_sources and estimated_sources (with
+    the compute_permutation parameter passed to bss_eval_sources) is returned
+
+    Examples
+    --------
+    >>> # reference_sources[n] should be an ndarray of samples of the
+    >>> # n'th reference source
+    >>> # estimated_sources[n] should be the same for the n'th estimated
+    >>> # source
+    >>> (sdr, isr, sir, sar,
+    ...  perm) = mir_eval.separation.bss_eval_images_framewise(
+             reference_sources,
+    ...      estimated_sources,
+             window,
+    ....     hop)
+
+    Parameters
+    ----------
+    reference_sources : np.ndarray, shape=(nsrc, nsampl, nchan)
+        matrix containing true sources (must have the same shape as
+        estimated_sources)
+    estimated_sources : np.ndarray, shape=(nsrc, nsampl, nchan)
+        matrix containing estimated sources (must have the same shape as
+        reference_sources)
+    window : int
+        Window length for framewise evaluation
+    hop : int
+        Hop size for framewise evaluation
+    compute_permutation : bool, optional
+        compute permutation of estimate/source combinations for all windows
+        (False by default)
+
+    Returns
+    -------
+    sdr : np.ndarray, shape=(nsrc, nframes)
+        vector of Signal to Distortion Ratios (SDR)
+    isr : np.ndarray, shape=(nsrc, nframes)
+        vector of source Image to Spatial distortion Ratios (ISR)
+    sir : np.ndarray, shape=(nsrc, nframes)
+        vector of Source to Interference Ratios (SIR)
+    sar : np.ndarray, shape=(nsrc, nframes)
+        vector of Sources to Artifacts Ratios (SAR)
+    perm : np.ndarray, shape=(nsrc, nframes)
+        vector containing the best ordering of estimated sources in
+        the mean SIR sense (estimated source number perm[j] corresponds to
+        true source number j)
+        Note: perm will be range(nsrc) for all windows if compute_permutation
+        is False
+
+    """
+
+    # make sure the input has 3 dimensions
+    # assuming input is in shape (nsampl) or (nsrc, nsampl)
+    estimated_sources = np.atleast_3d(estimated_sources)
+    reference_sources = np.atleast_3d(reference_sources)
+    # we will ensure input doesn't have more than 3 dimensions in validate
+
+    validate(reference_sources, estimated_sources)
+    # If empty matrices were supplied, return empty lists (special case)
+    if reference_sources.size == 0 or estimated_sources.size == 0:
+        return np.array([]), np.array([]), np.array([]), np.array([])
+
+    nsrc = reference_sources.shape[0]
+
+    nwin = int(
+        np.floor((reference_sources.shape[1] - window + hop) / hop)
+    )
+    # if fewer than 2 windows would be evaluated, return the images result
+    if nwin < 2:
+        result = bss_eval_images(reference_sources,
+                                 estimated_sources,
+                                 compute_permutation)
+        return [np.expand_dims(score, -1) for score in result]
+
+    # compute the criteria across all windows
+    sdr = np.empty((nsrc, nwin))
+    isr = np.empty((nsrc, nwin))
+    sir = np.empty((nsrc, nwin))
+    sar = np.empty((nsrc, nwin))
+    perm = np.empty((nsrc, nwin))
+
+    # k iterates across all the windows
+    for k in range(nwin):
+        win_slice = slice(k * hop, k * hop + window)
+        sdr[:, k], isr[:, k], sir[:, k], sar[:, k], perm[:, k] = \
+            bss_eval_images(
+                reference_sources[:, win_slice, :],
+                estimated_sources[:, win_slice, :],
+                compute_permutation
+            )
+
+    return sdr, isr, sir, sar, perm
 
 
 def _bss_decomp_mtifilt(reference_sources, estimated_source, j, flen):
@@ -716,6 +852,18 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
     scores['Images - Source to Interference'] = sir.tolist()
     scores['Images - Source to Artifact'] = sar.tolist()
     scores['Images - Source permutation'] = perm.tolist()
+
+    sdr, isr, sir, sar, perm = util.filter_kwargs(
+        bss_eval_images_framewise,
+        reference_sources,
+        estimated_sources,
+        **kwargs
+    )
+    scores['Images Frames - Source to Distortion'] = sdr.tolist()
+    scores['Images Frames - Image to Spatial'] = isr.tolist()
+    scores['Images Frames - Source to Interference'] = sir.tolist()
+    scores['Images Frames - Source to Artifact'] = sar.tolist()
+    scores['Images Frames - Source permutation'] = perm.tolist()
 
     # Verify we can compute sources on this input
     if reference_sources.ndim < 3 and estimated_sources.ndim < 3:
