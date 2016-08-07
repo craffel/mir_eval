@@ -672,6 +672,10 @@ def piano_roll(intervals, pitches=None, midi=None, ax=None, **kwargs):
     '''
 
     if midi is None:
+        if pitches is None:
+            raise ValueError('At least one of `midi` or `pitches` '
+                             'must be provided.')
+
         midi = hz_to_midi(pitches)
 
     scale = np.arange(128)

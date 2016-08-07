@@ -14,6 +14,8 @@ import numpy as np
 # Import the hacked image comparison module
 from tests.mpl_ic import image_comparison
 
+from nose.tools import raises
+
 # We'll make a decorator to handle style contexts
 from decorator import decorator
 
@@ -373,3 +375,9 @@ def test_labeled_events():
     labels = list('abcdefghijklmnop')
     # Plot both with labels
     mir_eval.display.events(beats_ref, labels)
+
+
+@raises(ValueError)
+def test_pianoroll_nopitch_nomidi():
+    # Issue 214
+    mir_eval.display.piano_roll([[0, 1]])
