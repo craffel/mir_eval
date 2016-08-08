@@ -324,11 +324,32 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     # k iterates across all the windows
     for k in range(nwin):
         win_slice = slice(k * hop, k * hop + window)
-        sdr[:, k], sir[:, k], sar[:, k], perm[:, k] = bss_eval_sources(
-            reference_sources[:, win_slice],
-            estimated_sources[:, win_slice],
-            compute_permutation
-        )
+        ref_slice = reference_sources[:, win_slice]
+        est_slice = estimated_sources[:, win_slice]
+        # check for a silent frame
+        if not (np.any(np.all(np.sum(ref_slice,
+                                     axis=tuple(range(2,
+                                                      ref_slice.ndim))) == 0,
+                              axis=1))) \
+                and not (np.any(np.all(np.sum(est_slice,
+                                              axis=tuple(
+                                                    range(
+                                                        2,
+                                                        est_slice.ndim
+                                                    )
+                                                )) == 0,
+                                axis=1))):
+            sdr[:, k], sir[:, k], sar[:, k], perm[:, k] = bss_eval_sources(
+                ref_slice,
+                est_slice,
+                compute_permutation
+            )
+        else:
+            # if we have a silent frame set results as np.nan
+            sdr[:, k] = np.nan
+            sir[:, k] = np.nan
+            sar[:, k] = np.nan
+            perm[:, k] = np.nan
 
     return sdr, sir, sar, perm
 
@@ -568,12 +589,34 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
     # k iterates across all the windows
     for k in range(nwin):
         win_slice = slice(k * hop, k * hop + window)
-        sdr[:, k], isr[:, k], sir[:, k], sar[:, k], perm[:, k] = \
-            bss_eval_images(
-                reference_sources[:, win_slice, :],
-                estimated_sources[:, win_slice, :],
-                compute_permutation
-            )
+        ref_slice = reference_sources[:, win_slice, :]
+        est_slice = estimated_sources[:, win_slice, :]
+        # check for a silent frame
+        if not (np.any(np.all(np.sum(ref_slice,
+                                     axis=tuple(range(2,
+                                                      ref_slice.ndim))) == 0,
+                              axis=1))) \
+                and not (np.any(np.all(np.sum(est_slice,
+                                              axis=tuple(
+                                                    range(
+                                                        2,
+                                                        est_slice.ndim
+                                                    )
+                                                )) == 0,
+                                axis=1))):
+            sdr[:, k], isr[:, k], sir[:, k], sar[:, k], perm[:, k] = \
+                bss_eval_images(
+                    ref_slice,
+                    est_slice,
+                    compute_permutation
+                )
+        else:
+            # if we have a silent frame set results as np.nan
+            sdr[:, k] = np.nan
+            isr[:, k] = np.nan
+            sir[:, k] = np.nan
+            sar[:, k] = np.nan
+            perm[:, k] = np.nan
 
     return sdr, isr, sir, sar, perm
 
