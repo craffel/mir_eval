@@ -105,6 +105,48 @@ def __unit_test_silent_input(metric):
         raise ValueError('Unknown metric {}'.format(metric))
 
 
+def __unit_test_partial_silence(metric):
+    # Test for a full window of silence in reference/estimated source
+    if metric == mir_eval.separation.bss_eval_sources_framewise:
+        silence = np.zeros((2, 20))
+        sound = np.random.random_sample((2, 20))
+    elif metric == mir_eval.separation.bss_eval_images_framewise:
+        silence = np.zeros((2, 20, 2))
+        sound = np.random.random_sample((2, 20, 2))
+    else:
+        raise ValueError('Unknown metric {}'.format(metric))
+    # test with silence in the reference
+    results = metric(np.concatenate((sound, silence, sound),
+                                    axis=1),
+                     np.concatenate((sound, sound, sound),
+                                    axis=1),
+                     window=10,
+                     hop=10)
+    for measure in results:
+        for idx, source in enumerate(measure):
+            if idx < 2 or idx > 3:
+                assert not np.isnan(source[idx])
+            elif idx < 4:
+                assert np.isnan(source[idx])
+            else:
+                raise ValueError('Testing error in partial silence test')
+    # test with silence in the estimate
+    results = metric(np.concatenate((sound, sound, sound),
+                                    axis=1),
+                     np.concatenate((sound, silence, sound),
+                                    axis=1),
+                     window=10,
+                     hop=10)
+    for measure in results:
+        for idx, source in enumerate(measure):
+            if idx < 2 or idx > 3:
+                assert not np.isnan(source[idx])
+            elif idx < 4:
+                assert np.isnan(source[idx])
+            else:
+                raise ValueError('Testing error in partial silence test')
+
+
 def __unit_test_incompatible_shapes(metric):
     # Test for error when shape is different
     if (metric == mir_eval.separation.bss_eval_images or
@@ -217,6 +259,7 @@ def test_separation_functions():
     for metric in [mir_eval.separation.bss_eval_sources_framewise,
                    mir_eval.separation.bss_eval_images_framewise]:
         yield (__unit_test_framewise_small_window, metric)
+        yield (__unit_test_partial_silence, metric)
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
