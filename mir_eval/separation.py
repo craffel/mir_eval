@@ -109,7 +109,7 @@ def validate(reference_sources, estimated_sources):
 
 
 def _any_source_silent(sources):
-    """Returns true if the parameter sources has any silent first dimensions."""
+    """Returns true if the parameter sources has any silent first dimensions"""
     return (np.any(np.all(np.sum(sources,
                                  axis=tuple(range(2, sources.ndim))) == 0,
                           axis=1)))
