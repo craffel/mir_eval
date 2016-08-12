@@ -337,10 +337,7 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
             )
         else:
             # if we have a silent frame set results as np.nan
-            sdr[:, k] = np.nan
-            sir[:, k] = np.nan
-            sar[:, k] = np.nan
-            perm[:, k] = np.nan
+            sdr[:, k] = sir[:, k] = sar[:, k] = perm[:, k] = np.nan
 
     return sdr, sir, sar, perm
 
@@ -593,11 +590,7 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
                 )
         else:
             # if we have a silent frame set results as np.nan
-            sdr[:, k] = np.nan
-            isr[:, k] = np.nan
-            sir[:, k] = np.nan
-            sar[:, k] = np.nan
-            perm[:, k] = np.nan
+            sdr[:, k] = sir[:, k] = sar[:, k] = perm[:, k] = np.nan
 
     return sdr, isr, sir, sar, perm
 
