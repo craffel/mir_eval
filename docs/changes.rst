@@ -4,20 +4,35 @@ Changes
 v0.4
 ----
 
+- `#189`_: expanded transcription metrics
+- `#195`_: added pitch contour sonification
 - `#196`_: added the `display` submodule
 - `#203`_: support unsorted segment intervals
 - `#205`_: correction in documentation for `sonify.time_frequency`
 - `#208`_: refactored file/buffer loading
 - `#210`_: added `io.load_tempo`
+- `#212`_: added frame-wise blind-source separation evaluation
 
+.. _#189: https://github.com/craffel/mir_eval/issues/189
+.. _#195: https://github.com/craffel/mir_eval/issues/195
 .. _#196: https://github.com/craffel/mir_eval/issues/196
 .. _#203: https://github.com/craffel/mir_eval/issues/203
 .. _#205: https://github.com/craffel/mir_eval/issues/205
 .. _#208: https://github.com/craffel/mir_eval/issues/208
 .. _#210: https://github.com/craffel/mir_eval/issues/210
+.. _#212: https://github.com/craffel/mir_eval/issues/212
 
 v0.3
 ----
+- `#170`_: implemented transcription metrics
+- `#173`_: fixed a bug in chord sonification
+- `#175`_: filter_kwargs passes through `**kwargs`
+- `#181`_: added key detection metrics
+
+.. _#170: https://github.com/craffel/mir_eval/issues/170
+.. _#173: https://github.com/craffel/mir_eval/issues/173
+.. _#175: https://github.com/craffel/mir_eval/issues/175
+.. _#181: https://github.com/craffel/mir_eval/issues/181
 
 v0.2
 ----
