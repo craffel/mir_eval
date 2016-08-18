@@ -111,7 +111,7 @@ def validate(reference_sources, estimated_sources):
 def _any_source_silent(sources):
     """Returns true if the parameter sources has any silent first dimensions"""
     return np.any(np.all(np.sum(
-        sources, axis=np.arange(2, sources.ndim)) == 0, axis=1))
+        sources, axis=tuple(range(2, sources.ndim))) == 0, axis=1))
 
 
 def bss_eval_sources(reference_sources, estimated_sources,
@@ -330,9 +330,7 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
         if (not _any_source_silent(ref_slice) and
                 not _any_source_silent(est_slice)):
             sdr[:, k], sir[:, k], sar[:, k], perm[:, k] = bss_eval_sources(
-                ref_slice,
-                est_slice,
-                compute_permutation
+                ref_slice, est_slice, compute_permutation
             )
         else:
             # if we have a silent frame set results as np.nan
@@ -583,9 +581,7 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
                 not _any_source_silent(est_slice)):
             sdr[:, k], isr[:, k], sir[:, k], sar[:, k], perm[:, k] = \
                 bss_eval_images(
-                    ref_slice,
-                    est_slice,
-                    compute_permutation
+                    ref_slice, est_slice, compute_permutation
                 )
         else:
             # if we have a silent frame set results as np.nan
