@@ -77,10 +77,7 @@ def validate(reference_sources, estimated_sources):
         warnings.warn("reference_sources is empty, should be of size "
                       "(nsrc, nsample).  sdr, sir, sar, and perm will all "
                       "be empty np.ndarrays")
-    elif (np.any(np.all(np.sum(reference_sources,
-                               axis=tuple(range(2,
-                                                reference_sources.ndim))) == 0,
-                        axis=1))):
+    elif _any_source_silent(reference_sources):
         raise ValueError('All the reference sources should be non-silent (not '
                          'all-zeros), but at least one of the reference '
                          'sources is all 0s, which introduces ambiguity to the'
@@ -91,10 +88,7 @@ def validate(reference_sources, estimated_sources):
         warnings.warn("estimated_sources is empty, should be of size "
                       "(nsrc, nsample).  sdr, sir, sar, and perm will all "
                       "be empty np.ndarrays")
-    elif (np.any(np.all(np.sum(estimated_sources,
-                               axis=tuple(range(2,
-                                                estimated_sources.ndim))) == 0,
-                        axis=1))):
+    elif _any_source_silent(estimated_sources):
         raise ValueError('All the estimated sources should be non-silent (not '
                          'all-zeros), but at least one of the estimated '
                          'sources is all 0s. Since we require each reference '
@@ -112,6 +106,12 @@ def validate(reference_sources, estimated_sources):
                          'larger value.'.format(reference_sources.shape[0],
                                                 estimated_sources.shape[0],
                                                 MAX_SOURCES))
+
+
+def _any_source_silent(sources):
+    """Returns true if the parameter sources has any silent first dimensions"""
+    return np.any(np.all(np.sum(
+        sources, axis=tuple(range(2, sources.ndim))) == 0, axis=1))
 
 
 def bss_eval_sources(reference_sources, estimated_sources,
@@ -324,11 +324,17 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     # k iterates across all the windows
     for k in range(nwin):
         win_slice = slice(k * hop, k * hop + window)
-        sdr[:, k], sir[:, k], sar[:, k], perm[:, k] = bss_eval_sources(
-            reference_sources[:, win_slice],
-            estimated_sources[:, win_slice],
-            compute_permutation
-        )
+        ref_slice = reference_sources[:, win_slice]
+        est_slice = estimated_sources[:, win_slice]
+        # check for a silent frame
+        if (not _any_source_silent(ref_slice) and
+                not _any_source_silent(est_slice)):
+            sdr[:, k], sir[:, k], sar[:, k], perm[:, k] = bss_eval_sources(
+                ref_slice, est_slice, compute_permutation
+            )
+        else:
+            # if we have a silent frame set results as np.nan
+            sdr[:, k] = sir[:, k] = sar[:, k] = perm[:, k] = np.nan
 
     return sdr, sir, sar, perm
 
@@ -568,12 +574,18 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
     # k iterates across all the windows
     for k in range(nwin):
         win_slice = slice(k * hop, k * hop + window)
-        sdr[:, k], isr[:, k], sir[:, k], sar[:, k], perm[:, k] = \
-            bss_eval_images(
-                reference_sources[:, win_slice, :],
-                estimated_sources[:, win_slice, :],
-                compute_permutation
-            )
+        ref_slice = reference_sources[:, win_slice, :]
+        est_slice = estimated_sources[:, win_slice, :]
+        # check for a silent frame
+        if (not _any_source_silent(ref_slice) and
+                not _any_source_silent(est_slice)):
+            sdr[:, k], isr[:, k], sir[:, k], sar[:, k], perm[:, k] = \
+                bss_eval_images(
+                    ref_slice, est_slice, compute_permutation
+                )
+        else:
+            # if we have a silent frame set results as np.nan
+            sdr[:, k] = sir[:, k] = sar[:, k] = perm[:, k] = np.nan
 
     return sdr, isr, sir, sar, perm
 
