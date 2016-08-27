@@ -5,11 +5,6 @@ sources from a recording of a mixture of sources.  Evaluation methods for
 source separation compare the extracted sources from reference sources and
 attempt to measure the perceptual quality of the separation.
 
-Currently, only bss_eval is implemented, as described in:
-    Emmanuel Vincent, Rémi Gribonval, and Cédric Févotte, "Performance
-    measurement in blind audio source separation," IEEE Trans. on Audio,
-    Speech and Language Processing, 14(4):1462-1469, 2006.
-
 See also the bss_eval MATLAB toolbox:
     http://bass-db.gforge.inria.fr/bss_eval/
 
@@ -25,10 +20,28 @@ second corresponds to the samples.
 Metrics
 -------
 
-* :func:`mir_eval.separation.bss_eval_sources`: Computes the bss_eval metrics,
-  which optimally match the estimated sources to the reference sources and
-  measure the distortion and artifacts present in the estimated sources as well
-  as the interference between them.
+* :func:`mir_eval.separation.bss_eval_sources`: Computes the bss_eval_sources
+  metrics from bss_eval, which optionally optimally match the estimated sources
+  to the reference sources and measure the distortion and artifacts present in
+  the estimated sources as well as the interference between them.
+
+* :func:`mir_eval.separation.bss_eval_sources_framewise`: Computes the
+  bss_eval_sources metrics on a frame-by-frame basis.
+
+* :func:`mir_eval.separation.bss_eval_images`: Computes the bss_eval_images
+  metrics from bss_eval, which includes the metrics in
+  :func:`mir_eval.separation.bss_eval_sources` plus the image to spatial
+  distortion ratio.
+
+* :func:`mir_eval.separation.bss_eval_images_framewise`: Computes the
+  bss_eval_images metrics on a frame-by-frame basis.
+
+References
+----------
+  .. [#vincent2006performance] Emmanuel Vincent, Rémi Gribonval, and Cédric
+      Févotte, "Performance measurement in blind audio source separation," IEEE
+      Trans. on Audio, Speech and Language Processing, 14(4):1462-1469, 2006.
+
 
 '''
 
@@ -116,24 +129,16 @@ def _any_source_silent(sources):
 
 def bss_eval_sources(reference_sources, estimated_sources,
                      compute_permutation=True):
-    """MATLAB translation of BSS_EVAL Toolbox
-
+    """
     Ordering and measurement of the separation quality for estimated source
     signals in terms of filtered true source, interference and artifacts.
 
     The decomposition allows a time-invariant filter distortion of length
     512, as described in Section III.B of [#vincent2006performance]_.
 
-    Passing False for compute_permutation will improve the computation
+    Passing ``False`` for ``compute_permutation`` will improve the computation
     performance of the evaluation; however, it is not always appropriate and
-    is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
-
-    Further implementation details:
-    Emmanuel Vincent, Shoko Araki, Fabian J. Theis, Guido Nolte, Pau Bofill,
-    Hiroshi Sawada, Alexey Ozerov, B. Vikrham Gowreesunker, Dominik Lutter
-    and Ngoc Q.K. Duong, "The Signal Separation Evaluation Campaign
-    (2007-2010): Achievements and remaining challenges", Signal Processing,
-    92, pp. 1928-1936, 2012.
+    is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_sources.
 
     Examples
     --------
@@ -166,9 +171,17 @@ def bss_eval_sources(reference_sources, estimated_sources,
         vector of Sources to Artifacts Ratios (SAR)
     perm : np.ndarray, shape=(nsrc,)
         vector containing the best ordering of estimated sources in
-        the mean SIR sense (estimated source number perm[j] corresponds to
-        true source number j)
-        Note: perm will be [0, 1, ..., nsrc-1] if compute_permutation is False
+        the mean SIR sense (estimated source number ``perm[j]`` corresponds to
+        true source number ``j``). Note: ``perm`` will be ``[0, 1, ...,
+        nsrc-1]`` if ``compute_permutation`` is ``False``.
+
+    References
+    ----------
+    .. [#] Emmanuel Vincent, Shoko Araki, Fabian J. Theis, Guido Nolte, Pau
+        Bofill, Hiroshi Sawada, Alexey Ozerov, B. Vikrham Gowreesunker, Dominik
+        Lutter and Ngoc Q.K. Duong, "The Signal Separation Evaluation Campaign
+        (2007-2010): Achievements and remaining challenges", Signal Processing,
+        92, pp. 1928-1936, 2012.
 
     """
 
@@ -236,15 +249,17 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     Please be aware that this function does not compute permutations (by
     default) on the possible relations between reference_sources and
     estimated_sources due to the dangers of a changing permutation. Therefore
-    (by default), it assumes that reference_sources[i] corresponds to
-    estimated_sources[i]. To enable computing permutations please set
-    compute_permutation to be True and check that the returned perm is
-    identical for all windows.
+    (by default), it assumes that ``reference_sources[i]`` corresponds to
+    ``estimated_sources[i]``. To enable computing permutations please set
+    ``compute_permutation`` to be ``True`` and check that the returned ``perm``
+    is identical for all windows.
 
-    NOTE: if reference_sources and estimated_sources would be evaluated using
-    only a single window or are shorter than the window length, the result
-    of bss_eval_sources called on reference_sources and estimated_sources (with
-    the compute_permutation parameter passed to bss_eval_sources) is returned
+    NOTE: if ``reference_sources`` and ``estimated_sources`` would be evaluated
+    using only a single window or are shorter than the window length, the
+    result of :func:`mir_eval.separation.bss_eval_sources` called on
+    ``reference_sources`` and ``estimated_sources`` (with the
+    ``compute_permutation`` parameter passed to
+    :func:`mir_eval.separation.bss_eval_sources`) is returned.
 
     Examples
     --------
@@ -261,10 +276,10 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
     ----------
     reference_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing true sources (must have the same shape as
-        estimated_sources)
+        ``estimated_sources``)
     estimated_sources : np.ndarray, shape=(nsrc, nsampl)
         matrix containing estimated sources (must have the same shape as
-        reference_sources)
+        ``reference_sources``)
     window : int, optional
         Window length for framewise evaluation (default value is 30s at a
         sample rate of 44.1kHz)
@@ -285,10 +300,9 @@ def bss_eval_sources_framewise(reference_sources, estimated_sources,
         vector of Sources to Artifacts Ratios (SAR)
     perm : np.ndarray, shape=(nsrc, nframes)
         vector containing the best ordering of estimated sources in
-        the mean SIR sense (estimated source number perm[j] corresponds to
-        true source number j)
-        Note: perm will be range(nsrc) for all windows if compute_permutation
-        is False
+        the mean SIR sense (estimated source number ``perm[j]`` corresponds to
+        true source number ``j``).  Note: ``perm`` will be ``range(nsrc)`` for
+        all windows if ``compute_permutation`` is ``False``
 
     """
 
@@ -351,16 +365,9 @@ def bss_eval_images(reference_sources, estimated_sources,
     The decomposition allows a time-invariant filter distortion of length
     512, as described in Section III.B of [#vincent2006performance]_.
 
-    Passing False for compute_permutation will improve the computation
+    Passing ``False`` for ``compute_permutation`` will improve the computation
     performance of the evaluation; however, it is not always appropriate and
     is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_images.
-
-    Further implementation details:
-    Emmanuel Vincent, Shoko Araki, Fabian J. Theis, Guido Nolte, Pau Bofill,
-    Hiroshi Sawada, Alexey Ozerov, B. Vikrham Gowreesunker, Dominik Lutter
-    and Ngoc Q.K. Duong, "The Signal Separation Evaluation Campaign
-    (2007-2010): Achievements and remaining challenges", Signal Processing,
-    92, pp. 1928-1936, 2012.
 
     Examples
     --------
@@ -393,9 +400,17 @@ def bss_eval_images(reference_sources, estimated_sources,
         vector of Sources to Artifacts Ratios (SAR)
     perm : np.ndarray, shape=(nsrc,)
         vector containing the best ordering of estimated sources in
-        the mean SIR sense (estimated source number perm[j] corresponds to
-        true source number j)
-        Note: perm will be (1,2,...,nsrc) if compute_permutation is False
+        the mean SIR sense (estimated source number ``perm[j]`` corresponds to
+        true source number ``j``).  Note: ``perm`` will be ``(1,2,...,nsrc)``
+        if ``compute_permutation`` is ``False``.
+
+    References
+    ----------
+    .. [#] Emmanuel Vincent, Shoko Araki, Fabian J. Theis, Guido Nolte, Pau
+        Bofill, Hiroshi Sawada, Alexey Ozerov, B. Vikrham Gowreesunker, Dominik
+        Lutter and Ngoc Q.K. Duong, "The Signal Separation Evaluation Campaign
+        (2007-2010): Achievements and remaining challenges", Signal Processing,
+        92, pp. 1928-1936, 2012.
 
     """
 
@@ -481,17 +496,18 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
     """Framewise computation of bss_eval_images
 
     Please be aware that this function does not compute permutations (by
-    default) on the possible relations between reference_sources and
-    estimated_sources due to the dangers of a changing permutation. Therefore
-    (by default), it assumes that reference_sources[i] corresponds to
-    estimated_sources[i]. To enable computing permutations please set
-    compute_permutation to be True and check that the returned perm is
-    identical for all windows.
+    default) on the possible relations between ``reference_sources`` and
+    ``estimated_sources`` due to the dangers of a changing permutation.
+    Therefore (by default), it assumes that ``reference_sources[i]``
+    corresponds to ``estimated_sources[i]``. To enable computing permutations
+    please set ``compute_permutation`` to be ``True`` and check that the
+    returned ``perm`` is identical for all windows.
 
-    NOTE: if reference_sources and estimated_sources would be evaluated using
-    only a single window or are shorter than the window length, the result
-    of bss_eval_sources called on reference_sources and estimated_sources (with
-    the compute_permutation parameter passed to bss_eval_sources) is returned
+    NOTE: if ``reference_sources`` and ``estimated_sources`` would be evaluated
+    using only a single window or are shorter than the window length, the
+    result of ``bss_eval_sources`` called on ``reference_sources`` and
+    ``estimated_sources`` (with the ``compute_permutation`` parameter passed to
+    ``bss_eval_images``) is returned
 
     Examples
     --------
@@ -510,10 +526,10 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
     ----------
     reference_sources : np.ndarray, shape=(nsrc, nsampl, nchan)
         matrix containing true sources (must have the same shape as
-        estimated_sources)
+        ``estimated_sources``)
     estimated_sources : np.ndarray, shape=(nsrc, nsampl, nchan)
         matrix containing estimated sources (must have the same shape as
-        reference_sources)
+        ``reference_sources``)
     window : int
         Window length for framewise evaluation
     hop : int
@@ -821,9 +837,10 @@ def _safe_db(num, den):
 def evaluate(reference_sources, estimated_sources, **kwargs):
     """Compute all metrics for the given reference and estimated signals.
 
-    NOTE: This will always compute using the bss_eval_images metric for any
-    valid input and will additionally compute using the bss_eval_sources metric
-    for valid input with fewer than 3 dimensions.
+    NOTE: This will always compute :func:`mir_eval.separation.bss_eval_images`
+    for any valid input and will additionally compute
+    :func:`mir_eval.separation.bss_eval_sources` for valid input with fewer
+    than 3 dimensions.
 
     Examples
     --------

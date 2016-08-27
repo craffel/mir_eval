@@ -26,7 +26,7 @@ def index_labels(labels, case_sensitive=False):
     Returns
     -------
     indices : list, shape=(n,)
-        Numerical representation of *labels*
+        Numerical representation of ``labels``
     index_to_label : dict
         Mapping to convert numerical indices back to labels.
         ``labels[i] == index_to_label[indices[i]]``
@@ -109,7 +109,8 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
     sample_labels : list
         array of labels for each generated sample
 
-    .. note::
+    Notes
+    -----
         Intervals will be rounded down to the nearest multiple
         of ``sample_size``.
 
@@ -277,7 +278,7 @@ def adjust_intervals(intervals,
                      t_max=None,
                      start_label='__T_MIN',
                      end_label='__T_MAX'):
-    """Adjust a list of time intervals to span the range [t_min, t_max].
+    """Adjust a list of time intervals to span the range ``[t_min, t_max]``.
 
     Any intervals lying completely outside the specified range will be removed.
 
@@ -312,9 +313,9 @@ def adjust_intervals(intervals,
     Returns
     -------
     new_intervals : np.ndarray
-        Intervals spanning [t_min, t_max]
+        Intervals spanning ``[t_min, t_max]``
     new_labels : list
-        List of labels for new_labels
+        List of labels for ``new_labels``
 
     """
 
@@ -372,12 +373,13 @@ def adjust_intervals(intervals,
 
 def adjust_events(events, labels=None, t_min=0.0,
                   t_max=None, label_prefix='__'):
-    """Adjust the given list of event times to span the range [t_min, t_max].
+    """Adjust the given list of event times to span the range
+    ``[t_min, t_max]``.
 
     Any event times outside of the specified range will be removed.
 
-    If the times do not span [t_min, t_max], additional events will be added
-    with the prefix ``label_prefix``.
+    If the times do not span ``[t_min, t_max]``, additional events will be
+    added with the prefix ``label_prefix``.
 
     Parameters
     ----------
@@ -462,9 +464,9 @@ def intersect_files(flist1, flist2):
     Returns
     -------
     sublist1 : list
-        subset of filepaths with matching stems from *flist1*
+        subset of filepaths with matching stems from ``flist1``
     sublist2 : list
-        corresponding filepaths from *flist2*
+        corresponding filepaths from ``flist2``
 
     """
     def fname(abs_path):
@@ -510,9 +512,9 @@ def merge_labeled_intervals(x_intervals, x_labels, y_intervals, y_labels):
     new_intervals : np.ndarray
         New interval times of the merged sequences.
     new_x_labels : list
-        New labels for the sequence *x*
+        New labels for the sequence ``x``
     new_y_labels : list
-        New labels for the sequence *y*
+        New labels for the sequence ``y``
 
     """
     align_check = [x_intervals[0, 0] == y_intervals[0, 0],
@@ -695,7 +697,7 @@ def match_events(ref, est, window, distance=_outer_distance):
         Size of the window.
     distance : function
         function that computes the outer distance of ref and est.
-        By default uses _outer_distance, |ref[i] - est[j]|
+        By default uses _outer_distance, ``|ref[i] - est[j]|``
 
     Returns
     -------
@@ -779,7 +781,7 @@ def validate_events(events, max_time=30000.):
 def validate_frequencies(frequencies, max_freq, min_freq,
                          allow_negatives=False):
     """Checks that a 1-d frequency ndarray is well-formed, and raises
-    errors if not. Allows negative frequency values.
+    errors if not.
 
     Parameters
     ----------
@@ -791,8 +793,8 @@ def validate_frequencies(frequencies, max_freq, min_freq,
     min_freq : float
         If a frequency is found below this pitch, a ValueError will be raised.
         (Default value = 20.)
-    allow_negatives : Bool
-
+    allow_negatives : bool
+        Whether or not to allow negative frequency values.
     """
     # If flag is true, map frequencies to their absolute value.
     if allow_negatives:
@@ -880,7 +882,7 @@ def intervals_to_durations(intervals):
     intervals : np.ndarray, shape=(n, 2)
         An array of time intervals, as returned by
         :func:`mir_eval.io.load_intervals()`.
-        The *i* th interval spans time ``intervals[i, 0]`` to
+        The ``i`` th interval spans time ``intervals[i, 0]`` to
         ``intervals[i, 1]``.
 
     Returns

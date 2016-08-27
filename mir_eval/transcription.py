@@ -50,11 +50,11 @@ subtask on the Su dataset (henceforth "MIREX"):
    the note onset and offset times to 4 decinal points. This will bring our
    metrics down a notch compared to the MIREX results.
 3. In the MIREX wiki, the criterion for matching offsets is that they must be
-   within 0.2 * ref_duration **or 0.05 from each other, whichever is greater**
-   (i.e. ``offset_dif <= max(0.2 * ref_duration, 0.05)``. The MIREX code
-   however only uses a threshold of 0.2 * ref_duration, without the 0.05
-   minimum. Since ``mir_eval`` does include this minimum, it might produce
-   slightly higher results compared to MIREX.
+   within ``0.2 * ref_duration`` **or 0.05 seconds from each other, whichever
+   is greater** (i.e. ``offset_dif <= max(0.2 * ref_duration, 0.05)``. The
+   MIREX code however only uses a threshold of ``0.2 * ref_duration``, without
+   the 0.05 second minimum. Since ``mir_eval`` does include this minimum, it
+   might produce slightly higher results compared to MIREX.
 
 This means that differences 1 and 3 bring ``mir_eval``'s metrics up compared to
 MIREX, whilst 2 brings them down. Based on internal testing, overall the effect
@@ -122,7 +122,7 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
     ----------
     ref_intervals : np.ndarray, shape=(n,2)
         Array of reference notes time intervals (onset and offset times)
-    ref_pitches: np.ndarray, shape=(n,)
+    ref_pitches : np.ndarray, shape=(n,)
         Array of reference pitch values in Hertz
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
@@ -179,13 +179,13 @@ def match_note_offsets(ref_intervals, est_intervals, offset_ratio=0.2,
     Given two note sequences represented by ``ref_intervals`` and
     ``est_intervals`` (see :func:`mir_eval.io.load_valued_intervals`), we seek
     the largest set of correspondences ``(i, j)`` such that the offset of
-    reference note i has to be within ``offset_tolerance`` of the offset of
-    estimated note j, where ``offset_tolerance`` is equal to ``offset_ratio``
-    times the reference note's duration, i.e.
-    ``offset_ratio * ref_duration[i]`` where ``ref_duration[i] =
-    ref_intervals[i, 1] - ref_intervals[i, 0]``. If the resulting
-    ``offset_tolerance`` is less than ``offset_min_tolerance``
-    (50 ms by default) then ``offset_min_tolerance`` is used instead.
+    reference note ``i`` has to be within ``offset_tolerance`` of the offset of
+    estimated note ``j``, where ``offset_tolerance`` is equal to
+    ``offset_ratio`` times the reference note's duration, i.e.  ``offset_ratio
+    * ref_duration[i]`` where ``ref_duration[i] = ref_intervals[i, 1] -
+    ref_intervals[i, 0]``. If the resulting ``offset_tolerance`` is less than
+    ``offset_min_tolerance`` (50 ms by default) then ``offset_min_tolerance``
+    is used instead.
 
     Every reference note is matched against at most one estimated note.
 
@@ -200,15 +200,16 @@ def match_note_offsets(ref_intervals, est_intervals, offset_ratio=0.2,
         Array of reference notes time intervals (onset and offset times)
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
-    offset_ratio: float > 0
+    offset_ratio : float > 0
         The ratio of the reference note's duration used to define the
-        offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
-        will equal the ref_duration * 0.2, or 0.05 (50 ms), whichever is
-        greater.
-    offset_min_tolerance: float > 0
-        The minimum tolerance for offset matching. See offset_ratio description
-        for an explanation of how the offset tolerance is determined.
-    strict: bool
+        ``offset_tolerance``. Default is 0.2 (20%), meaning the
+        ``offset_tolerance`` will equal the ``ref_duration * 0.2``, or 0.05 (50
+        ms), whichever is greater.
+    offset_min_tolerance : float > 0
+        The minimum tolerance for offset matching. See ``offset_ratio``
+        description for an explanation of how the offset tolerance is
+        determined.
+    strict : bool
         If ``strict=False`` (the default), threshold checks for offset
         matching are performed using ``<=`` (less than or equal). If
         ``strict=True``, the threshold checks are performed using ``<`` (less
@@ -218,8 +219,8 @@ def match_note_offsets(ref_intervals, est_intervals, offset_ratio=0.2,
     -------
     matching : list of tuples
         A list of matched reference and estimated notes.
-        ``matching[i] == (i, j)`` where reference note i matches estimated note
-        j.
+        ``matching[i] == (i, j)`` where reference note ``i`` matches estimated
+        note ``j``.
     """
     # set the comparison function
     if strict:
@@ -265,10 +266,10 @@ def match_note_onsets(ref_intervals, est_intervals, onset_tolerance=0.05,
     only taking note onsets into account.
 
     Given two note sequences represented by ``ref_intervals`` and
-    ``est_intervals`` (see :func:`mir_eval.oi.load_valued_intervals`), we see
+    ``est_intervals`` (see :func:`mir_eval.io.load_valued_intervals`), we see
     the largest set of correspondences ``(i,j)`` such that the onset of
-    reference note i is within ``onset_tolerance`` of the onset of estimated
-    note j.
+    reference note ``i`` is within ``onset_tolerance`` of the onset of
+    estimated note ``j``.
 
     Every reference note is matched against at most one estimated note.
 
@@ -286,7 +287,7 @@ def match_note_onsets(ref_intervals, est_intervals, onset_tolerance=0.05,
     onset_tolerance : float > 0
         The tolerance for an estimated note's onset deviating from the
         reference note's onset, in seconds. Default is 0.05 (50 ms).
-    strict: bool
+    strict : bool
         If ``strict=False`` (the default), threshold checks for onset matching
         are performed using ``<=`` (less than or equal). If ``strict=True``,
         the threshold checks are performed using ``<`` (less than).
@@ -295,8 +296,8 @@ def match_note_onsets(ref_intervals, est_intervals, onset_tolerance=0.05,
     -------
     matching : list of tuples
         A list of matched reference and estimated notes.
-        ``matching[i] == (i, j)`` where reference note i matches estimated note
-        j.
+        ``matching[i] == (i, j)`` where reference note ``i`` matches estimated
+        note ``j``.
     """
     # set the comparison function
     if strict:
@@ -343,17 +344,17 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     (see :func:`mir_eval.io.load_valued_intervals`), we seek the largest set
     of correspondences ``(i, j)`` such that:
 
-    1. The onset of reference note i is within ``onset_tolerance`` of the
-       onset of estimated note j.
-    2. The pitch of reference note i is within ``pitch_tolerance`` of the
-       pitch of estimated note j.
-    3. If ``offset_ratio`` is not ``None``, the offset of reference note i has
-       to be within ``offset_tolerance`` of the offset of estimated note j,
-       where ``offset_tolerance`` is equal to ``offset_ratio`` times the
-       reference note's duration, i.e. ``offset_ratio * ref_duration[i]``
-       where ``ref_duration[i] = ref_intervals[i, 1] - ref_intervals[i, 0]``.
-       If the resulting ``offset_tolerance`` is less than 0.05 (50 ms), 0.05
-       is used instead.
+    1. The onset of reference note ``i`` is within ``onset_tolerance`` of the
+       onset of estimated note ``j``.
+    2. The pitch of reference note ``i`` is within ``pitch_tolerance`` of the
+       pitch of estimated note ``j``.
+    3. If ``offset_ratio`` is not ``None``, the offset of reference note ``i``
+       has to be within ``offset_tolerance`` of the offset of estimated note
+       ``j``, where ``offset_tolerance`` is equal to ``offset_ratio`` times the
+       reference note's duration, i.e. ``offset_ratio * ref_duration[i]`` where
+       ``ref_duration[i] = ref_intervals[i, 1] - ref_intervals[i, 0]``.  If the
+       resulting ``offset_tolerance`` is less than 0.05 (50 ms), 0.05 is used
+       instead.
     4. If ``offset_ratio`` is ``None``, note offsets are ignored, and only
        criteria 1 and 2 are taken into consideration.
 
@@ -370,7 +371,7 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     ----------
     ref_intervals : np.ndarray, shape=(n,2)
         Array of reference notes time intervals (onset and offset times)
-    ref_pitches: np.ndarray, shape=(n,)
+    ref_pitches : np.ndarray, shape=(n,)
         Array of reference pitch values in Hertz
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
@@ -379,21 +380,21 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     onset_tolerance : float > 0
         The tolerance for an estimated note's onset deviating from the
         reference note's onset, in seconds. Default is 0.05 (50 ms).
-    pitch_tolerance: float > 0
+    pitch_tolerance : float > 0
         The tolerance for an estimated note's pitch deviating from the
         reference note's pitch, in cents. Default is 50.0 (50 cents).
-    offset_ratio: float > 0 or None
+    offset_ratio : float > 0 or None
         The ratio of the reference note's duration used to define the
-        offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
-        will equal the ref_duration * 0.2, or 0.05 (50 ms), whichever is
-        greater. If ``offset_ratio`` is set to ``None``, offsets are ignored in
-        the matching.
-    offset_min_tolerance: float > 0
+        offset_tolerance. Default is 0.2 (20%), meaning the
+        ``offset_tolerance`` will equal the ``ref_duration * 0.2``, or 0.05 (50
+        ms), whichever is greater. If ``offset_ratio`` is set to ``None``,
+        offsets are ignored in the matching.
+    offset_min_tolerance : float > 0
         The minimum tolerance for offset matching. See offset_ratio description
         for an explanation of how the offset tolerance is determined. Note:
         this parameter only influences the results if ``offset_ratio`` is not
         ``None``.
-    strict: bool
+    strict : bool
         If ``strict=False`` (the default), threshold checks for onset, offset,
         and pitch matching are performed using ``<=`` (less than or equal). If
         ``strict=True``, the threshold checks are performed using ``<`` (less
@@ -403,8 +404,8 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     -------
     matching : list of tuples
         A list of matched reference and estimated notes.
-        ``matching[i] == (i, j)`` where reference note i matches estimated note
-        j.
+        ``matching[i] == (i, j)`` where reference note ``i`` matches estimated
+        note ``j``.
     """
     # set the comparison function
     if strict:
@@ -473,8 +474,8 @@ def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
     based on note onset, pitch and (optionally) offset: an estimated note is
     assumed correct if its onset is within +-50ms of a reference note and its
     pitch (F0) is within +- quarter tone (50 cents) of the corresponding
-    reference note. If offset_ratio is None, note offsets are ignored in the
-    comparison. Otherwise, on top of the above requirements, a correct
+    reference note. If ``offset_ratio`` is ``None``, note offsets are ignored
+    in the comparison. Otherwise, on top of the above requirements, a correct
     returned note is required to have an offset value within 20% (by default,
     adjustable via the ``offset_ratio`` parameter) of the reference note's
     duration around the reference note's offset, or within
@@ -501,7 +502,7 @@ def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
     ----------
     ref_intervals : np.ndarray, shape=(n,2)
         Array of reference notes time intervals (onset and offset times)
-    ref_pitches: np.ndarray, shape=(n,)
+    ref_pitches : np.ndarray, shape=(n,)
         Array of reference pitch values in Hertz
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
@@ -510,21 +511,22 @@ def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
     onset_tolerance : float > 0
         The tolerance for an estimated note's onset deviating from the
         reference note's onset, in seconds. Default is 0.05 (50 ms).
-    pitch_tolerance: float > 0
+    pitch_tolerance : float > 0
         The tolerance for an estimated note's pitch deviating from the
         reference note's pitch, in cents. Default is 50.0 (50 cents).
-    offset_ratio: float > 0 or None
+    offset_ratio : float > 0 or None
         The ratio of the reference note's duration used to define the
-        offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
-        will equal the ref_duration * 0.2, or ``min_offset_tolerance`` (0.05 by
-        default, i.e. 50 ms), whichever is greater. If ``offset_ratio`` is set
-        to ``None``, offsets are ignored in the evaluation.
-    offset_min_tolerance: float > 0
+        offset_tolerance. Default is 0.2 (20%), meaning the
+        ``offset_tolerance`` will equal the ``ref_duration * 0.2``, or
+        ``offset_min_tolerance`` (0.05 by default, i.e. 50 ms), whichever is
+        greater. If ``offset_ratio`` is set to ``None``, offsets are ignored in
+        the evaluation.
+    offset_min_tolerance : float > 0
         The minimum tolerance for offset matching. See ``offset_ratio``
         description for an explanation of how the offset tolerance is
         determined. Note: this parameter only influences the results if
         ``offset_ratio`` is not ``None``.
-    strict: bool
+    strict : bool
         If ``strict=False`` (the default), threshold checks for onset, offset,
         and pitch matching are performed using ``<=`` (less than or equal). If
         ``strict=True``, the threshold checks are performed using ``<`` (less
@@ -540,7 +542,7 @@ def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
         The computed recall score
     f_measure : float
         The computed F-measure score
-    avg_overlap_ratio: float
+    avg_overlap_ratio : float
         The computed Average Overlap Ratio score
     """
     validate(ref_intervals, ref_pitches, est_intervals, est_pitches)
@@ -581,9 +583,9 @@ def average_overlap_ratio(ref_intervals, est_intervals, matching):
 
     Note: this function assumes the matching of reference and estimated notes
     (see :func:`match_notes`) has already been performed and is provided by the
-    `matching` parameter. Furthermore, it is highly recommended to validate the
-    intervals (see :func:`validate_intervals`) before calling this function,
-    otherwise it is possible (though unlikely) for this function to
+    ``matching`` parameter. Furthermore, it is highly recommended to validate
+    the intervals (see :func:`validate_intervals`) before calling this
+    function, otherwise it is possible (though unlikely) for this function to
     attempt a divide-by-zero operation.
 
     Parameters
@@ -594,12 +596,12 @@ def average_overlap_ratio(ref_intervals, est_intervals, matching):
         Array of estimated notes time intervals (onset and offset times)
     matching : list of tuples
         A list of matched reference and estimated notes.
-        ``matching[i] == (i, j)`` where reference note i matches estimated note
-        j.
+        ``matching[i] == (i, j)`` where reference note ``i`` matches estimated
+        note ``j``.
 
     Returns
     -------
-    avg_overlap_ratio: float
+    avg_overlap_ratio : float
         The computed Average Overlap Ratio score
     """
     ratios = []
@@ -624,7 +626,8 @@ def onset_precision_recall_f1(ref_intervals, est_intervals,
     Note that this metric completely ignores note offset and note pitch. This
     means an estimated onset will be considered correct if it matches a
     reference onset, even if the onsets come from notes with completely
-    different pitches (i.e. notes that would not match with `match_notes`).
+    different pitches (i.e. notes that would not match with
+    :func:`match_notes`).
 
 
     Examples
@@ -647,7 +650,7 @@ def onset_precision_recall_f1(ref_intervals, est_intervals,
     onset_tolerance : float > 0
         The tolerance for an estimated note's onset deviating from the
         reference note's onset, in seconds. Default is 0.05 (50 ms).
-    strict: bool
+    strict : bool
         If ``strict=False`` (the default), threshold checks for onset matching
         are performed using ``<=`` (less than or equal). If ``strict=True``,
         the threshold checks are performed using ``<`` (less than).
@@ -687,7 +690,8 @@ def offset_precision_recall_f1(ref_intervals, est_intervals, offset_ratio=0.2,
     that this metric completely ignores note onsets and note pitch. This means
     an estimated offset will be considered correct if it matches a
     reference offset, even if the offsets come from notes with completely
-    different pitches (i.e. notes that would not match with `match_notes`).
+    different pitches (i.e. notes that would not match with
+    :func:`match_notes`).
 
 
     Examples
@@ -707,16 +711,17 @@ def offset_precision_recall_f1(ref_intervals, est_intervals, offset_ratio=0.2,
         Array of reference notes time intervals (onset and offset times)
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)
-    offset_ratio: float > 0 or None
+    offset_ratio : float > 0 or None
         The ratio of the reference note's duration used to define the
-        offset_tolerance. Default is 0.2 (20%), meaning the offset_tolerance
-        will equal the ref_duration * 0.2, or ``min_offset_tolerance`` (0.05 by
-        default, i.e. 50 ms), whichever is greater.
-    offset_min_tolerance: float > 0
+        offset_tolerance. Default is 0.2 (20%), meaning the
+        ``offset_tolerance`` will equal the ``ref_duration * 0.2``, or
+        ``offset_min_tolerance`` (0.05 by default, i.e. 50 ms), whichever is
+        greater.
+    offset_min_tolerance : float > 0
         The minimum tolerance for offset matching. See ``offset_ratio``
         description for an explanation of how the offset tolerance is
         determined.
-    strict: bool
+    strict : bool
         If ``strict=False`` (the default), threshold checks for onset matching
         are performed using ``<=`` (less than or equal). If ``strict=True``,
         the threshold checks are performed using ``<`` (less than).
@@ -765,7 +770,7 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     ----------
     ref_intervals : np.ndarray, shape=(n,2)
         Array of reference notes time intervals (onset and offset times)
-    ref_pitches: np.ndarray, shape=(n,)
+    ref_pitches : np.ndarray, shape=(n,)
         Array of reference pitch values in Hertz
     est_intervals : np.ndarray, shape=(m,2)
         Array of estimated notes time intervals (onset and offset times)

@@ -296,9 +296,9 @@ def load_patterns(filename):
             pattern = [occurrence1, ..., occurrenceM]
             pattern_list = [pattern1, ..., patternN]
 
-        where `N` is the number of patterns, `M[i]` is the number of
-        occurrences of the `i`'th pattern, and `O[j]` is the number of onsets
-        in the `j`'th occurrence.  E.g.::
+        where ``N`` is the number of patterns, ``M[i]`` is the number of
+        occurrences of the ``i`` th pattern, and ``O[j]`` is the number of
+        onsets in the ``j``'th occurrence.  E.g.::
 
             occ1 = [(0.5, 67.0), (1.0, 67.0), (1.5, 67.0), (2.0, 64.0)]
             occ2 = [(4.5, 65.0), (5.0, 65.0), (5.5, 65.0), (6.0, 62.0)]
@@ -351,7 +351,7 @@ def load_patterns(filename):
 
 
 def load_wav(path, mono=True):
-    """Loads a .wav file as a numpy array using scipy.io.wavfile.
+    """Loads a .wav file as a numpy array using ``scipy.io.wavfile``.
 
     Parameters
     ----------
@@ -485,7 +485,7 @@ def load_tempo(filename, delimiter=r'\s+'):
         The two tempo estimates
 
     weight : float [0, 1]
-        The relative importance of `tempi[0]` compared to `tempi[1]`
+        The relative importance of ``tempi[0]`` compared to ``tempi[1]``
     """
     # Use our universal function to load the key and mode strings
     t1, t2, weight = load_delimited(filename, [float, float, float], delimiter)

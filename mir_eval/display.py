@@ -98,16 +98,16 @@ def segments(intervals, labels, base=None, height=None, text=False,
 
     height : number
         The height of the rectangles.
-        By default, this will be the top of the plot (minus `base`).
+        By default, this will be the top of the plot (minus ``base``).
 
     text : bool
         If true, each segment's label is displayed in its
         upper-left corner
 
     text_kw : dict
-        If `text==True`, the properties of the text
+        If ``text == True``, the properties of the text
         object can be specified here.
-        See `matplotlib.pyplot.Text` for valid parameters
+        See ``matplotlib.pyplot.Text`` for valid parameters
 
     ax : matplotlib.pyplot.axes
         An axis handle on which to draw the segmentation.
@@ -115,7 +115,7 @@ def segments(intervals, labels, base=None, height=None, text=False,
 
     kwargs
         Additional keyword arguments to pass to
-        `matplotlib.patches.Rectangle`.
+        ``matplotlib.patches.Rectangle``.
 
     Returns
     -------
@@ -203,34 +203,35 @@ def labeled_intervals(intervals, labels, label_set=None,
     label_set : list
         An (ordered) list of labels to determine the plotting order.
         If not provided, the labels will be inferred from
-        `ax.get_yticklabels()`.
-        If no `yticklabels` exist, then the sorted set of unique values
-        in `labels` is taken as the label set.
+        ``ax.get_yticklabels()``.
+        If no ``yticklabels`` exist, then the sorted set of unique values
+        in ``labels`` is taken as the label set.
 
     base : np.ndarray, shape=(n,), optional
         Vertical positions of each label.
-        By default, labels are positioned at integers `np.arange(len(labels))`.
+        By default, labels are positioned at integers
+        ``np.arange(len(labels))``.
 
     height : scalar or np.ndarray, shape=(n,), optional
         Height for each label.
         If scalar, the same value is applied to all labels.
-        By default, each label has `height=1`.
+        By default, each label has ``height=1``.
 
     extend_labels : bool
-        If `False`, only values of `labels` that also exist in `label_set`
-        will be shown.
+        If ``False``, only values of ``labels`` that also exist in
+        ``label_set`` will be shown.
 
-        If `True`, all labels are shown, with those in `labels` but
+        If ``True``, all labels are shown, with those in `labels` but
         not in `label_set` appended to the top of the plot.
         A horizontal line is drawn to indicate the separation between
-        values in or out of `label_set`.
+        values in or out of ``label_set``.
 
     ax : matplotlib.pyplot.axes
         An axis handle on which to draw the intervals.
         If none is provided, a new set of axes is created.
 
     tick : bool
-        If `True`, sets tick positions and labels on the y-axis.
+        If ``True``, sets tick positions and labels on the y-axis.
 
     kwargs
         Additional keyword arguments to pass to
@@ -334,16 +335,16 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
         `intervals_hier`.
 
     levels : list of string
-        Each element `levels[i]` is a label for the `i`th segmentation.
+        Each element ``levels[i]`` is a label for the ```i`` th segmentation.
         This is used in the legend to denote the levels in a segment hierarchy.
 
-    kwargs :
+    kwargs
         Additional keyword arguments to `labeled_intervals`.
 
     Returns
     -------
-    ax
-        A handle to the matplotlib axes
+    ax : matplotlib.pyplot.axes._subplots.AxesSubplot
+        A handle to the (possibly constructed) plot axes
     '''
 
     # This will break if a segment label exists in multiple levels
@@ -493,7 +494,7 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
         An axis handle on which to draw the pitch contours.
         If none is provided, a new set of axes is created.
 
-    kwargs :
+    kwargs
         Additional keyword arguments to `matplotlib.pyplot.plot`.
 
     Returns
@@ -581,7 +582,7 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None,
         An axis handle on which to draw the pitch contours.
         If none is provided, a new set of axes is created.
 
-    kwargs :
+    kwargs
         Additional keyword arguments to `plt.scatter`.
 
     Returns
@@ -656,14 +657,14 @@ def piano_roll(intervals, pitches=None, midi=None, ax=None, **kwargs):
     midi : np.ndarray, shape=(n,), optional
         pitches of notes (in MIDI numbers).
 
-        At least one of `pitches` or `midi` must be provided.
+        At least one of ``pitches`` or ``midi`` must be provided.
 
     ax : matplotlib.pyplot.axes
         An axis handle on which to draw the intervals.
         If none is provided, a new set of axes is created.
 
-    kwargs :
-        Additional keyword arguments to `labeled_intervals`.
+    kwargs
+        Additional keyword arguments to :func:`labeled_intervals`.
 
     Returns
     -------
@@ -713,8 +714,8 @@ def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
         An axis handle on which to draw the spectrograms.
         If none is provided, a new set of axes is created.
 
-    kwargs :
-        Additional keyword arguments to `scipy.signal.spectrogram`
+    kwargs
+        Additional keyword arguments to ``scipy.signal.spectrogram``
 
     Returns
     -------

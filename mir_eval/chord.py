@@ -80,7 +80,8 @@ Metrics
   relationships).
 
 
-:references:
+References
+----------
     .. [#harte2010towards] C. Harte. Towards Automatic Extraction of Harmony
         Information from Music Signals. PhD thesis, Queen Mary University of
         London, August 2010.
@@ -576,7 +577,7 @@ def rotate_bitmap_to_root(bitmap, chord_root):
 def rotate_bitmaps_to_roots(bitmaps, roots):
     """Circularly shift a relative bitmaps to asbolute pitch classes.
 
-    See rotate_bitmap_to_root for more information.
+    See :func:`rotate_bitmap_to_root` for more information.
 
     Parameters
     ----------

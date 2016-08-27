@@ -103,7 +103,7 @@ def weighted_score(reference_key, estimated_key):
     Examples
     --------
     >>> ref_key = mir_eval.io.load_key('ref.txt')
-    >>> est_key = mir_eval.io.load_key('ref.txt')
+    >>> est_key = mir_eval.io.load_key('est.txt')
     >>> score = mir_eval.key.weighted_score(ref_key, est_key)
 
     Parameters

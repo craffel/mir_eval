@@ -70,13 +70,13 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     frequencies : np.ndarray
         array of size ``gram.shape[0]`` denoting the frequency of
         each row of gram
-    times: np.ndarray, shape=``(gram.shape[1],)`` or ``(gram.shape[1], 2)``
+    times : np.ndarray, shape= ``(gram.shape[1],)`` or ``(gram.shape[1], 2)``
         Either the start time of each column in the gram,
         or the time interval corresponding to each column.
     fs : int
         desired sampling rate of the output signal
     function : function
-        function to use to synthesize notes, should be 2pi-periodic
+        function to use to synthesize notes, should be :math:`2\pi`-periodic
     length : int
         desired number of samples in the output signal,
         defaults to ``times[-1]*fs``
@@ -159,7 +159,7 @@ def pitch_contour(times, frequencies, fs, function=np.sin, length=None,
         desired sampling rate of the output signal
 
     function : function
-        function to use to synthesize notes, should be 2pi-periodic
+        function to use to synthesize notes, should be :math:`2\pi`-periodic
 
     length : int
         desired number of samples in the output signal,

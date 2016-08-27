@@ -10,11 +10,11 @@ of arrays of frequency estimates. Frequency estimates may have any number of
 frequency values, including 0 (represented by an empty array). Time values are
 in units of seconds and frequency estimates are in units of Hz.
 
-Estimate time series should ideally be equal to reference time series, but if
-this is not the case, the estimate time series is resampled using a nearest
-neighbor interpolation to match the estimate. Time values in the estimate time
-series that are outside of the range of the reference time series are given
-null (empty array) frequencies.
+The timebase of the estimate time series should ideally match the timebase of
+the reference time series, but if this is not the case, the estimate time
+series is resampled using a nearest neighbor interpolation to match the
+estimate. Time values in the estimate time series that are outside of the range
+of the reference time series are given null (empty array) frequencies.
 
 By default, a frequency is "correct" if it is within 0.5 semitones of a
 reference frequency. Frequency values are compared by first mapping them to
@@ -29,21 +29,17 @@ The metrics are based on those described in
 
 Metrics
 -------
-* :func:`mir_eval.multipitch.accuracy`: Precision, Recall, and Accuracy scores
-  based on the number of esimated frequencies which are sufficiently close to
-  the reference frequencies.
+* :func:`mir_eval.multipitch.metrics`: Precision, Recall, Accuracy,
+  Substitution, Miss, False Alarm, and Total Error scores based both on raw
+  frequency values and values mapped to a single octave (chroma).
 
-* :func:`mir_eval.multipitch.error_score`: Substitution, Miss, False Alarm and
-  Total Error scores based on the number of esimated frequencies which are
-  sufficiently close to the reference frequencies.
-
-
-:references:
-    .. [#poliner2007] G. E. Poliner, and D. P. W. Ellis, "A Discriminative
-    Model for Polyphonic Piano Transription", EURASIP Journal on Advances in
-    Signal Processing, 2007(1):154-163, Jan. 2007.
-    .. [#bay2009] Bay, M., Ehmann, A. F., & Downie, J. S. (2009). Evaluation of
-    Multiple-F0 Estimation and Tracking Systems. In ISMIR (pp. 315-320).
+References
+----------
+.. [#poliner2007] G. E. Poliner, and D. P. W. Ellis, "A Discriminative
+   Model for Polyphonic Piano Transription", EURASIP Journal on Advances in
+   Signal Processing, 2007(1):154-163, Jan. 2007.
+.. [#bay2009] Bay, M., Ehmann, A. F., & Downie, J. S. (2009). Evaluation of
+   Multiple-F0 Estimation and Tracking Systems. In ISMIR (pp. 315-320).
 '''
 
 import numpy as np
@@ -107,7 +103,7 @@ def validate(ref_time, ref_freqs, est_time, est_freqs):
 
 def resample_multipitch(times, frequencies, target_times):
     """Resamples multipitch time series to a new timescale. Values in
-    `target_times` outside the range of `times` return no pitch estimate.
+    ``target_times`` outside the range of ``times`` return no pitch estimate.
 
     Parameters
     ----------
@@ -155,7 +151,7 @@ def resample_multipitch(times, frequencies, target_times):
 
 
 def frequencies_to_midi(frequencies, ref_frequency=440.0):
-    """Converts frequencies to continuous midi values.
+    """Converts frequencies to continuous MIDI values.
 
     Parameters
     ----------
@@ -167,18 +163,18 @@ def frequencies_to_midi(frequencies, ref_frequency=440.0):
     Returns
     -------
     frequencies_midi : list of np.ndarray
-        Continuous midi frequency values.
+        Continuous MIDI frequency values.
     """
     return [69.0 + 12.0*np.log2(freqs/ref_frequency) for freqs in frequencies]
 
 
 def midi_to_chroma(frequencies_midi):
-    """Wrap midi frequencies to a single octave (chroma).
+    """Wrap MIDI frequencies to a single octave (chroma).
 
     Parameters
     ----------
     frequencies_midi : list of np.ndarray
-        Continuous midi note frequency values.
+        Continuous MIDI note frequency values.
 
     Returns
     -------
@@ -213,14 +209,14 @@ def compute_num_true_positives(ref_freqs, est_freqs, window=0.5, chroma=False):
     Parameters
     ----------
     ref_freqs : list of np.ndarray
-        reference frequencies (midi)
+        reference frequencies (MIDI)
     est_freqs : list of np.ndarray
-        estimated frequencies (midi)
+        estimated frequencies (MIDI)
     window : float
         Window size, in semitones
     chroma : bool
-        If true, computes distances modulo n.
-        If true, ref_freqs and est_freqs should be wrapped modulo n.
+        If True, computes distances modulo n.
+        If True, ``ref_freqs`` and ``est_freqs`` should be wrapped modulo n.
 
     Returns
     -------
@@ -263,11 +259,11 @@ def compute_accuracy(true_positives, n_ref, n_est):
     Returns
     -------
     precision : float
-        sum(true_positives)/sum(n_est)
+        ``sum(true_positives)/sum(n_est)``
     recall : float
-        sum(true_positives)/sum(n_ref)
+        ``sum(true_positives)/sum(n_ref)``
     acc : float
-        sum(true_positives)/sum(n_est + n_ref - true_positives)
+        ``sum(true_positives)/sum(n_est + n_ref - true_positives)``
 
     """
     true_positive_sum = float(true_positives.sum())
