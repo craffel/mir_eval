@@ -189,8 +189,11 @@ def constant_hop_timebase(hop, end_time):
 
 def resample_melody_series(times, frequencies, voicing,
                            times_new, kind='linear'):
-    """Resamples frequency and voicing time series to a new timescale.  Maintains
+    """Resamples frequency and voicing time series to a new timescale. Maintains
     any zero ("unvoiced") values in frequencies.
+
+    If ``times`` and ``times_new`` are equivalent, no resampling will be
+    performed.
 
     Parameters
     ----------
@@ -214,6 +217,10 @@ def resample_melody_series(times, frequencies, voicing,
         Boolean voicing array resampled to new timebase
 
     """
+    # If the timebases are already the same, no need to interpolate
+    if times.shape == times_new.shape and np.allclose(times, times_new):
+        return frequencies, voicing.astype(np.bool)
+
     # Warn when the delta between the original times is not constant,
     # unless times[0] == 0. and frequencies[0] == frequencies[1] (see logic at
     # the beginning of to_cent_voicing)

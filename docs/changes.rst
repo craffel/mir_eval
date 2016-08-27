@@ -12,6 +12,7 @@ v0.4
 - `#208`_: refactored file/buffer loading
 - `#210`_: added `io.load_tempo`
 - `#212`_: added frame-wise blind-source separation evaluation
+- `#218`_: speed up `melody.resample_melody_series` when times are equivalent
 
 .. _#189: https://github.com/craffel/mir_eval/issues/189
 .. _#195: https://github.com/craffel/mir_eval/issues/195
@@ -40,7 +41,7 @@ v0.2
 - `#103`_: incomplete files passed to `melody.evaluate` should warn
 - `#109`_: `STRICT_BASS_INTERVALS` is now an argument to `chord.encode`
 - `#122`_: improved handling of corner cases in beat tracking
-- `#136`_: improved test coverage 
+- `#136`_: improved test coverage
 - `#138`_: PEP8 compliance
 - `#139`_: converted documentation to numpydoc style
 - `#147`_: fixed a rounding error in segment intervals
