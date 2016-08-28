@@ -18,4 +18,4 @@ from . import hierarchy
 from . import transcription
 from . import key
 
-__version__ = '0.3'
+__version__ = '0.4'

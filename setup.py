@@ -5,7 +5,7 @@ with open('README.rst') as file:
 
 setup(
     name='mir_eval',
-    version='0.3',
+    version='0.4',
     description='Common metrics for common audio/music processing tasks.',
     author='Colin Raffel',
     author_email='craffel@gmail.com',
