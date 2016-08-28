@@ -22,6 +22,7 @@ v0.4
 .. _#208: https://github.com/craffel/mir_eval/issues/208
 .. _#210: https://github.com/craffel/mir_eval/issues/210
 .. _#212: https://github.com/craffel/mir_eval/issues/212
+.. _#218: https://github.com/craffel/mir_eval/pull/218
 
 v0.3
 ----
