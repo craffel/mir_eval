@@ -40,7 +40,8 @@ def clicks(times, fs, click=None, length=None):
         click *= np.exp(-np.arange(fs*.1)/(fs*.01))
     # Set default length
     if length is None:
-        length = times.max()*fs + click.shape[0] + 1
+        length = int(times.max()*fs + click.shape[0] + 1)
+
     # Pre-allocate click signal
     click_signal = np.zeros(length)
     # Place clicks
