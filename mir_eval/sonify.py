@@ -131,12 +131,18 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
         # Scale each time interval by the piano roll magnitude
-        for m, (start, end) in enumerate((times * fs).astype(int)):
+        for m, (start, end) in enumerate((times[:-1, :] * fs).astype(int)):
             # Clip the timings to make sure the indices are valid
             start, end = max(start, 0), min(end, length)
+            hop_size = end - start
+            xover_size = int(hop_size / 8)
+
+            # get linear increasing weights
+            weights = np.linspace(gram[n, m], gram[n, m+1], xover_size)
 
             # Sum into the aggregate output waveform
-            output[start:end] += wave[start:end] * gram[n, m]
+            output[start:end-xover_size] += wave[start:end-xover_size] * gram[n, m]
+            output[end-xover_size:end] += wave[end-xover_size:end] * weights
 
     # Normalize
     output /= np.abs(output).max()
