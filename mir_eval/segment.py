@@ -912,7 +912,7 @@ def mutual_information(reference_intervals, reference_labels,
 
 
 def nce(reference_intervals, reference_labels, estimated_intervals,
-        estimated_labels, frame_size=0.1, beta=1.0):
+        estimated_labels, frame_size=0.1, beta=1.0, marginal=False):
     """Frame-clustering segmentation: normalized conditional entropy
 
     Computes cross-entropy of cluster assignment, normalized by the
@@ -957,6 +957,10 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     beta : float > 0
         beta for F-measure
         (Default value = 1.0)
+
+    marginal : bool
+        If `False`, normalize conditional entropy by uniform entropy.
+        If `True`, normalize conditional entropy by the marginal entropy.
 
     Returns
     -------
@@ -1015,13 +1019,20 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     true_given_est = p_est.dot(scipy.stats.entropy(contingency) / np.log(2))
     pred_given_ref = p_ref.dot(scipy.stats.entropy(contingency.T) / np.log(2))
 
+    if marginal:
+        z_ref = scipy.stats.entropy(p_ref) / np.log(2)
+        z_est = scipy.stats.entropy(p_est) / np.log(2)
+    else:
+        z_ref = np.log2(contingency.shape[0])
+        z_est = np.log2(contingency.shape[1])
+
     score_under = 0.0
-    if contingency.shape[0] > 1:
-        score_under = 1. - true_given_est / np.log2(contingency.shape[0])
+    if z_ref > 0:
+        score_under = 1. - true_given_est / z_ref
 
     score_over = 0.0
-    if contingency.shape[1] > 1:
-        score_over = 1. - pred_given_ref / np.log2(contingency.shape[1])
+    if z_est > 0:
+        score_over = 1. - pred_given_ref / z_est
 
     f_measure = util.f_measure(score_over, score_under, beta=beta)
 
