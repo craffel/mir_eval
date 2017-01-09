@@ -796,7 +796,8 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     """
     # Compute all the metrics
     scores = collections.OrderedDict()
-
+    
+    kwargs['chroma'] = False
     # Precision, recall and f-measure taking note offsets into account
     kwargs.setdefault('offset_ratio', 0.2)
     orig_offset_ratio = kwargs['offset_ratio']
@@ -814,6 +815,28 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
      scores['Recall_no_offset'],
      scores['F-measure_no_offset'],
      scores['Average_Overlap_Ratio_no_offset']) = (
+        util.filter_kwargs(precision_recall_f1_overlap,
+                           ref_intervals, ref_pitches,
+                           est_intervals, est_pitches, **kwargs))
+                           
+    kwargs['chroma'] = True
+    # Precision, recall and f-measure taking note offsets into account
+    kwargs.setdefault('offset_ratio', 0.2)
+    orig_offset_ratio = kwargs['offset_ratio']
+    if kwargs['offset_ratio'] is not None:
+        (scores['Chroma_Precision'],
+         scores['Chroma_Recall'],
+         scores['Chroma_F-measure'],
+         scores['Chroma_Average_Overlap_Ratio']) = util.filter_kwargs(
+            precision_recall_f1_overlap, ref_intervals, ref_pitches,
+            est_intervals, est_pitches, **kwargs)
+
+    # Precision, recall and f-measure NOT taking note offsets into account
+    kwargs['offset_ratio'] = None
+    (scores['Chroma_Precision_no_offset'],
+     scores['Chroma_Recall_no_offset'],
+     scores['Chroma_F-measure_no_offset'],
+     scores['Chroma_Average_Overlap_Ratio_no_offset']) = (
         util.filter_kwargs(precision_recall_f1_overlap,
                            ref_intervals, ref_pitches,
                            est_intervals, est_pitches, **kwargs))
