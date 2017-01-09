@@ -113,7 +113,8 @@ def test_match_notes():
                                            est_pitch, offset_ratio=None))
 
     assert matching == [(0, 0), (1, 1), (3, 3)]
-    
+
+
 def test_match_notes_chroma():
     
     ref_int, ref_pitch = REF[:, :2], REF[:, 2]
@@ -121,7 +122,7 @@ def test_match_notes_chroma():
 
     matching = (
         mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,
-                                           est_pitch,chroma=True))
+                                           est_pitch, chroma=True))
 
     assert matching == [(0, 0), (3, 3)]
     

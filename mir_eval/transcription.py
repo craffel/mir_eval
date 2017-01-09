@@ -428,8 +428,8 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     pitch_distances = np.abs(1200*np.subtract.outer(np.log2(ref_pitches),
                                                     np.log2(est_pitches)))
     if chroma:
-        #1200 cents is one octave, mod by 1200 to remove octave information
-        pitch_distances = np.mod(pitch_distances,1200)
+        # 1200 cents is one octave, mod by 1200 to remove octave information
+        pitch_distances = np.mod(pitch_distances, 1200)
         pitch_distances = np.minimum(1200-pitch_distances,pitch_distances)
     pitch_hit_matrix = cmp_func(pitch_distances, pitch_tolerance)
 
