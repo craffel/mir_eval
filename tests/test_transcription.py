@@ -27,7 +27,6 @@ EST = np.array([
     [0.550,   0.600,   293.665],
     [0.560,   0.650,   293.665]])
 
-    
 SCORES = {
     "Precision": 0.4,
     "Recall": 0.5,
@@ -115,7 +114,6 @@ def test_match_notes():
 
     assert matching == [(0, 0), (1, 1), (3, 3)]
     
-
 def test_match_notes_chroma():
     
     ref_int, ref_pitch = REF[:, :2], REF[:, 2]
