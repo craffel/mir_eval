@@ -52,27 +52,27 @@ if __name__ == '__main__':
     # that task will be generated.
     tasks = {}
     tasks['beat'] = (mir_eval.beat, mir_eval.io.load_events,
-                     'tests/data/beat/{}*.txt')
+                     'data/beat/{}*.txt')
     tasks['chord'] = (mir_eval.chord, mir_eval.io.load_labeled_intervals,
-                      'tests/data/chord/{}*.lab')
+                      'data/chord/{}*.lab')
     tasks['melody'] = (mir_eval.melody, mir_eval.io.load_time_series,
-                       'tests/data/melody/{}*.txt')
+                       'data/melody/{}*.txt')
     tasks['multipitch'] = (mir_eval.multipitch,
                            mir_eval.io.load_ragged_time_series,
-                           'tests/data/multipitch/()*.txt')
+                           'data/multipitch/()*.txt')
     tasks['onset'] = (mir_eval.onset, mir_eval.io.load_events,
-                      'tests/data/onset/{}*.txt')
+                      'data/onset/{}*.txt')
     tasks['pattern'] = (mir_eval.pattern, mir_eval.io.load_patterns,
-                        'tests/data/pattern/{}*.txt')
+                        'data/pattern/{}*.txt')
     tasks['segment'] = (mir_eval.segment, mir_eval.io.load_labeled_intervals,
-                        'tests/data/segment/{}*.lab')
+                        'data/segment/{}*.lab')
     tasks['separation'] = (mir_eval.separation, load_separation_data,
-                           'tests/data/separation/{}*')
+                           'data/separation/{}*')
     tasks['transcription'] = (mir_eval.transcription,
                               mir_eval.io.load_valued_intervals,
-                              'tests/data/transcription/{}*.txt')
+                              'data/transcription/{}*.txt')
     tasks['key'] = (mir_eval.key, mir_eval.io.load_key,
-                    'tests/data/key/{}*.txt')
+                    'data/key/{}*.txt')
     # Get task keys from argv
     for task in sys.argv[1:]:
         print('Generating data for {}'.format(task))
