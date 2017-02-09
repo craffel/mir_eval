@@ -27,7 +27,6 @@ from mir_eval.io import load_ragged_time_series
 from mir_eval.io import load_wav
 
 
-
 @decorator
 def styled(f, *args, **kwargs):
     matplotlib.rcdefaults()
