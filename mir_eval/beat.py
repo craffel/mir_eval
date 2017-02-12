@@ -402,7 +402,7 @@ def p_score(reference_beats,
     # Get full correlation
     train_correlation = np.correlate(reference_train, estimated_train, 'full')
     # Get the middle element - note we are rounding down on purpose here
-    middle_lag = train_correlation.shape[0]/2
+    middle_lag = train_correlation.shape[0]//2
     # Truncate to only valid lags (those corresponding to the window)
     start = middle_lag - win_size
     end = middle_lag + win_size + 1
