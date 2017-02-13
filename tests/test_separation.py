@@ -16,9 +16,9 @@ import warnings
 
 A_TOL = 1e-12
 
-REF_GLOB = 'tests/data/separation/ref*'
-EST_GLOB = 'tests/data/separation/est*'
-SCORES_GLOB = 'tests/data/separation/output*.json'
+REF_GLOB = 'data/separation/ref*'
+EST_GLOB = 'data/separation/est*'
+SCORES_GLOB = 'data/separation/output*.json'
 
 
 def __load_and_stack_wavs(directory):

@@ -11,9 +11,9 @@ import numpy as np
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'tests/data/key/ref*.txt'
-EST_GLOB = 'tests/data/key/est*.txt'
-SCORES_GLOB = 'tests/data/key/output*.json'
+REF_GLOB = 'data/key/ref*.txt'
+EST_GLOB = 'data/key/est*.txt'
+SCORES_GLOB = 'data/key/output*.json'
 
 
 def __unit_test_key_function(metric):

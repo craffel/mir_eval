@@ -118,9 +118,9 @@ def test_tmeasure_fail_frame_size():
 
 def test_tmeasure_regression():
 
-    ref_files = sorted(glob('tests/data/hierarchy/ref*.lab'))
-    est_files = sorted(glob('tests/data/hierarchy/est*.lab'))
-    out_files = sorted(glob('tests/data/hierarchy/output*.json'))
+    ref_files = sorted(glob('data/hierarchy/ref*.lab'))
+    est_files = sorted(glob('data/hierarchy/est*.lab'))
+    out_files = sorted(glob('data/hierarchy/output*.json'))
 
     ref_hier = [mir_eval.io.load_labeled_intervals(_) for _ in ref_files]
     est_hier = [mir_eval.io.load_labeled_intervals(_) for _ in est_files]
