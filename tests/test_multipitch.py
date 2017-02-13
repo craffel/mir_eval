@@ -12,9 +12,9 @@ import nose.tools
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'tests/data/multipitch/ref*.txt'
-EST_GLOB = 'tests/data/multipitch/est*.txt'
-SCORES_GLOB = 'tests/data/multipitch/output*.json'
+REF_GLOB = 'data/multipitch/ref*.txt'
+EST_GLOB = 'data/multipitch/est*.txt'
+SCORES_GLOB = 'data/multipitch/output*.json'
 
 
 def __frequencies_equal(freqs_a, freqs_b):

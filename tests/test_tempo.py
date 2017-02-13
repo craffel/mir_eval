@@ -47,9 +47,9 @@ def test_tempo_fail():
 
 
 def test_tempo_regression():
-    REF_GLOB = 'tests/data/tempo/ref*.lab'
-    EST_GLOB = 'tests/data/tempo/est*.lab'
-    SCORES_GLOB = 'tests/data/tempo/output*.json'
+    REF_GLOB = 'data/tempo/ref*.lab'
+    EST_GLOB = 'data/tempo/est*.lab'
+    SCORES_GLOB = 'data/tempo/output*.json'
 
     # Load in all files in the same order
     ref_files = sorted(glob.glob(REF_GLOB))

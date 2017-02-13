@@ -8,11 +8,10 @@ import matplotlib
 matplotlib.use('Agg')  # nopep8
 
 import matplotlib.pyplot as plt
-from matplotlib.style import context as style_context
 import numpy as np
 
 # Import the hacked image comparison module
-from tests.mpl_ic import image_comparison
+from mpl_ic import image_comparison
 
 from nose.tools import raises
 
@@ -28,15 +27,10 @@ from mir_eval.io import load_ragged_time_series
 from mir_eval.io import load_wav
 
 
-# Test fixtures will use seaborn-muted style
-GLOBAL_STYLE = 'seaborn-muted'
-
-
 @decorator
 def styled(f, *args, **kwargs):
-    matplotlib.rcParams.update(matplotlib.rcParamsDefault)
-    with style_context(GLOBAL_STYLE):
-        return f(*args, **kwargs)
+    matplotlib.rcdefaults()
+    return f(*args, **kwargs)
 
 
 @image_comparison(baseline_images=['segment'], extensions=['png'])
@@ -46,7 +40,7 @@ def test_display_segment():
     plt.figure()
 
     # Load some segment data
-    intervals, labels = load_labeled_intervals('tests/data/segment/ref00.lab')
+    intervals, labels = load_labeled_intervals('data/segment/ref00.lab')
 
     # Plot the segments with no labels
     mir_eval.display.segments(intervals, labels, text=False)
@@ -61,7 +55,7 @@ def test_display_segment_text():
     plt.figure()
 
     # Load some segment data
-    intervals, labels = load_labeled_intervals('tests/data/segment/ref00.lab')
+    intervals, labels = load_labeled_intervals('data/segment/ref00.lab')
 
     # Plot the segments with no labels
     mir_eval.display.segments(intervals, labels, text=True)
@@ -74,7 +68,7 @@ def test_display_labeled_intervals():
     plt.figure()
 
     # Load some chord data
-    intervals, labels = load_labeled_intervals('tests/data/chord/ref01.lab')
+    intervals, labels = load_labeled_intervals('data/chord/ref01.lab')
 
     # Plot the chords with nothing fancy
     mir_eval.display.labeled_intervals(intervals, labels)
@@ -88,7 +82,7 @@ def test_display_labeled_intervals_noextend():
     plt.figure()
 
     # Load some chord data
-    intervals, labels = load_labeled_intervals('tests/data/chord/ref01.lab')
+    intervals, labels = load_labeled_intervals('data/chord/ref01.lab')
 
     # Plot the chords with nothing fancy
     ax = plt.axes()
@@ -107,8 +101,8 @@ def test_display_labeled_intervals_compare():
     plt.figure()
 
     # Load some chord data
-    ref_int, ref_labels = load_labeled_intervals('tests/data/chord/ref01.lab')
-    est_int, est_labels = load_labeled_intervals('tests/data/chord/est01.lab')
+    ref_int, ref_labels = load_labeled_intervals('data/chord/ref01.lab')
+    est_int, est_labels = load_labeled_intervals('data/chord/est01.lab')
 
     # Plot reference and estimates using label set extension
     mir_eval.display.labeled_intervals(ref_int, ref_labels,
@@ -127,8 +121,8 @@ def test_display_labeled_intervals_compare_noextend():
     plt.figure()
 
     # Load some chord data
-    ref_int, ref_labels = load_labeled_intervals('tests/data/chord/ref01.lab')
-    est_int, est_labels = load_labeled_intervals('tests/data/chord/est01.lab')
+    ref_int, ref_labels = load_labeled_intervals('data/chord/ref01.lab')
+    est_int, est_labels = load_labeled_intervals('data/chord/est01.lab')
 
     # Plot reference and estimate, but only use the reference labels
     mir_eval.display.labeled_intervals(ref_int, ref_labels,
@@ -148,8 +142,8 @@ def test_display_labeled_intervals_compare_common():
     plt.figure()
 
     # Load some chord data
-    ref_int, ref_labels = load_labeled_intervals('tests/data/chord/ref01.lab')
-    est_int, est_labels = load_labeled_intervals('tests/data/chord/est01.lab')
+    ref_int, ref_labels = load_labeled_intervals('data/chord/ref01.lab')
+    est_int, est_labels = load_labeled_intervals('data/chord/est01.lab')
 
     label_set = list(sorted(set(ref_labels) | set(est_labels)))
 
@@ -171,8 +165,8 @@ def test_display_hierarchy_nolabel():
     plt.figure()
 
     # Load some chord data
-    int0, lab0 = load_labeled_intervals('tests/data/hierarchy/ref00.lab')
-    int1, lab1 = load_labeled_intervals('tests/data/hierarchy/ref01.lab')
+    int0, lab0 = load_labeled_intervals('data/hierarchy/ref00.lab')
+    int1, lab1 = load_labeled_intervals('data/hierarchy/ref01.lab')
 
     # Plot reference and estimate with a common label set
     mir_eval.display.hierarchy([int0, int1],
@@ -188,8 +182,8 @@ def test_display_hierarchy_label():
     plt.figure()
 
     # Load some chord data
-    int0, lab0 = load_labeled_intervals('tests/data/hierarchy/ref00.lab')
-    int1, lab1 = load_labeled_intervals('tests/data/hierarchy/ref01.lab')
+    int0, lab0 = load_labeled_intervals('data/hierarchy/ref00.lab')
+    int1, lab1 = load_labeled_intervals('data/hierarchy/ref01.lab')
 
     # Plot reference and estimate with a common label set
     mir_eval.display.hierarchy([int0, int1],
@@ -204,8 +198,8 @@ def test_display_hierarchy_label():
 def test_pitch_hz():
     plt.figure()
 
-    ref_times, ref_freqs = load_labeled_events('tests/data/melody/ref00.txt')
-    est_times, est_freqs = load_labeled_events('tests/data/melody/est00.txt')
+    ref_times, ref_freqs = load_labeled_events('data/melody/ref00.txt')
+    est_times, est_freqs = load_labeled_events('data/melody/est00.txt')
 
     # Plot pitches on a Hz scale
     mir_eval.display.pitch(ref_times, ref_freqs, unvoiced=True,
@@ -220,7 +214,7 @@ def test_pitch_hz():
 def test_pitch_midi():
     plt.figure()
 
-    times, freqs = load_labeled_events('tests/data/melody/ref00.txt')
+    times, freqs = load_labeled_events('data/melody/ref00.txt')
 
     # Plot pitches on a midi scale with note tickers
     mir_eval.display.pitch(times, freqs, midi=True)
@@ -232,7 +226,7 @@ def test_pitch_midi():
 def test_pitch_midi_hz():
     plt.figure()
 
-    times, freqs = load_labeled_events('tests/data/melody/ref00.txt')
+    times, freqs = load_labeled_events('data/melody/ref00.txt')
 
     # Plot pitches on a midi scale with note tickers
     mir_eval.display.pitch(times, freqs, midi=True)
@@ -245,7 +239,7 @@ def test_pitch_midi_hz():
 def test_multipitch_hz_unvoiced():
     plt.figure()
 
-    times, pitches = load_ragged_time_series('tests/data/multipitch/est01.txt')
+    times, pitches = load_ragged_time_series('data/multipitch/est01.txt')
 
     # Plot pitches on a midi scale with note tickers
     mir_eval.display.multipitch(times, pitches, midi=False, unvoiced=True)
@@ -256,7 +250,7 @@ def test_multipitch_hz_unvoiced():
 def test_multipitch_hz_voiced():
     plt.figure()
 
-    times, pitches = load_ragged_time_series('tests/data/multipitch/est01.txt')
+    times, pitches = load_ragged_time_series('data/multipitch/est01.txt')
 
     mir_eval.display.multipitch(times, pitches, midi=False, unvoiced=False)
 
@@ -266,8 +260,8 @@ def test_multipitch_hz_voiced():
 def test_multipitch_midi():
     plt.figure()
 
-    ref_t, ref_p = load_ragged_time_series('tests/data/multipitch/ref01.txt')
-    est_t, est_p = load_ragged_time_series('tests/data/multipitch/est01.txt')
+    ref_t, ref_p = load_ragged_time_series('data/multipitch/ref01.txt')
+    est_t, est_p = load_ragged_time_series('data/multipitch/est01.txt')
 
     # Plot pitches on a midi scale with note tickers
     mir_eval.display.multipitch(ref_t, ref_p, midi=True,
@@ -283,8 +277,8 @@ def test_multipitch_midi():
 def test_pianoroll():
     plt.figure()
 
-    ref_t, ref_p = load_valued_intervals('tests/data/transcription/ref04.txt')
-    est_t, est_p = load_valued_intervals('tests/data/transcription/est04.txt')
+    ref_t, ref_p = load_valued_intervals('data/transcription/ref04.txt')
+    est_t, est_p = load_valued_intervals('data/transcription/est04.txt')
 
     mir_eval.display.piano_roll(ref_t, ref_p,
                                 label='Reference', alpha=0.5)
@@ -299,8 +293,8 @@ def test_pianoroll():
 def test_pianoroll_midi():
     plt.figure()
 
-    ref_t, ref_p = load_valued_intervals('tests/data/transcription/ref04.txt')
-    est_t, est_p = load_valued_intervals('tests/data/transcription/est04.txt')
+    ref_t, ref_p = load_valued_intervals('data/transcription/ref04.txt')
+    est_t, est_p = load_valued_intervals('data/transcription/est04.txt')
 
     ref_midi = mir_eval.util.hz_to_midi(ref_p)
     est_midi = mir_eval.util.hz_to_midi(est_p)
@@ -327,9 +321,9 @@ def test_ticker_midi_zoom():
 def test_separation():
     plt.figure()
 
-    x0, fs = load_wav('tests/data/separation/ref05/0.wav')
-    x1, fs = load_wav('tests/data/separation/ref05/1.wav')
-    x2, fs = load_wav('tests/data/separation/ref05/2.wav')
+    x0, fs = load_wav('data/separation/ref05/0.wav')
+    x1, fs = load_wav('data/separation/ref05/1.wav')
+    x2, fs = load_wav('data/separation/ref05/2.wav')
 
     mir_eval.display.separation([x0, x1, x2], fs=fs)
 
@@ -339,9 +333,9 @@ def test_separation():
 def test_separation_label():
     plt.figure()
 
-    x0, fs = load_wav('tests/data/separation/ref05/0.wav')
-    x1, fs = load_wav('tests/data/separation/ref05/1.wav')
-    x2, fs = load_wav('tests/data/separation/ref05/2.wav')
+    x0, fs = load_wav('data/separation/ref05/0.wav')
+    x1, fs = load_wav('data/separation/ref05/1.wav')
+    x2, fs = load_wav('data/separation/ref05/2.wav')
 
     mir_eval.display.separation([x0, x1, x2], fs=fs,
                                 labels=['Alice', 'Bob', 'Carol'])
@@ -355,8 +349,8 @@ def test_events():
     plt.figure()
 
     # Load some event data
-    beats_ref = mir_eval.io.load_events('tests/data/beat/ref00.txt')[:30]
-    beats_est = mir_eval.io.load_events('tests/data/beat/est00.txt')[:30]
+    beats_ref = mir_eval.io.load_events('data/beat/ref00.txt')[:30]
+    beats_est = mir_eval.io.load_events('data/beat/est00.txt')[:30]
 
     # Plot both with labels
     mir_eval.display.events(beats_ref, label='reference')
@@ -370,7 +364,7 @@ def test_labeled_events():
     plt.figure()
 
     # Load some event data
-    beats_ref = mir_eval.io.load_events('tests/data/beat/ref00.txt')[:10]
+    beats_ref = mir_eval.io.load_events('data/beat/ref00.txt')[:10]
 
     labels = list('abcdefghijklmnop')
     # Plot both with labels

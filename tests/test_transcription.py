@@ -10,9 +10,9 @@ import warnings
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'tests/data/transcription/ref*.txt'
-EST_GLOB = 'tests/data/transcription/est*.txt'
-SCORES_GLOB = 'tests/data/transcription/output*.json'
+REF_GLOB = 'data/transcription/ref*.txt'
+EST_GLOB = 'data/transcription/est*.txt'
+SCORES_GLOB = 'data/transcription/output*.json'
 
 REF = np.array([
     [0.100, 0.300, 220.000],
