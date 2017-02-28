@@ -25,7 +25,7 @@ setup(
     license='MIT',
     install_requires=[
         'numpy >= 1.7.0',
-        'scipy >= 0.9.0',
+        'scipy >= 0.14.0',
         'future',
         'six'
     ],
