@@ -43,6 +43,9 @@ Metrics
 * :func:`mir_eval.segment.mutual_information`: Computes the standard,
   normalized, and adjusted mutual information of sampled reference and
   estimated segments
+* :func:`mir_eval.segment.vmeasure`: Computes the V-Measure, which is similar
+  to the conditional entropy metrics, but uses the marginal distributions
+  as normalization rather than the maximum entropy distribution.
 '''
 
 import collections
@@ -1039,6 +1042,76 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     return score_over, score_under, f_measure
 
 
+def vmeasure(reference_intervals, reference_labels, estimated_intervals,
+             estimated_labels, frame_size=0.1, beta=1.0):
+    """Frame-clustering segmentation: v-measure
+
+    Computes cross-entropy of cluster assignment, normalized by the
+    marginal-entropy.
+
+    This is equivalent to `nce(..., marginal=True)`.
+
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> # Trim or pad the estimate to match reference timing
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
+    ...                                               ref_labels,
+    ...                                               t_min=0)
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, t_min=0, t_max=ref_intervals.max())
+    >>> V_precision, V_recall, V_F = mir_eval.structure.vmeasure(ref_intervals,
+    ...                                                          ref_labels,
+    ...                                                          est_intervals,
+    ...                                                          est_labels)
+
+    Parameters
+    ----------
+    reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+    reference_labels : list, shape=(n,)
+        reference segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+    estimated_intervals : np.ndarray, shape=(m, 2)
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+    estimated_labels : list, shape=(m,)
+        estimated segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+    frame_size : float > 0
+        length (in seconds) of frames for clustering
+        (Default value = 0.1)
+    beta : float > 0
+        beta for F-measure
+        (Default value = 1.0)
+
+    Returns
+    -------
+    V_precision
+        Over-clustering score:
+        ``1 - H(y_est | y_ref) / log(|y_est|)``
+        If `|y_est|==1`, then `V_over` will be 0.
+    V_recall
+        Under-clustering score:
+        ``1 - H(y_ref | y_est) / log(|y_ref|)``
+        If `|y_ref|==1`, then `V_under` will be 0.
+    V_F
+        F-measure for (S_over, S_under)
+
+    """
+
+    return nce(reference_intervals, reference_labels,
+               estimated_intervals, estimated_labels,
+               frame_size=frame_size, beta=beta,
+               marginal=True)
+
+
 def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
@@ -1131,6 +1204,11 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     # Conditional entropy metrics
     scores['NCE Over'], scores['NCE Under'], scores['NCE F-measure'] = \
         util.filter_kwargs(nce, ref_intervals, ref_labels, est_intervals,
+                           est_labels, **kwargs)
+
+    # V-measure metrics
+    scores['V Precision'], scores['V Recall'], scores['V-measure'] = \
+        util.filter_kwargs(vmeasure, ref_intervals, ref_labels, est_intervals,
                            est_labels, **kwargs)
 
     return scores
