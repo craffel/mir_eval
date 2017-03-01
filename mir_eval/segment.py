@@ -964,17 +964,24 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     marginal : bool
         If `False`, normalize conditional entropy by uniform entropy.
         If `True`, normalize conditional entropy by the marginal entropy.
+        (Default value = False)
 
     Returns
     -------
     S_over
         Over-clustering score:
-        ``1 - H(y_est | y_ref) / log(|y_est|)``
+        - For `marginal=False`, ``1 - H(y_est | y_ref) / log(|y_est|)``
+        - For `marginal=True`, ``1 - H(y_est | y_ref) / H(y_est)``
+
         If `|y_est|==1`, then `S_over` will be 0.
+
     S_under
         Under-clustering score:
-        ``1 - H(y_ref | y_est) / log(|y_ref|)``
+        - For `marginal=False`, ``1 - H(y_ref | y_est) / log(|y_ref|)``
+        - For `marginal=True`, ``1 - H(y_ref | y_est) / H(y_ref)``
+
         If `|y_ref|==1`, then `S_under` will be 0.
+
     S_F
         F-measure for (S_over, S_under)
 
@@ -1020,6 +1027,7 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     pred_given_ref = p_ref.dot(scipy.stats.entropy(contingency.T, base=2))
 
     if marginal:
+        # Normalize conditional entropy by marginal entropy
         z_ref = scipy.stats.entropy(p_ref, base=2)
         z_est = scipy.stats.entropy(p_est, base=2)
     else:
@@ -1092,14 +1100,18 @@ def vmeasure(reference_intervals, reference_labels, estimated_intervals,
     -------
     V_precision
         Over-clustering score:
-        ``1 - H(y_est | y_ref) / log(|y_est|)``
+        ``1 - H(y_est | y_ref) / H(y_est)``
+
         If `|y_est|==1`, then `V_over` will be 0.
+
     V_recall
         Under-clustering score:
-        ``1 - H(y_ref | y_est) / log(|y_ref|)``
+        ``1 - H(y_ref | y_est) / H(y_ref)``
+
         If `|y_ref|==1`, then `V_under` will be 0.
+
     V_F
-        F-measure for (S_over, S_under)
+        F-measure for (V_precision, V_recall)
 
     """
 
