@@ -994,14 +994,18 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     -------
     S_over
         Over-clustering score:
+
         - For `marginal=False`, ``1 - H(y_est | y_ref) / log(|y_est|)``
+
         - For `marginal=True`, ``1 - H(y_est | y_ref) / H(y_est)``
 
         If `|y_est|==1`, then `S_over` will be 0.
 
     S_under
         Under-clustering score:
+
         - For `marginal=False`, ``1 - H(y_ref | y_est) / log(|y_ref|)``
+
         - For `marginal=True`, ``1 - H(y_ref | y_est) / H(y_ref)``
 
         If `|y_ref|==1`, then `S_under` will be 0.
@@ -1126,13 +1130,13 @@ def vmeasure(reference_intervals, reference_labels, estimated_intervals,
         Over-clustering score:
         ``1 - H(y_est | y_ref) / H(y_est)``
 
-        If `|y_est|==1`, then `V_over` will be 0.
+        If `|y_est|==1`, then `V_precision` will be 0.
 
     V_recall
         Under-clustering score:
         ``1 - H(y_ref | y_est) / H(y_ref)``
 
-        If `|y_ref|==1`, then `V_under` will be 0.
+        If `|y_ref|==1`, then `V_recall` will be 0.
 
     V_F
         F-measure for (V_precision, V_recall)
