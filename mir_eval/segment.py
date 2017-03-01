@@ -28,11 +28,12 @@ Metrics
 
 * :func:`mir_eval.segment.detection`: An estimated boundary is considered
   correct if it falls within a window around a reference boundary
+  [#turnbull2007]_
 * :func:`mir_eval.segment.deviation`: Computes the median absolute time
   difference from a reference boundary to its nearest estimated boundary, and
-  vice versa
+  vice versa [#turnbull2007]_
 * :func:`mir_eval.segment.pairwise`: For classifying pairs of sampled time
-  instants as belonging to the same structural component
+  instants as belonging to the same structural component [#levy2008]_
 * :func:`mir_eval.segment.rand_index`: Clusters reference and estimated
   annotations and compares them by the Rand Index
 * :func:`mir_eval.segment.ari`: Computes the Rand index, adjusted for chance
@@ -40,12 +41,35 @@ Metrics
   labels as samples of random variables :math:`Y_R, Y_E` from which the
   conditional entropy of :math:`Y_R` given :math:`Y_E` (Under-Segmentation) and
   :math:`Y_E` given :math:`Y_R` (Over-Segmentation) are estimated
+  [#lukashevich2008]_
 * :func:`mir_eval.segment.mutual_information`: Computes the standard,
   normalized, and adjusted mutual information of sampled reference and
   estimated segments
 * :func:`mir_eval.segment.vmeasure`: Computes the V-Measure, which is similar
   to the conditional entropy metrics, but uses the marginal distributions
-  as normalization rather than the maximum entropy distribution.
+  as normalization rather than the maximum entropy distribution
+  [#rosenberg2007]_
+
+
+References
+----------
+    .. [#turnbull2007] Turnbull, D., Lanckriet, G. R., Pampalk, E.,
+        & Goto, M.  A Supervised Approach for Detecting Boundaries in Music
+        Using Difference Features and Boosting. In ISMIR (pp. 51-54).
+
+    .. [#levy2008] Levy, M., & Sandler, M.
+        Structural segmentation of musical audio by constrained clustering.
+        IEEE transactions on audio, speech, and language processing, 16(2),
+        318-326.
+
+    .. [#lukashevich2008] Lukashevich, H. M.
+        Towards Quantitative Measures of Evaluating Song Segmentation.
+        In ISMIR (pp. 375-380).
+
+    .. [#rosenberg2007] Rosenberg, A., & Hirschberg, J.
+        V-Measure: A Conditional Entropy-Based External Cluster Evaluation
+        Measure.
+        In EMNLP-CoNLL (Vol. 7, pp. 410-420).
 '''
 
 import collections
