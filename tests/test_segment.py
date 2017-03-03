@@ -149,7 +149,8 @@ def test_segment_functions():
                    mir_eval.segment.rand_index,
                    mir_eval.segment.ari,
                    mir_eval.segment.mutual_information,
-                   mir_eval.segment.nce]:
+                   mir_eval.segment.nce,
+                   mir_eval.segment.vmeasure]:
         yield (__unit_test_structure_function, metric)
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
