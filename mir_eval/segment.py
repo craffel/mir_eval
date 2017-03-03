@@ -28,11 +28,12 @@ Metrics
 
 * :func:`mir_eval.segment.detection`: An estimated boundary is considered
   correct if it falls within a window around a reference boundary
+  [#turnbull2007]_
 * :func:`mir_eval.segment.deviation`: Computes the median absolute time
   difference from a reference boundary to its nearest estimated boundary, and
-  vice versa
+  vice versa [#turnbull2007]_
 * :func:`mir_eval.segment.pairwise`: For classifying pairs of sampled time
-  instants as belonging to the same structural component
+  instants as belonging to the same structural component [#levy2008]_
 * :func:`mir_eval.segment.rand_index`: Clusters reference and estimated
   annotations and compares them by the Rand Index
 * :func:`mir_eval.segment.ari`: Computes the Rand index, adjusted for chance
@@ -40,9 +41,35 @@ Metrics
   labels as samples of random variables :math:`Y_R, Y_E` from which the
   conditional entropy of :math:`Y_R` given :math:`Y_E` (Under-Segmentation) and
   :math:`Y_E` given :math:`Y_R` (Over-Segmentation) are estimated
+  [#lukashevich2008]_
 * :func:`mir_eval.segment.mutual_information`: Computes the standard,
   normalized, and adjusted mutual information of sampled reference and
   estimated segments
+* :func:`mir_eval.segment.vmeasure`: Computes the V-Measure, which is similar
+  to the conditional entropy metrics, but uses the marginal distributions
+  as normalization rather than the maximum entropy distribution
+  [#rosenberg2007]_
+
+
+References
+----------
+    .. [#turnbull2007] Turnbull, D., Lanckriet, G. R., Pampalk, E.,
+        & Goto, M.  A Supervised Approach for Detecting Boundaries in Music
+        Using Difference Features and Boosting. In ISMIR (pp. 51-54).
+
+    .. [#levy2008] Levy, M., & Sandler, M.
+        Structural segmentation of musical audio by constrained clustering.
+        IEEE transactions on audio, speech, and language processing, 16(2),
+        318-326.
+
+    .. [#lukashevich2008] Lukashevich, H. M.
+        Towards Quantitative Measures of Evaluating Song Segmentation.
+        In ISMIR (pp. 375-380).
+
+    .. [#rosenberg2007] Rosenberg, A., & Hirschberg, J.
+        V-Measure: A Conditional Entropy-Based External Cluster Evaluation
+        Measure.
+        In EMNLP-CoNLL (Vol. 7, pp. 410-420).
 '''
 
 import collections
@@ -912,7 +939,7 @@ def mutual_information(reference_intervals, reference_labels,
 
 
 def nce(reference_intervals, reference_labels, estimated_intervals,
-        estimated_labels, frame_size=0.1, beta=1.0):
+        estimated_labels, frame_size=0.1, beta=1.0, marginal=False):
     """Frame-clustering segmentation: normalized conditional entropy
 
     Computes cross-entropy of cluster assignment, normalized by the
@@ -958,16 +985,31 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
         beta for F-measure
         (Default value = 1.0)
 
+    marginal : bool
+        If `False`, normalize conditional entropy by uniform entropy.
+        If `True`, normalize conditional entropy by the marginal entropy.
+        (Default value = False)
+
     Returns
     -------
     S_over
         Over-clustering score:
-        ``1 - H(y_est | y_ref) / log(|y_est|)``
+
+        - For `marginal=False`, ``1 - H(y_est | y_ref) / log(|y_est|)``
+
+        - For `marginal=True`, ``1 - H(y_est | y_ref) / H(y_est)``
+
         If `|y_est|==1`, then `S_over` will be 0.
+
     S_under
         Under-clustering score:
-        ``1 - H(y_ref | y_est) / log(|y_ref|)``
+
+        - For `marginal=False`, ``1 - H(y_ref | y_est) / log(|y_ref|)``
+
+        - For `marginal=True`, ``1 - H(y_ref | y_est) / H(y_ref)``
+
         If `|y_ref|==1`, then `S_under` will be 0.
+
     S_F
         F-measure for (S_over, S_under)
 
@@ -1009,23 +1051,102 @@ def nce(reference_intervals, reference_labels, estimated_intervals,
     # sum_i P[true = i | estimated = j] log P[true = i | estimated = j]
     # entropy sums over axis=0, which is true labels
 
-    # The following scipy.stats.entropy calls are equivalent to
-    # scipy.stats.entropy(contingency, base=2)
-    # However the `base` kwarg has only been introduced in scipy 0.14.0
-    true_given_est = p_est.dot(scipy.stats.entropy(contingency) / np.log(2))
-    pred_given_ref = p_ref.dot(scipy.stats.entropy(contingency.T) / np.log(2))
+    true_given_est = p_est.dot(scipy.stats.entropy(contingency, base=2))
+    pred_given_ref = p_ref.dot(scipy.stats.entropy(contingency.T, base=2))
+
+    if marginal:
+        # Normalize conditional entropy by marginal entropy
+        z_ref = scipy.stats.entropy(p_ref, base=2)
+        z_est = scipy.stats.entropy(p_est, base=2)
+    else:
+        z_ref = np.log2(contingency.shape[0])
+        z_est = np.log2(contingency.shape[1])
 
     score_under = 0.0
-    if contingency.shape[0] > 1:
-        score_under = 1. - true_given_est / np.log2(contingency.shape[0])
+    if z_ref > 0:
+        score_under = 1. - true_given_est / z_ref
 
     score_over = 0.0
-    if contingency.shape[1] > 1:
-        score_over = 1. - pred_given_ref / np.log2(contingency.shape[1])
+    if z_est > 0:
+        score_over = 1. - pred_given_ref / z_est
 
     f_measure = util.f_measure(score_over, score_under, beta=beta)
 
     return score_over, score_under, f_measure
+
+
+def vmeasure(reference_intervals, reference_labels, estimated_intervals,
+             estimated_labels, frame_size=0.1, beta=1.0):
+    """Frame-clustering segmentation: v-measure
+
+    Computes cross-entropy of cluster assignment, normalized by the
+    marginal-entropy.
+
+    This is equivalent to `nce(..., marginal=True)`.
+
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> # Trim or pad the estimate to match reference timing
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.util.adjust_intervals(ref_intervals,
+    ...                                               ref_labels,
+    ...                                               t_min=0)
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.util.adjust_intervals(
+    ...     est_intervals, est_labels, t_min=0, t_max=ref_intervals.max())
+    >>> V_precision, V_recall, V_F = mir_eval.structure.vmeasure(ref_intervals,
+    ...                                                          ref_labels,
+    ...                                                          est_intervals,
+    ...                                                          est_labels)
+
+    Parameters
+    ----------
+    reference_intervals : np.ndarray, shape=(n, 2)
+        reference segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+    reference_labels : list, shape=(n,)
+        reference segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+    estimated_intervals : np.ndarray, shape=(m, 2)
+        estimated segment intervals, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+    estimated_labels : list, shape=(m,)
+        estimated segment labels, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+    frame_size : float > 0
+        length (in seconds) of frames for clustering
+        (Default value = 0.1)
+    beta : float > 0
+        beta for F-measure
+        (Default value = 1.0)
+
+    Returns
+    -------
+    V_precision
+        Over-clustering score:
+        ``1 - H(y_est | y_ref) / H(y_est)``
+
+        If `|y_est|==1`, then `V_precision` will be 0.
+
+    V_recall
+        Under-clustering score:
+        ``1 - H(y_ref | y_est) / H(y_ref)``
+
+        If `|y_ref|==1`, then `V_recall` will be 0.
+
+    V_F
+        F-measure for (V_precision, V_recall)
+
+    """
+
+    return nce(reference_intervals, reference_labels,
+               estimated_intervals, estimated_labels,
+               frame_size=frame_size, beta=beta,
+               marginal=True)
 
 
 def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
@@ -1120,6 +1241,11 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     # Conditional entropy metrics
     scores['NCE Over'], scores['NCE Under'], scores['NCE F-measure'] = \
         util.filter_kwargs(nce, ref_intervals, ref_labels, est_intervals,
+                           est_labels, **kwargs)
+
+    # V-measure metrics
+    scores['V Precision'], scores['V Recall'], scores['V-measure'] = \
+        util.filter_kwargs(vmeasure, ref_intervals, ref_labels, est_intervals,
                            est_labels, **kwargs)
 
     return scores
