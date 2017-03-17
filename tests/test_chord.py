@@ -65,7 +65,7 @@ def test_validate_chord_label():
         yield (mir_eval.chord.validate_chord_label, chord_label)
 
     invalid_labels = ["C::maj", "C//5", "C((4)", "C5))",
-                      "C:maj(*3/3", "Cmaj*3/3)"]
+                      "C:maj(*3/3", "Cmaj*3/3)", 'asdf']
 
     for chord_label in invalid_labels:
         yield (__check_exception, mir_eval.chord.validate_chord_label,
