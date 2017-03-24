@@ -7,8 +7,9 @@ import numpy as np
 from scipy.signal import spectrogram
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, Patch
+from matplotlib.patches import Rectangle
 from matplotlib.ticker import FuncFormatter, MultipleLocator
+from matplotlib.ticker import Formatter
 from matplotlib.colors import LinearSegmentedColormap, LogNorm, ColorConverter
 from matplotlib.collections import BrokenBarHCollection
 
@@ -304,10 +305,11 @@ def labeled_intervals(intervals, labels, label_set=None,
         ax.axhline(len(label_set), color='k', alpha=0.5)
 
     if tick:
-        ax.set_yticks([])
         ax.grid('on', axis='y')
+        ax.set_yticks([])
         ax.set_yticks(base)
         ax.set_yticklabels(ticks, va='bottom')
+        ax.yaxis.set_major_formatter(IntervalFormatter(base, ticks))
 
     if base.size:
         __expand_limits(ax, [base.min(), (base + height).max()], which='y')
@@ -315,6 +317,26 @@ def labeled_intervals(intervals, labels, label_set=None,
         __expand_limits(ax, [intervals.min(), intervals.max()], which='x')
 
     return ax
+
+
+class IntervalFormatter(Formatter):
+    '''Ticker formatter for labeled interval plots.
+
+    Parameters
+    ----------
+    base : array-like of int
+        The base positions of each label
+
+    ticks : array-like of string
+        The labels for the ticks
+    '''
+    def __init__(self, base, ticks):
+
+        self._map = {int(k): v for k, v in zip(base, ticks)}
+
+    def __call__(self, x, pos=None):
+
+        return self._map.get(int(x), '')
 
 
 def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
