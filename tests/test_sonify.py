@@ -56,6 +56,13 @@ def test_chords():
         assert len(signal) == 11*fs
 
 
+def test_chord_x():
+    # This test verifies that X sonifies as silence
+    intervals = np.array([[0, 1]])
+    signal = mir_eval.sonify.chords(['X'], intervals, 8000)
+    assert not np.any(signal), signal
+
+
 def test_pitch_contour():
 
     # Generate some random pitch

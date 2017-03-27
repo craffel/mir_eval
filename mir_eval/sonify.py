@@ -68,6 +68,9 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     gram : np.ndarray
         ``gram[n, m]`` is the magnitude of ``frequencies[n]``
         from ``times[m]`` to ``times[m + 1]``
+
+        Non-positive magnitudes are interpreted as silence.
+
     frequencies : np.ndarray
         array of size ``gram.shape[0]`` denoting the frequency of
         each row of gram
@@ -125,6 +128,9 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
         # Use a flatiter to simulate a long 1D buffer
         return long_signal.flat
 
+    # Threshold the tfgram to remove non-positive values
+    gram = np.maximum(gram, 0)
+
     # Pre-allocate output signal
     output = np.zeros(length)
     for n, frequency in enumerate(frequencies):
@@ -138,8 +144,11 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
             # Sum into the aggregate output waveform
             output[start:end] += wave[start:end] * gram[n, m]
 
-    # Normalize
-    output /= np.abs(output).max()
+    # Normalize, but only if there's non-zero values
+    norm = np.abs(output).max()
+    if norm >= np.finfo(output.dtype).tiny:
+        output /= norm
+
     return output
 
 
