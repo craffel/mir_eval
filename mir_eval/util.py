@@ -3,6 +3,7 @@ This submodule collects useful functionality required across the task
 submodules, such as preprocessing, validation, and common computations.
 '''
 
+import bisect
 import os
 import inspect
 import six
@@ -129,11 +130,11 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
 def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     """Assign labels to a set of points in time given a set of intervals.
 
-    Note: Times outside of the known boundaries are mapped to None by default.
+    Time points that do not lie within an interval are mapped to `fill_value`.
 
     Parameters
     ----------
-    intervals : np.ndarray, shape=(n, d)
+    intervals : np.ndarray, shape=(n, 2)
         An array of time intervals, as returned by
         :func:`mir_eval.io.load_intervals()`.
         The ``i`` th interval spans time ``intervals[i, 0]`` to
@@ -145,7 +146,7 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
         The annotation for each interval
 
     time_points : array_like, shape=(m,)
-        Points in time to assign labels.
+        Points in time to assign labels.  These must be in ascending order.
 
     fill_value : type(labels[0])
         Object to use for the label with out-of-range time points.
@@ -158,20 +159,13 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
 
     """
 
-    # Sort the intervals by start time
-    intervals, labels = sort_labeled_intervals(intervals, labels)
+    aligned_labels = [fill_value] * len(time_points)
 
-    start, end = intervals.min(), intervals.max()
+    for (start, end), lab in zip(intervals, labels):
+        start_t = bisect.bisect_left(time_points, start)
+        end_t = bisect.bisect_right(time_points, end)
+        aligned_labels[start_t:end_t] = [lab] * (end_t - start_t)
 
-    aligned_labels = []
-
-    for tpoint in time_points:
-        # This logic isn't correct if there's a gap in intervals
-        if start <= tpoint <= end:
-            index = np.argmax(intervals[:, 0] > tpoint) - 1
-            aligned_labels.append(labels[index])
-        else:
-            aligned_labels.append(fill_value)
     return aligned_labels
 
 
