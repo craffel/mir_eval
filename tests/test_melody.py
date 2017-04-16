@@ -13,9 +13,9 @@ import warnings
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'data/melody/ref*.txt'
-EST_GLOB = 'data/melody/est*.txt'
-SCORES_GLOB = 'data/melody/output*.json'
+REF_GLOB = 'tests/data/melody/ref*.txt'
+EST_GLOB = 'tests/data/melody/est*.txt'
+SCORES_GLOB = 'tests/data/melody/output*.json'
 
 
 def test_hz2cents():
