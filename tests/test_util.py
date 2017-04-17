@@ -21,6 +21,16 @@ def test_interpolate_intervals():
             expected_ans)
 
 
+def test_interpolate_intervals_gap():
+    """Check that an interval set is interpolated properly, with gaps."""
+    labels = list('abc')
+    intervals = np.array([[0.5, 1.0], [1.5, 2.0], [2.5, 3.0]])
+    time_points = [0.0, 0.75, 1.25, 1.75, 2.25, 2.75, 3.5]
+    expected_ans = ['N', 'a', 'N', 'b', 'N', 'c', 'N']
+    assert (util.interpolate_intervals(intervals, labels, time_points, 'N') ==
+            expected_ans)
+
+
 @nose.tools.raises(ValueError)
 def test_interpolate_intervals_badtime():
     """Check that interpolate_intervals throws an exception if
