@@ -129,11 +129,11 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
 def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     """Assign labels to a set of points in time given a set of intervals.
 
-    Note: Times outside of the known boundaries are mapped to None by default.
+    Time points that do not lie within an interval are mapped to `fill_value`.
 
     Parameters
     ----------
-    intervals : np.ndarray, shape=(n, d)
+    intervals : np.ndarray, shape=(n, 2)
         An array of time intervals, as returned by
         :func:`mir_eval.io.load_intervals()`.
         The ``i`` th interval spans time ``intervals[i, 0]`` to
@@ -145,7 +145,8 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
         The annotation for each interval
 
     time_points : array_like, shape=(m,)
-        Points in time to assign labels.
+        Points in time to assign labels.  These must be in
+        non-decreasing order.
 
     fill_value : type(labels[0])
         Object to use for the label with out-of-range time points.
@@ -156,22 +157,26 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     aligned_labels : list
         Labels corresponding to the given time points.
 
+    Raises
+    ------
+    ValueError
+        If `time_points` is not in non-decreasing order.
     """
 
-    # Sort the intervals by start time
-    intervals, labels = sort_labeled_intervals(intervals, labels)
+    # Verify that time_points is sorted
+    time_points = np.asarray(time_points)
 
-    start, end = intervals.min(), intervals.max()
+    if np.any(time_points[1:] < time_points[:-1]):
+        raise ValueError('time_points must be in non-decreasing order')
 
-    aligned_labels = []
+    aligned_labels = [fill_value] * len(time_points)
 
-    for tpoint in time_points:
-        # This logic isn't correct if there's a gap in intervals
-        if start <= tpoint <= end:
-            index = np.argmax(intervals[:, 0] > tpoint) - 1
-            aligned_labels.append(labels[index])
-        else:
-            aligned_labels.append(fill_value)
+    starts = np.searchsorted(time_points, intervals[:, 0], side='left')
+    ends = np.searchsorted(time_points, intervals[:, 1], side='right')
+
+    for (start, end, lab) in zip(starts, ends, labels):
+        aligned_labels[start:end] = [lab] * (end - start)
+
     return aligned_labels
 
 
