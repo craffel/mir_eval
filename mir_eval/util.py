@@ -145,7 +145,8 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
         The annotation for each interval
 
     time_points : array_like, shape=(m,)
-        Points in time to assign labels.  These must be in ascending order.
+        Points in time to assign labels.  These must be in
+        non-decreasing order.
 
     fill_value : type(labels[0])
         Object to use for the label with out-of-range time points.
@@ -156,7 +157,17 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     aligned_labels : list
         Labels corresponding to the given time points.
 
+    Raises
+    ------
+    ValueError
+        If `time_points` is not in non-decreasing order.
     """
+
+    # Verify that time_points is sorted
+    time_points = np.asarray(time_points)
+
+    if np.any(time_points[1:] < time_points[:-1]):
+        raise ValueError('time_points must be in non-decreasing order')
 
     aligned_labels = [fill_value] * len(time_points)
 

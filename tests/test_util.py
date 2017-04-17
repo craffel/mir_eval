@@ -21,6 +21,17 @@ def test_interpolate_intervals():
             expected_ans)
 
 
+@nose.tools.raises(ValueError)
+def test_interpolate_intervals_badtime():
+    """Check that interpolate_intervals throws an exception if
+    input is unordered.
+    """
+    labels = list('abc')
+    intervals = np.array([(n, n + 1.0) for n in range(len(labels))])
+    time_points = [-1.0, 0.1, 0.9, 0.8, 2.3, 4.0]
+    mir_eval.util.interpolate_intervals(intervals, labels, time_points)
+
+
 def test_intervals_to_samples():
     """Check that an interval set is sampled properly, with boundaries
     conditions and out-of-range values.
