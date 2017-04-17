@@ -3,7 +3,6 @@ This submodule collects useful functionality required across the task
 submodules, such as preprocessing, validation, and common computations.
 '''
 
-import bisect
 import os
 import inspect
 import six
@@ -161,10 +160,11 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
 
     aligned_labels = [fill_value] * len(time_points)
 
-    for (start, end), lab in zip(intervals, labels):
-        start_t = bisect.bisect_left(time_points, start)
-        end_t = bisect.bisect_right(time_points, end)
-        aligned_labels[start_t:end_t] = [lab] * (end_t - start_t)
+    starts = np.searchsorted(time_points, intervals[:, 0], side='left')
+    ends = np.searchsorted(time_points, intervals[:, 1], side='right')
+
+    for (start, end, lab) in zip(starts, ends, labels):
+        aligned_labels[start:end] = [lab] * (end - start)
 
     return aligned_labels
 
