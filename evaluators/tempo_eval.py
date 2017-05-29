@@ -11,10 +11,11 @@ from __future__ import print_function
 import argparse
 import sys
 import os
-import eval_utilities
 import numpy as np
 
 import mir_eval
+
+from . import eval_utilities
 
 
 def process_arguments():
@@ -40,7 +41,8 @@ def process_arguments():
 
     return vars(parser.parse_args(sys.argv[1:]))
 
-if __name__ == '__main__':
+
+def main():
     # Get the parameters
     parameters = process_arguments()
 
@@ -66,3 +68,7 @@ if __name__ == '__main__':
     if parameters['output_file']:
         print('Saving results to: {}'.format(parameters['output_file']))
         eval_utilities.save_results(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()

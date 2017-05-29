@@ -33,5 +33,19 @@ setup(
         'display': ['matplotlib>=1.5.0',
                     'scipy>=0.16.0'],
         'testing': ['matplotlib>=2.0.0']
+    },
+    entry_points = {
+        'console_scripts':
+        ['beat_eval=evaluators.beat_eval:main',
+         'chord_eval=evaluators.chord_eval:main',
+         'melody_eval=evaluators.melody_eval:main',
+         'multipitch_eval=evaluators.multipitch_eval:main',
+         'onset_eval=evaluators.onset_eval:main',
+         'pattern_eval=evaluators.pattern_eval:main',
+         'segment_eval=evaluators.segment_eval:main',
+         'segment_hier_eval=evaluators.segment_hier_eval:main',
+         'separation_eval=evaluators.separation_eval:main',
+         'tempo_eval=evaluators.tempo_eval:main',
+         'transcription_eval=evaluators.transcription_eval:main']
     }
 )
