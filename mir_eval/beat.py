@@ -768,3 +768,8 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
                                                     **kwargs)
 
     return scores
+
+
+if __name__ == '__main__':
+    from evaluators.beat_eval import main
+    main()
