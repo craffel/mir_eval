@@ -801,7 +801,6 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     # Precision, recall and f-measure taking note offsets into account
     kwargs.setdefault('offset_ratio', 0.2)
     orig_offset_ratio = kwargs['offset_ratio']
-    print(kwargs['offset_ratio'])
     if kwargs['offset_ratio'] is not None:
         (scores['Precision'],
          scores['Recall'],
@@ -822,7 +821,7 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
                            
     kwargs['chroma'] = True
     # Precision, recall and f-measure taking note offsets into account
-    kwargs.setdefault('offset_ratio', 0.2)
+    kwargs['offset_ratio'] = orig_offset_ratio
     if kwargs['offset_ratio'] is not None:
         (scores['Chroma_Precision'],
          scores['Chroma_Recall'],
