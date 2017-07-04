@@ -177,6 +177,9 @@ def scale_degree_to_semitone(scale_degree):
     semitone : int
         Relative semitone of the scale degree, wrapped to a single octave
 
+    Raises
+    ------
+    InvalidChordException if `scale_degree` is invalid.
     """
     semitone = 0
     offset = 0
@@ -190,7 +193,8 @@ def scale_degree_to_semitone(scale_degree):
     semitone = SCALE_DEGREES.get(scale_degree, None)
     if semitone is None:
         raise InvalidChordException(
-            "Scale degree improperly formed: %s" % scale_degree)
+            "Scale degree improperly formed: {}, expected one of {}."
+            .format(scale_degree, list(SCALE_DEGREES.keys())))
     return semitone + offset
 
 
