@@ -72,7 +72,14 @@ def test_scale_degree_to_bitmap():
 
     for scale_degree, bitmap in zip(valid_degrees, valid_bitmaps):
         yield (__check_bitmaps, mir_eval.chord.scale_degree_to_bitmap,
-               (scale_degree,), np.array(bitmap))
+               (scale_degree, True, 12), np.array(bitmap))
+
+    yield (__check_bitmaps, mir_eval.chord.scale_degree_to_bitmap,
+           ('9', False, 12), np.array([0] * 12))
+
+    yield (__check_bitmaps, mir_eval.chord.scale_degree_to_bitmap,
+           ('9', False, 15),
+           np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]))
 
 
 def test_validate_chord_label():
@@ -161,8 +168,8 @@ def test_encode():
                        strict_bass_intervals):
         ''' Helper function for checking encode '''
         root, intervals, bass = mir_eval.chord.encode(
-          label, reduce_extended_chords=reduce_extended_chords,
-          strict_bass_intervals=strict_bass_intervals)
+            label, reduce_extended_chords=reduce_extended_chords,
+            strict_bass_intervals=strict_bass_intervals)
         assert root == expected_root, (root, expected_root)
         assert np.all(intervals == expected_intervals), (intervals,
                                                          expected_intervals)
