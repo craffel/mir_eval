@@ -58,8 +58,26 @@ def test_scale_degree_to_semitone():
                (scale_degree,), mir_eval.chord.InvalidChordException)
 
 
+def test_scale_degree_to_bitmap():
+
+    def __check_bitmaps(function, parameters, result):
+        actual = function(*parameters)
+        assert np.all(actual == result), (actual, result)
+
+    valid_degrees = ['3', '*3', 'b1', '9']
+    valid_bitmaps = [[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                     [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
+    for scale_degree, bitmap in zip(valid_degrees, valid_bitmaps):
+        yield (__check_bitmaps, mir_eval.chord.scale_degree_to_bitmap,
+               (scale_degree,), np.array(bitmap))
+
+
 def test_validate_chord_label():
-    valid_labels = ['C', 'Eb:min/5', 'A#:dim7', 'B:maj(*1,*5)/3', 'A#:sus4']
+    valid_labels = ['C', 'Eb:min/5', 'A#:dim7', 'B:maj(*1,*5)/3',
+                    'A#:sus4', 'A:(9,11)']
     # For valid labels, calling the function without an error = pass
     for chord_label in valid_labels:
         yield (mir_eval.chord.validate_chord_label, chord_label)
@@ -139,33 +157,44 @@ def test_rotate_bitmaps_to_roots():
 
 def test_encode():
     def __check_encode(label, expected_root, expected_intervals,
-                       expected_bass):
+                       expected_bass, reduce_extended_chords,
+                       strict_bass_intervals):
         ''' Helper function for checking encode '''
-        root, intervals, bass = mir_eval.chord.encode(label)
-        assert root == expected_root
-        assert np.all(intervals == expected_intervals)
-        assert bass == expected_bass
+        root, intervals, bass = mir_eval.chord.encode(
+          label, reduce_extended_chords=reduce_extended_chords,
+          strict_bass_intervals=strict_bass_intervals)
+        assert root == expected_root, (root, expected_root)
+        assert np.all(intervals == expected_intervals), (intervals,
+                                                         expected_intervals)
+        assert bass == expected_bass, (bass, expected_bass)
 
-    labels = ['B:maj(*1,*3)/5', 'G:dim', 'C:(3)/3']
-    expected_roots = [11, 7, 0]
+    labels = ['B:maj(*1,*3)/5', 'G:dim', 'C:(3)/3', 'A:9/b3']
+    expected_roots = [11, 7, 0, 9]
     expected_intervals = [[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
                           [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-                          [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]]
-    expected_bass = [7, 0, 4]
+                          [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+                          # Note that extended scale degrees are dropped.
+                          [1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0]]
+    expected_bass = [7, 0, 4, 3]
 
-    for label, e_root, e_interval, e_bass in zip(labels,
-                                                 expected_roots,
-                                                 expected_intervals,
-                                                 expected_bass):
-        yield (__check_encode, label, e_root, e_interval, e_bass)
+    args = zip(labels, expected_roots, expected_intervals, expected_bass)
+    for label, e_root, e_interval, e_bass in args:
+        yield (__check_encode, label, e_root, e_interval, e_bass, False, False)
 
     # Non-chord bass notes *must* be explicitly named as extensions when
     #   strict_bass_intervals == True
     yield (__check_exception, mir_eval.chord.encode,
            ('G:dim(4)/6', False, True), mir_eval.chord.InvalidChordException)
+
     # Otherwise, we can cut a little slack.
     yield (__check_encode, 'G:dim(4)/6', 7,
-                           [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0], 9)
+                           [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0], 9,
+                           False, False)
+
+    # Check that extended scale degrees are mapped back into pitch classes.
+    yield (__check_encode, 'A:9', 9,
+                           [1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0], 0,
+                           True, False)
 
 
 def test_encode_many():

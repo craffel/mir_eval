@@ -414,6 +414,7 @@ def split(chord_label, reduce_extended_chords=False):
 
     if reduce_extended_chords:
         quality, addl_scale_degrees = reduce_extended_quality(quality)
+        print(quality, addl_scale_degrees)
         scale_degrees.update(addl_scale_degrees)
 
     return [chord_root, quality, scale_degrees, bass]
