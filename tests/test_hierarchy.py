@@ -2,20 +2,22 @@
 Unit tests for mir_eval.hierarchy
 '''
 
-import numpy as np
-import mir_eval
-from nose.tools import raises
 from glob import glob
 import re
 
 import warnings
 import json
 
+import numpy as np
+import mir_eval
+
+from nose.tools import raises
+
+
 A_TOL = 1e-12
 
 
 def test_tmeasure_pass():
-
     # The estimate here gets none of the structure correct.
     ref = [[[0, 30]], [[0, 15], [15, 30]]]
     # convert to arrays
@@ -116,7 +118,109 @@ def test_tmeasure_fail_frame_size():
             yield __test, window, 2 * window
 
 
-def test_tmeasure_regression():
+def test_lmeasure_pass():
+
+    # The estimate here gets none of the structure correct.
+    ref = [[[0, 30]], [[0, 15], [15, 30]]]
+    ref_lab = [['A'], ['a', 'b']]
+
+    # convert to arrays
+    ref = [np.asarray(_) for _ in ref]
+
+    est = ref[:1]
+    est_lab = ref_lab[:1]
+
+    def __test(frame_size):
+        # The estimate should get 0 score here
+        scores = mir_eval.hierarchy.lmeasure(ref, ref_lab, est, est_lab,
+                                             frame_size=frame_size)
+
+        for k in scores:
+            assert k == 0.0
+
+        # The reference should get a perfect score here
+        scores = mir_eval.hierarchy.lmeasure(ref, ref_lab, ref, ref_lab,
+                                             frame_size=frame_size)
+
+        for k in scores:
+            assert k == 1.0
+
+    for frame_size in [0.1, 0.5, 1.0]:
+        yield __test, frame_size
+
+
+def test_lmeasure_warning():
+
+    # Warn if there are missing boundaries from one layer to the next
+    ref = [[[0, 5],
+            [5, 10]],
+           [[0, 10]]]
+
+    ref = [np.asarray(_) for _ in ref]
+    ref_lab = [['a', 'b'], ['A']]
+
+    warnings.resetwarnings()
+    with warnings.catch_warnings(record=True) as out:
+        mir_eval.hierarchy.lmeasure(ref, ref_lab, ref, ref_lab)
+
+        assert len(out) > 0
+        assert out[0].category is UserWarning
+        assert ('Segment hierarchy is inconsistent at level 1'
+                in str(out[0].message))
+
+
+def test_lmeasure_fail_span():
+
+    # Does not start at 0
+    ref = [[[1, 10]],
+           [[1, 5],
+            [5, 10]]]
+
+    ref_lab = [['A'], ['a', 'b']]
+
+    ref = [np.asarray(_) for _ in ref]
+
+    yield raises(ValueError)(mir_eval.hierarchy.lmeasure), ref, ref_lab, ref, ref_lab
+
+    # Does not end at the right time
+    ref = [[[0, 5]],
+           [[0, 5],
+            [5, 6]]]
+    ref = [np.asarray(_) for _ in ref]
+
+    yield raises(ValueError)(mir_eval.hierarchy.lmeasure), ref, ref_lab, ref, ref_lab
+
+    # Two annotations of different shape
+    ref = [[[0, 10]],
+           [[0, 5],
+            [5, 10]]]
+    ref = [np.asarray(_) for _ in ref]
+
+    est = [[[0, 15]],
+           [[0, 5],
+            [5, 15]]]
+    est = [np.asarray(_) for _ in est]
+
+    yield raises(ValueError)(mir_eval.hierarchy.lmeasure), ref, ref_lab, est, ref_lab
+
+
+def test_lmeasure_fail_frame_size():
+    ref = [[[0, 60]],
+           [[0, 30],
+            [30, 60]]]
+    ref = [np.asarray(_) for _ in ref]
+    ref_lab = [['A'], ['a', 'b']]
+
+    @raises(ValueError)
+    def __test(frame_size):
+        mir_eval.hierarchy.lmeasure(ref, ref_lab, ref, ref_lab,
+                                    frame_size=frame_size)
+
+    for frame_size in [-1, 0]:
+        yield __test, frame_size
+
+
+def test_hierarchy_regression():
 
     ref_files = sorted(glob('data/hierarchy/ref*.lab'))
     est_files = sorted(glob('data/hierarchy/est*.lab'))
@@ -131,7 +235,6 @@ def test_tmeasure_regression():
     est_labs = [seg[1] for seg in est_hier]
 
     def __test(w, ref_i, ref_l, est_i, est_l, target):
-
         outputs = mir_eval.hierarchy.evaluate(ref_i, ref_l,
                                               est_i, est_l,
                                               window=w)
