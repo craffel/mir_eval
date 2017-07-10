@@ -180,7 +180,8 @@ def test_lmeasure_fail_span():
 
     ref = [np.asarray(_) for _ in ref]
 
-    yield raises(ValueError)(mir_eval.hierarchy.lmeasure), ref, ref_lab, ref, ref_lab
+    yield (raises(ValueError)(mir_eval.hierarchy.lmeasure),
+           ref, ref_lab, ref, ref_lab)
 
     # Does not end at the right time
     ref = [[[0, 5]],
@@ -188,7 +189,8 @@ def test_lmeasure_fail_span():
             [5, 6]]]
     ref = [np.asarray(_) for _ in ref]
 
-    yield raises(ValueError)(mir_eval.hierarchy.lmeasure), ref, ref_lab, ref, ref_lab
+    yield (raises(ValueError)(mir_eval.hierarchy.lmeasure),
+           ref, ref_lab, ref, ref_lab)
 
     # Two annotations of different shape
     ref = [[[0, 10]],
@@ -201,7 +203,8 @@ def test_lmeasure_fail_span():
             [5, 15]]]
     est = [np.asarray(_) for _ in est]
 
-    yield raises(ValueError)(mir_eval.hierarchy.lmeasure), ref, ref_lab, est, ref_lab
+    yield (raises(ValueError)(mir_eval.hierarchy.lmeasure),
+           ref, ref_lab, est, ref_lab)
 
 
 def test_lmeasure_fail_frame_size():
