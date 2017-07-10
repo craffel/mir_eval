@@ -505,7 +505,7 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
 
     NOTE: if ``reference_sources`` and ``estimated_sources`` would be evaluated
     using only a single window or are shorter than the window length, the
-    result of ``bss_eval_sources`` called on ``reference_sources`` and
+    result of ``bss_eval_images`` called on ``reference_sources`` and
     ``estimated_sources`` (with the ``compute_permutation`` parameter passed to
     ``bss_eval_images``) is returned
 
