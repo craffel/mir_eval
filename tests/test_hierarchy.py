@@ -57,6 +57,7 @@ def test_tmeasure_warning():
     ref = [np.asarray(_) for _ in ref]
 
     warnings.resetwarnings()
+    warnings.simplefilter('always')
     with warnings.catch_warnings(record=True) as out:
         mir_eval.hierarchy.tmeasure(ref, ref)
 
@@ -160,6 +161,7 @@ def test_lmeasure_warning():
     ref_lab = [['a', 'b'], ['A']]
 
     warnings.resetwarnings()
+    warnings.simplefilter('always')
     with warnings.catch_warnings(record=True) as out:
         mir_eval.hierarchy.lmeasure(ref, ref_lab, ref, ref_lab)
 
