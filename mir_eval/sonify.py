@@ -60,7 +60,8 @@ def clicks(times, fs, click=None, length=None):
     return click_signal
 
 
-def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
+def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
+                   n_dec=1):
     """Reverse synthesis of a time-frequency representation of a signal
 
     Parameters
@@ -84,6 +85,9 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     length : int
         desired number of samples in the output signal,
         defaults to ``times[-1]*fs``
+    n_dec : int
+        the number of decimals used to approximate each sonfied frequency.
+        Defaults to 1 decimal place. Higher precision will be slower.
 
     Returns
     -------
@@ -102,17 +106,24 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     times, _ = util.adjust_intervals(times, t_max=length)
 
     # Truncate times so that the shape matches gram
-    times = times[:gram.shape[1]]
+    n_times = gram.shape[1]
+    times = times[:n_times]
 
     def _fast_synthesize(frequency):
         """A faster way to synthesize a signal.
             Generate one cycle, and simulate arbitrary repetitions
             using array indexing tricks.
         """
-        frequency = float(frequency)
+        # hack so that we can ensure an integer number of periods and samples
+        # rounds frequency to 1st decimal, s.t. 10 * frequency will be an int
+        frequency = np.round(frequency, n_dec)
 
-        # Generate ten periods at this frequency
-        n_samples = int(10.0 * fs / frequency)
+        # Generate 10*frequency periods at this frequency
+        # Equivalent to n_samples = int(n_periods * fs / frequency)
+        # n_periods = 10*frequency is the smallest integer that guarantees
+        # that n_samples will be an integer, since assuming 10*frequency
+        # is an integer
+        n_samples = int(10.0**n_dec * fs)
 
         short_signal = function(2.0 * np.pi * np.arange(n_samples) *
                                 frequency / fs)
@@ -128,27 +139,42 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
         # Use a flatiter to simulate a long 1D buffer
         return long_signal.flat
 
+    def _const_interpolator(value):
+        """Return a function that returns `value`
+            no matter the input.
+        """
+        def __interpolator(x):
+            return value
+        return __interpolator
+
     # Threshold the tfgram to remove non-positive values
     gram = np.maximum(gram, 0)
 
     # Pre-allocate output signal
     output = np.zeros(length)
+    time_centers = np.mean(times, axis=1) * float(fs)
+
     for n, frequency in enumerate(frequencies):
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
+
+        # Interpolate the values in gram over the time grid
+        if len(time_centers) > 1:
+            gram_interpolator = interp1d(
+                time_centers, gram[n, :],
+                kind='linear', bounds_error=False,
+                fill_value=0.0)
+        # If only one time point, create constant interpolator
+        else:
+            gram_interpolator = _const_interpolator(gram[n, 0])
+
         # Scale each time interval by the piano roll magnitude
-        for m, (start, end) in enumerate((times[:-1, :] * fs).astype(int)):
+        for m, (start, end) in enumerate((times * fs).astype(int)):
             # Clip the timings to make sure the indices are valid
             start, end = max(start, 0), min(end, length)
-            hop_size = end - start
-            xover_size = int(hop_size / 8)
-
-            # get linear increasing weights
-            weights = np.linspace(gram[n, m], gram[n, m+1], xover_size)
-
-            # Sum into the aggregate output waveform
-            output[start:end-xover_size] += wave[start:end-xover_size] * gram[n, m]
-            output[end-xover_size:end] += wave[end-xover_size:end] * weights
+            # add to waveform
+            output[start:end] += (
+                wave[start:end] * gram_interpolator(np.arange(start, end)))
 
     # Normalize, but only if there's non-zero values
     norm = np.abs(output).max()
