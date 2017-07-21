@@ -343,6 +343,7 @@ def _count_inversions(a, b):
     Returns
     -------
     inversions : int
+        The number of detected inversions
     '''
 
     a, a_counts = np.unique(a, return_counts=True)

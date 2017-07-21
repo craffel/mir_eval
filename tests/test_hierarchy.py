@@ -254,3 +254,23 @@ def test_hierarchy_regression():
         # Extract the window parameter
         window = float(re.match('.*output_w=(\d+).json$', out).groups()[0])
         yield __test, window, ref_ints, ref_labs, est_ints, est_labs, target
+
+
+def test_count_inversions():
+
+    a = [2, 4, 6]
+    b = [1, 2, 3, 4]
+
+    # All inversions (a, b) are:
+    # (2, 1), (2, 2)
+    # (4, 1), (4, 2), (4, 3), (4, 4)
+    # (6, 1), (6, 2), (6, 3), (6, 4)
+
+    assert mir_eval.hierarchy._count_inversions(a, b) == 10
+
+    # All inversions (b, a) are:
+    # (2, 2)
+    # (3, 2)
+    # (4, 2), (4, 4)
+
+    assert mir_eval.hierarchy._count_inversions(b, a) == 4
