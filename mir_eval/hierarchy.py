@@ -9,12 +9,6 @@ metrics defined in :mod:`mir_eval.segment`, which can only encode one level of
 analysis, hierarchical annotations expose the relationships between short
 segments and the larger compositional elements to which they belong.
 
-Currently, there exist no metrics for evaluating hierarchical segment
-labeling.  All evaluations are therefore based on boundaries between
-segments (and relationships between segments across levels), and not the
-labels applied to segments.
-
-
 Conventions
 -----------
 Annotations are assumed to take the form of an ordered list of segmentations.
@@ -29,7 +23,10 @@ segmentation contains the most.
 Metrics
 -------
 * :func:`mir_eval.hierarchy.tmeasure`: Precision, recall, and F-measure of
-  triplet-based frame accuracy.
+  triplet-based frame accuracy for boundary detection.
+
+* :func:`mir_eval.hierarchy.lmeasure`: Precision, recall, and F-measure of
+  triplet-based frame accuracy for segment labeling.
 
 References
 ----------
@@ -38,6 +35,11 @@ References
     International Society for Music Information Retrieval (ISMIR) conference,
     2015.
 
+  .. [#mcfee2017] Brian McFee, Oriol Nieto, Morwaread Farbood, and
+    Juan P. Bello.
+    "Evaluating hierarchical structure in music annotations",
+    Frontiers in Psychology (to appear),
+    2017.
 '''
 
 import collections
@@ -180,6 +182,10 @@ def _meet(intervals_hier, labels_hier, frame_size):
     intervals_hier : list of ndarray
         An ordered list of segment interval arrays.
         The list is assumed to be ordered by increasing specificity (depth).
+
+    labels_hier : list of list of str
+        ``labels_hier[i]`` contains the segment labels for the
+        ``i``th layer of the annotations
 
     frame_size : number
         The length of the sample frames (in seconds)
@@ -550,8 +556,14 @@ def lmeasure(reference_intervals_hier, reference_labels_hier,
         ordered from top to bottom, so that the last list of intervals should
         be the most specific.
 
+    reference_labels_hier : list of list of str
+        ``reference_labels_hier[i]`` contains the segment labels for the
+        ``i``th layer of the annotations
+
     estimated_intervals_hier : list of ndarray
-        Like ``reference_intervals_hier`` but for the estimated annotation
+    estimated_labels_hier : list of ndarray
+        Like ``reference_intervals_hier`` and ``reference_labels_hier``
+        but for the estimated annotation
 
     frame_size : float > 0
         length (in seconds) of frames.  The frame size cannot be longer than
