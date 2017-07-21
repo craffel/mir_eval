@@ -382,6 +382,11 @@ def _compare_frame_rankings(ref, est, transitive=False):
     inversions : int
         The number of pairs of indices `i, j` where
         `ref[i] < ref[j]` but `est[i] >= est[j]`.
+
+    normalizer : float
+        The total number of pairs (i, j) under consideration.
+        If transitive=True, then this is |{(i,j) : ref[i] < ref[j]}|
+        If transitive=False, then this is |{i,j) : ref[i] +1 = ref[j]}|
     '''
 
     idx = np.argsort(ref)
