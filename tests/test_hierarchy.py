@@ -330,3 +330,42 @@ def test_meet():
 
     # Does it have the right value?
     assert np.all(meet == meet_truth)
+
+
+def test_compare_frame_rankings():
+
+    # number of pairs (i, j)
+    # where ref[i] < ref[j] and est[i] >= est[j]
+
+    ref = np.asarray([1, 2, 3, 3])
+    # ref pairs (transitive)
+    # (1, 2), (1, 3), (1, 3), (2, 3), (2, 3)
+    # ref pairs (non-transitive)
+    # (1, 2), (2, 3), (2, 3)
+
+    # Just count the normalizers
+    # No self-inversions are possible from ref to itself
+    inv, norm = mir_eval.hierarchy._compare_frame_rankings(ref, ref,
+                                                           transitive=True)
+    assert inv == 0
+    assert norm == 5
+
+    inv, norm = mir_eval.hierarchy._compare_frame_rankings(ref, ref,
+                                                           transitive=False)
+    assert inv == 0
+    assert norm == 3
+
+    est = np.asarray([1, 2, 1, 3])
+    # In the transitive case, we lose two pairs
+    # (1, 3) and (2, 2) -> (1, 1), (2, 1)
+    inv, norm = mir_eval.hierarchy._compare_frame_rankings(ref, est,
+                                                           transitive=True)
+    assert norm == 5
+    assert inv == 2
+
+    # In the non-transitive case, we only lose one pair
+    # because (1,3) was not counted
+    inv, norm = mir_eval.hierarchy._compare_frame_rankings(ref, est,
+                                                           transitive=False)
+    assert norm == 3
+    assert inv == 1
