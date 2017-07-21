@@ -9,6 +9,7 @@ import warnings
 import json
 
 import numpy as np
+import scipy.sparse
 import mir_eval
 
 from nose.tools import raises
@@ -258,6 +259,7 @@ def test_hierarchy_regression():
 
 def test_count_inversions():
 
+    # inversion count = |{(i, j) : a[i] >= b[j]}|
     a = [2, 4, 6]
     b = [1, 2, 3, 4]
 
@@ -274,3 +276,57 @@ def test_count_inversions():
     # (4, 2), (4, 4)
 
     assert mir_eval.hierarchy._count_inversions(b, a) == 4
+
+    # And test with repetitions
+    a = [2, 2, 4]
+    b = [1, 2, 4, 4]
+    # counts: (a, b)
+    # (2, 1), (2, 2)
+    # (2, 1), (2, 2)
+    # (4, 1), (4, 2), (4, 4), (4, 4)
+
+    assert mir_eval.hierarchy._count_inversions(a, b) == 8
+
+    # count: (b, a)
+    # (2, 2), (2, 2)
+    # (4, 2), (4, 2), (4, 4)
+    # (4, 2), (4, 2), (4, 4)
+
+    assert mir_eval.hierarchy._count_inversions(b, a) == 8
+
+
+def test_meet():
+
+    frame_size = 1
+    int_hier = [np.array([[0, 10]]),
+                np.array([[0, 6], [6, 10]]),
+                np.array([[0, 2], [2, 4], [4, 6], [6, 8], [8, 10]])]
+
+    lab_hier = [['X'],
+                ['A', 'B'],
+                ['a', 'b', 'a', 'c', 'b']]
+
+    # Target output
+    meet_truth = np.asarray([
+        [3, 3, 2, 2, 3, 3, 1, 1, 1, 1],   # (XAa)
+        [3, 3, 2, 2, 3, 3, 1, 1, 1, 1],   # (XAa)
+        [2, 2, 3, 3, 2, 2, 1, 1, 3, 3],   # (XAb)
+        [2, 2, 3, 3, 2, 2, 1, 1, 3, 3],   # (XAb)
+        [3, 3, 2, 2, 3, 3, 1, 1, 1, 1],   # (XAa)
+        [3, 3, 2, 2, 3, 3, 1, 1, 1, 1],   # (XAa)
+        [1, 1, 1, 1, 1, 1, 3, 3, 2, 2],   # (XBc)
+        [1, 1, 1, 1, 1, 1, 3, 3, 2, 2],   # (XBc)
+        [1, 1, 3, 3, 1, 1, 2, 2, 3, 3],   # (XBb)
+        [1, 1, 3, 3, 1, 1, 2, 2, 3, 3],   # (XBb)
+    ])
+    meet = mir_eval.hierarchy._meet(int_hier, lab_hier, frame_size)
+
+    # Is it the right type?
+    assert isinstance(meet, scipy.sparse.csr_matrix)
+    meet = meet.todense()
+
+    # Does it have the right shape?
+    assert meet.shape == (10, 10)
+
+    # Does it have the right value?
+    assert np.all(meet == meet_truth)
