@@ -348,24 +348,31 @@ def test_compare_frame_rankings():
     inv, norm = mir_eval.hierarchy._compare_frame_rankings(ref, ref,
                                                            transitive=True)
     assert inv == 0
-    assert norm == 5
+    assert norm == 5.0
 
     inv, norm = mir_eval.hierarchy._compare_frame_rankings(ref, ref,
                                                            transitive=False)
     assert inv == 0
-    assert norm == 3
+    assert norm == 3.0
 
     est = np.asarray([1, 2, 1, 3])
     # In the transitive case, we lose two pairs
     # (1, 3) and (2, 2) -> (1, 1), (2, 1)
     inv, norm = mir_eval.hierarchy._compare_frame_rankings(ref, est,
                                                            transitive=True)
-    assert norm == 5
     assert inv == 2
+    assert norm == 5.0
 
     # In the non-transitive case, we only lose one pair
     # because (1,3) was not counted
     inv, norm = mir_eval.hierarchy._compare_frame_rankings(ref, est,
                                                            transitive=False)
-    assert norm == 3
     assert inv == 1
+    assert norm == 3.0
+
+    # Do an all-zeros test
+    ref = np.asarray([1, 1, 1, 1])
+    inv, norm = mir_eval.hierarchy._compare_frame_rankings(ref, ref,
+                                                           transitive=True)
+    assert inv == 0
+    assert norm == 0.0
