@@ -670,9 +670,9 @@ def evaluate(ref_intervals_hier, ref_labels_hier,
     Parameters
     ----------
     ref_intervals_hier : list of list-like
-    ref_labels_hier : list of str
+    ref_labels_hier : list of list of str
     est_intervals_hier : list of list-like
-    est_labels_hier : list of str
+    est_labels_hier : list of list of str
         Hierarchical annotations are encoded as an ordered list
         of segmentations.  Each segmentation itself is a list (or list-like)
         of intervals (\*_intervals_hier) and a list of lists of labels
