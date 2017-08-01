@@ -766,12 +766,12 @@ def _fast_hit_windows(ref, est, window):
     left_idx = np.searchsorted(ref_sorted, est - window, side='left')
     right_idx = np.searchsorted(ref_sorted, est + window, side='right')
 
-    hit_ref = []
-    hit_est = []
+    hit_ref, hit_est = [], []
+
     for j, (start, end) in enumerate(zip(left_idx, right_idx)):
-        for i in range(start, end):
-            hit_ref.append(ref_idx[i])
-            hit_est.append(j)
+        hit_ref.extend(ref_idx[start:end])
+        hit_est.extend([j] * (end - start))
+
     return hit_ref, hit_est
 
 
