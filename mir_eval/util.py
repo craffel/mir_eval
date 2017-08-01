@@ -660,26 +660,6 @@ def _outer_distance_mod_n(ref, est, modulus=12):
     return np.minimum(abs_diff, modulus - abs_diff)
 
 
-def _outer_distance(ref, est):
-    """Compute the absolute outer distance.
-    Computes |ref[i] - est[j]| for each i and j.
-
-    Parameters
-    ----------
-    ref : np.ndarray, shape=(n,)
-        Array of reference values.
-    est : np.ndarray, shape=(m,)
-        Array of estimated values.
-
-    Returns
-    -------
-    outer_distance : np.ndarray, shape=(n, m)
-        The outer 1d-euclidean distance.
-
-    """
-    return np.abs(np.subtract.outer(ref, est))
-
-
 def match_events(ref, est, window, distance=None):
     """Compute a maximum matching between reference and estimated event times,
     subject to a window constraint.
