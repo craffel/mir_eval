@@ -227,6 +227,18 @@ def test_match_events():
     assert actual == expected
 
 
+def test_fast_hit_windows():
+
+    ref = [1., 2., 3.]
+    est = [1.1, 6., 1.9, 5., 10.]
+
+    ref_fast, est_fast = mir_eval.util._fast_hit_windows(ref, est, 0.5)
+    ref_slow, est_slow = np.where(np.abs(np.subtract.outer(ref, est)) <= 0.5)
+
+    assert np.all(ref_fast == ref_slow)
+    assert np.all(est_fast == est_slow)
+
+
 def test_validate_intervals():
     # Test for ValueError when interval shape is invalid
     nose.tools.assert_raises(

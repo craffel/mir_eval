@@ -737,6 +737,11 @@ def _fast_hit_windows(ref, est, window):
     tolerance window, computes a list of pairings
     ``(i, j)`` where ``|ref[i] - est[j]| <= window``.
 
+    This is equivalent to, but more efficient than the following:
+
+    >>> hit_ref, hit_est = np.where(np.abs(np.subtract.outer(ref, est))
+    ...                             <= window)
+
     Parameters
     ----------
     ref : np.ndarray, shape=(n,)
@@ -748,9 +753,9 @@ def _fast_hit_windows(ref, est, window):
 
     Returns
     -------
-    ref_idx : np.ndarray
-    est_idx : np.ndarray
-        indices such that ``|ref_idx[i] - est_idx[i]| <= window``
+    hit_ref : np.ndarray
+    hit_est : np.ndarray
+        indices such that ``|hit_ref[i] - hit_est[i]| <= window``
     '''
 
     ref = np.asarray(ref)
