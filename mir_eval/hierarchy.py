@@ -38,8 +38,7 @@ References
   .. [#mcfee2017] Brian McFee, Oriol Nieto, Morwaread Farbood, and
     Juan P. Bello.
     "Evaluating hierarchical structure in music annotations",
-    Frontiers in Psychology (to appear),
-    2017.
+    Frontiers in Psychology, 2017.
 '''
 
 import collections
