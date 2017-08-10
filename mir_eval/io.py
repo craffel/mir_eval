@@ -90,6 +90,7 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
             for value, column, converter in zip(data, columns, converters):
                 # Try converting the value, throw a helpful error on failure
                 try:
+                    value = value.replace(',' , '.')
                     converted_value = converter(value)
                 except:
                     raise ValueError("Couldn't convert value {} using {} "
