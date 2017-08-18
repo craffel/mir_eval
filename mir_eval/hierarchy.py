@@ -9,12 +9,6 @@ metrics defined in :mod:`mir_eval.segment`, which can only encode one level of
 analysis, hierarchical annotations expose the relationships between short
 segments and the larger compositional elements to which they belong.
 
-Currently, there exist no metrics for evaluating hierarchical segment
-labeling.  All evaluations are therefore based on boundaries between
-segments (and relationships between segments across levels), and not the
-labels applied to segments.
-
-
 Conventions
 -----------
 Annotations are assumed to take the form of an ordered list of segmentations.
@@ -29,7 +23,10 @@ segmentation contains the most.
 Metrics
 -------
 * :func:`mir_eval.hierarchy.tmeasure`: Precision, recall, and F-measure of
-  triplet-based frame accuracy.
+  triplet-based frame accuracy for boundary detection.
+
+* :func:`mir_eval.hierarchy.lmeasure`: Precision, recall, and F-measure of
+  triplet-based frame accuracy for segment labeling.
 
 References
 ----------
@@ -38,13 +35,18 @@ References
     International Society for Music Information Retrieval (ISMIR) conference,
     2015.
 
+  .. [#mcfee2017] Brian McFee, Oriol Nieto, Morwaread Farbood, and
+    Juan P. Bello.
+    "Evaluating hierarchical structure in music annotations",
+    Frontiers in Psychology, 2017.
 '''
 
-import numpy as np
-import scipy.sparse
 import collections
 import itertools
 import warnings
+
+import numpy as np
+import scipy.sparse
 
 from . import util
 from .segment import validate_structure
@@ -98,6 +100,36 @@ def _hierarchy_bounds(intervals_hier):
     return min(boundaries), max(boundaries)
 
 
+def _align_intervals(int_hier, lab_hier, t_min=0.0, t_max=None):
+    '''Align a hierarchical annotation to span a fixed start and end time.
+
+    Parameters
+    ----------
+    int_hier : list of list of intervals
+    lab_hier : list of list of str
+        Hierarchical segment annotations, encoded as a
+        list of list of intervals (int_hier) and list of
+        list of strings (lab_hier)
+
+    t_min : None or number >= 0
+        The minimum time value for the segmentation
+
+    t_max : None or number >= t_min
+        The maximum time value for the segmentation
+
+    Returns
+    -------
+    intervals_hier : list of list of intervals
+    labels_hier : list of list of str
+        `int_hier` `lab_hier` aligned to span `[t_min, t_max]`.
+    '''
+    return [list(_) for _ in zip(*[util.adjust_intervals(np.asarray(ival),
+                                                         labels=lab,
+                                                         t_min=t_min,
+                                                         t_max=t_max)
+                                   for ival, lab in zip(int_hier, lab_hier)])]
+
+
 def _lca(intervals_hier, frame_size):
     '''Compute the (sparse) least-common-ancestor (LCA) matrix for a
     hierarchical segmentation.
@@ -141,6 +173,69 @@ def _lca(intervals_hier, frame_size):
             lca_matrix[idx, idx] = level
 
     return lca_matrix.tocsr()
+
+
+def _meet(intervals_hier, labels_hier, frame_size):
+    '''Compute the (sparse) least-common-ancestor (LCA) matrix for a
+    hierarchical segmentation.
+
+    For any pair of frames ``(s, t)``, the LCA is the deepest level in
+    the hierarchy such that ``(s, t)`` are contained within a single
+    segment at that level.
+
+    Parameters
+    ----------
+    intervals_hier : list of ndarray
+        An ordered list of segment interval arrays.
+        The list is assumed to be ordered by increasing specificity (depth).
+
+    labels_hier : list of list of str
+        ``labels_hier[i]`` contains the segment labels for the
+        ``i``th layer of the annotations
+
+    frame_size : number
+        The length of the sample frames (in seconds)
+
+    Returns
+    -------
+    meet_matrix : scipy.sparse.csr_matrix
+        A sparse matrix such that ``meet_matrix[i, j]`` contains the depth
+        of the deepest segment label containing both ``i`` and ``j``.
+    '''
+
+    frame_size = float(frame_size)
+
+    # Figure out how many frames we need
+
+    n_start, n_end = _hierarchy_bounds(intervals_hier)
+
+    n = int((_round(n_end, frame_size) -
+             _round(n_start, frame_size)) / frame_size)
+
+    # Initialize the meet matrix
+    meet_matrix = scipy.sparse.lil_matrix((n, n), dtype=np.uint8)
+
+    for level, (intervals, labels) in enumerate(zip(intervals_hier,
+                                                    labels_hier), 1):
+
+        # Encode the labels at this level
+        lab_enc = util.index_labels(labels)[0]
+
+        # Find unique agreements
+        int_agree = np.triu(np.equal.outer(lab_enc, lab_enc))
+
+        # Map intervals to frame indices
+        int_frames = (_round(intervals, frame_size) / frame_size).astype(int)
+
+        # For each intervals i, j where labels agree, update the meet matrix
+        for (seg_i, seg_j) in zip(*np.where(int_agree)):
+            idx_i = slice(*list(int_frames[seg_i]))
+            idx_j = slice(*list(int_frames[seg_j]))
+            meet_matrix[idx_i, idx_j] = level
+            if seg_i != seg_j:
+                meet_matrix[idx_j, idx_i] = level
+
+    return scipy.sparse.csr_matrix(meet_matrix)
 
 
 def _gauc(ref_lca, est_lca, transitive, window):
@@ -210,29 +305,20 @@ def _gauc(ref_lca, est_lca, transitive, window):
         ref_score = np.asarray(ref_score.todense()).squeeze()
         est_score = np.asarray(est_score.todense()).squeeze()
 
-        if transitive:
-            # Transitive: count comparisons across any level
-            ref_rank = np.greater.outer(ref_score, ref_score)
-        else:
-            # Non-transitive: count comparisons only across immediate levels
-            ref_rank = np.equal.outer(ref_score, ref_score + 1)
-
-        est_rank = np.greater.outer(est_score, est_score)
-
         # Don't count the query as a result
         # when query < window, query itself is the index within the slice
         # otherwise, query is located at the center of the slice, window
         # (this also holds when the slice goes off the end of the array.)
         idx = min(query, window)
-        ref_rank[idx, :] = False
-        ref_rank[:, idx] = False
 
-        # Compute normalization constant
-        normalizer = float(ref_rank.sum())
+        ref_score = np.concatenate((ref_score[:idx], ref_score[idx+1:]))
+        est_score = np.concatenate((est_score[:idx], est_score[idx+1:]))
 
-        # Add up agreement for frames
-        if normalizer > 0:
-            score += np.sum(np.logical_and(ref_rank, est_rank)) / normalizer
+        inversions, normalizer = _compare_frame_rankings(ref_score, est_score,
+                                                         transitive=transitive)
+
+        if normalizer:
+            score += 1.0 - inversions / float(normalizer)
             num_frames += 1
 
     # Normalize by the number of frames counted.
@@ -243,6 +329,111 @@ def _gauc(ref_lca, est_lca, transitive, window):
         score = 0.0
 
     return score
+
+
+def _count_inversions(a, b):
+    '''Count the number of inversions in two numpy arrays:
+
+    # points i, j where a[i] >= b[j]
+
+    Parameters
+    ----------
+    a, b : np.ndarray, shape=(n,) (m,)
+        The arrays to be compared.
+
+        This implementation is optimized for arrays with many
+        repeated values.
+
+    Returns
+    -------
+    inversions : int
+        The number of detected inversions
+    '''
+
+    a, a_counts = np.unique(a, return_counts=True)
+    b, b_counts = np.unique(b, return_counts=True)
+
+    inversions = 0
+    i = 0
+    j = 0
+
+    while i < len(a) and j < len(b):
+        if a[i] < b[j]:
+            i += 1
+        elif a[i] >= b[j]:
+            inversions += np.sum(a_counts[i:]) * b_counts[j]
+            j += 1
+
+    return inversions
+
+
+def _compare_frame_rankings(ref, est, transitive=False):
+    '''Compute the number of ranking disagreements in two lists.
+
+    Parameters
+    ----------
+    ref : np.ndarray, shape=(n,)
+    est : np.ndarray, shape=(n,)
+        Reference and estimate ranked lists.
+        `ref[i]` is the relevance score for point `i`.
+
+    transitive : bool
+        If true, all pairs of reference levels are compared.
+        If false, only adjacent pairs of reference levels are compared.
+
+    Returns
+    -------
+    inversions : int
+        The number of pairs of indices `i, j` where
+        `ref[i] < ref[j]` but `est[i] >= est[j]`.
+
+    normalizer : float
+        The total number of pairs (i, j) under consideration.
+        If transitive=True, then this is |{(i,j) : ref[i] < ref[j]}|
+        If transitive=False, then this is |{i,j) : ref[i] +1 = ref[j]}|
+    '''
+
+    idx = np.argsort(ref)
+    ref_sorted = ref[idx]
+    est_sorted = est[idx]
+
+    # Find the break-points in ref_sorted
+    levels, positions, counts = np.unique(ref_sorted,
+                                          return_index=True,
+                                          return_counts=True)
+
+    positions = list(positions)
+    positions.append(len(ref_sorted))
+
+    index = collections.defaultdict(lambda: slice(0))
+    ref_map = collections.defaultdict(lambda: 0)
+
+    for level, cnt, start, end in zip(levels, counts,
+                                      positions[:-1], positions[1:]):
+        index[level] = slice(start, end)
+        ref_map[level] = cnt
+
+    # Now that we have values sorted, apply the inversion-counter to
+    # pairs of reference values
+    if transitive:
+        level_pairs = itertools.combinations(levels, 2)
+    else:
+        level_pairs = [(i, i+1) for i in levels]
+
+    level_pairs, lcounter = itertools.tee(level_pairs)
+
+    normalizer = float(sum([ref_map[i] * ref_map[j] for (i, j) in lcounter]))
+
+    if normalizer == 0:
+        return 0, 0.0
+
+    inversions = 0
+
+    for level_1, level_2 in level_pairs:
+        inversions += _count_inversions(est_sorted[index[level_1]],
+                                        est_sorted[index[level_2]])
+
+    return inversions, float(normalizer)
 
 
 def validate_hier_intervals(intervals_hier):
@@ -362,6 +553,80 @@ def tmeasure(reference_intervals_hier, estimated_intervals_hier,
     return t_precision, t_recall, t_measure
 
 
+def lmeasure(reference_intervals_hier, reference_labels_hier,
+             estimated_intervals_hier, estimated_labels_hier,
+             frame_size=0.1, beta=1.0):
+    '''Computes the tree measures for hierarchical segment annotations.
+
+    Parameters
+    ----------
+    reference_intervals_hier : list of ndarray
+        ``reference_intervals_hier[i]`` contains the segment intervals
+        (in seconds) for the ``i`` th layer of the annotations.  Layers are
+        ordered from top to bottom, so that the last list of intervals should
+        be the most specific.
+
+    reference_labels_hier : list of list of str
+        ``reference_labels_hier[i]`` contains the segment labels for the
+        ``i``th layer of the annotations
+
+    estimated_intervals_hier : list of ndarray
+    estimated_labels_hier : list of ndarray
+        Like ``reference_intervals_hier`` and ``reference_labels_hier``
+        but for the estimated annotation
+
+    frame_size : float > 0
+        length (in seconds) of frames.  The frame size cannot be longer than
+        the window.
+
+    beta : float > 0
+        beta parameter for the F-measure.
+
+    Returns
+    -------
+    l_precision : number [0, 1]
+        L-measure Precision
+
+    l_recall : number [0, 1]
+        L-measure Recall
+
+    l_measure : number [0, 1]
+        F-beta measure for ``(l_precision, l_recall)``
+
+    Raises
+    ------
+    ValueError
+        If either of the input hierarchies are inconsistent
+
+        If the input hierarchies have different time durations
+
+        If ``frame_size > window`` or ``frame_size <= 0``
+    '''
+
+    # Compute the number of frames in the window
+    if frame_size <= 0:
+        raise ValueError('frame_size ({:.2f}) must be a positive '
+                         'number.'.format(frame_size))
+
+    # Validate the hierarchical segmentations
+    validate_hier_intervals(reference_intervals_hier)
+    validate_hier_intervals(estimated_intervals_hier)
+
+    # Build the least common ancestor matrices
+    ref_meet = _meet(reference_intervals_hier, reference_labels_hier,
+                     frame_size)
+    est_meet = _meet(estimated_intervals_hier, estimated_labels_hier,
+                     frame_size)
+
+    # Compute precision and recall
+    l_recall = _gauc(ref_meet, est_meet, True, None)
+    l_precision = _gauc(est_meet, ref_meet, True, None)
+
+    l_measure = util.f_measure(l_precision, l_recall, beta=beta)
+
+    return l_precision, l_recall, l_measure
+
+
 def evaluate(ref_intervals_hier, ref_labels_hier,
              est_intervals_hier, est_labels_hier, **kwargs):
     '''Compute all hierarchical structure metrics for the given reference and
@@ -415,9 +680,9 @@ def evaluate(ref_intervals_hier, ref_labels_hier,
     Parameters
     ----------
     ref_intervals_hier : list of list-like
-    ref_labels_hier : list of str
+    ref_labels_hier : list of list of str
     est_intervals_hier : list of list-like
-    est_labels_hier : list of str
+    est_labels_hier : list of list of str
         Hierarchical annotations are encoded as an ordered list
         of segmentations.  Each segmentation itself is a list (or list-like)
         of intervals (\*_intervals_hier) and a list of lists of labels
@@ -446,12 +711,15 @@ def evaluate(ref_intervals_hier, ref_labels_hier,
 
     # Pre-process the intervals to match the range of the reference,
     # and start at 0
-    ref_intervals_hier = [util.adjust_intervals(np.asarray(_), t_min=0.0)[0]
-                          for _ in ref_intervals_hier]
+    ref_intervals_hier, ref_labels_hier = _align_intervals(ref_intervals_hier,
+                                                           ref_labels_hier,
+                                                           t_min=0.0,
+                                                           t_max=None)
 
-    est_intervals_hier = [util.adjust_intervals(np.asarray(_), t_min=0.0,
-                                                t_max=t_end)[0]
-                          for _ in est_intervals_hier]
+    est_intervals_hier, est_labels_hier = _align_intervals(est_intervals_hier,
+                                                           est_labels_hier,
+                                                           t_min=0.0,
+                                                           t_max=t_end)
 
     scores = collections.OrderedDict()
 
@@ -472,4 +740,12 @@ def evaluate(ref_intervals_hier, ref_labels_hier,
                                                     est_intervals_hier,
                                                     **kwargs)
 
+    (scores['L-Precision'],
+     scores['L-Recall'],
+     scores['L-Measure']) = util.filter_kwargs(lmeasure,
+                                               ref_intervals_hier,
+                                               ref_labels_hier,
+                                               est_intervals_hier,
+                                               est_labels_hier,
+                                               **kwargs)
     return scores
