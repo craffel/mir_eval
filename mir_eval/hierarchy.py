@@ -111,10 +111,17 @@ def _align_intervals(int_hier, lab_hier, t_min=0.0, t_max=None):
         list of list of intervals (int_hier) and list of
         list of strings (lab_hier)
 
+    t_min : None or number >= 0
+        The minimum time value for the segmentation
+
+    t_max : None or number >= t_min
+        The maximum time value for the segmentation
+
     Returns
     -------
-    intervals_hier, labels_hier
-        int_hier and lab_hier aligned to span `[t_min, t_max]`.
+    intervals_hier : list of list of intervals
+    labels_hier : list of list of str
+        `int_hier` `lab_hier` aligned to span `[t_min, t_max]`.
     '''
     return [list(_) for _ in zip(*[util.adjust_intervals(np.asarray(ival),
                                                          labels=lab,
@@ -306,8 +313,6 @@ def _gauc(ref_lca, est_lca, transitive, window):
 
         ref_score = np.concatenate((ref_score[:idx], ref_score[idx+1:]))
         est_score = np.concatenate((est_score[:idx], est_score[idx+1:]))
-
-        # If there are no comparisons to be made, move to the next frame
 
         inversions, normalizer = _compare_frame_rankings(ref_score, est_score,
                                                          transitive=transitive)
