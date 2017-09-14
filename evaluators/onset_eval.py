@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-Utility script for computing all onset metrics.
+Utility script for computing onset metrics.
 
 Usage:
 
