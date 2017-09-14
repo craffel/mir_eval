@@ -103,12 +103,16 @@ Metrics
   pitch values.
 
 '''
-
-import numpy as np
+import os
+import sys
+import argparse
 import collections
-from . import util
 import warnings
 
+import numpy as np
+
+from . import util
+from . import io
 
 # The number of decimals to keep for onset/offset threshold checks
 N_DECIMALS = 4
@@ -827,3 +831,39 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
                                ref_intervals, est_intervals, **kwargs))
 
     return scores
+
+
+def main():
+    """Command-line interface."""
+    parser = argparse.ArgumentParser(
+        description='mir_eval transcription evaluation')
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument('reference_file',
+                        action='store',
+                        help='path to the reference annotation file')
+    parser.add_argument('estimated_file',
+                        action='store',
+                        help='path to the estimated annotation file')
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    ref_intervals, ref_pitches = mir_eval.io.load_valued_intervals(
+        parameters['reference_file'])
+    est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
+        parameters['estimated_file'])
+    scores = evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches)
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: ', parameters['output_file'])
+        io.save_evaluation(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()

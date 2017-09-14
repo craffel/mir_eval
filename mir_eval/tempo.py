@@ -20,10 +20,15 @@ Metrics
   precision of tempo estimation.
 
 '''
+import os
+import sys
+import argparse
+import collections
 
 import numpy as np
-import collections
+
 from . import util
+from . import io
 
 
 def validate_tempi(tempi):
@@ -169,3 +174,43 @@ def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
                                                   **kwargs)
 
     return scores
+
+
+def main():
+    """Command-line interface."""
+
+    parser = argparse.ArgumentParser(
+        description='mir_eval tempo detection evaluation')
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument('reference_file',
+                        action='store',
+                        help='path to the reference annotation file')
+    parser.add_argument('estimated_file',
+                        action='store',
+                        help='path to the estimated annotation file')
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    reference_tempi = io.load_delimited(parameters['reference_file'], [float]*3)
+    estimated_tempi = io.load_delimited(parameters['estimated_file'], [float]*3)
+
+    estimated_tempi = np.concatenate(estimated_tempi[:2])
+    reference_weight = reference_tempi[-1][0]
+    reference_tempi = np.concatenate(reference_tempi[:2])
+
+    scores = evaluate(reference_tempi, reference_weight, estimated_tempi)
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: {}'.format(parameters['output_file']))
+        io.save_evaluation(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()

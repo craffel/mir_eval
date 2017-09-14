@@ -43,12 +43,18 @@ Metrics
   beat error histogram over a uniform distribution
 
 '''
+from __future__ import print_function
 
-import numpy as np
+import os
+import sys
+import argparse
 import collections
-from . import util
 import warnings
 
+import numpy as np
+
+from . import util
+from . import eval_utilities
 
 # The maximum allowable beat time
 MAX_TIME = 30000.
@@ -770,6 +776,37 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
     return scores
 
 
+def main():
+    """Command-line interface."""
+
+    parser = argparse.ArgumentParser(
+        description='mir_eval beat detection evaluation')
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument('reference_file',
+                        action='store',
+                        help='path to the reference annotation file')
+    parser.add_argument('estimated_file',
+                        action='store',
+                        help='path to the estimated annotation file')
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    reference_beats = io.load_events(parameters['reference_file'])
+    estimated_beats = io.load_events(parameters['estimated_file'])
+
+    scores = evaluate(reference_beats, estimated_beats)
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: ', parameters['output_file'])
+        io.save_evaluation(scores, parameters['output_file'])
+
+
 if __name__ == '__main__':
-    from evaluators.beat_eval import main
     main()

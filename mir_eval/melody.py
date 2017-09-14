@@ -50,12 +50,17 @@ Metrics
   whether non-melody frames where labeled by the algorithm as non-melody
 
 '''
+import os
+import sys
+import argparse
+import collections
+import warnings
 
 import numpy as np
 import scipy.interpolate
-import collections
-import warnings
+
 from . import util
+from . import io
 
 
 def validate_voicing(ref_voicing, est_voicing):
@@ -690,3 +695,46 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
                                                     est_voicing, est_cent,
                                                     **kwargs)
     return scores
+
+
+def main():
+    """Command-line interface."""
+    
+    parser = argparse.ArgumentParser(
+        description='mir_eval melody extraction evaluation')
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument('reference_file',
+                        action='store',
+                        help='path to the ground truth annotation')
+    parser.add_argument('estimated_file',
+                        action='store',
+                        help='path to the estimation file')
+    parser.add_argument("--hop",
+                        dest='hop',
+                        type=float,
+                        default=None,
+                        help="hop size (in seconds) to use for the evaluation"
+                        " (optional)")
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    ref_time, ref_freq = io.load_time_series(parameters['reference_file'])
+    est_time, est_freq = io.load_time_series(parameters['estimated_file'])
+
+    scores = evaluate(ref_time, ref_freq, est_time, est_freq,
+                                      hop=parameters['hop'])
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: ', parameters['output_file'])
+        io.save_evaluation(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()

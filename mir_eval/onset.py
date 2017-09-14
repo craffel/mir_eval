@@ -22,11 +22,14 @@ Metrics
   based on the number of esimated onsets which are sufficiently close to
   reference onsets.
 '''
-
+import os
+import sys
+import argparse
 import collections
-from . import util
 import warnings
 
+from . import util
+from . import io
 
 # The maximum allowable beat time
 MAX_TIME = 30000.
@@ -134,3 +137,39 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
                                             estimated_onsets, **kwargs)
 
     return scores
+
+
+def main():
+    """Command-line interface."""
+    
+    parser = argparse.ArgumentParser(
+        description='mir_eval onset detection evaluation')
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument('reference_file',
+                        action='store',
+                        help='path to the reference annotation file')
+    parser.add_argument('estimated_file',
+                        action='store',
+                        help='path to the estimated annotation file')
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    reference_onsets = io.load_events(parameters['reference_file'])
+    estimated_onsets = io.load_events(parameters['estimated_file'])
+
+    scores = evaluate(reference_onsets, estimated_onsets)
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: ', parameters['output_file'])
+        io.save_evaluation(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()

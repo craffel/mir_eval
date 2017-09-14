@@ -53,12 +53,16 @@ Metrics
   ability of the algorithm to sort the identified patterns based on their
   relevance.
 """
-
-
-import numpy as np
-from . import util
+import os
+import sys
+import argparse
 import warnings
 import collections
+
+import numpy as np
+
+from . import util
+from . import io
 
 
 def _n_onset_midi(patterns):
@@ -681,3 +685,39 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
                            est_patterns, **kwargs)
 
     return scores
+
+
+def main():
+    """Command-line interface."""
+
+    parser = argparse.ArgumentParser(
+        description="mir_eval pattern discovery evaluation")
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument("reference_file",
+                        action="store",
+                        help="Path to the reference file.")
+    parser.add_argument("estimated_file",
+                        action="store",
+                        help="Path to the estimation file.")
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    ref_patterns = io.load_patterns(parameters['reference_file'])
+    est_patterns = io.load_patterns(parameters['estimated_file'])
+
+    scores = evaluate(ref_patterns, est_patterns)
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: ', parameters['output_file'])
+        io.save_evaluation(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()

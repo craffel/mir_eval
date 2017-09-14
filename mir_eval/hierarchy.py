@@ -40,7 +40,9 @@ References
     "Evaluating hierarchical structure in music annotations",
     Frontiers in Psychology, 2017.
 '''
-
+import os
+import sys
+import argparse
 import collections
 import itertools
 import warnings
@@ -50,6 +52,7 @@ import scipy.sparse
 
 from . import util
 from .segment import validate_structure
+from . import io
 
 
 def _round(t, frame_size):
@@ -749,3 +752,66 @@ def evaluate(ref_intervals_hier, ref_labels_hier,
                                                est_labels_hier,
                                                **kwargs)
     return scores
+
+
+def main():
+    """Command-line interface."""
+
+    parser = argparse.ArgumentParser(
+        description='mir_eval hierarchical segmentation evaluation')
+    parser.add_argument('-w',
+                        '--window',
+                        dest='window',
+                        default="15.0",
+                        type=float,
+                        help='Window length for t-measures')
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument('-r',
+                        '--reference',
+                        dest='reference_file',
+                        nargs='+',
+                        type=str,
+                        action='store',
+                        help='path to the reference annotation(s) in '
+                        '.lab format, ordered from top to bottom of '
+                        'the hierarchy')
+    parser.add_argument('-e',
+                        '--estimate',
+                        dest='estimated_file',
+                        nargs='+',
+                        type=str,
+                        action='store',
+                        help='path to the estimated annotation(s) in '
+                        '.lab format, ordered from top to bottom of '
+                        'the hierarchy')
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    ref_files = parameters['reference_file']
+    est_files = parameters['estimated_file']
+
+    ref = [io.load_labeled_intervals(_) for _ in ref_files]
+    est = [io.load_labeled_intervals(_) for _ in est_files]
+    ref_intervals = [seg[0] for seg in ref]
+    ref_labels = [seg[1] for seg in ref]
+    est_intervals = [seg[0] for seg in est]
+    est_labels = [seg[1] for seg in est]
+
+    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels, 
+                      window=parameters['window'])
+    print("{} [...] vs. {} [...]".format(
+        os.path.basename(parameters['reference_file'][0]),
+        os.path.basename(parameters['estimated_file'][0])))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: ', parameters['output_file'])
+        io.save_evaluation(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()

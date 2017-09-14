@@ -86,14 +86,17 @@ References
         Information from Music Signals. PhD thesis, Queen Mary University of
         London, August 2010.
 '''
-
-import numpy as np
+import os
+import sys
+import argparse
+import re
 import warnings
 import collections
 
-import re
+import numpy as np
 
-from mir_eval import util
+from . import util
+from . import io
 
 BITMAP_LENGTH = 12
 NO_CHORD = "N"
@@ -1424,3 +1427,49 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
                                                durations)
 
     return scores
+
+
+def main():
+    """Command-line interface."""
+    
+    parser = argparse.ArgumentParser(
+        description='mir_eval segmentation evaluation')
+    parser.add_argument('-t',
+                        '--trim',
+                        dest='trim',
+                        default=False,
+                        action='store_true',
+                        help='Trim beginning and end markers from boundary '
+                             'evaluation')
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument('reference_file',
+                        action='store',
+                        help='path to the reference annotation')
+    parser.add_argument('estimated_file',
+                        action='store',
+                        help='path to the estimated annotation')
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    ref_file = parameters['reference_file']
+    est_file = parameters['estimated_file']
+    ref_intervals, ref_labels = io.load_labeled_intervals(ref_file)
+    est_intervals, est_labels = io.load_labeled_intervals(est_file)
+
+    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels, 
+                      trim=parameters['trim'])
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: ', parameters['output_file'])
+        io.save_evaluation(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()

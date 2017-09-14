@@ -41,13 +41,17 @@ References
 .. [#bay2009] Bay, M., Ehmann, A. F., & Downie, J. S. (2009). Evaluation of
    Multiple-F0 Estimation and Tracking Systems. In ISMIR (pp. 315-320).
 '''
-
-import numpy as np
+import os
+import sys
+import argparse
 import collections
-import scipy.interpolate
-from . import util
 import warnings
 
+import numpy as np
+import scipy.interpolate
+
+from . import util
+from . import io
 
 MAX_TIME = 30000.  # The maximum allowable time stamp (seconds)
 MAX_FREQ = 5000.  # The maximum allowable frequency (Hz)
@@ -505,3 +509,42 @@ def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
          metrics, ref_time, ref_freqs, est_time, est_freqs, **kwargs)
 
     return scores
+
+
+def main():
+    """Command-line interface."""
+    
+    parser = argparse.ArgumentParser(
+        description='mir_eval multipitch detection evaluation')
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument('reference_file',
+                        action='store',
+                        help='path to the reference annotation file')
+    parser.add_argument('estimated_file',
+                        action='store',
+                        help='path to the estimated annotation file')
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    ref_times, ref_freqs = io.load_ragged_time_series(
+        parameters['reference_file'])
+    est_times, est_freqs = io.load_ragged_time_series(
+        parameters['estimated_file'])
+
+    scores = evaluate(
+        ref_times, ref_freqs, est_times, est_freqs)
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: ', parameters['output_file'])
+        io.save_evaluation(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()

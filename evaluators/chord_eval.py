@@ -18,9 +18,8 @@ import mir_eval
 from . import eval_utilities
 
 
-def process_arguments():
-    '''Argparse function to get the program parameters'''
-
+def main():
+    # Get the parameters
     parser = argparse.ArgumentParser(description='mir_eval chord evaluation')
 
     parser.add_argument('-o',
@@ -38,12 +37,7 @@ def process_arguments():
                         action='store',
                         help='path to the estimated annotation')
 
-    return vars(parser.parse_args(sys.argv[1:]))
-
-
-def main():
-    # Get the parameters
-    parameters = process_arguments()
+    parameters = vars(parser.parse_args(sys.argv[1:]))
 
     # load the data
     ref_file = parameters['reference_file']
@@ -64,4 +58,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    mir_eval.chord.main()

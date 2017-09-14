@@ -44,15 +44,20 @@ References
 
 
 '''
+import os
+import sys
+import argparse
+import collections
+import itertools
+import warnings
 
 import numpy as np
 import scipy.fftpack
 from scipy.linalg import toeplitz
 from scipy.signal import fftconvolve
-import collections
-import itertools
-import warnings
+
 from . import util
+from . import io
 
 
 # The maximum allowable number of sources (prevents insane computational load)
@@ -919,3 +924,61 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
         scores['Sources - Source permutation'] = perm.tolist()
 
     return scores
+
+
+def main():
+    """Command-line interface."""
+
+    parser = argparse.ArgumentParser(
+        description='mir_eval source separation evaluation')
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument('reference_directory',
+                        action='store',
+                        help='path to directory containing reference source '
+                               '.wav files')
+    parser.add_argument('estimated_directory',
+                        action='store',
+                        help='path to directory containing estimated source '
+                             '.wav files')
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    reference_data = []
+    estimated_data = []
+    global_fs = None
+
+    reference_glob = os.path.join(parameters['reference_directory'], '*.wav')
+    for reference_file in glob.glob(reference_glob):
+        audio_data, fs = io.load_wav(reference_file)
+        assert (global_fs is None or fs == global_fs)
+        global_fs = fs
+        reference_data.append(audio_data)
+        
+    estimated_glob = os.path.join(parameters['estimated_directory'], '*.wav')
+    for estimated_file in glob.glob(estimated_glob):
+        audio_data, fs = io.load_wav(estimated_file)
+        assert (global_fs is None or fs == global_fs)
+        global_fs = fs
+        estimated_data.append(audio_data)
+
+    reference_sources = np.vstack(reference_data)
+    estimated_sources = np.vstack(estimated_data)
+
+    scores = evaluate(reference_sources, estimated_sources)
+
+    print("{} vs. {}".format(
+        os.path.basename(os.path.normpath(parameters['reference_directory'])),
+        os.path.basename(os.path.normpath(parameters['estimated_directory']))))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: ', parameters['output_file'])
+        io.save_evaluation(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()
