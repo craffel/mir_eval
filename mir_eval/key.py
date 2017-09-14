@@ -177,3 +177,6 @@ def evaluate(reference_key, estimated_key, **kwargs):
             weighted_score, reference_key, estimated_key)
 
     return scores
+
+
+# TODO Add main()
