@@ -10,7 +10,7 @@ setup(
     author='Colin Raffel',
     author_email='craffel@gmail.com',
     url='https://github.com/craffel/mir_eval',
-    packages=['mir_eval', 'evaluators'],
+    packages=['mir_eval'],
     long_description=long_description,
     classifiers=[
         "License :: OSI Approved :: MIT License",
