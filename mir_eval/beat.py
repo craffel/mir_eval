@@ -54,7 +54,7 @@ import warnings
 import numpy as np
 
 from . import util
-from . import eval_utilities
+from . import io
 
 # The maximum allowable beat time
 MAX_TIME = 30000.
