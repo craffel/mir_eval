@@ -140,8 +140,8 @@ def hz2cents(freq_hz, base_frequency=10.0):
     """
     freq_cent = np.zeros(freq_hz.shape[0])
     freq_nonz_ind = np.flatnonzero(freq_hz)
-    normalized_frequency = np.abs(freq_hz[freq_nonz_ind])/base_frequency
-    freq_cent[freq_nonz_ind] = 1200*np.log2(normalized_frequency)
+    normalized_frequency = np.abs(freq_hz[freq_nonz_ind]) / base_frequency
+    freq_cent[freq_nonz_ind] = 1200 * np.log2(normalized_frequency)
 
     return freq_cent
 
@@ -186,8 +186,8 @@ def constant_hop_timebase(hop, end_time):
     """
     # Compute new timebase.  Rounding/linspace is to avoid float problems.
     end_time = np.round(end_time, 10)
-    times = np.linspace(0, hop*int(np.floor(end_time/hop)),
-                        int(np.floor(end_time/hop)) + 1)
+    times = np.linspace(0, hop * int(np.floor(end_time / hop)),
+                        int(np.floor(end_time / hop)) + 1)
     times = np.round(times, 10)
     return times
 
@@ -409,24 +409,24 @@ def voicing_measures(ref_voicing, est_voicing):
     # !est_v |  FN   |   TN   |
     # -------------------------
 
-    TP = (ref_voicing*est_voicing).sum()
-    FP = ((ref_voicing == 0)*est_voicing).sum()
-    FN = (ref_voicing*(est_voicing == 0)).sum()
-    TN = ((ref_voicing == 0)*(est_voicing == 0)).sum()
+    TP = (ref_voicing * est_voicing).sum()
+    FP = ((ref_voicing == 0) * est_voicing).sum()
+    FN = (ref_voicing * (est_voicing == 0)).sum()
+    TN = ((ref_voicing == 0) * (est_voicing == 0)).sum()
 
     # Voicing recall = fraction of voiced frames according the reference that
     # are declared as voiced by the estimate
     if TP + FN == 0:
         vx_recall = 0.
     else:
-        vx_recall = TP/float(TP + FN)
+        vx_recall = TP / float(TP + FN)
 
     # Voicing false alarm = fraction of unvoiced frames according to the
     # reference that are declared as voiced by the estimate
     if FP + TN == 0:
         vx_false_alm = 0.
     else:
-        vx_false_alm = FP/float(FP + TN)
+        vx_false_alm = FP / float(FP + TN)
 
     return vx_recall, vx_false_alm
 
@@ -489,7 +489,7 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     # estimate provides a correct frequency value (within cent_tolerance cents)
     # NB: voicing estimation is ignored in this measure
     frame_correct = (np.abs(ref_cent - est_cent)[ref_voicing] < cent_tolerance)
-    raw_pitch = (frame_correct).sum()/float(ref_voicing.sum())
+    raw_pitch = (frame_correct).sum() / float(ref_voicing.sum())
 
     return raw_pitch
 
@@ -567,10 +567,10 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
 
     # Raw chroma = same as raw pitch except that octave errors are ignored.
     cent_diff = np.abs(ref_cent - est_cent)
-    octave = 1200*np.floor(cent_diff/1200.0 + 0.5)
+    octave = 1200 * np.floor(cent_diff / 1200.0 + 0.5)
     frame_correct = (np.abs(cent_diff - octave)[ref_voicing] < cent_tolerance)
     n_voiced = float(ref_voicing.sum())
-    raw_chroma = (frame_correct).sum()/n_voiced
+    raw_chroma = (frame_correct).sum() / n_voiced
     return raw_chroma
 
 
@@ -625,11 +625,11 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
         return 0.
 
     # True negatives = frames correctly estimates as unvoiced
-    TN = ((ref_voicing == 0)*(est_voicing == 0)).sum()
+    TN = ((ref_voicing == 0) * (est_voicing == 0)).sum()
 
     cent_diff = np.abs(ref_cent - est_cent)
-    frame_correct = (cent_diff[ref_voicing*est_voicing] < cent_tolerance)
-    accuracy = (frame_correct.sum() + TN)/float(ref_cent.shape[0])
+    frame_correct = (cent_diff[ref_voicing * est_voicing] < cent_tolerance)
+    accuracy = (frame_correct.sum() + TN) / float(ref_cent.shape[0])
 
     return accuracy
 
@@ -699,7 +699,7 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
 
 def main():
     """Command-line interface."""
-    
+
     parser = argparse.ArgumentParser(
         description='mir_eval melody extraction evaluation')
     parser.add_argument('-o',
@@ -726,7 +726,7 @@ def main():
     est_time, est_freq = io.load_time_series(parameters['estimated_file'])
 
     scores = evaluate(ref_time, ref_freq, est_time, est_freq,
-                                      hop=parameters['hop'])
+                      hop=parameters['hop'])
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file'])))
     io.print_evaluation(scores)

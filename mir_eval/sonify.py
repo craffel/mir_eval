@@ -35,19 +35,19 @@ def clicks(times, fs, click=None, length=None):
     # Create default click signal
     if click is None:
         # 1 kHz tone, 100ms
-        click = np.sin(2*np.pi*np.arange(fs*.1)*1000/(1.*fs))
+        click = np.sin(2 * np.pi * np.arange(fs * .1) * 1000 / (1. * fs))
         # Exponential decay
-        click *= np.exp(-np.arange(fs*.1)/(fs*.01))
+        click *= np.exp(-np.arange(fs * .1) / (fs * .01))
     # Set default length
     if length is None:
-        length = int(times.max()*fs + click.shape[0] + 1)
+        length = int(times.max() * fs + click.shape[0] + 1)
 
     # Pre-allocate click signal
     click_signal = np.zeros(length)
     # Place clicks
     for time in times:
         # Compute the boundaries of the click
-        start = int(time*fs)
+        start = int(time * fs)
         end = start + click.shape[0]
         # Make sure we don't try to output past the end of the signal
         if start >= length:
@@ -129,7 +129,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
                                 frequency / fs)
 
         # Calculate the number of loops we need to fill the duration
-        n_repeats = int(np.ceil(length/float(short_signal.shape[0])))
+        n_repeats = int(np.ceil(length / float(short_signal.shape[0])))
 
         # Simulate tiling the short buffer by using stride tricks
         long_signal = as_strided(short_signal,
@@ -271,8 +271,8 @@ def chroma(chromagram, times, fs, **kwargs):
     # and std 6 (one half octave)
     mean = 72
     std = 6
-    notes = np.arange(12*n_octaves) + base_note
-    shepard_weight = np.exp(-(notes - mean)**2./(2.*std**2.))
+    notes = np.arange(12 * n_octaves) + base_note
+    shepard_weight = np.exp(-(notes - mean)**2. / (2. * std**2.))
     # Copy the chromagram matrix vertically n_octaves times
     gram = np.tile(chromagram.T, n_octaves).T
     # This fixes issues if the supplied chromagram is int type
@@ -280,7 +280,7 @@ def chroma(chromagram, times, fs, **kwargs):
     # Apply Sheppard weighting
     gram *= shepard_weight.reshape(-1, 1)
     # Compute frequencies
-    frequencies = 440.0*(2.0**((notes - 69)/12.0))
+    frequencies = 440.0 * (2.0**((notes - 69) / 12.0))
     return time_frequency(gram, frequencies, times, fs, **kwargs)
 
 

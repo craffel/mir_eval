@@ -174,7 +174,7 @@ def evaluate(reference_key, estimated_key, **kwargs):
     scores = collections.OrderedDict()
 
     scores['Weighted Score'] = util.filter_kwargs(
-            weighted_score, reference_key, estimated_key)
+        weighted_score, reference_key, estimated_key)
 
     return scores
 

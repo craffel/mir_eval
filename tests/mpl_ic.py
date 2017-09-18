@@ -24,9 +24,9 @@ from matplotlib import ticker
 from matplotlib import pyplot as plt
 from matplotlib import ft2font
 from matplotlib.testing.noseclasses import KnownFailureTest, \
-     KnownFailureDidNotFailTest, ImageComparisonFailure
+    KnownFailureDidNotFailTest, ImageComparisonFailure
 from matplotlib.testing.compare import comparable_formats, compare_images, \
-     make_test_filename
+    make_test_filename
 
 
 def knownfailureif(fail_condition, msg=None, known_exception_class=None):
@@ -88,6 +88,7 @@ def _do_cleanup(original_units_registry):
 
 
 class CleanupTest(object):
+
     @classmethod
     def setup_class(cls):
         cls.original_units_registry = matplotlib.units.registry.copy()
@@ -138,6 +139,7 @@ def check_freetype_version(ver):
 
 
 class ImageComparisonTest(CleanupTest):
+
     @classmethod
     def setup_class(cls):
         CleanupTest.setup_class()

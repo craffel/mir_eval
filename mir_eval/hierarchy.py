@@ -314,8 +314,8 @@ def _gauc(ref_lca, est_lca, transitive, window):
         # (this also holds when the slice goes off the end of the array.)
         idx = min(query, window)
 
-        ref_score = np.concatenate((ref_score[:idx], ref_score[idx+1:]))
-        est_score = np.concatenate((est_score[:idx], est_score[idx+1:]))
+        ref_score = np.concatenate((ref_score[:idx], ref_score[idx + 1:]))
+        est_score = np.concatenate((est_score[:idx], est_score[idx + 1:]))
 
         inversions, normalizer = _compare_frame_rankings(ref_score, est_score,
                                                          transitive=transitive)
@@ -421,7 +421,7 @@ def _compare_frame_rankings(ref, est, transitive=False):
     if transitive:
         level_pairs = itertools.combinations(levels, 2)
     else:
-        level_pairs = [(i, i+1) for i in levels]
+        level_pairs = [(i, i + 1) for i in levels]
 
     level_pairs, lcounter = itertools.tee(level_pairs)
 
@@ -801,7 +801,7 @@ def main():
     est_intervals = [seg[0] for seg in est]
     est_labels = [seg[1] for seg in est]
 
-    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels, 
+    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels,
                       window=parameters['window'])
     print("{} [...] vs. {} [...]".format(
         os.path.basename(parameters['reference_file'][0]),

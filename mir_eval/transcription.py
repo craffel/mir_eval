@@ -427,8 +427,8 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     onset_hit_matrix = cmp_func(onset_distances, onset_tolerance)
 
     # check for pitch matches
-    pitch_distances = np.abs(1200*np.subtract.outer(np.log2(ref_pitches),
-                                                    np.log2(est_pitches)))
+    pitch_distances = np.abs(1200 * np.subtract.outer(np.log2(ref_pitches),
+                                                      np.log2(est_pitches)))
     pitch_hit_matrix = cmp_func(pitch_distances, pitch_tolerance)
 
     # check for offset matches if offset_ratio is not None
@@ -561,8 +561,8 @@ def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
                            offset_min_tolerance=offset_min_tolerance,
                            strict=strict)
 
-    precision = float(len(matching))/len(est_pitches)
-    recall = float(len(matching))/len(ref_pitches)
+    precision = float(len(matching)) / len(est_pitches)
+    recall = float(len(matching)) / len(ref_pitches)
     f_measure = util.f_measure(precision, recall, beta=beta)
 
     avg_overlap_ratio = average_overlap_ratio(ref_intervals, est_intervals,
@@ -679,8 +679,8 @@ def onset_precision_recall_f1(ref_intervals, est_intervals,
                                  onset_tolerance=onset_tolerance,
                                  strict=strict)
 
-    onset_precision = float(len(matching))/len(est_intervals)
-    onset_recall = float(len(matching))/len(ref_intervals)
+    onset_precision = float(len(matching)) / len(est_intervals)
+    onset_recall = float(len(matching)) / len(ref_intervals)
     onset_f_measure = util.f_measure(onset_precision, onset_recall, beta=beta)
     return onset_precision, onset_recall, onset_f_measure
 
@@ -751,8 +751,8 @@ def offset_precision_recall_f1(ref_intervals, est_intervals, offset_ratio=0.2,
                                   offset_min_tolerance=offset_min_tolerance,
                                   strict=strict)
 
-    offset_precision = float(len(matching))/len(est_intervals)
-    offset_recall = float(len(matching))/len(ref_intervals)
+    offset_precision = float(len(matching)) / len(est_intervals)
+    offset_recall = float(len(matching)) / len(ref_intervals)
     offset_f_measure = util.f_measure(offset_precision, offset_recall,
                                       beta=beta)
     return offset_precision, offset_recall, offset_f_measure

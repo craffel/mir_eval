@@ -100,9 +100,9 @@ from . import io
 
 BITMAP_LENGTH = 12
 NO_CHORD = "N"
-NO_CHORD_ENCODED = -1, np.array([0]*BITMAP_LENGTH), -1
+NO_CHORD_ENCODED = -1, np.array([0] * BITMAP_LENGTH), -1
 X_CHORD = "X"
-X_CHORD_ENCODED = -1, np.array([-1]*BITMAP_LENGTH), -1
+X_CHORD_ENCODED = -1, np.array([-1] * BITMAP_LENGTH), -1
 
 
 class InvalidChordException(Exception):
@@ -699,9 +699,9 @@ def weighted_accuracy(comparisons, weights):
     weights = weights[valid_idx]
     # Normalize the weights
     total_weight = float(np.sum(weights))
-    normalized_weights = np.asarray(weights, dtype=float)/total_weight
+    normalized_weights = np.asarray(weights, dtype=float) / total_weight
     # Score is the sum of all weighted comparisons
-    return np.sum(comparisons*normalized_weights)
+    return np.sum(comparisons * normalized_weights)
 
 
 def thirds(reference_labels, estimated_labels):
@@ -1431,7 +1431,7 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
 
 def main():
     """Command-line interface."""
-    
+
     parser = argparse.ArgumentParser(
         description='mir_eval segmentation evaluation')
     parser.add_argument('-t',
@@ -1460,7 +1460,7 @@ def main():
     ref_intervals, ref_labels = io.load_labeled_intervals(ref_file)
     est_intervals, est_labels = io.load_labeled_intervals(est_file)
 
-    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels, 
+    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels,
                       trim=parameters['trim'])
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file'])))

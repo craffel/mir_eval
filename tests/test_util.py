@@ -158,9 +158,9 @@ def test_bipartite_match():
     G = collections.defaultdict(list)
 
     u_set = ['u{:d}'.format(_) for _ in range(10)]
-    v_set = ['v{:d}'.format(_) for _ in range(len(u_set)+1)]
+    v_set = ['v{:d}'.format(_) for _ in range(len(u_set) + 1)]
     for i, u in enumerate(u_set):
-        for v in v_set[:-i-1]:
+        for v in v_set[:-i - 1]:
             G[v].append(u)
 
     matching = util._bipartite_match(G)

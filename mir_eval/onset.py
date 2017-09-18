@@ -95,8 +95,8 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     # locations
     matching = util.match_events(reference_onsets, estimated_onsets, window)
 
-    precision = float(len(matching))/len(estimated_onsets)
-    recall = float(len(matching))/len(reference_onsets)
+    precision = float(len(matching)) / len(estimated_onsets)
+    recall = float(len(matching)) / len(reference_onsets)
     # Compute F-measure and return all statistics
     return util.f_measure(precision, recall), precision, recall
 
@@ -141,7 +141,7 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
 
 def main():
     """Command-line interface."""
-    
+
     parser = argparse.ArgumentParser(
         description='mir_eval onset detection evaluation')
     parser.add_argument('-o',

@@ -130,7 +130,7 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
         # Count the hits
         hits.append(bool(relative_errors[-1] <= tol))
 
-    p_score = reference_weight * hits[0] + (1.0-reference_weight) * hits[1]
+    p_score = reference_weight * hits[0] + (1.0 - reference_weight) * hits[1]
 
     one_correct = bool(np.max(hits))
     both_correct = bool(np.min(hits))
@@ -195,8 +195,10 @@ def main():
                         help='path to the estimated annotation file')
     parameters = vars(parser.parse_args(sys.argv[1:]))
 
-    reference_tempi = io.load_delimited(parameters['reference_file'], [float]*3)
-    estimated_tempi = io.load_delimited(parameters['estimated_file'], [float]*3)
+    reference_tempi = io.load_delimited(
+        parameters['reference_file'], [float] * 3)
+    estimated_tempi = io.load_delimited(
+        parameters['estimated_file'], [float] * 3)
 
     estimated_tempi = np.concatenate(estimated_tempi[:2])
     reference_weight = reference_tempi[-1][0]
