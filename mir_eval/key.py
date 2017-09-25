@@ -20,6 +20,7 @@ Metrics
 
 import collections
 from . import util
+from . import io
 
 
 KEY_TO_SEMITONE = {'c': 0, 'c#': 1, 'db': 1, 'd': 2, 'd#': 3, 'eb': 3, 'e': 4,
@@ -59,6 +60,42 @@ def validate(reference_key, estimated_key):
     """
     for key in [reference_key, estimated_key]:
         validate_key(key)
+
+
+def load(filename, delimiter=r'\s+'):
+    r"""Load key labels from an annotation file. The file should
+    consist of two string columns: One denoting the key scale degree
+    (semitone), and the other denoting the mode (major or minor).  The file
+    should contain only one row.
+
+    Parameters
+    ----------
+    filename : str
+        Path to the annotation file
+    delimiter : str
+        Separator regular expression.
+        By default, lines will be split by any amount of whitespace.
+
+    Returns
+    -------
+    key : str
+        Key label, in the form ``'(key) (mode)'``
+
+    """
+    # Use our universal function to load the key and mode strings
+    scale, mode = io.load_delimited(filename, [str, str], delimiter)
+    if len(scale) != 1:
+        raise ValueError('Key file should contain only one line.')
+    scale, mode = scale[0], mode[0]
+    # Join with a space
+    key_string = '{} {}'.format(scale, mode)
+    # Validate them, but throw a warning in place of an error
+    try:
+        validate_key(key_string)
+    except ValueError as error:
+        warnings.warn(error.args[0])
+
+    return key_string
 
 
 def split_key_string(key):

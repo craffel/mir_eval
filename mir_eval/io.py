@@ -13,8 +13,6 @@ import scipy.io.wavfile
 import six
 
 from . import util
-from . import key
-from . import tempo
 
 
 @contextlib.contextmanager
@@ -429,86 +427,6 @@ def load_valued_intervals(filename, delimiter=r'\s+'):
     values = np.array(values)
 
     return intervals, values
-
-
-def load_key(filename, delimiter=r'\s+'):
-    r"""Load key labels from an annotation file. The file should
-    consist of two string columns: One denoting the key scale degree
-    (semitone), and the other denoting the mode (major or minor).  The file
-    should contain only one row.
-
-    Parameters
-    ----------
-    filename : str
-        Path to the annotation file
-    delimiter : str
-        Separator regular expression.
-        By default, lines will be split by any amount of whitespace.
-
-    Returns
-    -------
-    key : str
-        Key label, in the form ``'(key) (mode)'``
-
-    """
-    # Use our universal function to load the key and mode strings
-    scale, mode = load_delimited(filename, [str, str], delimiter)
-    if len(scale) != 1:
-        raise ValueError('Key file should contain only one line.')
-    scale, mode = scale[0], mode[0]
-    # Join with a space
-    key_string = '{} {}'.format(scale, mode)
-    # Validate them, but throw a warning in place of an error
-    try:
-        key.validate_key(key_string)
-    except ValueError as error:
-        warnings.warn(error.args[0])
-
-    return key_string
-
-
-def load_tempo(filename, delimiter=r'\s+'):
-    r"""Load tempo estimates from an annotation file in MIREX format.
-    The file should consist of three numeric columns: the first two
-    correspond to tempo estimates (in beats-per-minute), and the third
-    denotes the relative confidence of the first value compared to the
-    second (in the range [0, 1]). The file should contain only one row.
-
-    Parameters
-    ----------
-    filename : str
-        Path to the annotation file
-    delimiter : str
-        Separator regular expression.
-        By default, lines will be split by any amount of whitespace.
-
-    Returns
-    -------
-    tempi : np.ndarray, non-negative
-        The two tempo estimates
-
-    weight : float [0, 1]
-        The relative importance of ``tempi[0]`` compared to ``tempi[1]``
-    """
-    # Use our universal function to load the key and mode strings
-    t1, t2, weight = load_delimited(filename, [float, float, float], delimiter)
-
-    weight = weight[0]
-    tempi = np.concatenate([t1, t2])
-
-    if len(t1) != 1:
-        raise ValueError('Tempo file should contain only one line.')
-
-    # Validate them, but throw a warning in place of an error
-    try:
-        tempo.validate_tempi(tempi)
-    except ValueError as error:
-        warnings.warn(error.args[0])
-
-    if not 0 <= weight <= 1:
-        raise ValueError('Invalid weight: {}'.format(weight))
-
-    return tempi, weight
 
 
 def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
