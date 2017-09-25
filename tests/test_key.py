@@ -54,9 +54,9 @@ def test_key_functions():
         with open(sco_f, 'r') as f:
             expected_scores = json.load(f)
         # Load in an example key annotation
-        reference_key = mir_eval.io.load_key(ref_f)
+        reference_key = mir_eval.key.load(ref_f)
         # Load in an example key detector output
-        estimated_key = mir_eval.io.load_key(est_f)
+        estimated_key = mir_eval.key.load(est_f)
         # Compute scores
         scores = mir_eval.key.evaluate(reference_key, estimated_key)
         # Compare them
