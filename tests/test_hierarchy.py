@@ -2,9 +2,8 @@
 Unit tests for mir_eval.hierarchy
 '''
 
-from glob import glob
 import re
-
+import glob
 import warnings
 import json
 
@@ -16,6 +15,9 @@ from nose.tools import raises
 
 
 A_TOL = 1e-12
+REF_GLOB = 'data/hierarchy/ref*.lab'
+EST_GLOB = 'data/hierarchy/est*.lab'
+SCORES_GLOB = 'data/hierarchy/output*.json'
 
 
 def test_tmeasure_pass():
@@ -228,9 +230,9 @@ def test_lmeasure_fail_frame_size():
 
 def test_hierarchy_regression():
 
-    ref_files = sorted(glob('data/hierarchy/ref*.lab'))
-    est_files = sorted(glob('data/hierarchy/est*.lab'))
-    out_files = sorted(glob('data/hierarchy/output*.json'))
+    ref_files = sorted(glob.glob(REF_GLOB))
+    est_files = sorted(glob.glob(EST_GLOB))
+    out_files = sorted(glob.glob(SCORES_GLOB))
 
     ref_hier = [mir_eval.io.load_labeled_intervals(_) for _ in ref_files]
     est_hier = [mir_eval.io.load_labeled_intervals(_) for _ in est_files]
@@ -379,7 +381,7 @@ def test_compare_frame_rankings():
 
 
 def test_cli():
-    ref_file = sorted(glob.glob(REF_GLOB))[0]
-    est_file = sorted(glob.glob(EST_GLOB))[0]
-    args = [ref_file, est_file]
+    ref_files = sorted(glob.glob(REF_GLOB))
+    est_files = sorted(glob.glob(EST_GLOB))
+    args = ['-r', *ref_files, '-e', *est_files]
     mir_eval.hierarchy.main(args)
