@@ -2,7 +2,8 @@
 '''
 Unit tests for mir_eval.tempo
 '''
-
+import nose
+import warnings
 import numpy as np
 import mir_eval
 from nose.tools import raises
@@ -13,11 +14,29 @@ import glob
 A_TOL = 1e-12
 
 
-def _load_tempi(filename):
+def test_load_tempo():
+    tempi, weight = mir_eval.tempo.load('data/tempo/ref01.lab')
+    assert np.allclose(tempi, [60, 120])
+    assert weight == 0.5
 
-    values = mir_eval.io.load_delimited(filename, [float] * 3)
 
-    return np.concatenate(values[:2]), values[-1][0]
+@nose.tools.raises(ValueError)
+def test_load_tempo_multiline():
+    tempi, weight = mir_eval.tempo.load('data/tempo/bad00.lab')
+
+
+@nose.tools.raises(ValueError)
+def test_load_tempo_badweight():
+    tempi, weight = mir_eval.tempo.load('data/tempo/bad01.lab')
+
+
+def test_load_bad_tempi():
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        tempi, weight = mir_eval.tempo.load('data/tempo/bad02.lab')
+        assert len(w) == 1
+        assert issubclass(w[-1].category, UserWarning)
+        assert ('non-negative numbers' in str(w[-1].message))
 
 
 def __check_score(sco_f, metric, score, expected_score):
@@ -62,8 +81,8 @@ def test_tempo_regression():
         with open(sco_f, 'r') as fdesc:
             expected_scores = json.load(fdesc)
 
-        ref_tempi, ref_weight = _load_tempi(ref_f)
-        est_tempi, _ = _load_tempi(est_f)
+        ref_tempi, ref_weight = mir_eval.tempo.load(ref_f)
+        est_tempi, _ = mir_eval.tempo.load(est_f)
 
         scores = mir_eval.tempo.evaluate(ref_tempi, ref_weight, est_tempi)
 
