@@ -93,7 +93,6 @@ def load(filename, delimiter=r'\s+'):
     weight : float [0, 1]
         The relative importance of ``tempi[0]`` compared to ``tempi[1]``
     """
-    # Use our universal function to load the key and mode strings
     t1, t2, weight = io.load_delimited(filename, [float, float, float], delimiter)
 
     weight = weight[0]
@@ -102,7 +101,7 @@ def load(filename, delimiter=r'\s+'):
     if len(t1) != 1:
         raise ValueError('Tempo file should contain only one line.')
 
-    # Validate them, but throw a warning in place of an error
+    # Validate tempo, but throw a warning in place of an error.
     try:
         validate_tempi(tempi)
     except ValueError as error:

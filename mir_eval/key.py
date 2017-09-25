@@ -16,9 +16,13 @@ Metrics
 -------
 * :func:`mir_eval.key.weighted_score`: Heuristic scoring of the relation of two
   keys.
-'''
 
+'''
+import os
+import sys
+import argparse
 import collections
+
 from . import util
 from . import io
 
@@ -82,14 +86,15 @@ def load(filename, delimiter=r'\s+'):
         Key label, in the form ``'(key) (mode)'``
 
     """
-    # Use our universal function to load the key and mode strings
     scale, mode = io.load_delimited(filename, [str, str], delimiter)
+
     if len(scale) != 1:
         raise ValueError('Key file should contain only one line.')
+
     scale, mode = scale[0], mode[0]
-    # Join with a space
     key_string = '{} {}'.format(scale, mode)
-    # Validate them, but throw a warning in place of an error
+
+    # Validate key, but throw a warning in place of an error.
     try:
         validate_key(key_string)
     except ValueError as error:
@@ -216,4 +221,37 @@ def evaluate(reference_key, estimated_key, **kwargs):
     return scores
 
 
-# TODO Add main()
+def main():
+    """Command-line interface."""
+
+    parser = argparse.ArgumentParser(
+        description='mir_eval key detection evaluation')
+    parser.add_argument('-o',
+                        dest='output_file',
+                        default=None,
+                        type=str,
+                        action='store',
+                        help='Store results in json format')
+    parser.add_argument('reference_file',
+                        action='store',
+                        help='path to the reference annotation file')
+    parser.add_argument('estimated_file',
+                        action='store',
+                        help='path to the estimated annotation file')
+    parameters = vars(parser.parse_args(sys.argv[1:]))
+
+    reference = io.load_delimited(parameters['reference_file'], [float] * 3)
+    estimate = io.load_delimited(parameters['estimated_file'], [float] * 3)
+
+    scores = evaluate(reference, estimate)
+    print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
+                             os.path.basename(parameters['estimated_file'])))
+    io.print_evaluation(scores)
+
+    if parameters['output_file']:
+        print('Saving results to: {}'.format(parameters['output_file']))
+        io.save_evaluation(scores, parameters['output_file'])
+
+
+if __name__ == '__main__':
+    main()
