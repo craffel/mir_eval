@@ -220,7 +220,7 @@ def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
     return scores
 
 
-def main():
+def main(args):
     """Command-line interface."""
 
     parser = argparse.ArgumentParser(
@@ -237,12 +237,12 @@ def main():
     parser.add_argument('estimated_file',
                         action='store',
                         help='path to the estimated annotation file')
-    parameters = vars(parser.parse_args(sys.argv[1:]))
+    parameters = vars(parser.parse_args(args))
 
     reference_tempi, reference_weight = load(parameters['reference_file'])
     estimate_tempi, _ = load(parameters['estimated_file'])
 
-    scores = evaluate(reference_tempi, reference_weight, estimated_tempi)
+    scores = evaluate(reference_tempi, reference_weight, estimate_tempi)
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file'])))
     io.print_evaluation(scores)
@@ -253,4 +253,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
