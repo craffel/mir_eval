@@ -94,9 +94,9 @@ def load(filename, delimiter=r'\s+'):
     weight : float [0, 1]
         The relative importance of ``tempi[0]`` compared to ``tempi[1]``
     """
-    t1, t2, weight = io.load_delimited(filename, [float, float, float], delimiter)
+    t1, t2, w = io.load_delimited(filename, [float, float, float], delimiter)
 
-    weight = weight[0]
+    weight = w[0]
     tempi = np.concatenate([t1, t2])
 
     if len(t1) != 1:
@@ -238,7 +238,7 @@ def main():
                         action='store',
                         help='path to the estimated annotation file')
     parameters = vars(parser.parse_args(sys.argv[1:]))
-    
+
     reference_tempi, reference_weight = load(parameters['reference_file'])
     estimate_tempi, _ = load(parameters['estimated_file'])
 
