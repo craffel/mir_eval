@@ -537,3 +537,11 @@ def print_evaluation(results):
             print('\t{:>{}} : {:.3f}'.format(key, max_len, value))
         else:
             print('\t{:>{}} : {}'.format(key, max_len, value))
+
+
+def load_tempo(filename, delimiter=r'\s+'):
+    raise NameError("load_tempo moved to mir_eval.tempo.load")
+
+
+def load_key(filename, delimiter=r'\s+'):
+    raise NameError("load_key moved to mir_eval.key.load")
