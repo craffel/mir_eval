@@ -851,11 +851,9 @@ def main(args):
                         help='path to the estimated annotation file')
     parameters = vars(parser.parse_args(args))
 
-    ref_intervals, ref_pitches = mir_eval.io.load_valued_intervals(
-        parameters['reference_file'])
-    est_intervals, est_pitches = mir_eval.io.load_valued_intervals(
-        parameters['estimated_file'])
-    scores = evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches)
+    ref = io.load_valued_intervals(parameters['reference_file'])
+    est = io.load_valued_intervals(parameters['estimated_file'])
+    scores = evaluate(*ref, *est)
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file'])))
     io.print_evaluation(scores)
