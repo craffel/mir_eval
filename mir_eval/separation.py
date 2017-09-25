@@ -927,7 +927,7 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
     return scores
 
 
-def main():
+def main(args):
     """Command-line interface."""
 
     parser = argparse.ArgumentParser(
@@ -946,7 +946,7 @@ def main():
                         action='store',
                         help='path to directory containing estimated source '
                              '.wav files')
-    parameters = vars(parser.parse_args(sys.argv[1:]))
+    parameters = vars(parser.parse_args(args))
 
     reference_data = []
     estimated_data = []
@@ -982,4 +982,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

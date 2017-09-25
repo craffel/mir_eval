@@ -324,3 +324,10 @@ def test_offset_precision_recall_f1_empty():
         mir_eval.transcription.offset_precision_recall_f1(est_int, ref_int))
 
     assert (precision, recall, f1) == (0, 0, 0)
+
+
+def test_cli():
+    ref_file = sorted(glob.glob(REF_GLOB))[0]
+    est_file = sorted(glob.glob(EST_GLOB))[0]
+    args = [ref_file, est_file]
+    mir_eval.transcription.main(args)

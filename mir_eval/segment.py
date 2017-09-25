@@ -1255,7 +1255,7 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     return scores
 
 
-def main():
+def main(args):
     """Command-line interface."""
 
     parser = argparse.ArgumentParser(
@@ -1279,7 +1279,7 @@ def main():
     parser.add_argument('estimated_file',
                         action='store',
                         help='path to the estimated annotation')
-    parameters = vars(parser.parse_args(sys.argv[1:]))
+    parameters = vars(parser.parse_args(args))
 
     ref_file = parameters['reference_file']
     est_file = parameters['estimated_file']
@@ -1298,4 +1298,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

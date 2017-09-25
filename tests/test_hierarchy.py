@@ -376,3 +376,10 @@ def test_compare_frame_rankings():
                                                            transitive=True)
     assert inv == 0
     assert norm == 0.0
+
+
+def test_cli():
+    ref_file = sorted(glob.glob(REF_GLOB))[0]
+    est_file = sorted(glob.glob(EST_GLOB))[0]
+    args = [ref_file, est_file]
+    mir_eval.hierarchy.main(args)

@@ -687,7 +687,7 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
     return scores
 
 
-def main():
+def main(args):
     """Command-line interface."""
 
     parser = argparse.ArgumentParser(
@@ -704,7 +704,7 @@ def main():
     parser.add_argument("estimated_file",
                         action="store",
                         help="Path to the estimation file.")
-    parameters = vars(parser.parse_args(sys.argv[1:]))
+    parameters = vars(parser.parse_args(args))
 
     ref_patterns = io.load_patterns(parameters['reference_file'])
     est_patterns = io.load_patterns(parameters['estimated_file'])
@@ -720,4 +720,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

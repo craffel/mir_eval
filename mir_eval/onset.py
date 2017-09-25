@@ -139,7 +139,7 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
     return scores
 
 
-def main():
+def main(args):
     """Command-line interface."""
 
     parser = argparse.ArgumentParser(
@@ -156,7 +156,7 @@ def main():
     parser.add_argument('estimated_file',
                         action='store',
                         help='path to the estimated annotation file')
-    parameters = vars(parser.parse_args(sys.argv[1:]))
+    parameters = vars(parser.parse_args(args))
 
     reference_onsets = io.load_events(parameters['reference_file'])
     estimated_onsets = io.load_events(parameters['estimated_file'])
@@ -172,4 +172,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

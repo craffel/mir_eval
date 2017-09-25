@@ -833,7 +833,7 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     return scores
 
 
-def main():
+def main(args):
     """Command-line interface."""
     parser = argparse.ArgumentParser(
         description='mir_eval transcription evaluation')
@@ -849,7 +849,7 @@ def main():
     parser.add_argument('estimated_file',
                         action='store',
                         help='path to the estimated annotation file')
-    parameters = vars(parser.parse_args(sys.argv[1:]))
+    parameters = vars(parser.parse_args(args))
 
     ref_intervals, ref_pitches = mir_eval.io.load_valued_intervals(
         parameters['reference_file'])
@@ -866,4 +866,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

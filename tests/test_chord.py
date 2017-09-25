@@ -528,3 +528,10 @@ def test_validate():
         # Test that error is thrown on different-length labels
         nose.tools.assert_raises(
             ValueError, mir_eval.chord.validate, [], ['C'])
+
+
+def test_cli():
+    ref_file = sorted(glob.glob(REF_GLOB))[0]
+    est_file = sorted(glob.glob(EST_GLOB))[0]
+    args = [ref_file, est_file]
+    mir_eval.chord.main(args)

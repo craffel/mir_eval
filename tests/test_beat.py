@@ -130,3 +130,10 @@ def test_continuity_edge_cases():
         np.array([6., 6.]), np.array([6., 7.])), 0.)
     assert np.allclose(mir_eval.beat.continuity(
         np.array([6., 6.]), np.array([6.5, 7.])), 0.)
+
+
+def test_cli():
+    ref_file = sorted(glob.glob(REF_GLOB))[0]
+    est_file = sorted(glob.glob(EST_GLOB))[0]
+    args = [ref_file, est_file]
+    mir_eval.beat.main(args)

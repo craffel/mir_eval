@@ -199,3 +199,10 @@ def test_melody_functions():
             # This is a simple hack to make nosetest's messages more useful
             yield (__check_score, sco_f, metric, scores[metric],
                    expected_scores[metric])
+
+
+def test_cli():
+    ref_file = sorted(glob.glob(REF_GLOB))[0]
+    est_file = sorted(glob.glob(EST_GLOB))[0]
+    args = [ref_file, est_file]
+    mir_eval.melody.main(args)

@@ -336,3 +336,10 @@ def test_separation_functions():
     image_scores = mir_eval.separation.evaluate(ref_images, est_images)
     # make sure sources is not being evaluated on images
     assert 'Sources - Source to Distortion' not in image_scores
+
+
+def test_cli():
+    ref_file = sorted(glob.glob(REF_GLOB))[0]
+    est_file = sorted(glob.glob(EST_GLOB))[0]
+    args = [ref_file, est_file]
+    mir_eval.separation.main(args)

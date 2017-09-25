@@ -697,7 +697,7 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
     return scores
 
 
-def main():
+def main(args):
     """Command-line interface."""
 
     parser = argparse.ArgumentParser(
@@ -720,7 +720,7 @@ def main():
                         default=None,
                         help="hop size (in seconds) to use for the evaluation"
                         " (optional)")
-    parameters = vars(parser.parse_args(sys.argv[1:]))
+    parameters = vars(parser.parse_args(args))
 
     ref_time, ref_freq = io.load_time_series(parameters['reference_file'])
     est_time, est_freq = io.load_time_series(parameters['estimated_file'])
@@ -737,4 +737,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

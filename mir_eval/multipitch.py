@@ -511,7 +511,7 @@ def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
     return scores
 
 
-def main():
+def main(args):
     """Command-line interface."""
 
     parser = argparse.ArgumentParser(
@@ -528,7 +528,7 @@ def main():
     parser.add_argument('estimated_file',
                         action='store',
                         help='path to the estimated annotation file')
-    parameters = vars(parser.parse_args(sys.argv[1:]))
+    parameters = vars(parser.parse_args(args))
 
     ref_times, ref_freqs = io.load_ragged_time_series(
         parameters['reference_file'])
@@ -547,4 +547,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

@@ -295,3 +295,10 @@ def regression_test_evaluate():
             ref_times, ref_freqs, est_times, est_freqs)
 
         assert __scores_equal(actual_score, expected_score)
+
+
+def test_cli():
+    ref_file = sorted(glob.glob(REF_GLOB))[0]
+    est_file = sorted(glob.glob(EST_GLOB))[0]
+    args = [ref_file, est_file]
+    mir_eval.multipitch.main(args)

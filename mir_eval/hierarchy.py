@@ -754,7 +754,7 @@ def evaluate(ref_intervals_hier, ref_labels_hier,
     return scores
 
 
-def main():
+def main(args):
     """Command-line interface."""
 
     parser = argparse.ArgumentParser(
@@ -789,7 +789,7 @@ def main():
                         help='path to the estimated annotation(s) in '
                         '.lab format, ordered from top to bottom of '
                         'the hierarchy')
-    parameters = vars(parser.parse_args(sys.argv[1:]))
+    parameters = vars(parser.parse_args(args))
 
     ref_files = parameters['reference_file']
     est_files = parameters['estimated_file']
@@ -814,4 +814,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

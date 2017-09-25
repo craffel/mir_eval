@@ -12,6 +12,9 @@ import glob
 
 
 A_TOL = 1e-12
+REF_GLOB = 'data/tempo/ref*.lab'
+EST_GLOB = 'data/tempo/est*.lab'
+SCORES_GLOB = 'data/tempo/output*.json'
 
 
 def test_load_tempo():
@@ -66,10 +69,6 @@ def test_tempo_fail():
 
 
 def test_tempo_regression():
-    REF_GLOB = 'data/tempo/ref*.lab'
-    EST_GLOB = 'data/tempo/est*.lab'
-    SCORES_GLOB = 'data/tempo/output*.json'
-
     # Load in all files in the same order
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
@@ -89,3 +88,10 @@ def test_tempo_regression():
         for metric in scores:
             yield (__check_score, sco_f, metric, scores[metric],
                    expected_scores[metric])
+
+
+def test_cli():
+    ref_file = sorted(glob.glob(REF_GLOB))[0]
+    est_file = sorted(glob.glob(EST_GLOB))[0]
+    args = [ref_file, est_file]
+    mir_eval.tempo.main(args)

@@ -173,3 +173,10 @@ def test_segment_functions():
         yield (__unit_test_permuted_segments, sco_f,
                ref_intervals, ref_labels,
                est_intervals, est_labels, scores)
+
+
+def test_cli():
+    ref_file = sorted(glob.glob(REF_GLOB))[0]
+    est_file = sorted(glob.glob(EST_GLOB))[0]
+    args = [ref_file, est_file]
+    mir_eval.segment.main(args)
