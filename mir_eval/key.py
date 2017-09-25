@@ -240,8 +240,8 @@ def main():
                         help='path to the estimated annotation file')
     parameters = vars(parser.parse_args(sys.argv[1:]))
 
-    reference = io.load_delimited(parameters['reference_file'], [float] * 3)
-    estimate = io.load_delimited(parameters['estimated_file'], [float] * 3)
+    reference = load(parameters['reference_file'])
+    estimate = load(parameters['estimated_file'])
 
     scores = evaluate(reference, estimate)
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
