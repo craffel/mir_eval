@@ -4,6 +4,7 @@ Functions for loading in annotations from files in different formats.
 
 from __future__ import print_function
 
+import re
 import contextlib
 import json
 import warnings
