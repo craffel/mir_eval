@@ -383,5 +383,5 @@ def test_compare_frame_rankings():
 def test_cli():
     ref_files = sorted(glob.glob(REF_GLOB))
     est_files = sorted(glob.glob(EST_GLOB))
-    args = ['-r', *ref_files, '-e', *est_files]
+    args = ['-r'] + ref_files + ['-e'] + est_files
     mir_eval.hierarchy.main(args)

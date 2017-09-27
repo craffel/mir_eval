@@ -853,7 +853,8 @@ def main(args):
 
     ref = io.load_valued_intervals(parameters['reference_file'])
     est = io.load_valued_intervals(parameters['estimated_file'])
-    scores = evaluate(*ref, *est)
+    files = ref + est
+    scores = evaluate(*files)
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file'])))
     io.print_evaluation(scores)
