@@ -125,7 +125,7 @@ def _get_reference_beat_variations(reference_beats):
     """
 
     # Create annotations at twice the metric level
-    interpolated_indices = np.arange(0, reference_beats.shape[0] - .5, .5)
+    interpolated_indices = np.arange(0, reference_beats.shape[0]-.5, .5)
     original_indices = np.arange(0, reference_beats.shape[0])
     double_reference_beats = np.interp(interpolated_indices,
                                        original_indices,
@@ -179,8 +179,8 @@ def f_measure(reference_beats,
                                  estimated_beats,
                                  f_measure_threshold)
 
-    precision = float(len(matching)) / len(estimated_beats)
-    recall = float(len(matching)) / len(reference_beats)
+    precision = float(len(matching))/len(estimated_beats)
+    recall = float(len(matching))/len(reference_beats)
     return util.f_measure(precision, recall)
 
 
@@ -229,9 +229,9 @@ def cemgil(reference_beats,
             # Find the error for the closest beat to the reference beat
             beat_diff = np.min(np.abs(beat - estimated_beats))
             # Add gaussian error into the accuracy
-            accuracy += np.exp(-(beat_diff**2) / (2.0 * cemgil_sigma**2))
+            accuracy += np.exp(-(beat_diff**2)/(2.0*cemgil_sigma**2))
         # Normalize the accuracy
-        accuracy /= .5 * (estimated_beats.shape[0] + reference_beats.shape[0])
+        accuracy /= .5*(estimated_beats.shape[0] + reference_beats.shape[0])
         # Add it to our list of accuracy scores
         accuracies.append(accuracy)
     # Return raw accuracy with non-varied annotations
@@ -288,13 +288,13 @@ def goto(reference_beats,
     paired = np.zeros(reference_beats.shape[0])
     # Keep track of Goto's three criteria
     goto_criteria = 0
-    for n in range(1, reference_beats.shape[0] - 1):
+    for n in range(1, reference_beats.shape[0]-1):
         # Get previous inner-reference-beat-interval
-        previous_interval = 0.5 * (reference_beats[n] - reference_beats[n - 1])
+        previous_interval = 0.5*(reference_beats[n] - reference_beats[n-1])
         # Window start - in the middle of the current beat and the previous
         window_min = reference_beats[n] - previous_interval
         # Next inter-reference-beat-interval
-        next_interval = 0.5 * (reference_beats[n + 1] - reference_beats[n])
+        next_interval = 0.5*(reference_beats[n+1] - reference_beats[n])
         # Window end - in the middle of the current beat and the next
         window_max = reference_beats[n] + next_interval
         # Get estimated beats in the window
@@ -311,9 +311,9 @@ def goto(reference_beats,
             offset = estimated_beats[beats_in_window] - reference_beats[n]
             # Scale by previous or next interval
             if offset < 0:
-                beat_error[n] = offset / previous_interval
+                beat_error[n] = offset/previous_interval
             else:
-                beat_error[n] = offset / next_interval
+                beat_error[n] = offset/next_interval
     # Get indices of incorrect beats
     incorrect_beats = np.flatnonzero(np.abs(beat_error) > goto_threshold)
     # All beats are correct (first and last will be 0 so always correct)
@@ -326,7 +326,7 @@ def goto(reference_beats,
         track_len = np.max(np.diff(incorrect_beats))
         track_start = np.flatnonzero(np.diff(incorrect_beats) == track_len)[0]
         # Is the track length at least 25% of the song?
-        if track_len - 1 > .25 * (reference_beats.shape[0] - 2):
+        if track_len - 1 > .25*(reference_beats.shape[0] - 2):
             goto_criteria = 1
             start_beat = incorrect_beats[track_start]
             end_beat = incorrect_beats[track_start + 1]
@@ -338,7 +338,7 @@ def goto(reference_beats,
            and np.std(track, ddof=1) < goto_sigma:
             goto_criteria = 3
     # If all criteria are met, score is 100%!
-    return 1.0 * (goto_criteria == 3)
+    return 1.0*(goto_criteria == 3)
 
 
 def p_score(reference_beats,
@@ -386,7 +386,7 @@ def p_score(reference_beats,
     if estimated_beats.size <= 1 or reference_beats.size <= 1:
         return 0.
     # Quantize beats to 10ms
-    sampling_rate = int(1.0 / 0.010)
+    sampling_rate = int(1.0/0.010)
     # Shift beats so that the minimum in either sequence is zero
     offset = min(estimated_beats.min(), reference_beats.min())
     estimated_beats = np.array(estimated_beats - offset)
@@ -395,28 +395,27 @@ def p_score(reference_beats,
     end_point = np.int(np.ceil(np.max([np.max(estimated_beats),
                                        np.max(reference_beats)])))
     # Make impulse trains with impulses at beat locations
-    reference_train = np.zeros(end_point * sampling_rate + 1)
-    beat_indices = np.ceil(reference_beats * sampling_rate).astype(np.int)
+    reference_train = np.zeros(end_point*sampling_rate + 1)
+    beat_indices = np.ceil(reference_beats*sampling_rate).astype(np.int)
     reference_train[beat_indices] = 1.0
-    estimated_train = np.zeros(end_point * sampling_rate + 1)
-    beat_indices = np.ceil(estimated_beats * sampling_rate).astype(np.int)
+    estimated_train = np.zeros(end_point*sampling_rate + 1)
+    beat_indices = np.ceil(estimated_beats*sampling_rate).astype(np.int)
     estimated_train[beat_indices] = 1.0
     # Window size to take the correlation over
     # defined as .2*median(inter-annotation-intervals)
     annotation_intervals = np.diff(np.flatnonzero(reference_train))
-    win_size = int(np.round(p_score_threshold *
-                            np.median(annotation_intervals)))
+    win_size = int(np.round(p_score_threshold*np.median(annotation_intervals)))
     # Get full correlation
     train_correlation = np.correlate(reference_train, estimated_train, 'full')
     # Get the middle element - note we are rounding down on purpose here
-    middle_lag = train_correlation.shape[0] // 2
+    middle_lag = train_correlation.shape[0]//2
     # Truncate to only valid lags (those corresponding to the window)
     start = middle_lag - win_size
     end = middle_lag + win_size + 1
     train_correlation = train_correlation[start:end]
     # Compute and return the P-score
     n_beats = np.max([estimated_beats.shape[0], reference_beats.shape[0]])
-    return np.sum(train_correlation) / n_beats
+    return np.sum(train_correlation)/n_beats
 
 
 def continuity(reference_beats,
@@ -481,7 +480,7 @@ def continuity(reference_beats,
     for reference_beats in _get_reference_beat_variations(reference_beats):
         # Annotations that have been used
         n_annotations = np.max([reference_beats.shape[0],
-                                estimated_beats.shape[0]])
+                               estimated_beats.shape[0]])
         used_annotations = np.zeros(n_annotations)
         # Whether or not we are continuous at any given point
         beat_successes = np.zeros(n_annotations)
@@ -515,7 +514,7 @@ def continuity(reference_beats,
                         else:
                             phase = np.inf
                     else:
-                        phase = np.abs(min_difference / reference_interval)
+                        phase = np.abs(min_difference/reference_interval)
                     # How close is the inter-beat-interval
                     # to the inter-annotation-interval?
                     if m + 1 < estimated_beats.shape[0]:
@@ -534,7 +533,7 @@ def continuity(reference_beats,
                             period = np.inf
                     else:
                         period = \
-                            np.abs(1 - estimated_interval / reference_interval)
+                            np.abs(1 - estimated_interval/reference_interval)
                     if phase < continuity_phase_threshold and \
                        period < continuity_period_threshold:
                         # Set this annotation as used
@@ -547,15 +546,14 @@ def continuity(reference_beats,
                     # relative to the inter-annotation-interval?
                     reference_interval = (reference_beats[nearest] -
                                           reference_beats[nearest - 1])
-                    phase = np.abs(min_difference / reference_interval)
+                    phase = np.abs(min_difference/reference_interval)
                     # How close is the inter-beat-interval
                     # to the inter-annotation-interval?
                     estimated_interval = (estimated_beats[m] -
                                           estimated_beats[m - 1])
                     reference_interval = (reference_beats[nearest] -
                                           reference_beats[nearest - 1])
-                    period = np.abs(1 - estimated_interval /
-                                    reference_interval)
+                    period = np.abs(1 - estimated_interval/reference_interval)
                     if phase < continuity_phase_threshold and \
                        period < continuity_period_threshold:
                         # Set this annotation as used
@@ -573,11 +571,10 @@ def continuity(reference_beats,
         beat_successes = beat_successes[1:-1]
         # Get the continuous accuracy as the longest track of successful beats
         longest_track = np.max(np.diff(beat_failures)) - 1
-        continuous_accuracy = longest_track / (1.0 * beat_successes.shape[0])
+        continuous_accuracy = longest_track/(1.0*beat_successes.shape[0])
         continuous_accuracies.append(continuous_accuracy)
         # Get the total accuracy - all sequences
-        total_accuracy = np.sum(beat_successes) / \
-            (1.0 * beat_successes.shape[0])
+        total_accuracy = np.sum(beat_successes)/(1.0*beat_successes.shape[0])
         total_accuracies.append(total_accuracy)
     # Grab accuracy scores
     return (continuous_accuracies[0],
@@ -642,9 +639,9 @@ def information_gain(reference_beats,
     norm = np.log2(bins)
     if forward_entropy > backward_entropy:
         # Note that the beat evaluation toolbox does not normalize
-        information_gain_score = (norm - forward_entropy) / norm
+        information_gain_score = (norm - forward_entropy)/norm
     else:
-        information_gain_score = (norm - backward_entropy) / norm
+        information_gain_score = (norm - backward_entropy)/norm
     return information_gain_score
 
 
@@ -676,25 +673,25 @@ def _get_entropy(reference_beats, estimated_beats, bins):
         # If the first annotation is closest...
         if closest_beat == 0:
             # Inter-annotation interval - space between first two beats
-            interval = .5 * (reference_beats[1] - reference_beats[0])
+            interval = .5*(reference_beats[1] - reference_beats[0])
         # If last annotation is closest...
         if closest_beat == (reference_beats.shape[0] - 1):
-            interval = .5 * (reference_beats[-1] - reference_beats[-2])
+            interval = .5*(reference_beats[-1] - reference_beats[-2])
         else:
             if absolute_error < 0:
                 # Closest annotation is the one before the current beat
                 # so look at previous inner-annotation-interval
                 start = reference_beats[closest_beat]
                 end = reference_beats[closest_beat - 1]
-                interval = .5 * (start - end)
+                interval = .5*(start - end)
             else:
                 # Closest annotation is the one after the current beat
                 # so look at next inner-annotation-interval
                 start = reference_beats[closest_beat + 1]
                 end = reference_beats[closest_beat]
-                interval = .5 * (start - end)
+                interval = .5*(start - end)
         # The actual error of this beat
-        beat_error[n] = .5 * absolute_error / interval
+        beat_error[n] = .5*absolute_error/interval
     # Put beat errors in range (-.5, .5)
     beat_error = np.mod(beat_error + .5, -1) + .5
     # Note these are slightly different the beat evaluation toolbox
@@ -703,7 +700,7 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     # Get the histogram
     raw_bin_values = np.histogram(beat_error, histogram_bin_edges)[0]
     # Turn into a proper probability distribution
-    raw_bin_values = raw_bin_values / (1.0 * np.sum(raw_bin_values))
+    raw_bin_values = raw_bin_values/(1.0*np.sum(raw_bin_values))
     # Set zero-valued bins to 1 to make the entropy calculation well-behaved
     raw_bin_values[raw_bin_values == 0] = 1
     # Calculate entropy

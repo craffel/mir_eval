@@ -66,7 +66,7 @@ def test_resample_multif0():
         np.array([])
     ]
     expected_freqs3 = empty_freqs
-    expected_freqs4 = [np.array([])] * 4
+    expected_freqs4 = [np.array([])]*4
 
     actual_freqs1 = mir_eval.multipitch.resample_multipitch(
         times, freqs, target_times1)

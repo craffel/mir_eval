@@ -174,7 +174,7 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
         # Count the hits
         hits.append(bool(relative_errors[-1] <= tol))
 
-    p_score = reference_weight * hits[0] + (1.0 - reference_weight) * hits[1]
+    p_score = reference_weight * hits[0] + (1.0-reference_weight) * hits[1]
 
     one_correct = bool(np.max(hits))
     both_correct = bool(np.min(hits))

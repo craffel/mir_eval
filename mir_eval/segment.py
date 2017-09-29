@@ -586,10 +586,9 @@ def _adjusted_rand_index(reference_indices, estimated_indices):
 
     sum_comb = sum((scipy.misc.comb(n_ij, 2, exact=1) for n_ij in
                     contingency.flatten()))
-    prod_comb = (sum_comb_c * sum_comb_k) / \
-        float(scipy.misc.comb(n_samples, 2))
-    mean_comb = (sum_comb_k + sum_comb_c) / 2.
-    return ((sum_comb - prod_comb) / (mean_comb - prod_comb))
+    prod_comb = (sum_comb_c * sum_comb_k)/float(scipy.misc.comb(n_samples, 2))
+    mean_comb = (sum_comb_k + sum_comb_c)/2.
+    return ((sum_comb - prod_comb)/(mean_comb - prod_comb))
 
 
 def ari(reference_intervals, reference_labels,
@@ -1286,7 +1285,7 @@ def main(args):
     ref_intervals, ref_labels = io.load_labeled_intervals(ref_file)
     est_intervals, est_labels = io.load_labeled_intervals(est_file)
 
-    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels,
+    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels, 
                       trim=parameters['trim'])
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file'])))

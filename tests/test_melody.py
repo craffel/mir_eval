@@ -47,7 +47,7 @@ def test_constant_hop_timebase():
 
 def test_resample_melody_series():
     # Check for a small example including a zero transition
-    times = np.arange(4) / 35.0
+    times = np.arange(4)/35.0
     cents = np.array([2., 0., -1., 1.])
     voicing = np.array([1, 0, 1, 1])
     times_new = np.linspace(0, .08, 9)
@@ -90,8 +90,8 @@ def test_to_cent_voicing():
     expected_ref_v = np.array([False, False, False, True, True])
     expected_ref_c = np.array([0., 0., 0., 6056.8837818916609,
                                6028.5504583021921])
-    expected_est_v = np.array([False] * 5)
-    expected_est_c = np.array([5351.3179423647571] * 5)
+    expected_est_v = np.array([False]*5)
+    expected_est_c = np.array([5351.3179423647571]*5)
     assert np.allclose(ref_v[test_range], expected_ref_v)
     assert np.allclose(ref_c[test_range], expected_ref_c)
     assert np.allclose(est_v[test_range], expected_est_v)

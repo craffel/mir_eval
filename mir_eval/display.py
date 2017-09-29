@@ -330,7 +330,6 @@ class IntervalFormatter(Formatter):
     ticks : array-like of string
         The labels for the ticks
     '''
-
     def __init__(self, base, ticks):
 
         self._map = {int(k): v for k, v in zip(base, ticks)}

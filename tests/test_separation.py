@@ -42,7 +42,7 @@ def __generate_multichannel(mono_sig, nchan=2, gain=1.0, reverse=False):
     # add the channels dimension
     input_3d = np.atleast_3d(mono_sig)
     # get the desired number of channels
-    stackin = [input_3d] * nchan
+    stackin = [input_3d]*nchan
     # apply the gain to the new channels
     stackin[1:] = np.multiply(gain, stackin[1:])
     if reverse:
@@ -176,8 +176,8 @@ def __unit_test_incompatible_shapes(metric):
 
 def __unit_test_too_many_sources(metric):
     # Test for error when too many sources or references are provided
-    many_sources = np.random.random_sample((
-        mir_eval.separation.MAX_SOURCES * 2, 400))
+    many_sources = np.random.random_sample((mir_eval.separation.MAX_SOURCES*2,
+                                            400))
     if metric == mir_eval.separation.bss_eval_sources:
         nose.tools.assert_raises(ValueError, metric, many_sources,
                                  many_sources)

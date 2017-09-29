@@ -127,7 +127,7 @@ def resample_multipitch(times, frequencies, target_times):
         return []
 
     if times.size == 0:
-        return [np.array([])] * len(target_times)
+        return [np.array([])]*len(target_times)
 
     n_times = len(frequencies)
 
@@ -169,7 +169,7 @@ def frequencies_to_midi(frequencies, ref_frequency=440.0):
     frequencies_midi : list of np.ndarray
         Continuous MIDI frequency values.
     """
-    return [69.0 + 12.0 * np.log2(f / ref_frequency) for f in frequencies]
+    return [69.0 + 12.0*np.log2(freqs/ref_frequency) for freqs in frequencies]
 
 
 def midi_to_chroma(frequencies_midi):
@@ -186,7 +186,7 @@ def midi_to_chroma(frequencies_midi):
         Midi values wrapped to one octave.
 
     """
-    return [np.mod(f, 12) for f in frequencies_midi]
+    return [np.mod(freqs, 12) for freqs in frequencies_midi]
 
 
 def compute_num_freqs(frequencies):
@@ -274,21 +274,21 @@ def compute_accuracy(true_positives, n_ref, n_est):
 
     n_est_sum = n_est.sum()
     if n_est_sum > 0:
-        precision = true_positive_sum / n_est.sum()
+        precision = true_positive_sum/n_est.sum()
     else:
         warnings.warn("Estimate frequencies are all empty.")
         precision = 0.0
 
     n_ref_sum = n_ref.sum()
     if n_ref_sum > 0:
-        recall = true_positive_sum / n_ref.sum()
+        recall = true_positive_sum/n_ref.sum()
     else:
         warnings.warn("Reference frequencies are all empty.")
         recall = 0.0
 
     acc_denom = (n_est + n_ref - true_positives).sum()
     if acc_denom > 0:
-        acc = true_positive_sum / acc_denom
+        acc = true_positive_sum/acc_denom
     else:
         acc = 0.0
 
@@ -327,22 +327,22 @@ def compute_err_score(true_positives, n_ref, n_est):
         return 0., 0., 0., 0.
 
     # Substitution error
-    e_sub = (np.min([n_ref, n_est], axis=0) - true_positives).sum() / n_ref_sum
+    e_sub = (np.min([n_ref, n_est], axis=0) - true_positives).sum()/n_ref_sum
 
     # compute the max of (n_ref - n_est) and 0
     e_miss_numerator = n_ref - n_est
     e_miss_numerator[e_miss_numerator < 0] = 0
     # Miss error
-    e_miss = e_miss_numerator.sum() / n_ref_sum
+    e_miss = e_miss_numerator.sum()/n_ref_sum
 
     # compute the max of (n_est - n_ref) and 0
     e_fa_numerator = n_est - n_ref
     e_fa_numerator[e_fa_numerator < 0] = 0
     # False alarm error
-    e_fa = e_fa_numerator.sum() / n_ref_sum
+    e_fa = e_fa_numerator.sum()/n_ref_sum
 
     # total error
-    e_tot = (np.max([n_ref, n_est], axis=0) - true_positives).sum() / n_ref_sum
+    e_tot = (np.max([n_ref, n_est], axis=0) - true_positives).sum()/n_ref_sum
 
     return e_sub, e_miss, e_fa, e_tot
 
@@ -513,7 +513,7 @@ def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
 
 def main(args):
     """Command-line interface."""
-
+    
     parser = argparse.ArgumentParser(
         description='mir_eval multipitch detection evaluation')
     parser.add_argument('-o',

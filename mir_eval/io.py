@@ -375,11 +375,11 @@ def load_wav(path, mono=True):
     fs, audio_data = scipy.io.wavfile.read(path)
     # Make float in range [-1, 1]
     if audio_data.dtype == 'int8':
-        audio_data = audio_data / float(2**8)
+        audio_data = audio_data/float(2**8)
     elif audio_data.dtype == 'int16':
-        audio_data = audio_data / float(2**16)
+        audio_data = audio_data/float(2**16)
     elif audio_data.dtype == 'int32':
-        audio_data = audio_data / float(2**24)
+        audio_data = audio_data/float(2**24)
     else:
         raise ValueError('Got unexpected .wav data type '
                          '{}'.format(audio_data.dtype))
@@ -487,8 +487,8 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
             except (TypeError, ValueError) as exe:
                 six.raise_from(ValueError("Couldn't convert value {} using {} "
                                           "found at {}:{:d}:\n\t{}".format(
-                                              data[0], float.__name__,
-                                              filename, row, line)), exe)
+                                            data[0], float.__name__,
+                                            filename, row, line)), exe)
             times.append(converted_time)
 
             # cast values to a numpy array. time stamps with no values are cast
@@ -498,8 +498,8 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
             except (TypeError, ValueError) as exe:
                 six.raise_from(ValueError("Couldn't convert value {} using {} "
                                           "found at {}:{:d}:\n\t{}".format(
-                                              data[1:], dtype.__name__,
-                                              filename, row, line)), exe)
+                                            data[1:], dtype.__name__,
+                                            filename, row, line)), exe)
             values.append(converted_value)
 
     return np.array(times), values

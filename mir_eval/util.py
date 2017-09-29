@@ -119,7 +119,7 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1,
     # Round intervals to the sample size
     num_samples = int(np.floor(intervals.max() / sample_size))
     sample_indices = np.arange(num_samples, dtype=np.float32)
-    sample_times = (sample_indices * sample_size + offset).tolist()
+    sample_times = (sample_indices*sample_size + offset).tolist()
     sampled_labels = interpolate_intervals(
         intervals, labels, sample_times, fill_value)
 
@@ -231,7 +231,7 @@ def f_measure(precision, recall, beta=1.0):
     if precision == 0 and recall == 0:
         return 0.0
 
-    return (1 + beta**2) * precision * recall / (beta**2 * precision + recall)
+    return (1 + beta**2)*precision*recall/((beta**2)*precision + recall)
 
 
 def intervals_to_boundaries(intervals, q=5):
@@ -955,4 +955,4 @@ def midi_to_hz(midi):
     freqs : number or ndarray
         Frequency/frequencies in Hz corresponding to `midi`
     '''
-    return 440.0 * (2.0 ** ((midi - 69.0) / 12.0))
+    return 440.0 * (2.0 ** ((midi - 69.0)/12.0))
