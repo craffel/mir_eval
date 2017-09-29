@@ -699,7 +699,7 @@ def evaluate(ref_time, ref_freq, est_time, est_freq, **kwargs):
 
 def main(args):
     """Command-line interface."""
-    
+
     parser = argparse.ArgumentParser(
         description='mir_eval melody extraction evaluation')
     parser.add_argument('-o',
@@ -726,7 +726,7 @@ def main(args):
     est_time, est_freq = io.load_time_series(parameters['estimated_file'])
 
     scores = evaluate(ref_time, ref_freq, est_time, est_freq,
-                                      hop=parameters['hop'])
+                      hop=parameters['hop'])
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file'])))
     io.print_evaluation(scores)

@@ -1285,7 +1285,7 @@ def main(args):
     ref_intervals, ref_labels = io.load_labeled_intervals(ref_file)
     est_intervals, est_labels = io.load_labeled_intervals(est_file)
 
-    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels, 
+    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels,
                       trim=parameters['trim'])
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file'])))

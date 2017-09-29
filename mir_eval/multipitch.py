@@ -513,7 +513,7 @@ def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
 
 def main(args):
     """Command-line interface."""
-    
+
     parser = argparse.ArgumentParser(
         description='mir_eval multipitch detection evaluation')
     parser.add_argument('-o',

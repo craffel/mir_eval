@@ -141,7 +141,7 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
 
 def main(args):
     """Command-line interface."""
-    
+
     parser = argparse.ArgumentParser(
         description='mir_eval onset detection evaluation')
     parser.add_argument('-o',

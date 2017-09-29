@@ -958,7 +958,7 @@ def main(args):
         assert (global_fs is None or fs == global_fs)
         global_fs = fs
         reference_data.append(audio_data)
-        
+
     estimated_glob = os.path.join(parameters['estimated_directory'], '*.wav')
     for estimated_file in glob.glob(estimated_glob):
         audio_data, fs = io.load_wav(estimated_file)

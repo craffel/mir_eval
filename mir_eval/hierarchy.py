@@ -803,7 +803,7 @@ def main(args):
     est_intervals = [seg[0] for seg in est]
     est_labels = [seg[1] for seg in est]
 
-    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels, 
+    scores = evaluate(ref_intervals, ref_labels, est_intervals, est_labels,
                       window=parameters['window'])
     print("{} [...] vs. {} [...]".format(
         os.path.basename(parameters['reference_file'][0]),
