@@ -79,6 +79,11 @@ Metrics
 * :func:`mir_eval.chord.sevenths_inv`: Same as above, with inversions (bass
   relationships).
 
+* :func:`mir_eval.chord.overseg`: Computes the level of over-segmentation
+  between estimated and reference intervals.
+
+* :func:`mir_eval.chord.underseg`: Computes the level of under-segmentation
+  between estimated and reference intervals.
 
 References
 ----------
@@ -1342,6 +1347,100 @@ def sevenths_inv(reference_labels, estimated_labels):
     return comparison_scores
 
 
+def directional_hamming_distance(reference_intervals, estimated_intervals):
+    """Compute the directional hamming distance between reference and
+    estimated intervals as defined by _[#harte2010towards] and used for MIREX
+    'OverSeg', 'UnderSeg' and 'MeanSeg' measures.
+
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> overseg = 1 - mir_eval.chord.directional_hamming_distance(
+    ...     ref_intervals, est_intervals)
+    >>> underseg = 1 - mir_eval.chord.directional_hamming_distance(
+    ...     est_intervals, ref_intervals)
+    >>> meanseg = min(overseg, underseg)
+
+    Parameters
+    ----------
+    reference_intervals : np.ndarray, shape=(n, 2), dtype=float
+        Reference chord intervals to score against.
+    estimated_intervals : np.ndarray, shape=(m, 2), dtype=float
+        Estimated chord intervals to score against.
+
+    Returns
+    -------
+    directional hamming distance : float
+        directional hamming distance between reference intervals and
+        estimated intervals.
+    """
+    est_ts = np.unique(estimated_intervals.flatten())
+    seg = 0.
+    for start, end in reference_intervals:
+        dur = end - start
+        between_start_end = est_ts[(est_ts > start) & (est_ts < end)]
+        seg_ts = np.hstack([start, between_start_end, end])
+        seg += dur - np.diff(seg_ts).max()
+    return seg / (reference_intervals[-1, 1] - reference_intervals[0, 0])
+
+
+def overseg(reference_intervals, estimated_intervals):
+    """Compute the MIREX 'OverSeg' score
+
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> score = mir_eval.chord.overseg(ref_intervals, est_intervals)
+
+    Parameters
+    ----------
+    reference_intervals : np.ndarray, shape=(n, 2), dtype=float
+        Reference chord intervals to score against.
+    estimated_intervals : np.ndarray, shape=(m, 2), dtype=float
+        Estimated chord intervals to score against.
+
+    Returns
+    -------
+    oversegmentation score : float
+        Comparison score, in [0.0, 1.0], where 1.0 means no oversegmentation.
+    """
+    return 1 - directional_hamming_distance(reference_intervals,
+                                            estimated_intervals)
+
+
+def underseg(reference_intervals, estimated_intervals):
+    """Compute the MIREX 'UnderSeg' score
+
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> score = mir_eval.chord.underseg(ref_intervals, est_intervals)
+
+    Parameters
+    ----------
+    reference_intervals : np.ndarray, shape=(n, 2), dtype=float
+        Reference chord intervals to score against.
+    estimated_intervals : np.ndarray, shape=(m, 2), dtype=float
+        Estimated chord intervals to score against.
+
+    Returns
+    -------
+    undersegmentation score : float
+        Comparison score, in [0.0, 1.0], where 1.0 means no undersegmentation.
+    """
+    return 1 - directional_hamming_distance(estimated_intervals,
+                                            reference_intervals)
+
+
 def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     """Computes weighted accuracy for all comparison functions for the given
     reference and estimated annotations.
@@ -1422,5 +1521,7 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     scores['sevenths_inv'] = weighted_accuracy(sevenths_inv(ref_labels,
                                                             est_labels),
                                                durations)
+    scores['underseg'] = underseg(ref_intervals, est_intervals)
+    scores['overseg'] = overseg(ref_intervals, est_intervals)
 
     return scores
