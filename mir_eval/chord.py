@@ -1349,7 +1349,7 @@ def sevenths_inv(reference_labels, estimated_labels):
 
 def directional_hamming_distance(reference_intervals, estimated_intervals):
     """Compute the directional hamming distance between reference and
-    estimated intervals as defined by _[#harte2010towards] and used for MIREX
+    estimated intervals as defined by [#harte2010towards]_ and used for MIREX
     'OverSeg', 'UnderSeg' and 'MeanSeg' measures.
 
     Examples
@@ -1441,6 +1441,40 @@ def underseg(reference_intervals, estimated_intervals):
                                             reference_intervals)
 
 
+def merge_chord_intervals(intervals, labels):
+    """
+    Merge consecutive chord intervals if they represent the same chord.
+
+    Parameters
+    ----------
+    intervals : np.ndarray, shape=(n, 2), dtype=float
+        Chord intervals to be merged, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+    labels : list, shape=(n,)
+        Chord labels to be merged, in the format returned by
+        :func:`mir_eval.io.load_labeled_intervals`.
+
+    Returns
+    -------
+    merged_ivs : np.ndarray, shape=(k, 2), dtype=float
+        Merged chord intervals, k <= n
+
+    """
+    roots, semitones, basses = encode_many(labels, True)
+    merged_ivs = []
+    prev_rt = None
+    prev_st = None
+    prev_ba = None
+    for s, e, rt, st, ba in zip(intervals[:, 0], intervals[:, 1],
+                                roots, semitones, basses):
+        if rt != prev_rt or (st != prev_st).any() or ba != prev_ba:
+            prev_rt, prev_st, prev_ba = rt, st, ba
+            merged_ivs.append([s, e])
+        else:
+            merged_ivs[-1][-1] = e
+    return np.array(merged_ivs)
+
+
 def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     """Computes weighted accuracy for all comparison functions for the given
     reference and estimated annotations.
@@ -1487,6 +1521,9 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     est_intervals, est_labels = util.adjust_intervals(
         est_intervals, est_labels, ref_intervals.min(), ref_intervals.max(),
         NO_CHORD, NO_CHORD)
+    # use merged intervals for segmentation evaluation
+    merged_ref_intervals = merge_chord_intervals(ref_intervals, ref_labels)
+    merged_est_intervals = merge_chord_intervals(est_intervals, est_labels)
     # Adjust the labels so that they span the same intervals
     intervals, ref_labels, est_labels = util.merge_labeled_intervals(
         ref_intervals, ref_labels, est_intervals, est_labels)
@@ -1521,7 +1558,7 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     scores['sevenths_inv'] = weighted_accuracy(sevenths_inv(ref_labels,
                                                             est_labels),
                                                durations)
-    scores['underseg'] = underseg(ref_intervals, est_intervals)
-    scores['overseg'] = overseg(ref_intervals, est_intervals)
+    scores['underseg'] = underseg(merged_ref_intervals, merged_est_intervals)
+    scores['overseg'] = overseg(merged_ref_intervals, merged_est_intervals)
 
     return scores
