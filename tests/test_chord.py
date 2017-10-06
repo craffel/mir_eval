@@ -437,6 +437,65 @@ def test_sevenths_inv():
                ref_label, est_label)
 
 
+def test_directional_hamming_distance():
+    ref_ivs = np.array([[0., 1.], [1., 2.], [2., 3.]])
+    est_ivs = np.array([[0., 0.9], [0.9, 1.8], [1.8, 2.5]])
+    dhd_ref_to_est = (0.1 + 0.2 + 0.5) / 3.
+    dhd_est_to_ref = (0.0 + 0.1 + 0.2) / 2.5
+
+    dhd = mir_eval.chord.directional_hamming_distance
+    assert np.allclose(dhd_ref_to_est, dhd(ref_ivs, est_ivs))
+    assert np.allclose(dhd_est_to_ref, dhd(est_ivs, ref_ivs))
+    assert np.allclose(0, dhd(ref_ivs, ref_ivs))
+    assert np.allclose(0, dhd(est_ivs, est_ivs))
+
+
+def test_overseg():
+    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
+    est_ivs = np.array([[0., 3.], [3., 3.5]])
+    assert np.allclose(1. - 0.2 / 3.2,
+                       mir_eval.chord.overseg(ref_ivs, est_ivs))
+
+    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
+    est_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
+    assert np.allclose(1.0, mir_eval.chord.overseg(ref_ivs, est_ivs))
+
+    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
+    est_ivs = np.array([[0., 3.2]])
+    assert np.allclose(1.0, mir_eval.chord.overseg(ref_ivs, est_ivs))
+
+    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
+    est_ivs = np.array([[3.2, 3.5]])
+    assert np.allclose(1.0, mir_eval.chord.overseg(ref_ivs, est_ivs))
+
+
+def test_underseg():
+    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
+    est_ivs = np.array([[0., 3.], [3., 3.5]])
+    assert np.allclose(1. - (1. + 0.2) / 3.5,
+                       mir_eval.chord.underseg(ref_ivs, est_ivs))
+
+    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
+    est_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
+    assert np.allclose(1.0, mir_eval.chord.underseg(ref_ivs, est_ivs))
+
+    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
+    est_ivs = np.array([[0., 3.2]])
+    assert np.allclose(1 - 1.2 / 3.2,
+                       mir_eval.chord.underseg(ref_ivs, est_ivs))
+
+    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
+    est_ivs = np.array([[3.2, 3.5]])
+    assert np.allclose(1.0, mir_eval.chord.overseg(ref_ivs, est_ivs))
+
+
+def test_merge_chord_intervals():
+    intervals = np.array([[0., 1.], [1., 2.], [2., 3], [3., 4.], [4., 5.]])
+    labels = ['C:maj', 'C:(1,3,5)', 'A:maj', 'A:maj7', 'A:maj7/3']
+    assert np.allclose(np.array([[0., 2.], [2., 3], [3., 4.], [4., 5.]]),
+                       mir_eval.chord.merge_chord_intervals(intervals, labels))
+
+
 def test_weighted_accuracy():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')

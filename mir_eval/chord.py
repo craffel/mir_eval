@@ -1377,11 +1377,13 @@ def directional_hamming_distance(reference_intervals, estimated_intervals):
         directional hamming distance between reference intervals and
         estimated intervals.
     """
+    util.validate_intervals(estimated_intervals)
+    util.validate_intervals(reference_intervals)
     est_ts = np.unique(estimated_intervals.flatten())
     seg = 0.
     for start, end in reference_intervals:
         dur = end - start
-        between_start_end = est_ts[(est_ts > start) & (est_ts < end)]
+        between_start_end = est_ts[(est_ts >= start) & (est_ts < end)]
         seg_ts = np.hstack([start, between_start_end, end])
         seg += dur - np.diff(seg_ts).max()
     return seg / (reference_intervals[-1, 1] - reference_intervals[0, 0])
