@@ -67,7 +67,7 @@ def validate(reference_key, estimated_key):
         validate_key(key)
 
 
-def load(filename, delimiter=r'\s+'):
+def load_key(filename, delimiter=r'\s+'):
     r"""Load key labels from an annotation file. The file should
     consist of two string columns: One denoting the key scale degree
     (semitone), and the other denoting the mode (major or minor).  The file
@@ -241,8 +241,8 @@ def main(args):
                         help='path to the estimated annotation file')
     parameters = vars(parser.parse_args(args))
 
-    reference = load(parameters['reference_file'])
-    estimate = load(parameters['estimated_file'])
+    reference = load_key(parameters['reference_file'])
+    estimate = load_key(parameters['estimated_file'])
 
     scores = evaluate(reference, estimate)
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),

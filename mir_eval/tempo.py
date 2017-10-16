@@ -72,7 +72,7 @@ def validate(reference_tempi, reference_weight, estimated_tempi):
         raise ValueError('Reference weight must lie in range [0, 1]')
 
 
-def load(filename, delimiter=r'\s+'):
+def load_tempo(filename, delimiter=r'\s+'):
     r"""Load tempo estimates from an annotation file in MIREX format.
     The file should consist of three numeric columns: the first two
     correspond to tempo estimates (in beats-per-minute), and the third
@@ -240,10 +240,10 @@ def main(args):
                         help='path to the estimated annotation file')
     parameters = vars(parser.parse_args(args))
 
-    reference_tempi, reference_weight = load(parameters['reference_file'])
-    estimate_tempi, _ = load(parameters['estimated_file'])
+    reference_tempi, weight = load_tempo(parameters['reference_file'])
+    estimate_tempi, _ = load_tempo(parameters['estimated_file'])
 
-    scores = evaluate(reference_tempi, reference_weight, estimate_tempi)
+    scores = evaluate(reference_tempi, weight, estimate_tempi)
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file'])))
     util.print_evaluation(scores)
