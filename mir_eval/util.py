@@ -4,6 +4,7 @@ submodules, such as preprocessing, validation, and common computations.
 '''
 
 import os
+import sys
 import inspect
 import six
 
@@ -956,3 +957,24 @@ def midi_to_hz(midi):
         Frequency/frequencies in Hz corresponding to `midi`
     '''
     return 440.0 * (2.0 ** ((midi - 69.0)/12.0))
+
+
+def print_evaluation(results, decimals=3, file=sys.stdout):
+    """Print evaluation results.
+
+    Parameters
+    ----------
+    results : dict
+        Flat dictionary where keys are metric names and values are the
+        corresponding scores.
+    decimals : int
+        Number of decimal places to print. Defaults to three decimal places.
+    file : file object
+        Results are written to the given stream. Prints to stdout by default.
+
+    """
+    max_len = max(len(key) for key in results)
+    for key, value in results.items():
+        if type(value) == float:
+            value = round(value, decimals)
+        print('\t{:>{}} : {}'.format(key, max_len, value), file=file)

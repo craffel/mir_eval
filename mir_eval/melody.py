@@ -52,6 +52,7 @@ Metrics
 '''
 import os
 import sys
+import json
 import argparse
 import collections
 import warnings
@@ -729,11 +730,12 @@ def main(args):
                       hop=parameters['hop'])
     print("{} vs. {}".format(os.path.basename(parameters['reference_file']),
                              os.path.basename(parameters['estimated_file'])))
-    io.print_evaluation(scores)
+    util.print_evaluation(scores)
 
     if parameters['output_file']:
         print('Saving results to: ', parameters['output_file'])
-        io.save_evaluation(scores, parameters['output_file'])
+        with open(parameters['output_file'], 'w') as f:
+            json.dump(scores, f)
 
 
 if __name__ == '__main__':

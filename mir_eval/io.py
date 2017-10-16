@@ -6,7 +6,6 @@ from __future__ import print_function
 
 import re
 import contextlib
-import json
 import warnings
 
 import numpy as np
@@ -505,43 +504,9 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
     return np.array(times), values
 
 
-def save_evaluation(results, output_file):
-    # TODO Use NumPy style docstrings like the rest of mir_eval.
-    '''
-    Write a result dictionary out as a .json file.
-
-    :parameters:
-        - results : dict
-            Results dictionary, where keys are metric names and values are
-            the corresponding scores
-        - output_file : str
-            Path to .json file to write to
-    '''
-    with open(output_file, 'w') as f:
-        json.dump(results, f)
-
-
-def print_evaluation(results):
-    # TODO Use NumPy style docstrings like the rest of mir_eval.
-    '''
-    Print out a results dict.
-
-    :parameters:
-        - results : dict
-            Results dictionary, where keys are metric names and values are
-            the corresponding scores
-    '''
-    max_len = max([len(key) for key in results])
-    for key, value in results.items():
-        if type(value) == float:
-            print('\t{:>{}} : {:.3f}'.format(key, max_len, value))
-        else:
-            print('\t{:>{}} : {}'.format(key, max_len, value))
-
-
 def load_tempo(filename, delimiter=r'\s+'):
-    raise NameError("load_tempo moved to mir_eval.tempo.load")
+    raise NameError("load_tempo moved to mir_eval.tempo")
 
 
 def load_key(filename, delimiter=r'\s+'):
-    raise NameError("load_key moved to mir_eval.key.load")
+    raise NameError("load_key moved to mir_eval.key")

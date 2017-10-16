@@ -46,6 +46,7 @@ References
 '''
 import os
 import sys
+import json
 import glob
 import argparse
 import collections
@@ -974,11 +975,12 @@ def main(args):
     print("{} vs. {}".format(
         os.path.basename(os.path.normpath(parameters['reference_directory'])),
         os.path.basename(os.path.normpath(parameters['estimated_directory']))))
-    io.print_evaluation(scores)
+    util.print_evaluation(scores)
 
     if parameters['output_file']:
         print('Saving results to: ', parameters['output_file'])
-        io.save_evaluation(scores, parameters['output_file'])
+        with open(parameters['output_file'], 'w') as f:
+            json.dump(scores, f)
 
 
 if __name__ == '__main__':
