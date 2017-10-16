@@ -2,6 +2,7 @@
 This submodule collects useful functionality required across the task
 submodules, such as preprocessing, validation, and common computations.
 '''
+from __future__ import print_function
 
 import os
 import sys
