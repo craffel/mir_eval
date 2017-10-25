@@ -450,43 +450,42 @@ def test_directional_hamming_distance():
     assert np.allclose(0, dhd(est_ivs, est_ivs))
 
 
-def test_overseg():
+def test_segmentation_functions():
     ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
     est_ivs = np.array([[0., 3.], [3., 3.5]])
-    assert np.allclose(1. - 0.2 / 3.2,
-                       mir_eval.chord.overseg(ref_ivs, est_ivs))
+    true_oseg = 1. - 0.2 / 3.2
+    true_useg = 1. - (1. + 0.2) / 3.5
+    true_seg = min(true_oseg, true_useg)
+    assert np.allclose(true_oseg, mir_eval.chord.overseg(ref_ivs, est_ivs))
+    assert np.allclose(true_useg, mir_eval.chord.underseg(ref_ivs, est_ivs))
+    assert np.allclose(true_seg, mir_eval.chord.seg(ref_ivs, est_ivs))
 
     ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
     est_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
-    assert np.allclose(1.0, mir_eval.chord.overseg(ref_ivs, est_ivs))
+    true_oseg = 1.0
+    true_useg = 1.0
+    true_seg = 1.0
+    assert np.allclose(true_oseg, mir_eval.chord.overseg(ref_ivs, est_ivs))
+    assert np.allclose(true_useg, mir_eval.chord.underseg(ref_ivs, est_ivs))
+    assert np.allclose(true_seg, mir_eval.chord.seg(ref_ivs, est_ivs))
 
     ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
     est_ivs = np.array([[0., 3.2]])
-    assert np.allclose(1.0, mir_eval.chord.overseg(ref_ivs, est_ivs))
+    true_oseg = 1.0
+    true_useg = 1 - 1.2 / 3.2
+    true_seg = min(true_oseg, true_useg)
+    assert np.allclose(true_oseg, mir_eval.chord.overseg(ref_ivs, est_ivs))
+    assert np.allclose(true_useg, mir_eval.chord.underseg(ref_ivs, est_ivs))
+    assert np.allclose(true_seg, mir_eval.chord.seg(ref_ivs, est_ivs))
 
     ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
     est_ivs = np.array([[3.2, 3.5]])
-    assert np.allclose(1.0, mir_eval.chord.overseg(ref_ivs, est_ivs))
-
-
-def test_underseg():
-    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
-    est_ivs = np.array([[0., 3.], [3., 3.5]])
-    assert np.allclose(1. - (1. + 0.2) / 3.5,
-                       mir_eval.chord.underseg(ref_ivs, est_ivs))
-
-    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
-    est_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
-    assert np.allclose(1.0, mir_eval.chord.underseg(ref_ivs, est_ivs))
-
-    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
-    est_ivs = np.array([[0., 3.2]])
-    assert np.allclose(1 - 1.2 / 3.2,
-                       mir_eval.chord.underseg(ref_ivs, est_ivs))
-
-    ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])
-    est_ivs = np.array([[3.2, 3.5]])
-    assert np.allclose(1.0, mir_eval.chord.overseg(ref_ivs, est_ivs))
+    true_oseg = 1.0
+    true_useg = 1.0
+    true_seg = 1.0
+    assert np.allclose(true_oseg, mir_eval.chord.overseg(ref_ivs, est_ivs))
+    assert np.allclose(true_useg, mir_eval.chord.underseg(ref_ivs, est_ivs))
+    assert np.allclose(true_seg, mir_eval.chord.seg(ref_ivs, est_ivs))
 
 
 def test_merge_chord_intervals():

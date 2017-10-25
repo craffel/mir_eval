@@ -1362,7 +1362,7 @@ def directional_hamming_distance(reference_intervals, estimated_intervals):
     ...     ref_intervals, est_intervals)
     >>> underseg = 1 - mir_eval.chord.directional_hamming_distance(
     ...     est_intervals, ref_intervals)
-    >>> meanseg = min(overseg, underseg)
+    >>> seg = min(overseg, underseg)
 
     Parameters
     ----------
@@ -1379,6 +1379,12 @@ def directional_hamming_distance(reference_intervals, estimated_intervals):
     """
     util.validate_intervals(estimated_intervals)
     util.validate_intervals(reference_intervals)
+
+    # make sure chord intervals do not overlap
+    if len(reference_intervals) > 2 and (reference_intervals[:-1, 1] >
+                                         reference_intervals[1:, 0]).all():
+        raise ValueError('Chord Intervals must not overlap')
+
     est_ts = np.unique(estimated_intervals.flatten())
     seg = 0.
     for start, end in reference_intervals:
@@ -1390,7 +1396,7 @@ def directional_hamming_distance(reference_intervals, estimated_intervals):
 
 
 def overseg(reference_intervals, estimated_intervals):
-    """Compute the MIREX 'OverSeg' score
+    """Compute the MIREX 'OverSeg' score.
 
     Examples
     --------
@@ -1417,7 +1423,7 @@ def overseg(reference_intervals, estimated_intervals):
 
 
 def underseg(reference_intervals, estimated_intervals):
-    """Compute the MIREX 'UnderSeg' score
+    """Compute the MIREX 'UnderSeg' score.
 
     Examples
     --------
@@ -1441,6 +1447,34 @@ def underseg(reference_intervals, estimated_intervals):
     """
     return 1 - directional_hamming_distance(estimated_intervals,
                                             reference_intervals)
+
+
+def seg(reference_intervals, estimated_intervals):
+    """Compute the MIREX 'MeanSeg' score.
+
+    Examples
+    --------
+    >>> (ref_intervals,
+    ...  ref_labels) = mir_eval.io.load_labeled_intervals('ref.lab')
+    >>> (est_intervals,
+    ...  est_labels) = mir_eval.io.load_labeled_intervals('est.lab')
+    >>> score = mir_eval.chord.seg(ref_intervals, est_intervals)
+
+    Parameters
+    ----------
+    reference_intervals : np.ndarray, shape=(n, 2), dtype=float
+        Reference chord intervals to score against.
+    estimated_intervals : np.ndarray, shape=(m, 2), dtype=float
+        Estimated chord intervals to score against.
+
+    Returns
+    -------
+    segmentation score : float
+        Comparison score, in [0.0, 1.0], where 1.0 means perfect segmentation.
+    """
+
+    return min(underseg(reference_intervals, estimated_intervals),
+               overseg(reference_intervals, estimated_intervals))
 
 
 def merge_chord_intervals(intervals, labels):
@@ -1562,5 +1596,6 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
                                                durations)
     scores['underseg'] = underseg(merged_ref_intervals, merged_est_intervals)
     scores['overseg'] = overseg(merged_ref_intervals, merged_est_intervals)
+    scores['seg'] = seg(merged_ref_intervals, merged_est_intervals)
 
     return scores
