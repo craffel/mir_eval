@@ -152,8 +152,8 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None):
     return output
 
 
-def pitch_contour(times, frequencies, fs, function=np.sin, length=None,
-                  kind='linear'):
+def pitch_contour(times, frequencies, fs, amplitudes=None, function=np.sin,
+                  length=None, kind='linear'):
     '''Sonify a pitch contour.
 
     Parameters
@@ -167,6 +167,10 @@ def pitch_contour(times, frequencies, fs, function=np.sin, length=None,
 
     fs : int
         desired sampling rate of the output signal
+
+    amplitudes : np.ndarray
+        amplitude measurments, nonnegative
+        defaults to ``np.ones((length,))``
 
     function : function
         function to use to synthesize notes, should be :math:`2\pi`-periodic
@@ -201,8 +205,17 @@ def pitch_contour(times, frequencies, fs, function=np.sin, length=None,
     # Estimate frequency at sample points
     f_est = f_interp(np.arange(length))
 
+    if amplitudes is None:
+        a_est = np.ones((length, ))
+    else:
+        # build an amplitude interpolator
+        a_interp = interp1d(
+            times * fs, amplitudes, kind=kind,
+            fill_value=0.0, bounds_error=False, copy=False)
+        a_est = a_interp(np.arange(length))
+
     # Sonify the waveform
-    return function(np.cumsum(f_est))
+    return a_est * function(np.cumsum(f_est))
 
 
 def chroma(chromagram, times, fs, **kwargs):
