@@ -660,27 +660,7 @@ def _outer_distance_mod_n(ref, est, modulus=12):
     return np.minimum(abs_diff, modulus - abs_diff)
 
 
-def _outer_distance(ref, est):
-    """Compute the absolute outer distance.
-    Computes |ref[i] - est[j]| for each i and j.
-
-    Parameters
-    ----------
-    ref : np.ndarray, shape=(n,)
-        Array of reference values.
-    est : np.ndarray, shape=(m,)
-        Array of estimated values.
-
-    Returns
-    -------
-    outer_distance : np.ndarray, shape=(n, m)
-        The outer 1d-euclidean distance.
-
-    """
-    return np.abs(np.subtract.outer(ref, est))
-
-
-def match_events(ref, est, window, distance=_outer_distance):
+def match_events(ref, est, window, distance=None):
     """Compute a maximum matching between reference and estimated event times,
     subject to a window constraint.
 
@@ -702,7 +682,7 @@ def match_events(ref, est, window, distance=_outer_distance):
         Size of the window.
     distance : function
         function that computes the outer distance of ref and est.
-        By default uses _outer_distance, ``|ref[i] - est[j]|``
+        By default uses ``|ref[i] - est[j]|``
 
     Returns
     -------
@@ -711,11 +691,11 @@ def match_events(ref, est, window, distance=_outer_distance):
         ``matching[i] == (i, j)`` where ``ref[i]`` matches ``est[j]``.
 
     """
-    if distance is None:
-        distance = _outer_distance
-
-    # Compute the indices of feasible pairings
-    hits = np.where(distance(ref, est) <= window)
+    if distance is not None:
+        # Compute the indices of feasible pairings
+        hits = np.where(distance(ref, est) <= window)
+    else:
+        hits = _fast_hit_windows(ref, est, window)
 
     # Construct the graph input
     G = {}
@@ -728,6 +708,51 @@ def match_events(ref, est, window, distance=_outer_distance):
     matching = sorted(_bipartite_match(G).items())
 
     return matching
+
+
+def _fast_hit_windows(ref, est, window):
+    '''Fast calculation of windowed hits for time events.
+
+    Given two lists of event times ``ref`` and ``est``, and a
+    tolerance window, computes a list of pairings
+    ``(i, j)`` where ``|ref[i] - est[j]| <= window``.
+
+    This is equivalent to, but more efficient than the following:
+
+    >>> hit_ref, hit_est = np.where(np.abs(np.subtract.outer(ref, est))
+    ...                             <= window)
+
+    Parameters
+    ----------
+    ref : np.ndarray, shape=(n,)
+        Array of reference values
+    est : np.ndarray, shape=(m,)
+        Array of estimated values
+    window : float >= 0
+        Size of the tolerance window
+
+    Returns
+    -------
+    hit_ref : np.ndarray
+    hit_est : np.ndarray
+        indices such that ``|hit_ref[i] - hit_est[i]| <= window``
+    '''
+
+    ref = np.asarray(ref)
+    est = np.asarray(est)
+    ref_idx = np.argsort(ref)
+    ref_sorted = ref[ref_idx]
+
+    left_idx = np.searchsorted(ref_sorted, est - window, side='left')
+    right_idx = np.searchsorted(ref_sorted, est + window, side='right')
+
+    hit_ref, hit_est = [], []
+
+    for j, (start, end) in enumerate(zip(left_idx, right_idx)):
+        hit_ref.extend(ref_idx[start:end])
+        hit_est.extend([j] * (end - start))
+
+    return hit_ref, hit_est
 
 
 def validate_intervals(intervals):

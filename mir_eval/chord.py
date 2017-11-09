@@ -177,6 +177,9 @@ def scale_degree_to_semitone(scale_degree):
     semitone : int
         Relative semitone of the scale degree, wrapped to a single octave
 
+    Raises
+    ------
+    InvalidChordException if `scale_degree` is invalid.
     """
     semitone = 0
     offset = 0
@@ -190,11 +193,12 @@ def scale_degree_to_semitone(scale_degree):
     semitone = SCALE_DEGREES.get(scale_degree, None)
     if semitone is None:
         raise InvalidChordException(
-            "Scale degree improperly formed: %s" % scale_degree)
+            "Scale degree improperly formed: {}, expected one of {}."
+            .format(scale_degree, list(SCALE_DEGREES.keys())))
     return semitone + offset
 
 
-def scale_degree_to_bitmap(scale_degree):
+def scale_degree_to_bitmap(scale_degree, modulo=False, length=BITMAP_LENGTH):
     """Create a bitmap representation of a scale degree.
 
     Note that values in the bitmap may be negative, indicating that the
@@ -204,21 +208,25 @@ def scale_degree_to_bitmap(scale_degree):
     ----------
     scale_degree : str
         Spelling of a relative scale degree, e.g. 'b3', '7', '#5'
+    modulo : bool, default=True
+        If a scale degree exceeds the length of the bit-vector, modulo the
+        scale degree back into the bit-vector; otherwise it is discarded.
+    length : int, default=12
+        Length of the bit-vector to produce
 
     Returns
     -------
-    bitmap : np.ndarray, in [-1, 0, 1]
-        Bitmap representation of this scale degree (12-dim).
-
+    bitmap : np.ndarray, in [-1, 0, 1], len=`length`
+        Bitmap representation of this scale degree.
     """
     sign = 1
     if scale_degree.startswith("*"):
         sign = -1
         scale_degree = scale_degree.strip("*")
-    edit_map = [0] * BITMAP_LENGTH
+    edit_map = [0] * length
     sd_idx = scale_degree_to_semitone(scale_degree)
-    if sd_idx < BITMAP_LENGTH:
-        edit_map[sd_idx % BITMAP_LENGTH] = sign
+    if sd_idx < length or modulo:
+        edit_map[sd_idx % length] = sign
     return np.array(edit_map)
 
 
@@ -491,7 +499,8 @@ def encode(chord_label, reduce_extended_chords=False,
     semitone_bitmap[0] = 1
 
     for scale_degree in scale_degrees:
-        semitone_bitmap += scale_degree_to_bitmap(scale_degree)
+        semitone_bitmap += scale_degree_to_bitmap(scale_degree,
+                                                  reduce_extended_chords)
 
     semitone_bitmap = (semitone_bitmap > 0).astype(np.int)
     if not semitone_bitmap[bass_number] and strict_bass_intervals:
