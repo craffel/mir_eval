@@ -23,8 +23,8 @@ from matplotlib import cbook
 from matplotlib import ticker
 from matplotlib import pyplot as plt
 from matplotlib import ft2font
-from matplotlib.testing.noseclasses import KnownFailureTest, \
-     KnownFailureDidNotFailTest, ImageComparisonFailure
+from matplotlib.testing.noseclasses import KnownFailure
+from matplotlib.testing.exceptions import ImageComparisonFailure
 from matplotlib.testing.compare import comparable_formats, compare_images, \
      make_test_filename
 
@@ -65,7 +65,7 @@ def knownfailureif(fail_condition, msg=None, known_exception_class=None):
                     # An error here when running nose means that you don't have
                     # the matplotlib.testing.noseclasses:KnownFailure plugin in
                     # use.
-                    raise KnownFailureTest(msg)
+                    raise KnownFailure(msg)
                 else:
                     raise
             if fail_condition and fail_condition != 'indeterminate':
@@ -85,6 +85,10 @@ def _do_cleanup(original_units_registry):
     matplotlib.units.registry.clear()
     matplotlib.units.registry.update(original_units_registry)
     warnings.resetwarnings()  # reset any warning filters set in tests
+
+
+class KnownFailureDidNotFailTest(KnownFailure):
+    pass
 
 
 class CleanupTest(object):
@@ -215,7 +219,7 @@ class ImageComparisonTest(CleanupTest):
                                 ' (RMS %(rms).3f)' % err)
                     except ImageComparisonFailure:
                         if not check_freetype_version(self._freetype_version):
-                            raise KnownFailureTest(
+                            raise KnownFailure(
                                 "Mismatched version of freetype.  Test "
                                 "requires '%s', you have '%s'" %
                                 (self._freetype_version,
