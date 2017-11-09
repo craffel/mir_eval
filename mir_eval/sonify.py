@@ -212,7 +212,7 @@ def pitch_contour(times, frequencies, fs, amplitudes=None, function=np.sin,
         defaults to ``max(times)*fs``
 
     kind : str
-        Interpolation mode for the frequency estimator.
+        Interpolation mode for the frequency and amplitude values.
         See: ``scipy.interpolate.interp1d`` for valid settings.
 
     Returns
