@@ -32,6 +32,6 @@ setup(
     extras_require={
         'display': ['matplotlib>=1.5.0',
                     'scipy>=0.16.0'],
-        'testing': ['matplotlib>=2.0.0']
+        'testing': ['matplotlib>=2.1.0']
     }
 )
