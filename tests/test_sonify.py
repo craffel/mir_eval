@@ -72,6 +72,7 @@ def test_pitch_contour():
     noise = scipy.ndimage.gaussian_filter1d(np.random.randn(len(times)),
                                             sigma=256)
     freqs = 440.0 * 2.0**(16 * noise)
+    amps = np.linspace(0, 1, num=5 * fs, endpoint=True)
 
     # negate a bunch of sequences
     idx = np.unique(np.random.randint(0, high=len(times), size=32))
@@ -95,3 +96,9 @@ def test_pitch_contour():
     x = mir_eval.sonify.pitch_contour(times + 5.0, freqs, fs, length=fs * 7)
     assert len(x) == fs * 7
     assert np.allclose(x[:fs * 5], x[0])
+
+    # Test with explicit amplitude
+    x = mir_eval.sonify.pitch_contour(times, freqs, fs, length=fs * 7,
+                                      amplitudes=amps)
+    assert len(x) == fs * 7
+    assert np.allclose(x[0], 0)
