@@ -449,6 +449,11 @@ def test_directional_hamming_distance():
     assert np.allclose(0, dhd(ref_ivs, ref_ivs))
     assert np.allclose(0, dhd(est_ivs, est_ivs))
 
+    ivs_overlap_all = np.array([[0., 1.], [0.9, 2.]])
+    ivs_overlap_one = np.array([[0., 1.], [0.9, 2.], [2., 3.]])
+    nose.tools.assert_raises(ValueError, dhd, ivs_overlap_all, est_ivs)
+    nose.tools.assert_raises(ValueError, dhd, ivs_overlap_one, est_ivs)
+
 
 def test_segmentation_functions():
     ref_ivs = np.array([[0., 2.], [2., 2.5], [2.5, 3.2]])

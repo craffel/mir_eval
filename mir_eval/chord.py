@@ -85,6 +85,9 @@ Metrics
 * :func:`mir_eval.chord.underseg`: Computes the level of under-segmentation
   between estimated and reference intervals.
 
+* :func:`mir_eval.chord.seg`: Computes the minimum of over- and
+  under-segmentation between estimated and reference intervals.
+
 References
 ----------
     .. [#harte2010towards] C. Harte. Towards Automatic Extraction of Harmony
@@ -1381,8 +1384,8 @@ def directional_hamming_distance(reference_intervals, estimated_intervals):
     util.validate_intervals(reference_intervals)
 
     # make sure chord intervals do not overlap
-    if len(reference_intervals) > 2 and (reference_intervals[:-1, 1] >
-                                         reference_intervals[1:, 0]).all():
+    if len(reference_intervals) > 1 and (reference_intervals[:-1, 1] >
+                                         reference_intervals[1:, 0]).any():
         raise ValueError('Chord Intervals must not overlap')
 
     est_ts = np.unique(estimated_intervals.flatten())
@@ -1596,6 +1599,6 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
                                                durations)
     scores['underseg'] = underseg(merged_ref_intervals, merged_est_intervals)
     scores['overseg'] = overseg(merged_ref_intervals, merged_est_intervals)
-    scores['seg'] = seg(merged_ref_intervals, merged_est_intervals)
+    scores['seg'] = min(scores['overseg'], scores['underseg'])
 
     return scores
