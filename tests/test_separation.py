@@ -55,22 +55,25 @@ def __generate_multichannel(mono_sig, nchan=2, gain=1.0, reverse=False):
 
 
 def __check_score(sco_f, metric, score, expected_score):
-    '''from pprint import pprint
-    print('\nCHECK')
-    print('expected score:')
-    pprint(expected_score)
-    print('score:')
-    pprint(score)'''
-    score = np.squeeze(np.array(score))
-    expected_score = np.squeeze(np.array(expected_score))
-    if score.shape == expected_score.shape:
-        if len(score.shape) > 1:
-            print('skipping the frames version')
-        else:
-            assert np.allclose(score, expected_score, atol=A_TOL)
-    else:
-        print('skipping the framewise permutation evaluation',score,expected_score)
+    score = np.array(score)
+    expected_score = np.array(expected_score)
 
+    #if the expected and obtained scores are not of the same size, we are in the case
+    #of framewise permutation and should summarize them into one single permutation
+    if score.size != expected_score.size:
+        expected_score = np.squeeze(np.array([list(set(x)) for x in expected_score]))
+        print('putting all permutations into a single one')
+    #making sure they are 2D
+    if len(expected_score.shape)==1:
+        expected_score=expected_score[:,None]
+    if len(score.shape)==1:
+        score=score[:,None]
+    #skipping the framewise case
+    (nsrc,nwin)=score.shape
+    if nwin > 1:
+        print('skipping the frames version')
+    else:
+        assert np.allclose(score, expected_score, atol=A_TOL)
 
 def __unit_test_empty_input(metric):
     if (metric == mir_eval.separation.bss_eval_sources or

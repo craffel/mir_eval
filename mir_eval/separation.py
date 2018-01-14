@@ -255,7 +255,7 @@ def bss_eval(reference_sources, estimated_sources,
         mean_sir[i] = np.mean(s_r[SIR,perm, dum,:])
     popt = candidate_permutations[np.argmax(mean_sir)]
     idx = (popt, dum)
-    return (*np.squeeze(s_r[:,popt,dum,:]),np.squeeze(popt.T))
+    return (*(s_r[:,popt,dum,:]),np.squeeze(popt.T))
 
 def bss_eval_sources(reference_sources, estimated_sources,
                      compute_permutation=True):
