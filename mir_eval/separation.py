@@ -63,7 +63,6 @@ def validate(reference_sources, estimated_sources):
         matrix containing estimated sources
 
     """
-
     if reference_sources.shape != estimated_sources.shape:
         raise ValueError('The shape of estimated sources and the true '
                          'sources should match.  reference_sources.shape '
@@ -136,7 +135,6 @@ def bss_eval(reference_sources, estimated_sources,
     the estimated sources matches that of the true sources. Otherwise, all
     permutations are tested, yielding a significant computation overhead.
 
-
     Examples
     --------
     >>> # reference_sources[n] should be a 2D ndarray, with first dimension the
@@ -155,7 +153,7 @@ def bss_eval(reference_sources, estimated_sources,
         matrix containing estimated sources
     window : int, optional
         size of each window for time-varying evaluation. Picking np.inf will
-        compute on the whole signal.
+        compute metrics on the whole signal.
     hop : int, optional
         hop size between windows
     compute_permutation : bool, optional
@@ -194,13 +192,6 @@ def bss_eval(reference_sources, estimated_sources,
         92, pp. 1928-1936, 2012.
 
     """
-    # make sure the input is at least of shape (nsrc, nsampl) if only single
-    # channel samples were provided.
-    if estimated_sources.ndim == 1:
-        estimated_sources = estimated_sources[None, :]
-    if reference_sources.ndim == 1:
-        reference_sources = reference_sources[None, :]
-
     # make sure the input has 3 dimensions
     # assuming input is in shape (nsampl) or (nsrc, nsampl)
     estimated_sources = np.atleast_3d(estimated_sources)
@@ -239,14 +230,12 @@ def bss_eval(reference_sources, estimated_sources,
             )
     else:
         nwin = 1
-    print('number of windows:',nwin,'number of sources', nsrc)
+
     (SDR,ISR,SIR,SAR)=range(4)
     s_r = np.empty((4,nsrc,nsrc,nwin))
     done = np.zeros((nsrc,nsrc))
-    #print(nsrc)
     for jtrue in range(nsrc):
         for (k,jest) in enumerate(candidate_permutations[:,jtrue]):
-            #print(jtrue,jest,done)
             if not done[jest,jtrue]:
                 #need to compute the scores for this combination
                 Cj = _compute_projection_filters(G[jtrue, jtrue], sf[jtrue],
@@ -255,24 +244,18 @@ def bss_eval(reference_sources, estimated_sources,
                     _bss_decomp_mtifilt(
                         reference_sources,
                         estimated_sources[jest], jtrue, C[jest], Cj)
-                (a,b,c,d)= _bss_crit(s_true, e_spat, e_interf,
+                s_r[:,jest, jtrue,:] = _bss_crit(s_true, e_spat, e_interf,
                     e_artif, window, hop, flen,bsseval_sources)
-                print(jtrue,jest,a,b,c,d,'SDR,ISR,SIR,SAR', window, hop)
-                s_r[:,jest, jtrue,:] = np.array((a,b,c,d))
-                #_bss_crit(s_true, e_spat, e_interf,
-                #    e_artif, window, hop, bsseval_sources)
                 done[jest,jtrue]=True
 
     # select the best ordering
-    mean_sir = np.empty(len(candidate_permutations))
+    mean_sir = np.empty((len(candidate_permutations),))
     dum = np.arange(nsrc)
     for (i, perm) in enumerate(candidate_permutations):
         mean_sir[i] = np.mean(s_r[SIR,perm, dum,:])
     popt = candidate_permutations[np.argmax(mean_sir)]
     idx = (popt, dum)
-
-    return [np.squeeze(s_r[x,popt,dum,:]) for x in (SDR,ISR,SIR,SAR) ]+ [popt,]
-    #return [np.squeeze(x) for x in s_r[:,popt,dum,:]] + [ popt,]
+    return (*np.squeeze(s_r[:,popt,dum,:]),np.squeeze(popt.T))
 
 def bss_eval_sources(reference_sources, estimated_sources,
                      compute_permutation=True):
@@ -337,7 +320,6 @@ def _bss_decomp_mtifilt(reference_sources, estimated_source, j, C, Cj):
     """
     flen = Cj.shape[-2]
 
-
     # zero pad
     #s_true = reference_sources[j]
     s_true = _zeropad(reference_sources[j],flen-1,axis=0)
@@ -384,15 +366,16 @@ def _compute_reference_correlations(reference_sources,flen):
 
     # zero padding and FFT of references
     reference_sources = _zeropad(reference_sources,flen-1,axis=2)
-    n_fft = int(2**np.ceil(np.log2(flen)))
-    sf = scipy.fftpack.rfft(reference_sources, n=n_fft, axis=2)
+    n_fft = int(2**np.ceil(np.log2(nsampl + flen - 1.)))
+    sf = scipy.fftpack.fft(reference_sources, n=n_fft, axis=2)
 
     #compute intercorrelation between sources
     G = np.zeros((nsrc,nsrc,nchan,nchan,flen,flen))
     for (i,c1,j,c2) in itertools.product(*(range(nsrc),range(nchan))*2):
         ssf = sf[i,c1] * np.conj(sf[j,c2])
-        ssf = scipy.fftpack.irfft(ssf)
-        G[i, j, c1, c2, ...] = toeplitz(c = ssf[::-1], r = ssf)
+        ssf = np.real(scipy.fftpack.ifft(ssf))
+        G[i, j, c1, c2, ...] = toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])),
+                          r=ssf[:flen])
     return G, sf
 
 def _compute_projection_filters(G,sf,estimated_source):
@@ -414,15 +397,15 @@ def _compute_projection_filters(G,sf,estimated_source):
     estimated_source = _zeropad(estimated_source.T,flen-1,axis=1)
 
     #compute its FFT
-    n_fft = int(2**np.ceil(np.log2(flen)))
-    sef = scipy.fftpack.rfft(estimated_source, n=n_fft, axis=1)
+    n_fft = int(2**np.ceil(np.log2(nsampl + flen - 1.)))
+    sef = scipy.fftpack.fft(estimated_source, n=n_fft)
 
     #compute the cross-correlations between sources and estimates
     D = np.zeros((nsrc,nchan,flen,nchan))
     for (j,cj,c) in itertools.product(range(nsrc),range(nchan),range(nchan)):
         ssef = sf[j,cj] * np.conj(sef[c])
-        ssef = scipy.fftpack.irfft(ssef)
-        D[j,cj,:,c] = ssef[::-1]
+        ssef = np.real(scipy.fftpack.ifft(ssef))
+        D[j,cj,:,c] = np.hstack((ssef[0], ssef[-1:-flen:-1]))
 
     #reshape matrices to build the filters
     D = D.reshape(nsrc*nchan*flen, nchan,order='F')
@@ -463,7 +446,6 @@ def _project(reference_sources, C):
                                 reference_sources[j,:,cj])[:nsampl + flen - 1]
     return sproj.T
 
-
 def _wsum(sig,window,hop,flen,axis=0):
     """ computes a sum on windowed versions of the signal"""
     if window  >= sig.shape[axis] - flen:
@@ -473,13 +455,13 @@ def _wsum(sig,window,hop,flen,axis=0):
 
     sig = np.moveaxis(sig,axis,0)
     length = sig.shape[0]
-    nwin = int(np.floor((length - flen - window + hop) / hop))
+    nwin = int(np.floor((length - flen +1 - window + hop) / hop))
     new_shape = np.array(sig.shape)
     new_shape[0] = nwin
     res = np.empty((nwin,))
     for k in range(nwin):
         if k < nwin:
-            win_slice = slice(k * hop, k * hop + window)
+            win_slice = slice(k * hop, min(length,k * hop + window))
         else:
             win_slice = slice(k * hop, length)
         res[k, ...] = np.sum(sig[win_slice, ...])
