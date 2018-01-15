@@ -64,6 +64,8 @@ def __check_score(sco_f, metric, score, expected_score):
         expected_score = np.squeeze(np.array([list(set(x)) for x in expected_score]))
         print('putting all permutations into a single one')
     #making sure they are 2D
+    if isinstance(score, int):
+        score = np.array([score])
     if len(expected_score.shape)==1:
         expected_score=expected_score[:,None]
     if len(score.shape)==1:
@@ -241,18 +243,24 @@ def __unit_test_framewise_small_window(metric):
     else:
         raise ValueError('Unknown metric {}'.format(metric))
     # Test with window larger than source length
-    '''assert np.allclose(np.squeeze(metric(ref_sources,
+    print(metric(ref_sources,
                                          est_sources,
                                          window=120,
-                                         hop=20)),
+                                         hop=20)
+                       )
+    assert np.allclose(np.array(metric(ref_sources,
+                                         est_sources,
+                                         window=120,
+                                         hop=20),
                        comparison_fcn(ref_sources, est_sources, False),
-                       atol=A_TOL)
-    assert np.allclose(np.squeeze(metric(ref_sources,
+                       atol=A_TOL))
+
+    assert np.allclose(metric(ref_sources,
                                          est_sources,
                                          window=20,
-                                         hop=120)),
+                                         hop=120),
                        comparison_fcn(ref_sources, est_sources, False),
-                       atol=A_TOL)'''
+                       atol=A_TOL)
 
 
 def test_separation_functions():
