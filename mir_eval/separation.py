@@ -10,7 +10,7 @@ attempt to measure the perceptual quality of the separation.
 See also the bss_eval MATLAB toolbox:
     http://bass-db.gforge.inria.fr/bss_eval/
 
-Conventions
+Conventions 
 -----------
 
 An audio signal is expected to be in the format of a 2-dimensional array where
