@@ -335,7 +335,7 @@ def match_note_onsets(ref_intervals, est_intervals, onset_tolerance=0.05,
 
 def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
                 onset_tolerance=0.05, pitch_tolerance=50.0, offset_ratio=0.2,
-                offset_min_tolerance=0.05, strict=False):
+                offset_min_tolerance=0.05, strict=False, chroma=False):
     """Compute a maximum matching between reference and estimated notes,
     subject to onset, pitch and (optionally) offset constraints.
 
@@ -399,6 +399,8 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
         and pitch matching are performed using ``<=`` (less than or equal). If
         ``strict=True``, the threshold checks are performed using ``<`` (less
         than).
+    chroma : bool
+        Map reference and estimated pitches to chroma (Ignore octave errors)
 
     Returns
     -------
@@ -425,6 +427,10 @@ def match_notes(ref_intervals, ref_pitches, est_intervals, est_pitches,
     # check for pitch matches
     pitch_distances = np.abs(1200*np.subtract.outer(np.log2(ref_pitches),
                                                     np.log2(est_pitches)))
+    if chroma:
+        # 1200 cents is one octave, mod by 1200 to remove octave information
+        pitch_distances = np.mod(pitch_distances, 1200)
+        pitch_distances = np.minimum(1200-pitch_distances,pitch_distances)
     pitch_hit_matrix = cmp_func(pitch_distances, pitch_tolerance)
 
     # check for offset matches if offset_ratio is not None
@@ -467,7 +473,7 @@ def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
                                 est_pitches, onset_tolerance=0.05,
                                 pitch_tolerance=50.0, offset_ratio=0.2,
                                 offset_min_tolerance=0.05, strict=False,
-                                beta=1.0):
+                                beta=1.0,chroma=False):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes, and the Average Overlap Ratio for correctly transcribed
     notes (see :func:`average_overlap_ratio`). "Correctness" is determined
@@ -533,6 +539,8 @@ def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
         than).
     beta : float > 0
         Weighting factor for f-measure (default value = 1.0).
+    chroma : bool
+        Map reference and estimated pitches to chroma (Ignore octave errors)
 
     Returns
     -------
@@ -555,7 +563,7 @@ def precision_recall_f1_overlap(ref_intervals, ref_pitches, est_intervals,
                            pitch_tolerance=pitch_tolerance,
                            offset_ratio=offset_ratio,
                            offset_min_tolerance=offset_min_tolerance,
-                           strict=strict)
+                           strict=strict,chroma=chroma)
 
     precision = float(len(matching))/len(est_pitches)
     recall = float(len(matching))/len(ref_pitches)
@@ -788,7 +796,8 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
     """
     # Compute all the metrics
     scores = collections.OrderedDict()
-
+    
+    kwargs['chroma'] = False
     # Precision, recall and f-measure taking note offsets into account
     kwargs.setdefault('offset_ratio', 0.2)
     orig_offset_ratio = kwargs['offset_ratio']
@@ -806,6 +815,27 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
      scores['Recall_no_offset'],
      scores['F-measure_no_offset'],
      scores['Average_Overlap_Ratio_no_offset']) = (
+        util.filter_kwargs(precision_recall_f1_overlap,
+                           ref_intervals, ref_pitches,
+                           est_intervals, est_pitches, **kwargs))
+                           
+    kwargs['chroma'] = True
+    # Precision, recall and f-measure taking note offsets into account
+    kwargs['offset_ratio'] = orig_offset_ratio
+    if kwargs['offset_ratio'] is not None:
+        (scores['Chroma_Precision'],
+         scores['Chroma_Recall'],
+         scores['Chroma_F-measure'],
+         scores['Chroma_Average_Overlap_Ratio']) = util.filter_kwargs(
+            precision_recall_f1_overlap, ref_intervals, ref_pitches,
+            est_intervals, est_pitches, **kwargs)
+
+    # Precision, recall and f-measure NOT taking note offsets into account
+    kwargs['offset_ratio'] = None
+    (scores['Chroma_Precision_no_offset'],
+     scores['Chroma_Recall_no_offset'],
+     scores['Chroma_F-measure_no_offset'],
+     scores['Chroma_Average_Overlap_Ratio_no_offset']) = (
         util.filter_kwargs(precision_recall_f1_overlap,
                            ref_intervals, ref_pitches,
                            est_intervals, est_pitches, **kwargs))

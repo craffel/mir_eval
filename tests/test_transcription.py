@@ -115,6 +115,33 @@ def test_match_notes():
     assert matching == [(0, 0), (1, 1), (3, 3)]
 
 
+def test_match_notes_chroma():
+    
+    ref_int, ref_pitch = REF[:, :2], REF[:, 2]
+    est_int, est_pitch = EST[:, :2], EST[:, 2]
+
+    matching = (
+        mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,
+                                           est_pitch, chroma=True))
+
+    assert matching == [(0, 0), (3, 3)]
+    
+    est_pitch = est_pitch * 2
+    
+    matching = (
+        mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,
+                                           est_pitch,chroma=True))
+
+    assert matching == [(0, 0), (3, 3)]
+    
+    est_pitch = est_pitch / 4
+    
+    matching = (
+        mir_eval.transcription.match_notes(ref_int, ref_pitch, est_int,
+                                           est_pitch,chroma=True))
+
+    assert matching == [(0, 0), (3, 3)]
+
 def test_match_notes_strict():
 
     ref_int, ref_pitch = np.array([[0, 1]]), np.array([100])
@@ -152,6 +179,32 @@ def test_precision_recall_f1_overlap():
                            SCORES['Recall_no_offset'],
                            SCORES['F-measure_no_offset'],
                            SCORES['Average_Overlap_Ratio_no_offset']])
+    assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
+    
+    precision, recall, f_measure, avg_overlap_ratio = (
+        mir_eval.transcription.precision_recall_f1_overlap(
+            ref_int, ref_pitch, est_int, est_pitch, chroma=True))
+
+    scores_gen = np.array([precision, recall, f_measure, avg_overlap_ratio])
+    scores_exp = np.array([SCORES['Precision'], SCORES['Recall'],
+                           SCORES['F-measure'],
+                           SCORES['Average_Overlap_Ratio']])
+    assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
+    
+    est_pitch = est_pitch * 2
+    precision, recall, f_measure, avg_overlap_ratio = (
+        mir_eval.transcription.precision_recall_f1_overlap(
+            ref_int, ref_pitch, est_int, est_pitch, chroma=True))
+
+    scores_gen = np.array([precision, recall, f_measure, avg_overlap_ratio])
+    assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
+    
+    est_pitch = est_pitch / 4
+    precision, recall, f_measure, avg_overlap_ratio = (
+        mir_eval.transcription.precision_recall_f1_overlap(
+            ref_int, ref_pitch, est_int, est_pitch, chroma=True))
+
+    scores_gen = np.array([precision, recall, f_measure, avg_overlap_ratio])
     assert np.allclose(scores_exp, scores_gen, atol=A_TOL)
 
 
