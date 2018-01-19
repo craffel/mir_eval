@@ -257,7 +257,7 @@ def test_separation_functions():
     assert len(ref_files) == len(est_files) == len(sco_files) > 0
 
     # Unit tests
-    """
+
     for metric in [mir_eval.separation.bss_eval_sources,
                    mir_eval.separation.bss_eval_sources_framewise,
                    mir_eval.separation.bss_eval_images,
@@ -274,7 +274,7 @@ def test_separation_functions():
                    mir_eval.separation.bss_eval_images_framewise]:
         yield (__unit_test_framewise_small_window, metric)
         yield (__unit_test_partial_silence, metric)
-        """
+        
 
 
     # Regression tests
