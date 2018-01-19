@@ -17,7 +17,7 @@ import sys
 sys.path.insert(0, '/mnt/c/Users/Antoine Liutkus/dev/mir_eval')
 import mir_eval
 
-A_TOL = 1e-12
+A_TOL = 1e-3
 
 REF_GLOB = 'data/separation/ref*'
 EST_GLOB = 'data/separation/est*'

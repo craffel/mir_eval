@@ -448,12 +448,12 @@ def _bss_decomp_mtifilt(reference_sources, estimated_source, j, C, Cj):
 
     # zero pad
     s_true = _zeropad(reference_sources[j], filters_len-1, axis=0)
-    estimated_source = _zeropad(estimated_source, filters_len-1, axis=0)
 
     # compute appropriate projections
     e_spat = _project(reference_sources[j], Cj) - s_true
     e_interf = _project(reference_sources, C) - s_true - e_spat
-    e_artif = - s_true - e_spat - e_interf + estimated_source
+    e_artif = - s_true - e_spat - e_interf
+    e_artif[:estimated_source.shape[0],:] += estimated_source
 
     return (s_true, e_spat, e_interf, e_artif)
 
@@ -466,8 +466,8 @@ def _zeropad(sig, N, axis=0):
     out = np.zeros((sig.shape[0] + N,) + sig.shape[1:])
     out[:sig.shape[0], ...] = sig
     # put back axis in place
-    sig = np.moveaxis(out, 0, axis)
-    return sig
+    out = np.moveaxis(out, 0, axis)
+    return out
 
 
 def _reshape_G(G):
@@ -499,8 +499,10 @@ def _compute_reference_correlations(reference_sources, filters_len):
 
     # compute intercorrelation between sources
     G = np.zeros((nsrc, nsrc, nchan, nchan, filters_len, filters_len))
-    for ((i, c1), (j, c2)) in itertools.combinations_with_replacement(
-                            itertools.product(range(nsrc), range(nchan)), 2):
+    #for ((i, c1), (j, c2)) in itertools.combinations_with_replacement(
+    #                        itertools.product(range(nsrc), range(nchan)), 2):
+    for ((i, c1, j, c2)) in itertools.product(*(range(nsrc), range(nchan)) * 2):
+
         ssf = sf[j, c2] * np.conj(sf[i, c1])
         ssf = np.real(scipy.fftpack.ifft(ssf))
         ss = toeplitz(
@@ -508,7 +510,7 @@ def _compute_reference_correlations(reference_sources, filters_len):
             r=ssf[:filters_len]
             )
         G[j, i, c2, c1] = ss
-        G[i, j, c1, c2] = ss.T
+        #G[i, j, c1, c2] = ss.T
     return G, sf
 
 
