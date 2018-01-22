@@ -12,9 +12,6 @@ import nose.tools
 import json
 import os
 import warnings
-
-import sys
-sys.path.insert(0, '/mnt/c/Users/Antoine Liutkus/dev/mir_eval')
 import mir_eval
 
 A_TOL = 1e-3
@@ -45,7 +42,7 @@ def __generate_multichannel(mono_sig, nchan=2, gain=1.0, reverse=False):
     # add the channels dimension
     input_3d = np.atleast_3d(mono_sig)
     # get the desired number of channels
-    stackin = [input_3d]*nchan
+    stackin = [input_3d] * nchan
     # apply the gain to the new channels
     stackin[1:] = np.multiply(gain, stackin[1:])
     if reverse:
@@ -57,21 +54,24 @@ def __generate_multichannel(mono_sig, nchan=2, gain=1.0, reverse=False):
 def __check_score(sco_f, metric, score, expected_score):
     score = np.array(score)
     expected_score = np.array(expected_score)
-    #making sure they are 2D
+    # making sure they are 2D
     if isinstance(score, int):
         score = np.array([score])
-    if len(expected_score.shape)==1:
-        expected_score=expected_score[:,None]
-    if len(score.shape)==1:
-        score=score[:,None]
-    (nsrc,nwin)=score.shape
-    print('\n------\n(nsrc=%d,nwin=%d)='%(nsrc,nwin),'\n-----\n')
+    if len(expected_score.shape) == 1:
+        expected_score = expected_score[:, None]
+    if len(score.shape) == 1:
+        score = score[:, None]
+    (nsrc, nwin) = score.shape
+    print('\n------\n(nsrc=%d,nwin=%d)=' % (nsrc, nwin), '\n-----\n')
     if score.size != expected_score.size:
-        print(score,expected_score)
+        print(score, expected_score)
     else:
-        diff = np.hstack((score.flatten()[:,None],expected_score.flatten()[:,None]))
-        print('\n',diff)
+        diff = np.hstack(
+            (score.flatten()[:, None], expected_score.flatten()[:, None])
+        )
+        print('\n', diff)
         assert np.allclose(score, expected_score, atol=A_TOL)
+
 
 def __unit_test_empty_input(metric):
     if (metric == mir_eval.separation.bss_eval_sources or
@@ -87,9 +87,9 @@ def __unit_test_empty_input(metric):
         assert len(w) == 2
         assert issubclass(w[-1].category, UserWarning)
         '''assert str(w[-1].message) == ("estimated_sources is empty, "
-                                     "should be of size (nsrc, nsample, nchan)."
-                                      "sdr, sir, sar, and perm will all be "
-                                      "empty np.ndarrays")'''
+                                    "should be of size (nsrc, nsample, nchan)."
+                                    "sdr, sir, sar, and perm will all be "
+                                    "empty np.ndarrays")'''
         # And that the metric returns empty arrays
         assert np.allclose(metric(*args), np.array([]))
 
@@ -195,8 +195,9 @@ def __unit_test_incompatible_shapes(metric):
 
 def __unit_test_too_many_sources(metric):
     # Test for error when too many sources or references are provided
-    many_sources = np.random.random_sample((mir_eval.separation.MAX_SOURCES*2,
-                                            400))
+    many_sources = np.random.random_sample(
+        (mir_eval.separation.MAX_SOURCES * 2, 400)
+    )
     if metric == mir_eval.separation.bss_eval_sources:
         nose.tools.assert_raises(ValueError, metric, many_sources,
                                  many_sources)
@@ -243,10 +244,14 @@ def __unit_test_framewise_small_window(metric):
     expected_results = comparison_fcn(ref_sources, est_sources, False)
     results = np.array(results)
     expected_results = np.array(expected_results)
-    print('\n--------\n','ref_sources.shape',ref_sources.shape,'\n','est_sources.shape',est_sources.shape,'\n---------\n')
-    print('\n',np.hstack((results.flatten()[:,None],expected_results.flatten()[:,None])))
-    assert np.allclose(np.array(results),np.array(expected_results),
+    print('\n--------\n', 'ref_sources.shape', ref_sources.shape, '\n',
+          'est_sources.shape', est_sources.shape, '\n---------\n')
+    print('\n', np.hstack(
+        (results.flatten()[:, None], expected_results.flatten()[:, None]))
+    )
+    assert np.allclose(np.array(results), np.array(expected_results),
                        atol=A_TOL)
+
 
 def test_separation_functions():
     # Load in all files in the same order
@@ -274,8 +279,6 @@ def test_separation_functions():
                    mir_eval.separation.bss_eval_images_framewise]:
         yield (__unit_test_framewise_small_window, metric)
         yield (__unit_test_partial_silence, metric)
-        
-
 
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
