@@ -247,15 +247,15 @@ def bss_eval(reference_sources, estimated_sources,
     # defines all the permutations desired by user
     if compute_permutation:
         candidate_permutations = np.array(list(
-            itertools.permutations(range(nsrc))))
+            itertools.permutations(list(range(nsrc)))))
     else:
-        candidate_permutations = np.array(range(nsrc))[None, :]
+        candidate_permutations = np.array(np.arange(nsrc))[None, :]
 
     # initialize variables
     framer = Framing(window, hop, nsampl)
     nwin = framer.nwin
 
-    (SDR, ISR, SIR, SAR) = range(4)
+    (SDR, ISR, SIR, SAR) = list(range(4))
     s_r = np.empty((4, nsrc, nsrc, nwin))
 
     # define helper functions for computing filters on windows of the signals
@@ -336,7 +336,7 @@ def bss_eval(reference_sources, estimated_sources,
         result = s_r[:, dum, popt[:, 0], :]
     else:
         result = np.empty((4, nsrc, nwin))
-        for (m, t) in itertools.product(range(4), range(nwin)):
+        for (m, t) in itertools.product(list(range(4)), list(range(nwin))):
             result[m, :, t] = s_r[m, dum, popt[:, t], t]
 
     return (result[SDR], result[ISR], result[SIR], result[SAR], popt)
@@ -521,7 +521,11 @@ def _compute_reference_correlations(reference_sources, filters_len):
     # compute intercorrelation between sources
     G = np.zeros((nsrc, nsrc, nchan, nchan, filters_len, filters_len))
     for ((i, c1), (j, c2)) in itertools.combinations_with_replacement(
-                           itertools.product(range(nsrc), range(nchan)), 2):
+        itertools.product(
+            list(range(nsrc)), list(range(nchan))
+        ),
+        2
+    ):
 
         ssf = sf[j, c2] * np.conj(sf[i, c1])
         ssf = np.real(scipy.fftpack.ifft(ssf))
@@ -560,7 +564,7 @@ def _compute_projection_filters(G, sf, estimated_source):
     # compute the cross-correlations between sources and estimates
     D = np.zeros((nsrc, nchan, filters_len, nchan))
     for (j, cj, c) in itertools.product(
-        range(nsrc), range(nchan), range(nchan)
+        list(range(nsrc)), list(range(nchan)), list(range(nchan))
     ):
         ssef = sf[j, cj] * np.conj(sef[c])
         ssef = np.real(scipy.fftpack.ifft(ssef))
@@ -605,7 +609,7 @@ def _project(reference_sources, C):
     sproj = np.zeros((nchan, nsampl + filters_len - 1))
 
     for (j, cj, c) in itertools.product(
-        range(nsrc), range(nchan), range(nchan)
+        list(range(nsrc)), list(range(nchan)), list(range(nchan))
     ):
         sproj[c] += fftconvolve(
             C[j, cj, :, c],
