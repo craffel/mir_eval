@@ -14,7 +14,7 @@ import os
 import warnings
 import mir_eval
 
-A_TOL = 1e-11
+A_TOL = 1e-10
 
 REF_GLOB = 'data/separation/ref*'
 EST_GLOB = 'data/separation/est*'
