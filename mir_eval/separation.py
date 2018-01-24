@@ -422,11 +422,11 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
 # Helper functions
 class Framing:
     """ helper iterator class to do overlapped windowing"""
-    def __init__(self, window, hop, len):
+    def __init__(self, window, hop, length):
         self.current = 0
         self.window = window
         self.hop = hop
-        self.len = len
+        self.length = length
 
     def __iter__(self):
         return self
@@ -438,18 +438,18 @@ class Framing:
             start = self.current * self.hop
             if np.isnan(start) or np.isinf(start):
                 start = 0
-            stop = min(self.current * self.hop + self.window, self.len)
+            stop = min(self.current * self.hop + self.window, self.length)
             if np.isnan(stop) or np.isinf(stop):
-                stop = self.len
+                stop = self.length
             result = slice(start, stop)
             self.current += 1
             return result
 
     @property
     def nwin(self):
-        if self.window < len:
+        if self.window < self.length:
             return int(
-                np.floor((len - self.window + self.hop) / self.hop)
+                np.floor((self.length - self.window + self.hop) / self.hop)
             )
         else:
             return 1
