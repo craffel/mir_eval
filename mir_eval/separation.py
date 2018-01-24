@@ -251,7 +251,8 @@ def bss_eval(reference_sources, estimated_sources,
         candidate_permutations = np.array(range(nsrc))[None, :]
 
     # initialize variables
-    nwin = Framing.count(window, hop, nsampl)
+    framer = Framing(window, hop, nsampl)
+    nwin = framer.nwin
 
     (SDR, ISR, SIR, SAR) = range(4)
     s_r = np.empty((4, nsrc, nsrc, nwin))
@@ -288,7 +289,7 @@ def bss_eval(reference_sources, estimated_sources,
         Cj = compute_Cj()
 
     # loop over all windows
-    for (t, win) in enumerate(Framing(window, hop, nsampl)):
+    for (t, win) in enumerate(framer):
         # if we have time-varying distortion filters
         if framewise_filters:
             (G, sf, C) = compute_GsfC(win)
@@ -420,20 +421,11 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
 # Helper functions
 class Framing:
     """ helper iterator class to do overlapped windowing"""
-    def count(window, hop, len):
-        if window < len:
-            return int(
-                np.floor((len - window + hop) / hop)
-            )
-        else:
-            return 1
-
     def __init__(self, window, hop, len):
         self.current = 0
         self.window = window
         self.hop = hop
         self.len = len
-        self.nwin = Framing.count(window, hop, len)
 
     def __iter__(self):
         return self
@@ -451,6 +443,15 @@ class Framing:
             result = slice(start, stop)
             self.current += 1
             return result
+
+    @property
+    def nwin(self):
+        if self.window < len:
+            return int(
+                np.floor((len - self.window + self.hop) / self.hop)
+            )
+        else:
+            return 1
 
 
 def _bss_decomp_mtifilt(reference_sources, estimated_source, j, C, Cj):
