@@ -29,9 +29,10 @@ Metrics
   ratios, plus the image to spatial ratio (ISR). These are computed on a frame
   by frame basis, (with infinite window size meaning the whole signal).
 
-  Optionally, the distortion filters are time-varying, corresponding to behavior
-  of BSS Eval version 3. Furthermore, metrics may optionally correspond to the
-  bsseval_sources version, as defined in the BSS Eval version 2.
+  Optionally, the distortion filters are time-varying, corresponding to
+  behavior of BSS Eval version 3. Furthermore, metrics may optionally
+  correspond to the bsseval_sources version, as defined in the BSS Eval
+  version 2.
 
 References
 ----------
@@ -88,8 +89,8 @@ def validate(reference_sources, estimated_sources):
 
     if reference_sources.size == 0:
         warnings.warn("reference_sources is empty, should be of size "
-                      "(nsrc, nsample, nchan). sdr, isr sir, sar, and perm will"
-                      " all be empty np.ndarrays")
+                      "(nsrc, nsample, nchan). sdr, isr sir, sar, and perm "
+                      "will all be empty np.ndarrays")
     elif _any_source_silent(reference_sources):
         raise ValueError('All the reference sources should be non-silent (not '
                          'all-zeros), but at least one of the reference '
@@ -207,8 +208,8 @@ def bss_eval(reference_sources, estimated_sources,
         matrix of Sources to Artifacts Ratios (SAR)
     perm : np.ndarray, shape=(nsrc, nwin)
         vector containing the best ordering of estimated sources in
-        the mean SIR sense (estimated source number ``perm[j,t]`` corresponds to
-        true source number ``j`` at window ``t``).
+        the mean SIR sense (estimated source number ``perm[j,t]`` corresponds
+        to true source number ``j`` at window ``t``).
         Note: ``perm`` will be ``(0,2,...,nsrc-1)`` if ``compute_permutation``
         is ``False``.
 
@@ -519,7 +520,6 @@ def _compute_reference_correlations(reference_sources, filters_len):
     G = np.zeros((nsrc, nsrc, nchan, nchan, filters_len, filters_len))
     for ((i, c1), (j, c2)) in itertools.combinations_with_replacement(
                            itertools.product(range(nsrc), range(nchan)), 2):
-    # for ((i, c1, j, c2)) in itertools.product(*(range(nsrc), range(nchan)) * 2):
 
         ssf = sf[j, c2] * np.conj(sf[i, c1])
         ssf = np.real(scipy.fftpack.ifft(ssf))
@@ -534,7 +534,8 @@ def _compute_reference_correlations(reference_sources, filters_len):
 
 def _compute_projection_filters(G, sf, estimated_source):
     """Least-squares projection of estimated source on the subspace spanned by
-    delayed versions of reference sources, with delays between 0 and filters_len-1
+    delayed versions of reference sources, with delays between 0 and
+    filters_len-1
     """
     # shapes
     (nsampl, nchan) = estimated_source.shape
