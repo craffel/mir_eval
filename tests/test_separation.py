@@ -16,9 +16,9 @@ import mir_eval
 
 A_TOL = 1e-12
 
-REF_GLOB = 'data/separation/ref01'
-EST_GLOB = 'data/separation/est01'
-SCORES_GLOB = 'data/separation/output01.json'
+REF_GLOB = 'data/separation/ref*'
+EST_GLOB = 'data/separation/est*'
+SCORES_GLOB = 'data/separation/output*.json'
 
 
 def __load_and_stack_wavs(directory):
