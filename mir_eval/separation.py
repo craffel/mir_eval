@@ -454,6 +454,8 @@ class Framing:
         else:
             return 1
 
+    next = __next__
+
 
 def _bss_decomp_mtifilt(reference_sources, estimated_source, j, C, Cj):
     """Decomposition of an estimated source image into four components
