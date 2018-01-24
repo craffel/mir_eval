@@ -302,9 +302,15 @@ def bss_eval(reference_sources, estimated_sources,
                     s_true, e_spat, e_interf, e_artif = \
                         _bss_decomp_mtifilt(
                             reference_sources[:, win],
-                            estimated_sources[jest, win], jtrue, C[jest], Cj[jtrue, jest, 0])
+                            estimated_sources[jest, win], jtrue, C[jest],
+                            Cj[jtrue, jest, 0]
+                        )
                     s_r[:, jtrue, jest, t] = _bss_crit(
-                        s_true, e_spat, e_interf, e_artif, bsseval_sources_version
+                        s_true,
+                        e_spat,
+                        e_interf,
+                        e_artif,
+                        bsseval_sources_version
                     )
                     done[jtrue, jest] = True
 
@@ -495,8 +501,8 @@ def _compute_reference_correlations(reference_sources, filters_len):
     """Compute the inner products between delayed versions of reference_sources
     reference is nsrc X nsamp X nchan.
     Returns
-    * the gram matrix G : nsrc X nsrc X nchan X nchan X filters_len X filters_len
-    * the references spectra sf: nsrc X nchan X filters_len"""
+    * G, matrix : nsrc X nsrc X nchan X nchan X filters_len X filters_len
+    * sf, reference spectra: nsrc X nchan X filters_len"""
 
     # reshape references as nsrc X nchan X nsampl
     (nsrc, nsampl, nchan) = reference_sources.shape
@@ -509,9 +515,9 @@ def _compute_reference_correlations(reference_sources, filters_len):
 
     # compute intercorrelation between sources
     G = np.zeros((nsrc, nsrc, nchan, nchan, filters_len, filters_len))
-    # for ((i, c1), (j, c2)) in itertools.combinations_with_replacement(
-    #                        itertools.product(range(nsrc), range(nchan)), 2):
-    for ((i, c1, j, c2)) in itertools.product(*(range(nsrc), range(nchan)) * 2):
+    for ((i, c1), (j, c2)) in itertools.combinations_with_replacement(
+                           itertools.product(range(nsrc), range(nchan)), 2):
+    # for ((i, c1, j, c2)) in itertools.product(*(range(nsrc), range(nchan)) * 2):
 
         ssf = sf[j, c2] * np.conj(sf[i, c1])
         ssf = np.real(scipy.fftpack.ifft(ssf))
@@ -520,7 +526,7 @@ def _compute_reference_correlations(reference_sources, filters_len):
             r=ssf[:filters_len]
         )
         G[j, i, c2, c1] = ss
-        #G[i, j, c1, c2] = ss.T
+        G[i, j, c1, c2] = ss.T
     return G, sf
 
 
