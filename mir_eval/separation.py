@@ -331,12 +331,13 @@ def bss_eval(reference_sources, estimated_sources,
 
     # now prepare the output
     if not framewise_filters:
-        return (*(s_r[:, dum, popt[:, 0], :]), popt)
+        result = s_r[:, dum, popt[:, 0], :]
     else:
         result = np.empty((4, nsrc, nwin))
         for (m, t) in itertools.product(range(4), range(nwin)):
             result[m, :, t] = s_r[m, dum, popt[:, t], t]
-        return (*result, popt)
+
+    return (result[SDR], result[ISR], result[SIR], result[SAR], popt)
 
 
 def bss_eval_sources(reference_sources, estimated_sources,
