@@ -543,6 +543,9 @@ def _compute_projection_filters(G, sf, estimated_source):
     delayed versions of reference sources, with delays between 0 and
     filters_len-1
     """
+    # epsilon
+    eps = np.finfo(np.float32).eps
+
     # shapes
     (nsampl, nchan) = estimated_source.shape
     # handles the case where we are calling this with only one source
@@ -576,7 +579,7 @@ def _compute_projection_filters(G, sf, estimated_source):
 
     # Distortion filters
     try:
-        C = np.linalg.solve(G, D).reshape(
+        C = np.linalg.solve(G + eps*np.eye(nsrc), D).reshape(
             nsrc, nchan, filters_len, nchan, order='F'
         )
     except np.linalg.linalg.LinAlgError:
