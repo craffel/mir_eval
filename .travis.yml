@@ -7,6 +7,7 @@ python:
     - "2.7"
     - "3.4"
     - "3.5"
+    - "3.6"
 
 before_install:
     - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
@@ -21,7 +22,7 @@ before_install:
     - conda update -q conda
     - conda info -a
     - deps='pip atlas numpy scipy sphinx nose six future pep8 matplotlib decorator'
-    - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps 
+    - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps
     - source activate test-environment
     - pip install python-coveralls
     - pip install numpydoc
@@ -30,7 +31,7 @@ install:
     - pip install -e .[display,testing]
 
 script:
-    - nosetests -v --with-coverage --cover-package=mir_eval -w tests
+    - nosetests -v --with-coverage --cover-package=mir_eval -w tests -s test_separation
     - pep8 mir_eval evaluators tests
     - python setup.py build_sphinx
     - python setup.py egg_info -b.dev sdist --formats gztar
