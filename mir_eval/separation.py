@@ -579,7 +579,7 @@ def _compute_projection_filters(G, sf, estimated_source):
 
     # Distortion filters
     try:
-        C = np.linalg.solve(G + eps*np.eye(nsrc), D).reshape(
+        C = np.linalg.solve(G + eps*np.eye(G.shape[0]), D).reshape(
             nsrc, nchan, filters_len, nchan, order='F'
         )
     except np.linalg.linalg.LinAlgError:
