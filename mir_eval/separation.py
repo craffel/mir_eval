@@ -544,7 +544,7 @@ def _compute_projection_filters(G, sf, estimated_source):
     filters_len-1
     """
     # epsilon
-    eps = np.finfo(np.float).eps ** 2
+    eps = np.finfo(np.float).eps
 
     # shapes
     (nsampl, nchan) = estimated_source.shape
