@@ -497,7 +497,7 @@ def _reshape_G(G):
     G = np.moveaxis(G, (1, 3), (3, 4))
     (nsrc, nchan, filters_len) = G.shape[0:3]
     G = np.reshape(
-        G, (nsrc * nchan * filters_len, nsrc * nchan * filters_len), order="F"
+        G, (nsrc * nchan * filters_len, nsrc * nchan * filters_len)
     )
     return G
 
@@ -574,17 +574,17 @@ def _compute_projection_filters(G, sf, estimated_source):
         D[j, cj, :, c] = np.hstack((ssef[0], ssef[-1:-filters_len:-1]))
 
     # reshape matrices to build the filters
-    D = D.reshape(nsrc * nchan * filters_len, nchan, order='F')
+    D = D.reshape(nsrc * nchan * filters_len, nchan)
     G = _reshape_G(G)
 
     # Distortion filters
     try:
         C = np.linalg.solve(G + eps*np.eye(G.shape[0]), D).reshape(
-            nsrc, nchan, filters_len, nchan, order='F'
+            nsrc, nchan, filters_len, nchan
         )
     except np.linalg.linalg.LinAlgError:
         C = np.linalg.lstsq(G, D)[0].reshape(
-            nsrc, nchan, filters_len, nchan, order='F'
+            nsrc, nchan, filters_len, nchan
         )
 
     # if we asked for one single reference source,
