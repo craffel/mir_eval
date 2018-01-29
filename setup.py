@@ -24,7 +24,7 @@ setup(
     keywords='audio music mir dsp',
     license='MIT',
     install_requires=[
-        'numpy == 1.11.0',
+        'numpy >= 1.7.0',
         'scipy >= 0.14.0',
         'future',
         'six'

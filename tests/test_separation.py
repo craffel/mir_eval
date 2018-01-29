@@ -14,11 +14,11 @@ import os
 import warnings
 import mir_eval
 
-A_TOL = 1e-9
+A_TOL = 1e-12
 
-REF_GLOB = 'data/separation/ref*'
-EST_GLOB = 'data/separation/est*'
-SCORES_GLOB = 'data/separation/output*.json'
+REF_GLOB = 'data/separation/ref06'
+EST_GLOB = 'data/separation/est06'
+SCORES_GLOB = 'data/separation/output06.json'
 
 
 def __load_and_stack_wavs(directory):
