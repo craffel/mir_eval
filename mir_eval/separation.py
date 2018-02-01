@@ -301,17 +301,19 @@ def bss_eval(reference_sources, estimated_sources,
 
         ref_slice = reference_sources[:, win]
         est_slice = estimated_sources[:, win]
-        if (not _any_source_silent(ref_slice) and
-            not _any_source_silent(est_slice)):
-
+        if (
+            not _any_source_silent(ref_slice) and
+            not _any_source_silent(est_slice)
+        ):
             for jtrue in range(nsrc):
                 for (k, jest) in enumerate(candidate_permutations[:, jtrue]):
-                # if we have a silent frame set results as np.nan
+                    # if we have a silent frame set results as np.nan
                     if not done[jtrue, jest]:
                             s_true, e_spat, e_interf, e_artif = \
                                 _bss_decomp_mtifilt(
                                     reference_sources[:, win],
-                                    estimated_sources[jest, win], jtrue, C[jest],
+                                    estimated_sources[jest, win],
+                                    jtrue, C[jest],
                                     Cj[jtrue, jest, 0]
                                 )
                             s_r[:, jtrue, jest, t] = _bss_crit(
