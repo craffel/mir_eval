@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
-BSS Eval toolbox, version 4
+"""BSS Eval toolbox, version 4
 
 Source separation algorithms attempt to extract recordings of individual
 sources from a recording of a mixture of sources.  Evaluation methods for
@@ -8,7 +7,7 @@ source separation compare the extracted sources from reference sources and
 attempt to measure the perceptual quality of the separation.
 
 See also the bss_eval MATLAB toolbox:
-    http://bass-db.gforge.inria.fr/bss_eval/
+http://bass-db.gforge.inria.fr/bss_eval/
 
 Conventions
 -----------
@@ -44,9 +43,7 @@ References
       Trans. on Audio, Speech and Language Processing, 14(4):1462-1469, 2006.
   .. [#fevotte2005bssevalv2] Cédric Févotte, Rémi Gribonval and Emmanuel
      Vincent, "BSS_EVAL toolbox user guide - Revision 2.0", Technical Report
-     1706, IRISA, April 2005.
-
-'''
+     1706, IRISA, April 2005."""
 
 import numpy as np
 import scipy.fftpack
@@ -70,9 +67,8 @@ def validate(reference_sources, estimated_sources):
     reference_sources : np.ndarray, shape=(nsrc, nsampl,nchan)
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl,nchan)
-        matrix containing estimated sources
+        matrix containing estimated sources"""
 
-    """
     if reference_sources.shape != estimated_sources.shape:
         raise ValueError('The shape of estimated sources and the true '
                          'sources should match. reference_sources.shape '
@@ -220,9 +216,7 @@ def bss_eval(reference_sources, estimated_sources,
      LVA/ICA 2018.
   .. [#vincent2005bssevalv3] Emmanuel Vincent, Rémi Gribonval, and Cédric
       Févotte, "Performance measurement in blind audio source separation," IEEE
-      Trans. on Audio, Speech and Language Processing, 14(4):1462-1469, 2006.
-
-    """
+      Trans. on Audio, Speech and Language Processing, 2006."""
     # make sure the input has 3 dimensions
     # assuming input is in shape (nsampl) or (nsrc, nsampl)
     estimated_sources = np.atleast_3d(estimated_sources)
@@ -434,7 +428,7 @@ def bss_eval_images_framewise(reference_sources, estimated_sources,
 
 # Helper functions
 class Framing:
-    """ helper iterator class to do overlapped windowing"""
+    """helper iterator class to do overlapped windowing"""
     def __init__(self, window, hop, length):
         self.current = 0
         self.window = window
@@ -474,8 +468,7 @@ def _bss_decomp_mtifilt(reference_sources, estimated_source, j, C, Cj):
     """Decomposition of an estimated source image into four components
     representing respectively the true source image, spatial (or filtering)
     distortion, interference and artifacts, derived from the true source
-    images using multichannel time-invariant filters.
-    """
+    images using multichannel time-invariant filters."""
     filters_len = Cj.shape[-2]
 
     # zero pad
