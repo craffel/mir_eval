@@ -125,7 +125,6 @@ def __unit_test_silent_input(metric):
 
 def __unit_test_partial_silence(metric):
     # Test for a full window of silence in reference/estimated source
-    return
     if metric == mir_eval.separation.bss_eval_sources_framewise:
         silence = np.zeros((2, 20))
         sound = np.random.random_sample((2, 20))
