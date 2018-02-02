@@ -86,10 +86,11 @@ def __unit_test_empty_input(metric):
         metric(*args)
         assert len(w) == 2
         assert issubclass(w[-1].category, UserWarning)
-        '''assert str(w[-1].message) == ("estimated_sources is empty, "
+        assert str(w[-1].message) == (
+                                    "estimated_sources is empty, "
                                     "should be of size (nsrc, nsample, nchan)."
                                     "sdr, sir, sar, and perm will all be "
-                                    "empty np.ndarrays")'''
+                                    "empty np.ndarrays")
         # And that the metric returns empty arrays
         assert np.allclose(metric(*args), np.array([]))
 
