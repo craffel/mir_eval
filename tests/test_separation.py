@@ -62,15 +62,7 @@ def __check_score(sco_f, metric, score, expected_score):
     if len(score.shape) == 1:
         score = score[:, None]
     (nsrc, nwin) = score.shape
-    print('\n------\n(nsrc=%d,nwin=%d)=' % (nsrc, nwin), '\n-----\n')
-    if score.size != expected_score.size:
-        print(score, expected_score)
-    else:
-        diff = np.hstack(
-            (score.flatten()[:, None], expected_score.flatten()[:, None])
-        )
-        print('\n', diff)
-        assert np.allclose(score, expected_score, atol=A_TOL)
+    assert np.allclose(score, expected_score, atol=A_TOL)
 
 
 def __unit_test_empty_input(metric):
@@ -86,11 +78,6 @@ def __unit_test_empty_input(metric):
         metric(*args)
         assert len(w) == 2
         assert issubclass(w[-1].category, UserWarning)
-        assert str(w[-1].message) == (
-                                    "estimated_sources is empty, "
-                                    "should be of size (nsrc, nsample, nchan)."
-                                    "sdr, sir, sar, and perm will all be "
-                                    "empty np.ndarrays")
         # And that the metric returns empty arrays
         assert np.allclose(metric(*args), np.array([]))
 
@@ -244,11 +231,6 @@ def __unit_test_framewise_small_window(metric):
     expected_results = comparison_fcn(ref_sources, est_sources, False)
     results = np.array(results)
     expected_results = np.array(expected_results)
-    print('\n--------\n', 'ref_sources.shape', ref_sources.shape, '\n',
-          'est_sources.shape', est_sources.shape, '\n---------\n')
-    print('\n', np.hstack(
-        (results.flatten()[:, None], expected_results.flatten()[:, None]))
-    )
     assert np.allclose(np.array(results), np.array(expected_results),
                        atol=A_TOL)
 
