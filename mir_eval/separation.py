@@ -35,13 +35,13 @@ Metrics
 
 References
 ----------
-  .. [#liutkus2018bssevalv4] Antoine Liutkus, Fabian-Robert Stöter and Nobutaka
+  .. Antoine Liutkus, Fabian-Robert Stöter and Nobutaka
      Ito, "The 2018 Signal Separation Evaluation Campaign," In Proceedings of
      LVA/ICA 2018.
-  .. [#vincent2005bssevalv3] Emmanuel Vincent, Rémi Gribonval, and Cédric
+  .. Emmanuel Vincent, Rémi Gribonval, and Cédric
       Févotte, "Performance measurement in blind audio source separation," IEEE
       Trans. on Audio, Speech and Language Processing, 14(4):1462-1469, 2006.
-  .. [#fevotte2005bssevalv2] Cédric Févotte, Rémi Gribonval and Emmanuel
+  .. Cédric Févotte, Rémi Gribonval and Emmanuel
      Vincent, "BSS_EVAL toolbox user guide - Revision 2.0", Technical Report
      1706, IRISA, April 2005."""
 
@@ -136,7 +136,7 @@ def bss_eval(reference_sources, estimated_sources,
     Measurement of the separation quality for estimated source signals
     in terms of source to distortion, interference and artifacts ratios,
     (SDR, SIR, SAR) as well as the image to spatial ratio (ISR), as defined
-    in [#vincent2005bssevalv3]
+    in [#vincent2005bssevalv3]_.
 
     The metrics are computed on a framewise basis, with overlap allowed between
     the windows.
@@ -659,7 +659,7 @@ def _safe_db(num, den):
     RuntimeWarning.
     """
     if den == 0:
-        return np.Inf
+        return np.nan
     return 10 * np.log10(num / den)
 
 
@@ -669,13 +669,15 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
     for any valid input and will additionally compute
     :func:`mir_eval.separation.bss_eval_sources` for valid input with fewer
     than 3 dimensions.
+
     Examples
     --------
     >>> # reference_sources[n] should be an ndarray of samples of the
     >>> # n'th reference source
     >>> # estimated_sources[n] should be the same for the n'th estimated source
     >>> scores = mir_eval.separation.evaluate(reference_sources,
-    ...                                       estimated_sources)
+    >>>                                       estimated_sources)
+
     Parameters
     ----------
     reference_sources : np.ndarray, shape=(nsrc, nsampl[, nchan])
@@ -685,6 +687,7 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
+
     Returns
     -------
     scores : dict
