@@ -659,7 +659,7 @@ def _safe_db(num, den):
     RuntimeWarning.
     """
     if den == 0:
-        return np.nan
+        return np.inf
     return 10 * np.log10(num / den)
 
 
