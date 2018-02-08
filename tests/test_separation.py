@@ -7,12 +7,12 @@ from mir_eval numerically match.
 '''
 
 import numpy as np
-import mir_eval
 import glob
 import nose.tools
 import json
 import os
 import warnings
+import mir_eval
 
 A_TOL = 1e-12
 
@@ -42,7 +42,7 @@ def __generate_multichannel(mono_sig, nchan=2, gain=1.0, reverse=False):
     # add the channels dimension
     input_3d = np.atleast_3d(mono_sig)
     # get the desired number of channels
-    stackin = [input_3d]*nchan
+    stackin = [input_3d] * nchan
     # apply the gain to the new channels
     stackin[1:] = np.multiply(gain, stackin[1:])
     if reverse:
@@ -52,6 +52,16 @@ def __generate_multichannel(mono_sig, nchan=2, gain=1.0, reverse=False):
 
 
 def __check_score(sco_f, metric, score, expected_score):
+    score = np.array(score)
+    expected_score = np.array(expected_score)
+    # making sure they are 2D
+    if isinstance(score, int):
+        score = np.array([score])
+    if len(expected_score.shape) == 1:
+        expected_score = expected_score[:, None]
+    if len(score.shape) == 1:
+        score = score[:, None]
+    (nsrc, nwin) = score.shape
     assert np.allclose(score, expected_score, atol=A_TOL)
 
 
@@ -68,10 +78,6 @@ def __unit_test_empty_input(metric):
         metric(*args)
         assert len(w) == 2
         assert issubclass(w[-1].category, UserWarning)
-        assert str(w[-1].message) == ("estimated_sources is empty, "
-                                      "should be of size (nsrc, nsample).  "
-                                      "sdr, sir, sar, and perm will all be "
-                                      "empty np.ndarrays")
         # And that the metric returns empty arrays
         assert np.allclose(metric(*args), np.array([]))
 
@@ -176,8 +182,9 @@ def __unit_test_incompatible_shapes(metric):
 
 def __unit_test_too_many_sources(metric):
     # Test for error when too many sources or references are provided
-    many_sources = np.random.random_sample((mir_eval.separation.MAX_SOURCES*2,
-                                            400))
+    many_sources = np.random.random_sample(
+        (mir_eval.separation.MAX_SOURCES * 2, 400)
+    )
     if metric == mir_eval.separation.bss_eval_sources:
         nose.tools.assert_raises(ValueError, metric, many_sources,
                                  many_sources)
@@ -204,7 +211,7 @@ def __unit_test_default_permutation(metric):
     else:
         raise ValueError('Unknown metric {}'.format(metric))
     results = metric(ref_sources, est_sources, compute_permutation=False)
-    assert np.array_equal(results[-1], np.asarray([0, 1, 2, 3]))
+    assert np.array_equal(np.squeeze(results[-1]), np.asarray([0, 1, 2, 3]))
 
 
 def __unit_test_framewise_small_window(metric):
@@ -220,18 +227,11 @@ def __unit_test_framewise_small_window(metric):
     else:
         raise ValueError('Unknown metric {}'.format(metric))
     # Test with window larger than source length
-    assert np.allclose(np.squeeze(metric(ref_sources,
-                                         est_sources,
-                                         window=120,
-                                         hop=20)),
-                       comparison_fcn(ref_sources, est_sources, False),
-                       atol=A_TOL)
-    # Test with hop larger than source length
-    assert np.allclose(np.squeeze(metric(ref_sources,
-                                         est_sources,
-                                         window=20,
-                                         hop=120)),
-                       comparison_fcn(ref_sources, est_sources, False),
+    results = metric(ref_sources, est_sources, window=120, hop=20)
+    expected_results = comparison_fcn(ref_sources, est_sources, False)
+    results = np.array(results)
+    expected_results = np.array(expected_results)
+    assert np.allclose(np.array(results), np.array(expected_results),
                        atol=A_TOL)
 
 
@@ -244,6 +244,7 @@ def test_separation_functions():
     assert len(ref_files) == len(est_files) == len(sco_files) > 0
 
     # Unit tests
+
     for metric in [mir_eval.separation.bss_eval_sources,
                    mir_eval.separation.bss_eval_sources_framewise,
                    mir_eval.separation.bss_eval_images,
@@ -260,6 +261,7 @@ def test_separation_functions():
                    mir_eval.separation.bss_eval_images_framewise]:
         yield (__unit_test_framewise_small_window, metric)
         yield (__unit_test_partial_silence, metric)
+
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
