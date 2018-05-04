@@ -591,3 +591,47 @@ def test_validate():
         # Test that error is thrown on different-length labels
         nose.tools.assert_raises(
             ValueError, mir_eval.chord.validate, [], ['C'])
+
+
+def test_chord_eval_reduce():
+    # Test whether chord evaluation with extension reductions behaves as expected
+    # https://github.com/craffel/mir_eval/issues/274
+
+    # The following two chords are enharmonically equivalent when extensions
+    # are reduced, and inequivalent otherwise.
+    # We should get perfect agreement on all metrics if reduce_extended_chords=True
+    # and disagreement otherwise
+    intervals = np.asarray([[0, 1]])
+    
+    # chord1 encodes to (1, array([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]), 0)
+    chord1 = ['C#:7(b9,#9)']
+
+    # chord2 encodes to (1, array([1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0]), 0)
+    chord2 = ['C#:min7(b9,b11)']
+
+    # With extension reductions, both chords encode as
+    #  (1, array([1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0]), 0)
+
+    # without reduction, we have agreement at root, fifth, and seventh
+    #   metrics with perfect score: root, mirex, seg, underseg, overseg
+    #   metrics with 0 score: everything else
+    score_default = mir_eval.chord.evaluate(intervals, chord1, intervals, chord2)
+    score_no_reduction = mir_eval.chord.evaluate(intervals, chord1, intervals, chord2, reduce_extended_chords=False)
+    assert score_default == score_no_reduction
+
+    perfects = set(['root', 'mirex', 'seg', 'underseg', 'overseg'])
+    for metric in score_no_reduction:
+        if metric in perfects:
+            assert score_no_reduction[metric] == 1
+        else:
+            assert score_no_reduction[metric] == 0
+
+    score_reduction = mir_eval.chord.evaluate(intervals, chord1, intervals, chord2, reduce_extended_chords=True)
+
+    # with reduction, all scores should be 1 except majmin, majmin_inv
+    print(score_reduction)
+    for metric in score_reduction:
+        if 'majmin' in metric:
+            assert score_reduction[metric] == 0, metric
+        else:
+            assert score_reduction[metric] == 1, metric
