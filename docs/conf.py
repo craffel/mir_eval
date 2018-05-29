@@ -32,7 +32,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.pngmath',
+    'sphinx.ext.imgmath',
     'numpydoc',
 ]
 

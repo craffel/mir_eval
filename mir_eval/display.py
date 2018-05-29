@@ -305,7 +305,7 @@ def labeled_intervals(intervals, labels, label_set=None,
         ax.axhline(len(label_set), color='k', alpha=0.5)
 
     if tick:
-        ax.grid('on', axis='y')
+        ax.grid(True, axis='y')
         ax.set_yticks([])
         ax.set_yticks(base)
         ax.set_yticklabels(ticks, va='bottom')

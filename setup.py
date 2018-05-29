@@ -25,13 +25,13 @@ setup(
     license='MIT',
     install_requires=[
         'numpy >= 1.7.0',
-        'scipy >= 0.14.0',
+        'scipy >= 1.0.0',
         'future',
         'six'
     ],
     extras_require={
         'display': ['matplotlib>=1.5.0',
-                    'scipy>=0.16.0'],
+                    'scipy>=1.0.0'],
         'testing': ['matplotlib>=2.1.0']
     }
 )

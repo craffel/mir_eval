@@ -576,16 +576,17 @@ def _adjusted_rand_index(reference_indices, estimated_indices):
     contingency = _contingency_matrix(reference_indices, estimated_indices)
 
     # Compute the ARI using the contingency data
-    sum_comb_c = sum(scipy.misc.comb(n_c, 2, exact=1) for n_c in
+    sum_comb_c = sum(scipy.special.comb(n_c, 2, exact=1) for n_c in
                      contingency.sum(axis=1))
-    sum_comb_k = sum(scipy.misc.comb(n_k, 2, exact=1) for n_k in
+    sum_comb_k = sum(scipy.special.comb(n_k, 2, exact=1) for n_k in
                      contingency.sum(axis=0))
 
-    sum_comb = sum((scipy.misc.comb(n_ij, 2, exact=1) for n_ij in
+    sum_comb = sum((scipy.special.comb(n_ij, 2, exact=1) for n_ij in
                     contingency.flatten()))
-    prod_comb = (sum_comb_c * sum_comb_k)/float(scipy.misc.comb(n_samples, 2))
+    prod_comb = (sum_comb_c * sum_comb_k)/float(scipy.special.comb(n_samples,
+                                                                   2))
     mean_comb = (sum_comb_k + sum_comb_c)/2.
-    return ((sum_comb - prod_comb)/(mean_comb - prod_comb))
+    return (sum_comb - prod_comb)/(mean_comb - prod_comb)
 
 
 def ari(reference_intervals, reference_labels,
