@@ -6,7 +6,6 @@ from collections import defaultdict
 import numpy as np
 from scipy.signal import spectrogram
 
-import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.ticker import FuncFormatter, MultipleLocator
 from matplotlib.ticker import Formatter
@@ -50,6 +49,7 @@ def __get_axes(ax=None, fig=None):
 
     fig : matplotlib.figure.Figure, optional
         The figure to query for axes.
+
         By default, uses the current figure `plt.gcf()`.
 
     Returns
@@ -70,6 +70,7 @@ def __get_axes(ax=None, fig=None):
         return ax, new_axes
 
     if fig is None:
+        import matplotlib.pyplot as plt
         fig = plt.gcf()
 
     if not fig.get_axes():
