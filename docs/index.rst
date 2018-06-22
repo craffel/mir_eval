@@ -3,10 +3,6 @@
 **************************
 
 ``mir_eval`` is a Python library which provides a transparent, standaridized, and straightforward way to evaluate Music Information Retrieval systems.
-It can be used in any of the following ways:
-
-* By importing it and calling it from your Python code (see :ref:`installation` and :ref:`mir_eval_quickstart`)
-* Via the included evaluator Python scripts (see :ref:`installation` and :ref:`evaluators`)
 
 If you use ``mir_eval`` in a research project, please cite the following paper:
 
@@ -30,35 +26,7 @@ from the source directory.
 
 If you don't use Python and want to get started as quickly as possible, you might consider using `Anaconda <https://store.continuum.io/cshop/anaconda/>`_ which makes it easy to install a Python environment which can run ``mir_eval``.
 
-.. _evaluators:
-
-Quickstart: Using the evaluators
-================================
-
-The fastest way to get up and running with ``mir_eval`` is to use the evaluators.
-These are scripts which can be run from the command line and utilize ``mir_eval`` to compute metrics according to reference and estimated annotations you provide.
-To use the evaluators, you must first install ``mir_eval`` and its dependencies (see :ref:`installation`).
-The evaluator Python scripts can be found in the ``mir_eval`` github repository in the ``evaluators`` folder:
-
-http://github.com/craffel/mir_eval/tree/master/evaluators
-
-One evaluator is included for each of the MIR tasks implemented in ``mir_eval``.
-By way of example, we'll cover the usage of the beat detection evaluator ``beat_eval``.
-To use an evaluator for a different task, simply replace ``beat_eval`` in the following with the name of the evaluator for the task you're interested in.
-To get usage help, simply run
-
-``./beat_eval.py --help``
-
-As an example, to evaluate generated beat times stored in the file ``estimated_beats.txt`` against ground-truth beats stored in the file ``reference_beats.txt`` and store the resulting scores in ``results.json``, simply run
-
-``./beat_eval.py -o results.json reference_beats.txt estimated_beats.txt``
-
-The file ``results.json`` will now contain the achieved scores in machine-parsable, human-readable json format.  Nice!
-
-
-.. _mir_eval_quickstart:
-
-Quickstart: Using ``mir_eval`` in Python code
+Using ``mir_eval``
 =============================================
 
 Once you've installed ``mir_eval`` (see :ref:`installation`), you can import it in your Python code as follows:
@@ -85,6 +53,11 @@ or you'll load in the data, do some preprocessing, and call specific metric func
   f_measure = mir_eval.beat.f_measure(reference_beats, estimated_beats)
 
 The documentation for each metric function, found in the :ref:`mir_eval` section below, contains further usage information.
+
+Alternatively, you can use the evaluator scripts which allow you to run evaluation from the command line, without writing any code.
+These scripts are are available here:
+
+https://github.com/craffel/mir_evaluators
 
 .. _mir_eval:
 
