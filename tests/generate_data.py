@@ -77,9 +77,10 @@ if __name__ == '__main__':
     for task in sys.argv[1:]:
         print('Generating data for {}'.format(task))
         submodule, loader, data_glob = tasks[task]
+        ref_files = sorted(glob.glob(data_glob.format('ref')))
+        est_files = sorted(glob.glob(data_glob.format('est')))
         # Cycle through annotation file pairs
-        for ref_file, est_file in zip(glob.glob(data_glob.format('ref')),
-                                      glob.glob(data_glob.format('est'))):
+        for ref_file, est_file in zip(ref_files, est_files):
             # Use the loader to load in data
             ref_data = loader(ref_file)
             est_data = loader(est_file)
