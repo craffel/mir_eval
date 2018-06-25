@@ -1,4 +1,2 @@
 [report]
-omit =
-    */python?.?/*
-    */site-packages/nose/*
+show_missing = True
