@@ -41,7 +41,7 @@ def test_precision_recall_f1_overlap():
     ref_v = np.array([10, 90, 110])
     est_i = np.array([[0, 1], [.5, .7], [1, 2]])
     est_p = np.array([100, 110, 80])
-    est_v = np.array([10, 50, 110])
+    est_v = np.array([10, 70, 110])
     p, r, f, o = mir_eval.transcription_velocity.precision_recall_f1_overlap(
         ref_i, ref_p, ref_v, est_i, est_p, est_v)
     assert np.allclose((p, r, f, o), (2/3., 2/3., 2/3., 1.))

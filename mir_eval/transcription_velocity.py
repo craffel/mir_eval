@@ -22,7 +22,7 @@ correct:
 
 4. An estimated/reference note pair which has been matched according to the
    onset, offset, and pitch is further only considered correct if the rescaled
-   velocities are within a predefined threshold, defaulting to 0.2.
+   velocities are within a predefined threshold, defaulting to 0.1.
 
 :func:`mir_eval.transcription_velocity.match_notes` is used to define a new
 variant :func:`mir_eval.transcription_velocity.precision_recall_f1_overlap`
@@ -99,7 +99,7 @@ def match_notes(
         ref_intervals, ref_pitches, ref_velocities, est_intervals, est_pitches,
         est_velocities, onset_tolerance=0.05, pitch_tolerance=50.0,
         offset_ratio=0.2, offset_min_tolerance=0.05, strict=False,
-        velocity_tolerance=0.2):
+        velocity_tolerance=0.1):
     """Match notes, taking note velocity into consideration.
 
     This function first calls :func:`mir_eval.transcription.match_notes` to
@@ -202,7 +202,7 @@ def precision_recall_f1_overlap(
         ref_intervals, ref_pitches, ref_velocities, est_intervals, est_pitches,
         est_velocities, onset_tolerance=0.05, pitch_tolerance=50.0,
         offset_ratio=0.2, offset_min_tolerance=0.05, strict=False,
-        velocity_tolerance=0.2, beta=1.0):
+        velocity_tolerance=0.1, beta=1.0):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes, and the Average Overlap Ratio for correctly transcribed
     notes (see :func:`mir_eval.transcription.average_overlap_ratio`).
@@ -216,7 +216,7 @@ def precision_recall_f1_overlap(
     3. Its velocity, after normalizing reference velocities to the range
        [0, 1] and globally rescaling estimated velocities to minimize L2
        distance between matched reference notes, is within
-       ``velocity_tolerance`` (default 0.2) the corresponding reference note
+       ``velocity_tolerance`` (default 0.1) the corresponding reference note
     4. If ``offset_ratio`` is ``None``, note offsets are ignored in the
        comparison. Otherwise, on top of the above requirements, a correct
        returned note is required to have an offset value within
