@@ -45,6 +45,19 @@ def load_separation_data(folder):
     return np.vstack(data)
 
 
+def load_transcription_velocity(filename):
+    """Loader for data in the format start, end, pitch, velocity."""
+    starts, ends, pitches, velocities = mir_eval.io.load_delimited(
+        filename, [float, float, int, int])
+    # Stack into an interval matrix
+    intervals = np.array([starts, ends]).T
+    # return pitches and velocities as np.ndarray
+    pitches = np.array(pitches)
+    velocities = np.array(velocities)
+
+    return intervals, pitches, velocities
+
+
 if __name__ == '__main__':
     # This dict will contain tuples of (submodule, loader, glob path)
     # The keys are 'beat', 'chord', etc.
@@ -71,15 +84,19 @@ if __name__ == '__main__':
     tasks['transcription'] = (mir_eval.transcription,
                               mir_eval.io.load_valued_intervals,
                               'data/transcription/{}*.txt')
+    tasks['transcription_velocity'] = (mir_eval.transcription_velocity,
+                                       load_transcription_velocity,
+                                       'data/transcription_velocity/{}*.txt')
     tasks['key'] = (mir_eval.key, mir_eval.io.load_key,
                     'data/key/{}*.txt')
     # Get task keys from argv
     for task in sys.argv[1:]:
         print('Generating data for {}'.format(task))
         submodule, loader, data_glob = tasks[task]
+        ref_files = sorted(glob.glob(data_glob.format('ref')))
+        est_files = sorted(glob.glob(data_glob.format('est')))
         # Cycle through annotation file pairs
-        for ref_file, est_file in zip(glob.glob(data_glob.format('ref')),
-                                      glob.glob(data_glob.format('est'))):
+        for ref_file, est_file in zip(ref_files, est_files):
             # Use the loader to load in data
             ref_data = loader(ref_file)
             est_data = loader(est_file)

@@ -16,6 +16,7 @@ from . import pattern
 from . import tempo
 from . import hierarchy
 from . import transcription
+from . import transcription_velocity
 from . import key
 
 __version__ = '0.4'
