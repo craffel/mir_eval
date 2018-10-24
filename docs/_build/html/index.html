@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>mir_eval Documentation &#8212; mir_eval 0.4 documentation</title>
+    <title>mir_eval Documentation &#8212; mir_eval 0.5 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.4',
+        VERSION:     '0.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -38,7 +38,7 @@
         <li class="right" >
           <a href="changes.html" title="Changes"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">mir_eval 0.4 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="#">mir_eval 0.5 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -5959,22 +5959,382 @@ the value is the (float) score achieved.</p>
 
 </div>
 </div>
+<div class="section" id="module-mir_eval.transcription_velocity">
+<span id="mir-eval-transcription-velocity"></span><h3><a class="reference internal" href="#module-mir_eval.transcription_velocity" title="mir_eval.transcription_velocity"><code class="xref py py-mod docutils literal"><span class="pre">mir_eval.transcription_velocity</span></code></a><a class="headerlink" href="#module-mir_eval.transcription_velocity" title="Permalink to this headline">¶</a></h3>
+<p>Transcription evaluation, as defined in <a class="reference internal" href="#module-mir_eval.transcription" title="mir_eval.transcription"><code class="xref py py-mod docutils literal"><span class="pre">mir_eval.transcription</span></code></a>, does not
+take into account the velocities of reference and estimated notes. This
+submodule implements a variant of
+<a class="reference internal" href="#mir_eval.transcription.precision_recall_f1_overlap" title="mir_eval.transcription.precision_recall_f1_overlap"><code class="xref py py-func docutils literal"><span class="pre">mir_eval.transcription.precision_recall_f1_overlap()</span></code></a> which
+additionally considers note velocity when determining whether a note is
+correctly transcribed. This is done by defining a new function
+<a class="reference internal" href="#mir_eval.transcription_velocity.match_notes" title="mir_eval.transcription_velocity.match_notes"><code class="xref py py-func docutils literal"><span class="pre">mir_eval.transcription_velocity.match_notes()</span></code></a> which first calls
+<a class="reference internal" href="#mir_eval.transcription.match_notes" title="mir_eval.transcription.match_notes"><code class="xref py py-func docutils literal"><span class="pre">mir_eval.transcription.match_notes()</span></code></a> to get a note matching based on
+onset, offset, and pitch. Then, we follow the evaluation procedure described in
+<a class="footnote-reference" href="#hawthorne2018onsets" id="id43">[15]</a> to test whether an estimated note should be considered
+correct:</p>
+<ol class="arabic simple">
+<li>Reference velocities are re-scaled to the range [0, 1].</li>
+<li>A linear regression is performed to estimate global scale and offset
+parameters which minimize the L2 distance between matched estimated and
+(rescaled) reference notes.</li>
+<li>The scale and offset parameters are used to rescale estimated
+velocities.</li>
+<li>An estimated/reference note pair which has been matched according to the
+onset, offset, and pitch is further only considered correct if the rescaled
+velocities are within a predefined threshold, defaulting to 0.1.</li>
+</ol>
+<p><a class="reference internal" href="#mir_eval.transcription_velocity.match_notes" title="mir_eval.transcription_velocity.match_notes"><code class="xref py py-func docutils literal"><span class="pre">mir_eval.transcription_velocity.match_notes()</span></code></a> is used to define a new
+variant <a class="reference internal" href="#mir_eval.transcription_velocity.precision_recall_f1_overlap" title="mir_eval.transcription_velocity.precision_recall_f1_overlap"><code class="xref py py-func docutils literal"><span class="pre">mir_eval.transcription_velocity.precision_recall_f1_overlap()</span></code></a>
+which considers velocity.</p>
+<div class="section" id="id44">
+<h4>Conventions<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h4>
+<p>This submodule follows the conventions of <a class="reference internal" href="#module-mir_eval.transcription" title="mir_eval.transcription"><code class="xref py py-mod docutils literal"><span class="pre">mir_eval.transcription</span></code></a> and
+additionally requires velocities to be provided as MIDI velocities in the range
+[0, 127].</p>
+</div>
+<div class="section" id="id45">
+<h4>Metrics<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><a class="reference internal" href="#mir_eval.transcription_velocity.precision_recall_f1_overlap" title="mir_eval.transcription_velocity.precision_recall_f1_overlap"><code class="xref py py-func docutils literal"><span class="pre">mir_eval.transcription_velocity.precision_recall_f1_overlap()</span></code></a>: The
+precision, recall, F-measure, and Average Overlap Ratio of the note
+transcription, where an estimated note is considered correct if its pitch,
+onset, velocity and (optionally) offset are sufficiently close to a reference
+note.</li>
+</ul>
+</div>
+<div class="section" id="id46">
+<h4>References<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><table class="docutils footnote" frame="void" id="hawthorne2018onsets" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id43">[15]</a></td><td>Curtis Hawthorne, Erich Elsen, Jialin Song, Adam
+Roberts, Ian Simon, Colin Raffel, Jesse Engel, Sageev Oore, and Douglas
+Eck, “Onsets and Frames: Dual-Objective Piano Transcription”, Proceedings
+of the 19th International Society for Music Information Retrieval
+Conference, 2018.</td></tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="function">
+<dt id="mir_eval.transcription_velocity.validate">
+<code class="descclassname">mir_eval.transcription_velocity.</code><code class="descname">validate</code><span class="sig-paren">(</span><em>ref_intervals</em>, <em>ref_pitches</em>, <em>ref_velocities</em>, <em>est_intervals</em>, <em>est_pitches</em>, <em>est_velocities</em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.transcription_velocity.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that the input annotations have valid time intervals, pitches,
+and velocities, and throws helpful errors if not.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ref_intervals</strong> : np.ndarray, shape=(n,2)</p>
+<blockquote>
+<div><p>Array of reference notes time intervals (onset and offset times)</p>
+</div></blockquote>
+<p><strong>ref_pitches</strong> : np.ndarray, shape=(n,)</p>
+<blockquote>
+<div><p>Array of reference pitch values in Hertz</p>
+</div></blockquote>
+<p><strong>ref_velocities</strong> : np.ndarray, shape=(n,)</p>
+<blockquote>
+<div><p>Array of MIDI velocities (i.e. between 0 and 127) of reference notes</p>
+</div></blockquote>
+<p><strong>est_intervals</strong> : np.ndarray, shape=(m,2)</p>
+<blockquote>
+<div><p>Array of estimated notes time intervals (onset and offset times)</p>
+</div></blockquote>
+<p><strong>est_pitches</strong> : np.ndarray, shape=(m,)</p>
+<blockquote>
+<div><p>Array of estimated pitch values in Hertz</p>
+</div></blockquote>
+<p><strong>est_velocities</strong> : np.ndarray, shape=(m,)</p>
+<blockquote class="last">
+<div><p>Array of MIDI velocities (i.e. between 0 and 127) of estimated notes</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mir_eval.transcription_velocity.match_notes">
+<code class="descclassname">mir_eval.transcription_velocity.</code><code class="descname">match_notes</code><span class="sig-paren">(</span><em>ref_intervals</em>, <em>ref_pitches</em>, <em>ref_velocities</em>, <em>est_intervals</em>, <em>est_pitches</em>, <em>est_velocities</em>, <em>onset_tolerance=0.05</em>, <em>pitch_tolerance=50.0</em>, <em>offset_ratio=0.2</em>, <em>offset_min_tolerance=0.05</em>, <em>strict=False</em>, <em>velocity_tolerance=0.1</em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.transcription_velocity.match_notes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Match notes, taking note velocity into consideration.</p>
+<p>This function first calls <a class="reference internal" href="#mir_eval.transcription.match_notes" title="mir_eval.transcription.match_notes"><code class="xref py py-func docutils literal"><span class="pre">mir_eval.transcription.match_notes()</span></code></a> to
+match notes according to the supplied intervals, pitches, onset, offset,
+and pitch tolerances. The velocities of the matched notes are then used to
+estimate a slope and intercept which can rescale the estimated velocities
+so that they are as close as possible (in L2 sense) to their matched
+reference velocities. Velocities are then normalized to the range [0, 1]. A
+estimated note is then further only considered correct if its velocity is
+within <code class="docutils literal"><span class="pre">velocity_tolerance</span></code> of its matched (according to pitch and
+timing) reference note.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ref_intervals</strong> : np.ndarray, shape=(n,2)</p>
+<blockquote>
+<div><p>Array of reference notes time intervals (onset and offset times)</p>
+</div></blockquote>
+<p><strong>ref_pitches</strong> : np.ndarray, shape=(n,)</p>
+<blockquote>
+<div><p>Array of reference pitch values in Hertz</p>
+</div></blockquote>
+<p><strong>ref_velocities</strong> : np.ndarray, shape=(n,)</p>
+<blockquote>
+<div><p>Array of MIDI velocities (i.e. between 0 and 127) of reference notes</p>
+</div></blockquote>
+<p><strong>est_intervals</strong> : np.ndarray, shape=(m,2)</p>
+<blockquote>
+<div><p>Array of estimated notes time intervals (onset and offset times)</p>
+</div></blockquote>
+<p><strong>est_pitches</strong> : np.ndarray, shape=(m,)</p>
+<blockquote>
+<div><p>Array of estimated pitch values in Hertz</p>
+</div></blockquote>
+<p><strong>est_velocities</strong> : np.ndarray, shape=(m,)</p>
+<blockquote>
+<div><p>Array of MIDI velocities (i.e. between 0 and 127) of estimated notes</p>
+</div></blockquote>
+<p><strong>onset_tolerance</strong> : float &gt; 0</p>
+<blockquote>
+<div><p>The tolerance for an estimated note’s onset deviating from the
+reference note’s onset, in seconds. Default is 0.05 (50 ms).</p>
+</div></blockquote>
+<p><strong>pitch_tolerance</strong> : float &gt; 0</p>
+<blockquote>
+<div><p>The tolerance for an estimated note’s pitch deviating from the
+reference note’s pitch, in cents. Default is 50.0 (50 cents).</p>
+</div></blockquote>
+<p><strong>offset_ratio</strong> : float &gt; 0 or None</p>
+<blockquote>
+<div><p>The ratio of the reference note’s duration used to define the
+offset_tolerance. Default is 0.2 (20%), meaning the
+<code class="docutils literal"><span class="pre">offset_tolerance</span></code> will equal the <code class="docutils literal"><span class="pre">ref_duration</span> <span class="pre">*</span> <span class="pre">0.2</span></code>, or 0.05 (50
+ms), whichever is greater. If <code class="docutils literal"><span class="pre">offset_ratio</span></code> is set to <code class="docutils literal"><span class="pre">None</span></code>,
+offsets are ignored in the matching.</p>
+</div></blockquote>
+<p><strong>offset_min_tolerance</strong> : float &gt; 0</p>
+<blockquote>
+<div><p>The minimum tolerance for offset matching. See offset_ratio description
+for an explanation of how the offset tolerance is determined. Note:
+this parameter only influences the results if <code class="docutils literal"><span class="pre">offset_ratio</span></code> is not
+<code class="docutils literal"><span class="pre">None</span></code>.</p>
+</div></blockquote>
+<p><strong>strict</strong> : bool</p>
+<blockquote>
+<div><p>If <code class="docutils literal"><span class="pre">strict=False</span></code> (the default), threshold checks for onset, offset,
+and pitch matching are performed using <code class="docutils literal"><span class="pre">&lt;=</span></code> (less than or equal). If
+<code class="docutils literal"><span class="pre">strict=True</span></code>, the threshold checks are performed using <code class="docutils literal"><span class="pre">&lt;</span></code> (less
+than).</p>
+</div></blockquote>
+<p><strong>velocity_tolerance</strong> : float &gt; 0</p>
+<blockquote>
+<div><p>Estimated notes are considered correct if, after rescaling and
+normalization to [0, 1], they are within <code class="docutils literal"><span class="pre">velocity_tolerance</span></code> of a
+matched reference note.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>matching</strong> : list of tuples</p>
+<blockquote class="last">
+<div><p>A list of matched reference and estimated notes.
+<code class="docutils literal"><span class="pre">matching[i]</span> <span class="pre">==</span> <span class="pre">(i,</span> <span class="pre">j)</span></code> where reference note <code class="docutils literal"><span class="pre">i</span></code> matches estimated
+note <code class="docutils literal"><span class="pre">j</span></code>.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mir_eval.transcription_velocity.precision_recall_f1_overlap">
+<code class="descclassname">mir_eval.transcription_velocity.</code><code class="descname">precision_recall_f1_overlap</code><span class="sig-paren">(</span><em>ref_intervals</em>, <em>ref_pitches</em>, <em>ref_velocities</em>, <em>est_intervals</em>, <em>est_pitches</em>, <em>est_velocities</em>, <em>onset_tolerance=0.05</em>, <em>pitch_tolerance=50.0</em>, <em>offset_ratio=0.2</em>, <em>offset_min_tolerance=0.05</em>, <em>strict=False</em>, <em>velocity_tolerance=0.1</em>, <em>beta=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.transcription_velocity.precision_recall_f1_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Precision, Recall and F-measure of correct vs incorrectly
+transcribed notes, and the Average Overlap Ratio for correctly transcribed
+notes (see <a class="reference internal" href="#mir_eval.transcription.average_overlap_ratio" title="mir_eval.transcription.average_overlap_ratio"><code class="xref py py-func docutils literal"><span class="pre">mir_eval.transcription.average_overlap_ratio()</span></code></a>).
+“Correctness” is determined based on note onset, velocity, pitch and
+(optionally) offset. An estimated note is considered correct if</p>
+<ol class="arabic simple">
+<li>Its onset is within <code class="docutils literal"><span class="pre">onset_tolerance</span></code> (default +-50ms) of a
+reference note</li>
+<li>Its pitch (F0) is within +/- <code class="docutils literal"><span class="pre">pitch_tolerance</span></code> (default one
+quarter tone, 50 cents) of the corresponding reference note</li>
+<li>Its velocity, after normalizing reference velocities to the range
+[0, 1] and globally rescaling estimated velocities to minimize L2
+distance between matched reference notes, is within
+<code class="docutils literal"><span class="pre">velocity_tolerance</span></code> (default 0.1) the corresponding reference note</li>
+<li>If <code class="docutils literal"><span class="pre">offset_ratio</span></code> is <code class="docutils literal"><span class="pre">None</span></code>, note offsets are ignored in the
+comparison. Otherwise, on top of the above requirements, a correct
+returned note is required to have an offset value within
+<cite>offset_ratio`</cite> (default 20%) of the reference note’s duration around
+the reference note’s offset, or within <code class="docutils literal"><span class="pre">offset_min_tolerance</span></code>
+(default 50 ms), whichever is larger.</li>
+</ol>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ref_intervals</strong> : np.ndarray, shape=(n,2)</p>
+<blockquote>
+<div><p>Array of reference notes time intervals (onset and offset times)</p>
+</div></blockquote>
+<p><strong>ref_pitches</strong> : np.ndarray, shape=(n,)</p>
+<blockquote>
+<div><p>Array of reference pitch values in Hertz</p>
+</div></blockquote>
+<p><strong>ref_velocities</strong> : np.ndarray, shape=(n,)</p>
+<blockquote>
+<div><p>Array of MIDI velocities (i.e. between 0 and 127) of reference notes</p>
+</div></blockquote>
+<p><strong>est_intervals</strong> : np.ndarray, shape=(m,2)</p>
+<blockquote>
+<div><p>Array of estimated notes time intervals (onset and offset times)</p>
+</div></blockquote>
+<p><strong>est_pitches</strong> : np.ndarray, shape=(m,)</p>
+<blockquote>
+<div><p>Array of estimated pitch values in Hertz</p>
+</div></blockquote>
+<p><strong>est_velocities</strong> : np.ndarray, shape=(n,)</p>
+<blockquote>
+<div><p>Array of MIDI velocities (i.e. between 0 and 127) of estimated notes</p>
+</div></blockquote>
+<p><strong>onset_tolerance</strong> : float &gt; 0</p>
+<blockquote>
+<div><p>The tolerance for an estimated note’s onset deviating from the
+reference note’s onset, in seconds. Default is 0.05 (50 ms).</p>
+</div></blockquote>
+<p><strong>pitch_tolerance</strong> : float &gt; 0</p>
+<blockquote>
+<div><p>The tolerance for an estimated note’s pitch deviating from the
+reference note’s pitch, in cents. Default is 50.0 (50 cents).</p>
+</div></blockquote>
+<p><strong>offset_ratio</strong> : float &gt; 0 or None</p>
+<blockquote>
+<div><p>The ratio of the reference note’s duration used to define the
+offset_tolerance. Default is 0.2 (20%), meaning the
+<code class="docutils literal"><span class="pre">offset_tolerance</span></code> will equal the <code class="docutils literal"><span class="pre">ref_duration</span> <span class="pre">*</span> <span class="pre">0.2</span></code>, or
+<code class="docutils literal"><span class="pre">offset_min_tolerance</span></code> (0.05 by default, i.e. 50 ms), whichever is
+greater. If <code class="docutils literal"><span class="pre">offset_ratio</span></code> is set to <code class="docutils literal"><span class="pre">None</span></code>, offsets are ignored in
+the evaluation.</p>
+</div></blockquote>
+<p><strong>offset_min_tolerance</strong> : float &gt; 0</p>
+<blockquote>
+<div><p>The minimum tolerance for offset matching. See <code class="docutils literal"><span class="pre">offset_ratio</span></code>
+description for an explanation of how the offset tolerance is
+determined. Note: this parameter only influences the results if
+<code class="docutils literal"><span class="pre">offset_ratio</span></code> is not <code class="docutils literal"><span class="pre">None</span></code>.</p>
+</div></blockquote>
+<p><strong>strict</strong> : bool</p>
+<blockquote>
+<div><p>If <code class="docutils literal"><span class="pre">strict=False</span></code> (the default), threshold checks for onset, offset,
+and pitch matching are performed using <code class="docutils literal"><span class="pre">&lt;=</span></code> (less than or equal). If
+<code class="docutils literal"><span class="pre">strict=True</span></code>, the threshold checks are performed using <code class="docutils literal"><span class="pre">&lt;</span></code> (less
+than).</p>
+</div></blockquote>
+<p><strong>velocity_tolerance</strong> : float &gt; 0</p>
+<blockquote>
+<div><p>Estimated notes are considered correct if, after rescaling and
+normalization to [0, 1], they are within <code class="docutils literal"><span class="pre">velocity_tolerance</span></code> of a
+matched reference note.</p>
+</div></blockquote>
+<p><strong>beta</strong> : float &gt; 0</p>
+<blockquote>
+<div><p>Weighting factor for f-measure (default value = 1.0).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>precision</strong> : float</p>
+<blockquote>
+<div><p>The computed precision score</p>
+</div></blockquote>
+<p><strong>recall</strong> : float</p>
+<blockquote>
+<div><p>The computed recall score</p>
+</div></blockquote>
+<p><strong>f_measure</strong> : float</p>
+<blockquote>
+<div><p>The computed F-measure score</p>
+</div></blockquote>
+<p><strong>avg_overlap_ratio</strong> : float</p>
+<blockquote class="last">
+<div><p>The computed Average Overlap Ratio score</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mir_eval.transcription_velocity.evaluate">
+<code class="descclassname">mir_eval.transcription_velocity.</code><code class="descname">evaluate</code><span class="sig-paren">(</span><em>ref_intervals</em>, <em>ref_pitches</em>, <em>ref_velocities</em>, <em>est_intervals</em>, <em>est_pitches</em>, <em>est_velocities</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.transcription_velocity.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute all metrics for the given reference and estimated annotations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ref_intervals</strong> : np.ndarray, shape=(n,2)</p>
+<blockquote>
+<div><p>Array of reference notes time intervals (onset and offset times)</p>
+</div></blockquote>
+<p><strong>ref_pitches</strong> : np.ndarray, shape=(n,)</p>
+<blockquote>
+<div><p>Array of reference pitch values in Hertz</p>
+</div></blockquote>
+<p><strong>ref_velocities</strong> : np.ndarray, shape=(n,)</p>
+<blockquote>
+<div><p>Array of MIDI velocities (i.e. between 0 and 127) of reference notes</p>
+</div></blockquote>
+<p><strong>est_intervals</strong> : np.ndarray, shape=(m,2)</p>
+<blockquote>
+<div><p>Array of estimated notes time intervals (onset and offset times)</p>
+</div></blockquote>
+<p><strong>est_pitches</strong> : np.ndarray, shape=(m,)</p>
+<blockquote>
+<div><p>Array of estimated pitch values in Hertz</p>
+</div></blockquote>
+<p><strong>est_velocities</strong> : np.ndarray, shape=(n,)</p>
+<blockquote>
+<div><p>Array of MIDI velocities (i.e. between 0 and 127) of estimated notes</p>
+</div></blockquote>
+<p><strong>kwargs</strong></p>
+<blockquote>
+<div><p>Additional keyword arguments which will be passed to the
+appropriate metric or preprocessing functions.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>scores</strong> : dict</p>
+<blockquote class="last">
+<div><p>Dictionary of scores, where the key is the metric name (str) and
+the value is the (float) score achieved.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="module-mir_eval.key">
 <span id="mir-eval-key"></span><h3><a class="reference internal" href="#module-mir_eval.key" title="mir_eval.key"><code class="xref py py-mod docutils literal"><span class="pre">mir_eval.key</span></code></a><a class="headerlink" href="#module-mir_eval.key" title="Permalink to this headline">¶</a></h3>
 <p>Key Detection involves determining the underlying key (distribution of notes
 and note transitions) in a piece of music.  Key detection algorithms are
 evaluated by comparing their estimated key to a ground-truth reference key and
 reporting a score according to the relationship of the keys.</p>
-<div class="section" id="id43">
-<h4>Conventions<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id47">
+<h4>Conventions<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h4>
 <p>Keys are represented as strings of the form <code class="docutils literal"><span class="pre">'(key)</span> <span class="pre">(mode)'</span></code>, e.g. <code class="docutils literal"><span class="pre">'C#</span>
 <span class="pre">major'</span></code> or <code class="docutils literal"><span class="pre">'Fb</span> <span class="pre">minor'</span></code>.  The case of the key is ignored.  Note that certain
 key strings are equivalent, e.g. <code class="docutils literal"><span class="pre">'C#</span> <span class="pre">major'</span></code> and <code class="docutils literal"><span class="pre">'Db</span> <span class="pre">major'</span></code>.  The mode
 may only be specified as either <code class="docutils literal"><span class="pre">'major'</span></code> or <code class="docutils literal"><span class="pre">'minor'</span></code>, no other mode
 strings will be accepted.</p>
 </div>
-<div class="section" id="id44">
-<h4>Metrics<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id48">
+<h4>Metrics<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><a class="reference internal" href="#mir_eval.key.weighted_score" title="mir_eval.key.weighted_score"><code class="xref py py-func docutils literal"><span class="pre">mir_eval.key.weighted_score()</span></code></a>: Heuristic scoring of the relation of two
 keys.</li>
@@ -8166,9 +8526,15 @@ By default, uses the current axes handle.</p>
 <li><a class="reference internal" href="#id42">Metrics</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#module-mir_eval.transcription_velocity"><code class="docutils literal"><span class="pre">mir_eval.transcription_velocity</span></code></a><ul>
+<li><a class="reference internal" href="#id44">Conventions</a></li>
+<li><a class="reference internal" href="#id45">Metrics</a></li>
+<li><a class="reference internal" href="#id46">References</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-mir_eval.key"><code class="docutils literal"><span class="pre">mir_eval.key</span></code></a><ul>
-<li><a class="reference internal" href="#id43">Conventions</a></li>
-<li><a class="reference internal" href="#id44">Metrics</a></li>
+<li><a class="reference internal" href="#id47">Conventions</a></li>
+<li><a class="reference internal" href="#id48">Metrics</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-mir_eval.util"><code class="docutils literal"><span class="pre">mir_eval.util</span></code></a></li>
@@ -8219,7 +8585,7 @@ By default, uses the current axes handle.</p>
         <li class="right" >
           <a href="changes.html" title="Changes"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">mir_eval 0.4 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="#">mir_eval 0.5 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

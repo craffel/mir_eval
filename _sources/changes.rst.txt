@@ -1,6 +1,55 @@
 Changes
 =======
 
+v0.5
+----
+
+- `#222`_: added int cast for inferred length in sonify.clicks
+- `#225`_: improved t-measures and l-measures 
+- `#227`_: added marginal flag to segment.nce
+- `#234`_: update display to use matplotlib 2
+- `#236`_: force integer division in beat.pscore
+- `#240`_: fix unit tests for source separation
+- `#242`_: use regexp in chord label validation
+- `#245`_: add labeled interval formatter to display
+- `#247`_: do not sonify negative amplitudes in time_frequency
+- `#249`_: support gaps in util.interpolate_intervals
+- `#252`_: add modulo and length arguments to chord.scale_degree_to_bitmap
+- `#254`_: fix bss_eval_images single-frame fallback documentation
+- `#255`_: fix crackle in sonify.time_frequency
+- `#258`_: make util.match_events faster
+- `#259`_: run pep8 check after nosetests
+- `#263`_: add measures for chord over- and under-segmentation
+- `#266`_: add amplitude parameter to sonify.pitch_contour
+- `#268`_: update display tests to support mpl2.1
+- `#277`_: update requirements and fix deprecations
+- `#279`_: isolate matplotlib side effects
+- `#282`_: remove evaluator scripts
+- `#283`_: add transcription eval with velocity
+
+.. _#222: https://github.com/craffel/mir_eval/pull/222
+.. _#225: https://github.com/craffel/mir_eval/pull/225
+.. _#227: https://github.com/craffel/mir_eval/pull/227
+.. _#234: https://github.com/craffel/mir_eval/pull/234
+.. _#236: https://github.com/craffel/mir_eval/pull/236
+.. _#240: https://github.com/craffel/mir_eval/pull/240
+.. _#242: https://github.com/craffel/mir_eval/pull/242
+.. _#245: https://github.com/craffel/mir_eval/pull/245
+.. _#247: https://github.com/craffel/mir_eval/pull/247
+.. _#249: https://github.com/craffel/mir_eval/pull/249
+.. _#252: https://github.com/craffel/mir_eval/pull/252
+.. _#254: https://github.com/craffel/mir_eval/pull/254
+.. _#255: https://github.com/craffel/mir_eval/pull/255
+.. _#258: https://github.com/craffel/mir_eval/pull/258
+.. _#259: https://github.com/craffel/mir_eval/pull/259
+.. _#263: https://github.com/craffel/mir_eval/pull/263
+.. _#266: https://github.com/craffel/mir_eval/pull/266
+.. _#268: https://github.com/craffel/mir_eval/pull/268
+.. _#277: https://github.com/craffel/mir_eval/pull/277
+.. _#279: https://github.com/craffel/mir_eval/pull/279
+.. _#282: https://github.com/craffel/mir_eval/pull/282
+.. _#283: https://github.com/craffel/mir_eval/pull/283
+
 v0.4
 ----
 
