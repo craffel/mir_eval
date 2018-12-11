@@ -61,6 +61,13 @@ def test_precision_recall_f1_overlap_empty():
     assert (p, r, f, o) == (0., 0., 0., 0.)
 
 
+def test_precision_recall_f1_overlap_no_overlap():
+    p, r, f, o = mir_eval.transcription_velocity.precision_recall_f1_overlap(
+        np.array([[1, 2]]), np.array([1]), np.array([1]),
+        np.array([[3, 4]]), np.array([1]), np.array([1]))
+    assert (p, r, f, o) == (0., 0., 0., 0.)
+
+
 def __check_score(score, expected_score):
     assert np.allclose(score, expected_score, atol=A_TOL)
 
