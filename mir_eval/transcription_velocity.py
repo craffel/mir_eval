@@ -174,6 +174,9 @@ def match_notes(
 
     # Convert matching list-of-tuples to array for fancy indexing
     matching = np.array(matching)
+    # When there is no matching, return an empty list
+    if matching.size == 0:
+        return []
     # Grab velocities for matched notes
     ref_matched_velocities = ref_velocities[matching[:, 0]]
     est_matched_velocities = est_velocities[matching[:, 1]]
