@@ -8,9 +8,8 @@ description of the task and evaluation criteria.
 Conventions
 -----------
 
-Reference tempi should be strictly positive, and provided in ascending order
-as a numpy array of length 2.  Estimated tempi are allowed to be 0, but
-otherwise are subject to the same constraints as reference.
+Reference and estimated tempi should be positive, and provided in ascending order
+as a numpy array of length 2.
 
 The weighting value from the reference must be a float in the range [0, 1].
 
@@ -27,20 +26,28 @@ import collections
 from . import util
 
 
-def validate_tempi(tempi):
+def validate_tempi(tempi, reference=True):
     """Checks that there are two non-negative tempi.
+    For a reference value, at least one tempo has to be greater than zero.
 
     Parameters
     ----------
     tempi : np.ndarray
         length-2 array of tempo, in bpm
+
+    reference : bool
+        indicates a reference value
+
     """
 
     if tempi.size != 2:
         raise ValueError('tempi must have exactly two values')
 
-    if not np.all(np.isfinite(tempi)) or np.any(tempi <= 0):
+    if not np.all(np.isfinite(tempi)) or np.any(tempi < 0):
         raise ValueError('tempi={} must be non-negative numbers'.format(tempi))
+
+    if reference and np.all(tempi == 0) :
+        raise ValueError('reference tempi={} must have one value greater than zero'.format(tempi))
 
 
 def validate(reference_tempi, reference_weight, estimated_tempi):
@@ -59,8 +66,8 @@ def validate(reference_tempi, reference_weight, estimated_tempi):
         estimated tempo values, in bpm
 
     """
-    validate_tempi(reference_tempi)
-    validate_tempi(estimated_tempi)
+    validate_tempi(reference_tempi, reference=True)
+    validate_tempi(estimated_tempi, reference=False)
 
     if reference_weight < 0 or reference_weight > 1:
         raise ValueError('Reference weight must lie in range [0, 1]')
@@ -118,16 +125,15 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
         warnings.warn('A tolerance of 0.0 may not '
                       'lead to the results you expect.')
 
-    relative_errors = []
-    hits = []
+    hits = [False, False]
 
-    for ref_t in reference_tempi:
-        # Compute the relative error for this reference tempo
-        relative_errors.append(np.min(
-            np.abs(ref_t - estimated_tempi) / float(ref_t)))
+    for i, ref_t in enumerate(reference_tempi):
+        if ref_t > 0:
+            # Compute the relative error for this reference tempo
+            relative_error = np.min(np.abs(ref_t - estimated_tempi) / float(ref_t))
 
-        # Count the hits
-        hits.append(bool(relative_errors[-1] <= tol))
+            # Count the hits
+            hits[i] = relative_error <= tol
 
     p_score = reference_weight * hits[0] + (1.0-reference_weight) * hits[1]
 
