@@ -21,6 +21,7 @@ Metrics
 
 '''
 
+import warnings
 import numpy as np
 import collections
 from . import util
@@ -105,14 +106,16 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
 
         If the reference weight is not in the range [0, 1]
 
-        If ``tol <= 0`` or ``tol > 1``.
+        If ``tol < 0`` or ``tol > 1``.
     """
 
     validate(reference_tempi, reference_weight, estimated_tempi)
 
-    if tol <= 0 or tol > 1:
+    if tol < 0 or tol > 1:
         raise ValueError('invalid tolerance {}: must lie in the range '
-                         '(0, 1]'.format(tol))
+                         '[0, 1]'.format(tol))
+    if tol == 0.:
+        warnings.warn('A tolerance of 0.0 may not lead to the results you expect.')
 
     relative_errors = []
     hits = []
