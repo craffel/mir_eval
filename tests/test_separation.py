@@ -14,7 +14,7 @@ import json
 import os
 import warnings
 
-A_TOL = 1e-12
+A_TOL = 1e-2
 
 REF_GLOB = 'data/separation/ref*'
 EST_GLOB = 'data/separation/est*'
