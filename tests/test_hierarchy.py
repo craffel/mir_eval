@@ -323,7 +323,7 @@ def test_meet():
 
     # Is it the right type?
     assert isinstance(meet, scipy.sparse.csr_matrix)
-    meet = meet.todense()
+    meet = meet.toarray()
 
     # Does it have the right shape?
     assert meet.shape == (10, 10)

@@ -302,8 +302,8 @@ def _gauc(ref_lca, est_lca, transitive, window):
         est_score = est_lca[query, results]
 
         # Densify the results
-        ref_score = np.asarray(ref_score.todense()).squeeze()
-        est_score = np.asarray(est_score.todense()).squeeze()
+        ref_score = ref_score.toarray().squeeze()
+        est_score = est_score.toarray().squeeze()
 
         # Don't count the query as a result
         # when query < window, query itself is the index within the slice
