@@ -587,7 +587,7 @@ def rotate_bitmap_to_root(bitmap, chord_root):
     idxs = list(np.nonzero(bitmap))
     idxs[-1] = (idxs[-1] + chord_root) % 12
     abs_bitmap = np.zeros_like(bitmap)
-    abs_bitmap[idxs] = 1
+    abs_bitmap[tuple(idxs)] = 1
     return abs_bitmap
 
 
