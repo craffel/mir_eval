@@ -41,7 +41,6 @@ def test_zero_tolerance_pass():
         assert str(w[-1].message) == 'A tolerance of 0.0 may not lead to the results you expect.'
 
 
-
 def test_tempo_fail():
 
     @raises(ValueError)
