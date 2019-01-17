@@ -38,7 +38,8 @@ def test_zero_tolerance_pass():
 
         assert len(w) == 1
         assert issubclass(w[-1].category, UserWarning)
-        assert str(w[-1].message) == 'A tolerance of 0.0 may not lead to the results you expect.'
+        assert str(w[-1].message) == 'A tolerance of 0.0 may ' \
+                                     'not lead to the results you expect.'
 
 
 def test_tempo_fail():
