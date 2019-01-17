@@ -2,6 +2,7 @@
 '''
 Unit tests for mir_eval.tempo
 '''
+import warnings
 
 import numpy as np
 import mir_eval
@@ -30,7 +31,15 @@ def test_zero_tolerance_pass():
     good_est = np.array([120, 180])
     zero_tol = 0.0
 
-    mir_eval.tempo.detection(good_ref, good_weight, good_est, tol=zero_tol)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        # Try to produce the warning
+        mir_eval.tempo.detection(good_ref, good_weight, good_est, tol=zero_tol)
+
+        assert len(w) == 1
+        assert issubclass(w[-1].category, UserWarning)
+        assert str(w[-1].message) == 'A tolerance of 0.0 may not lead to the results you expect.'
+
 
 
 def test_tempo_fail():
