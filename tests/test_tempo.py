@@ -2,6 +2,7 @@
 '''
 Unit tests for mir_eval.tempo
 '''
+import warnings
 
 import numpy as np
 import mir_eval
@@ -24,6 +25,23 @@ def __check_score(sco_f, metric, score, expected_score):
     assert np.allclose(score, expected_score, atol=A_TOL)
 
 
+def test_zero_tolerance_pass():
+    good_ref = np.array([60, 120])
+    good_weight = 0.5
+    good_est = np.array([120, 180])
+    zero_tol = 0.0
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        # Try to produce the warning
+        mir_eval.tempo.detection(good_ref, good_weight, good_est, tol=zero_tol)
+
+        assert len(w) == 1
+        assert issubclass(w[-1].category, UserWarning)
+        assert str(w[-1].message) == 'A tolerance of 0.0 may ' \
+                                     'not lead to the results you expect.'
+
+
 def test_tempo_fail():
 
     @raises(ValueError)
@@ -42,7 +60,7 @@ def test_tempo_fail():
     for bad_weight in [-1, 1.5]:
         yield __test, good_ref, bad_weight, good_est, good_tol
 
-    for bad_tol in [-1, 0, 1.5]:
+    for bad_tol in [-1, 1.5]:
         yield __test, good_ref, good_weight, good_est, bad_tol
 
 
