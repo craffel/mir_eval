@@ -46,8 +46,9 @@ def validate_tempi(tempi, reference=True):
     if not np.all(np.isfinite(tempi)) or np.any(tempi < 0):
         raise ValueError('tempi={} must be non-negative numbers'.format(tempi))
 
-    if reference and np.all(tempi == 0) :
-        raise ValueError('reference tempi={} must have one value greater than zero'.format(tempi))
+    if reference and np.all(tempi == 0):
+        raise ValueError('reference tempi={} must have one'
+                         ' value greater than zero'.format(tempi))
 
 
 def validate(reference_tempi, reference_weight, estimated_tempi):
@@ -130,7 +131,8 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     for i, ref_t in enumerate(reference_tempi):
         if ref_t > 0:
             # Compute the relative error for this reference tempo
-            relative_error = np.min(np.abs(ref_t - estimated_tempi) / float(ref_t))
+            f_ref_t = float(ref_t)
+            relative_error = np.min(np.abs(ref_t - estimated_tempi) / f_ref_t)
 
             # Count the hits
             hits[i] = relative_error <= tol
