@@ -51,13 +51,13 @@ def test_tempo_pass():
     for good_tempo in [np.array([50, 50]), np.array([0, 50]),
                        np.array([50, 0])]:
         yield mir_eval.tempo.detection, good_tempo,\
-              good_weight, good_est, good_tol
+            good_weight, good_est, good_tol
         yield mir_eval.tempo.detection, good_ref,\
-              good_weight, good_tempo, good_tol
+            good_weight, good_tempo, good_tol
 
     # allow both estimates to be zero
     yield mir_eval.tempo.detection, good_ref,\
-          good_weight, np.array([0, 0]), good_tol
+        good_weight, np.array([0, 0]), good_tol
 
 
 def test_tempo_fail():

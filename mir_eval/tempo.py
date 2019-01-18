@@ -8,8 +8,8 @@ description of the task and evaluation criteria.
 Conventions
 -----------
 
-Reference and estimated tempi should be positive, and provided in ascending order
-as a numpy array of length 2.
+Reference and estimated tempi should be positive, and provided in ascending
+order as a numpy array of length 2.
 
 The weighting value from the reference must be a float in the range [0, 1].
 
