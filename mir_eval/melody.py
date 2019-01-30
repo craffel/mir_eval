@@ -563,7 +563,8 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     # Raw chroma = same as raw pitch except that octave errors are ignored.
     cent_diff = np.abs(ref_cent - est_cent)
     octave = 1200*np.floor(cent_diff/1200.0 + 0.5)
-    frame_correct = (np.abs(cent_diff - octave)[ref_voicing] < cent_tolerance)
+    correct_voicing = ref_voicing * est_voicing
+    frame_correct = (np.abs(cent_diff - octave)[correct_voicing] < cent_tolerance)
     n_voiced = float(ref_voicing.sum())
     raw_chroma = (frame_correct).sum()/n_voiced
     return raw_chroma
