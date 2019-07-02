@@ -265,11 +265,17 @@ def __unit_test_linear_sum_assignment():
     # infinity is caught
     pos_neg_inf = False
     try:
+        # make it fail ...
+        cost[0, 0] = -np.inf
         cost[1, 1] = np.inf
+        _, col_ind = mir_eval.separation._linear_sum_assignment_with_inf(
+                cost
+                )
     except ValueError:
+        # ... and catch the exception
         pos_neg_inf = True
 
-    assert not pos_neg_inf
+    assert pos_neg_inf
 
 
 def test_separation_functions():
