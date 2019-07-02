@@ -917,12 +917,15 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
 
     return scores
 
+
 def _linear_sum_assignment_with_inf(cost_matrix):
     '''
-    Solves the permutation problem efficiently via the linear sum assignment problem.
+    Solves the permutation problem efficiently via the linear sum
+    assignment problem.
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linear_sum_assignment.html
 
-    This implementation was proposed by @louisabraham in https://github.com/scipy/scipy/issues/6900
+    This implementation was proposed by @louisabraham in
+    https://github.com/scipy/scipy/issues/6900
     to handle infinite entries in the cost matrix.
     '''
     cost_matrix = np.asarray(cost_matrix)
@@ -946,5 +949,5 @@ def _linear_sum_assignment_with_inf(cost_matrix):
             place_holder = (m + (n - 1) * (m - M)) - positive
 
         cost_matrix[np.isinf(cost_matrix)] = place_holder
-    return linear_sum_assignment(cost_matrix)
 
+    return linear_sum_assignment(cost_matrix)
