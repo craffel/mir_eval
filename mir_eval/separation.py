@@ -49,6 +49,7 @@ import numpy as np
 import scipy.fftpack
 from scipy.linalg import toeplitz
 from scipy.signal import fftconvolve
+from scipy.optimize import linear_sum_assignment
 import collections
 import itertools
 import warnings
@@ -214,12 +215,10 @@ def bss_eval_sources(reference_sources, estimated_sources,
                     _bss_source_crit(s_true, e_spat, e_interf, e_artif)
 
         # select the best ordering
-        perms = list(itertools.permutations(list(range(nsrc))))
-        mean_sir = np.empty(len(perms))
-        dum = np.arange(nsrc)
-        for (i, perm) in enumerate(perms):
-            mean_sir[i] = np.mean(sir[perm, dum])
-        popt = perms[np.argmax(mean_sir)]
+        if sir.shape[0] == 1:
+            dum = popt = np.arange(nsrc)
+        else:
+            dum, popt = _linear_sum_assignment_with_inf(-sir.T)
         idx = (popt, dum)
         return (sdr[idx], sir[idx], sar[idx], np.asarray(popt))
     else:
@@ -456,12 +455,10 @@ def bss_eval_images(reference_sources, estimated_sources,
                     _bss_image_crit(s_true, e_spat, e_interf, e_artif)
 
         # select the best ordering
-        perms = list(itertools.permutations(range(nsrc)))
-        mean_sir = np.empty(len(perms))
-        dum = np.arange(nsrc)
-        for (i, perm) in enumerate(perms):
-            mean_sir[i] = np.mean(sir[perm, dum])
-        popt = perms[np.argmax(mean_sir)]
+        if sir.shape[0] == 1:
+            dum = popt = np.arange(nsrc)
+        else:
+            dum, popt = _linear_sum_assignment_with_inf(-sir.T)
         idx = (popt, dum)
         return (sdr[idx], isr[idx], sir[idx], sar[idx], np.asarray(popt))
     else:
@@ -919,3 +916,35 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
         scores['Sources - Source permutation'] = perm.tolist()
 
     return scores
+
+def _linear_sum_assignment_with_inf(cost_matrix):
+    '''
+    Solves the permutation problem efficiently via the linear sum assignment problem.
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linear_sum_assignment.html
+
+    This implementation was proposed by @louisabraham in https://github.com/scipy/scipy/issues/6900
+    to handle infinite entries in the cost matrix.
+    '''
+    cost_matrix = np.asarray(cost_matrix)
+    min_inf = np.isneginf(cost_matrix).any()
+    max_inf = np.isposinf(cost_matrix).any()
+    if min_inf and max_inf:
+        raise ValueError("matrix contains both inf and -inf")
+
+    if min_inf or max_inf:
+        cost_matrix = cost_matrix.copy()
+        values = cost_matrix[~np.isinf(cost_matrix)]
+        m = values.min()
+        M = values.max()
+        n = min(cost_matrix.shape)
+        # strictly positive constant even when added
+        # to elements of the cost matrix
+        positive = n * (M - m + np.abs(M) + np.abs(m) + 1)
+        if max_inf:
+            place_holder = (M + (n - 1) * (M - m)) + positive
+        if min_inf:
+            place_holder = (m + (n - 1) * (m - M)) - positive
+
+        cost_matrix[np.isinf(cost_matrix)] = place_holder
+    return linear_sum_assignment(cost_matrix)
+
