@@ -235,6 +235,43 @@ def __unit_test_framewise_small_window(metric):
                        atol=A_TOL)
 
 
+def __unit_test_linear_sum_assignment():
+
+    cost = np.array([[4, 1, 3], [2, 0, 5], [3, 2, 2]], dtype=np.float)
+    cost_inf = cost
+
+    # test a normal case
+    _, col_ind = mir_eval.separation._linear_sum_assignment_with_inf(
+            cost
+            )
+    assert np.allclose([1, 0, 2], col_ind)
+
+    # test a case with one negative infinity
+    cost[0, 1] = -np.inf
+    _, col_ind = mir_eval.separation._linear_sum_assignment_with_inf(
+            cost
+            )
+    assert np.allclose([1, 0, 2], col_ind)
+
+    # test a case with one positive infinity
+    cost[0, 1] = 1
+    cost[0, 0] = np.inf
+    _, col_ind = mir_eval.separation._linear_sum_assignment_with_inf(
+            cost
+            )
+    assert np.allclose([1, 0, 2], col_ind)
+
+    # make sure the exception due to both pos and neg
+    # infinity is caught
+    pos_neg_inf = False
+    try:
+        cost[1, 1] = np.inf
+    except ValueError:
+        pos_neg_inf = True
+
+    assert not pos_neg_inf
+
+
 def test_separation_functions():
     # Load in all files in the same order
     ref_files = sorted(glob.glob(REF_GLOB))
@@ -260,6 +297,9 @@ def test_separation_functions():
                    mir_eval.separation.bss_eval_images_framewise]:
         yield (__unit_test_framewise_small_window, metric)
         yield (__unit_test_partial_silence, metric)
+
+    yield(__unit_test_linear_sum_assignment)
+
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
         with open(sco_f, 'r') as f:
