@@ -43,7 +43,8 @@ def test_load_delimited_commented():
         # Rewind and try with no comment support
         f.seek(0)
         nose.tools.assert_raises(
-            ValueError, mir_eval.io.load_delimited, f, [int, int], comment=None)
+            ValueError, mir_eval.io.load_delimited, f, [int, int],
+            comment=None)
 
 
 def test_load_delimited_nocomment():
@@ -197,14 +198,14 @@ def test_load_ragged_time_series():
         # Rewind with a wrong comment string
         f.seek(0)
         nose.tools.assert_raises(
-            ValueError, mir_eval.io.load_ragged_time_series, f, int, header=False,
-            comment='%')
+            ValueError, mir_eval.io.load_ragged_time_series, f, int,
+            header=False, comment='%')
 
         # Rewind with no comment string
         f.seek(0)
         nose.tools.assert_raises(
-            ValueError, mir_eval.io.load_ragged_time_series, f, int, header=False,
-            comment=None)
+            ValueError, mir_eval.io.load_ragged_time_series, f, int,
+            header=False, comment=None)
 
 
 def test_load_tempo():
