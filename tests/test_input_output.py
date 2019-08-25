@@ -27,6 +27,46 @@ def test_load_delimited():
             ValueError, mir_eval.io.load_delimited, f, [int, int, int])
 
 
+def test_load_delimited_commented():
+    with tempfile.TemporaryFile('r+') as f:
+        f.write('; some comment\n10 20\n30 50')
+        f.seek(0)
+        col1, col2 = mir_eval.io.load_delimited(f, [int, int], comment=';')
+        assert np.allclose(col1, [10, 30])
+        assert np.allclose(col2, [20, 50])
+
+        # Rewind and try with the default comment character
+        f.seek(0)
+        nose.tools.assert_raises(
+            ValueError, mir_eval.io.load_delimited, f, [int, int])
+
+        # Rewind and try with no comment support
+        f.seek(0)
+        nose.tools.assert_raises(
+            ValueError, mir_eval.io.load_delimited, f, [int, int], comment=None)
+
+
+def test_load_delimited_nocomment():
+    with tempfile.TemporaryFile('r+') as f:
+        f.write('10 20\n30 50')
+        f.seek(0)
+        col1, col2 = mir_eval.io.load_delimited(f, [int, int])
+        assert np.allclose(col1, [10, 30])
+        assert np.allclose(col2, [20, 50])
+
+        # Rewind and try with a different comment char
+        f.seek(0)
+        col1, col2 = mir_eval.io.load_delimited(f, [int, int], comment=';')
+        assert np.allclose(col1, [10, 30])
+        assert np.allclose(col2, [20, 50])
+
+        # Rewind and try with no different comment string
+        f.seek(0)
+        col1, col2 = mir_eval.io.load_delimited(f, [int, int], comment=None)
+        assert np.allclose(col1, [10, 30])
+        assert np.allclose(col2, [20, 50])
+
+
 def test_load_events():
     # Test for a warning when invalid events are supplied
     with tempfile.TemporaryFile('r+') as f:
@@ -142,6 +182,29 @@ def test_load_ragged_time_series():
         nose.tools.assert_raises(
             ValueError, mir_eval.io.load_ragged_time_series, f, int,
             header=True)
+
+    with tempfile.TemporaryFile('r+') as f:
+        f.write('#comment\n0 1 2\n3 4\n# comment\n5 6 7')
+        f.seek(0)
+        times, values = mir_eval.io.load_ragged_time_series(f, int,
+                                                            header=False,
+                                                            comment='#')
+        assert np.allclose(times, [0, 3, 5])
+        assert np.allclose(values[0], [1, 2])
+        assert np.allclose(values[1], [4])
+        assert np.allclose(values[2], [6, 7])
+
+        # Rewind with a wrong comment string
+        f.seek(0)
+        nose.tools.assert_raises(
+            ValueError, mir_eval.io.load_ragged_time_series, f, int, header=False,
+            comment='%')
+
+        # Rewind with no comment string
+        f.seek(0)
+        nose.tools.assert_raises(
+            ValueError, mir_eval.io.load_ragged_time_series, f, int, header=False,
+            comment=None)
 
 
 def test_load_tempo():
