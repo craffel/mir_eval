@@ -163,7 +163,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
             gram_interpolator = interp1d(
                 time_centers, gram[n, :],
                 kind='linear', bounds_error=False,
-                fill_value=(gram[n,0],gram[n,-1]))
+                fill_value=(gram[n, 0], gram[n, -1]))
         # If only one time point, create constant interpolator
         else:
             gram_interpolator = _const_interpolator(gram[n, 0])
