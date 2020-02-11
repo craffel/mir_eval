@@ -404,11 +404,11 @@ def raw_pitch_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
     Parameters
     ----------
     ref_voicing : np.ndarray
-        Reference boolean voicing array
+        Reference voicing array
     ref_freqs : np.ndarray
         Reference pitch sequence in Hz
     est_voicing : np.ndarray
-        Estimated boolean voicing array
+        Estimated voicing array
     est_freqs : np.ndarray
         Estimate pitch sequence in Hz
     semitone_tolerance : float
@@ -427,8 +427,6 @@ def raw_pitch_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
 
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_freqs, est_voicing, est_freqs)
-    ref_voicing = ref_voicing.astype(bool)
-    est_voicing = est_voicing.astype(bool)
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_freqs.size == 0 or est_freqs.size == 0:
@@ -472,11 +470,11 @@ def raw_chroma_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
     Parameters
     ----------
     ref_voicing : np.ndarray
-        Reference boolean voicing array
+        Reference voicing array
     ref_freqs : np.ndarray
         Reference pitch sequence in Hz
     est_voicing : np.ndarray
-        Estimated boolean voicing array
+        Estimated voicing array
     est_freqs : np.ndarray
         Estimate pitch sequence in Hz
     semitone_tolerance : float
@@ -508,8 +506,6 @@ def raw_chroma_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
     """
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_freqs, est_voicing, est_freqs)
-    ref_voicing = ref_voicing.astype(bool)
-    est_voicing = est_voicing.astype(bool)
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
        or ref_freqs.size == 0 or est_freqs.size == 0:
