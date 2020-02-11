@@ -23,10 +23,10 @@ values represent the algorithm's pitch estimate for frames it has determined as
 unvoiced, in case they are in fact voiced.
 
 Metrics are computed using a sequence of reference and estimated pitches in
-Hz and boolean voicing arrays, both of which are sampled to the same
+Hz and voicing arrays, both of which are sampled to the same
 timebase.  The function :func:`mir_eval.melody.normalize_inputs` can be used to
 convert a sequence of estimated and reference times and frequency values in Hz
-to boolean voicing arrays and frequency arrays in the format required by the
+to voicing arrays and frequency arrays in the format required by the
 metric functions.  By default, the convention is to resample the estimated
 melody time series to the reference melody time series' timebase.
 
@@ -90,11 +90,11 @@ def validate(ref_voicing, ref_freqs, est_voicing, est_freqs):
     Parameters
     ----------
     ref_voicing : np.ndarray
-        Reference boolean voicing array
+        Reference voicing array
     ref_freqs : np.ndarray
         Reference pitch sequence in Hz
     est_voicing : np.ndarray
-        Estimated boolean voicing array
+        Estimated voicing array
     est_freqs : np.ndarray
         Estimate pitch sequence in Hz
 
@@ -180,7 +180,7 @@ def resample_melody_series(times, frequencies, voicing,
     frequencies : np.ndarray
         Array of frequency values, >= 0
     voicing : np.ndarray
-        Boolean array which indicates voiced or unvoiced
+        Array which indicates voiced or unvoiced
     times_new : np.ndarray
         Times to resample frequency and voicing sequences to
     kind : str
@@ -191,13 +191,13 @@ def resample_melody_series(times, frequencies, voicing,
     -------
     frequencies_resampled : np.ndarray
         Frequency array resampled to new timebase
-    voicing_resampled : np.ndarray, dtype=bool
-        Boolean voicing array resampled to new timebase
+    voicing_resampled : np.ndarray
+        Voicing array resampled to new timebase
 
     """
     # If the timebases are already the same, no need to interpolate
     if times.shape == times_new.shape and np.allclose(times, times_new):
-        return frequencies, voicing.astype(np.bool)
+        return frequencies, voicing
 
     frequencies = hz2cents(frequencies)
 
@@ -256,11 +256,11 @@ def resample_melody_series(times, frequencies, voicing,
                                                        'zero')(times_new)
 
     frequencies_resampled = cents2hz(frequencies_resampled)
-    return frequencies_resampled, voicing_resampled.astype(np.bool)
+    return frequencies_resampled, voicing_resampled
 
 
 def normalize_inputs(ref_time, ref_freq, est_time, est_freq,
-                     ref_voicing=None, est_voicing=None,
+                     est_voicing=None, ref_reward=None,
                      hop=None, kind='linear'):
     """Converts reference and estimated time/frequency (Hz) annotations to sampled
     frequency /voicing arrays.
@@ -280,12 +280,12 @@ def normalize_inputs(ref_time, ref_freq, est_time, est_freq,
         Time of each estimated frequency value
     est_freq : np.ndarray
         Array of estimated frequency values
-    ref_voicing : np.ndarray
-        Reference voicing reward.
-        Default None, which means all frames are weighted equally.
     est_voicing : np.ndarray
         Estimate voicing confidence.
         Default None, which means the voicing is inferred from ref_freq
+    ref_reward : np.ndarray
+        Reference voicing reward.
+        Default None, which means all frames are weighted equally.
     hop : float
         Hop size, in seconds, to resample,
         default None which means use ref_time
@@ -295,30 +295,30 @@ def normalize_inputs(ref_time, ref_freq, est_time, est_freq,
 
     Returns
     -------
-    ref_voicing : np.ndarray, dtype=bool
-        Resampled reference boolean voicing array
+    ref_voicing : np.ndarray
+        Resampled reference voicing array
     ref_freq : np.ndarray
-        Resampled reference frequency (Hz) array
-    est_voicing : np.ndarray, dtype=bool
-        Resampled estimated boolean voicing array
+        Resampled reference frequency array
+    est_voicing : np.ndarray
+        Resampled estimated voicing array
     est_freq : np.ndarray
-        Resampled estimated frequency (Hz) array
+        Resampled estimated frequency array
 
     """
     # Check if missing sample at time 0 and if so add one
     if ref_time[0] > 0:
         ref_time = np.insert(ref_time, 0, 0)
         ref_freq = np.insert(ref_freq, 0, ref_freq[0])
-        if ref_voicing is not None:
-            ref_voicing = np.insert(ref_voicing, 0, ref_voicing[0])
+        if ref_reward is not None:
+            ref_reward = np.insert(ref_reward, 0, ref_reward[0])
     if est_time[0] > 0:
         est_time = np.insert(est_time, 0, 0)
         est_freq = np.insert(est_freq, 0, est_freq[0])
         if est_voicing is not None:
             est_voicing = np.insert(est_voicing, 0, est_voicing[0])
 
-    # Get separated frequency array and voicing boolean array
-    ref_freq, ref_voicing = freq_to_voicing(ref_freq, ref_voicing)
+    # Get separated frequency array and voicing array
+    ref_freq, ref_voicing = freq_to_voicing(ref_freq, ref_reward)
     est_freq, est_voicing = freq_to_voicing(est_freq, est_voicing)
 
     # If we received a hop, use it to resample both
@@ -343,8 +343,7 @@ def normalize_inputs(ref_time, ref_freq, est_time, est_freq,
         est_freq = est_freq[:ref_freq.shape[0]]
         est_voicing = est_voicing[:ref_voicing.shape[0]]
 
-    return (ref_voicing.astype(bool), ref_freq,
-            est_voicing.astype(bool), est_freq)
+    return (ref_voicing, ref_freq, est_voicing, est_freq)
 
 
 def voicing_recall(ref_voicing, est_voicing):
@@ -548,11 +547,11 @@ def overall_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
     Parameters
     ----------
     ref_voicing : np.ndarray
-        Reference boolean voicing array
+        Reference voicing array
     ref_freqs : np.ndarray
         Reference pitch sequence in Hz
     est_voicing : np.ndarray
-        Estimated boolean voicing array
+        Estimated voicing array
     est_freqs : np.ndarray
         Estimate pitch sequence in Hz
     semitone_tolerance : float
@@ -597,7 +596,7 @@ def overall_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
 
 
 def evaluate(ref_time, ref_freq, est_time, est_freq,
-             ref_voicing=None, est_voicing=None, **kwargs):
+             est_voicing=None, ref_reward=None, **kwargs):
     """Evaluate two melody (predominant f0) transcriptions, where the first is
     treated as the reference (ground truth) and the second as the estimate to
     be evaluated (prediction).
@@ -619,12 +618,12 @@ def evaluate(ref_time, ref_freq, est_time, est_freq,
         Time of each estimated frequency value
     est_freq : np.ndarray
         Array of estimated frequency values
-    ref_voicing : np.ndarray
-        Reference voicing reward.
-        Default None, which means all frames are weighted equally.
     est_voicing : np.ndarray
         Estimate voicing confidence.
         Default None, which means the voicing is inferred from ref_freq
+    ref_reward : np.ndarray
+        Reference voicing reward.
+        Default None, which means all frames are weighted equally.
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -640,7 +639,7 @@ def evaluate(ref_time, ref_freq, est_time, est_freq,
     (ref_voicing, ref_freq,
      est_voicing, est_freq) = util.filter_kwargs(
          normalize_inputs, ref_time, ref_freq, est_time, est_freq,
-         ref_voicing, est_voicing, **kwargs)
+         ref_reward, est_voicing, **kwargs)
 
     # Compute metrics
     scores = collections.OrderedDict()
