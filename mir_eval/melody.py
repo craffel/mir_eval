@@ -381,8 +381,7 @@ def cents2hz(freq_cents, base_frequency=10.0):
     return freq_hz
 
 
-def raw_pitch_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
-                       semitone_tolerance=0.5):
+def raw_pitch_accuracy(ref_voicing, ref_freqs, est_freqs, semitone_tolerance=0.5):
     """Compute the raw pitch accuracy given two pitch (frequency) sequences in
     Hz and matching voicing indicator sequences. The first pitch and voicing
     arrays are treated as the reference (truth), and the second two as the
@@ -424,14 +423,11 @@ def raw_pitch_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
 
     """
 
-    validate_voicing(ref_voicing, est_voicing)
-    validate(ref_voicing, ref_freqs, est_voicing, est_freqs)
+    validate_voicing(ref_voicing, ref_voicing)
+    validate(ref_voicing, ref_freqs, ref_voicing, est_freqs)
     # When input arrays are empty, return 0 by special case
-    if ref_voicing.size == 0 or est_voicing.size == 0 \
-       or ref_freqs.size == 0 or est_freqs.size == 0:
-        return 0.
     # If there are no voiced frames in reference, metric is 0
-    if ref_voicing.sum() == 0:
+    if ref_voicing.size == 0 or ref_voicing.sum() == 0:
         return 0.
 
     # Raw pitch = the number of voiced frames in the reference for which the
@@ -446,8 +442,7 @@ def raw_pitch_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
     return rpa
 
 
-def raw_chroma_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
-                        semitone_tolerance=0.5):
+def raw_chroma_accuracy(ref_voicing, ref_freqs, est_freqs, semitone_tolerance=0.5):
     """Compute the raw chroma accuracy given two pitch (frequency) sequences
     in Hz and matching voicing indicator sequences. The first pitch and
     voicing arrays are treated as the reference (truth), and the second two as
@@ -503,19 +498,14 @@ def raw_chroma_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
         Language Processing, 15(4):1247-1256, 2007.
 
     """
-    validate_voicing(ref_voicing, est_voicing)
-    validate(ref_voicing, ref_freqs, est_voicing, est_freqs)
+    validate_voicing(ref_voicing, ref_voicing)
+    validate(ref_voicing, ref_freqs, ref_voicing, est_freqs)
     # When input arrays are empty, return 0 by special case
-    if ref_voicing.size == 0 or est_voicing.size == 0 \
-       or ref_freqs.size == 0 or est_freqs.size == 0:
-        return 0.
-
     # If there are no voiced frames in reference, metric is 0
-    if ref_voicing.sum() == 0:
+    if ref_voicing.size == 0 or ref_voicing.sum() == 0:
         return 0.
 
     # # Raw chroma = same as raw pitch except that octave errors are ignored.
-
     nonzero_freqs = np.logical_and(est_freqs != 0, ref_freqs != 0)
     divisor = np.abs(est_freqs[nonzero_freqs]) / ref_freqs[nonzero_freqs]
     freq_diff_semitones = np.abs(12.0 * np.log2(divisor))
@@ -654,12 +644,12 @@ def evaluate(ref_time, ref_freq, est_time, est_freq,
 
     scores['Raw Pitch Accuracy'] = util.filter_kwargs(raw_pitch_accuracy,
                                                       ref_voicing, ref_freq,
-                                                      est_voicing, est_freq,
+                                                      est_freq,
                                                       **kwargs)
 
     scores['Raw Chroma Accuracy'] = util.filter_kwargs(raw_chroma_accuracy,
                                                        ref_voicing, ref_freq,
-                                                       est_voicing, est_freq,
+                                                       est_freq,
                                                        **kwargs)
 
     scores['Overall Accuracy'] = util.filter_kwargs(overall_accuracy,
