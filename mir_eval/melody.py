@@ -24,7 +24,7 @@ unvoiced, in case they are in fact voiced.
 
 Metrics are computed using a sequence of reference and estimated pitches in
 Hz and voicing arrays, both of which are sampled to the same
-timebase.  The function :func:`mir_eval.melody.normalize_inputs` can be used to
+timebase.  The function :func:`mir_eval.melody.to_cent_voicing` can be used to
 convert a sequence of estimated and reference times and frequency values in Hz
 to voicing arrays and frequency arrays in the format required by the
 metric functions.  By default, the convention is to resample the estimated
@@ -83,7 +83,7 @@ def validate_voicing(ref_voicing, est_voicing):
                          'be the same length.')
 
 
-def validate(ref_voicing, ref_freqs, est_voicing, est_freqs):
+def validate(ref_voicing, ref_cent, est_voicing, est_cent):
     """Checks that voicing and frequency arrays are well-formed.  To be used in
     conjunction with :func:`mir_eval.melody.validate_voicing`
 
@@ -91,24 +91,47 @@ def validate(ref_voicing, ref_freqs, est_voicing, est_freqs):
     ----------
     ref_voicing : np.ndarray
         Reference voicing array
-    ref_freqs : np.ndarray
-        Reference pitch sequence in Hz
+    ref_cent : np.ndarray
+        Reference pitch sequence in cents
     est_voicing : np.ndarray
         Estimated voicing array
-    est_freqs : np.ndarray
-        Estimate pitch sequence in Hz
+    est_cent : np.ndarray
+        Estimate pitch sequence in cents
 
     """
-    if ref_freqs.size == 0:
+    if ref_cent.size == 0:
         warnings.warn("Reference frequency array is empty.")
-    if est_freqs.size == 0:
+    if est_cent.size == 0:
         warnings.warn("Estimated frequency array is empty.")
     # Make sure they're the same length
-    if ref_voicing.shape[0] != ref_freqs.shape[0] or \
-       est_voicing.shape[0] != est_freqs.shape[0] or \
-       ref_freqs.shape[0] != est_freqs.shape[0]:
+    if ref_voicing.shape[0] != ref_cent.shape[0] or \
+       est_voicing.shape[0] != est_cent.shape[0] or \
+       ref_cent.shape[0] != est_cent.shape[0]:
         raise ValueError('All voicing and frequency arrays must have the '
                          'same length.')
+
+
+def hz2cents(freq_hz, base_frequency=10.0):
+    """Convert an array of frequency values in Hz to cents.
+    0 values are left in place.
+
+    Parameters
+    ----------
+    freq_hz : np.ndarray
+        Array of frequencies in Hz.
+    base_frequency : float
+        Base frequency for conversion.
+        (Default value = 10.0)
+    Returns
+    -------
+    freq_cents : np.ndarray
+        Array of frequencies in cents, relative to base_frequency
+    """
+    freq_cent = np.zeros(freq_hz.shape[0])
+    freq_nonz_ind = np.flatnonzero(freq_hz)
+    normalized_frequency = np.abs(freq_hz[freq_nonz_ind]) / base_frequency
+    freq_cent[freq_nonz_ind] = 1200.0 * np.log2(normalized_frequency)
+    return freq_cent
 
 
 def freq_to_voicing(frequencies, voicing=None):
@@ -199,11 +222,9 @@ def resample_melody_series(times, frequencies, voicing,
     if times.shape == times_new.shape and np.allclose(times, times_new):
         return frequencies, voicing
 
-    frequencies = hz2cents(frequencies)
-
     # Warn when the delta between the original times is not constant,
     # unless times[0] == 0. and frequencies[0] == frequencies[1] (see logic at
-    # the beginning of normalize_inputs)
+    # the beginning of to_cent_voicing)
     if not (np.allclose(np.diff(times), np.diff(times).mean()) or
             (np.allclose(np.diff(times[1:]), np.diff(times[1:]).mean()) and
              frequencies[0] == frequencies[1])):
@@ -255,15 +276,14 @@ def resample_melody_series(times, frequencies, voicing,
                                                        voicing,
                                                        'zero')(times_new)
 
-    frequencies_resampled = cents2hz(frequencies_resampled)
     return frequencies_resampled, voicing_resampled
 
 
-def normalize_inputs(ref_time, ref_freq, est_time, est_freq,
-                     est_voicing=None, ref_reward=None,
+def to_cent_voicing(ref_time, ref_freq, est_time, est_freq,
+                     est_voicing=None, ref_reward=None, base_frequency=10.,
                      hop=None, kind='linear'):
     """Converts reference and estimated time/frequency (Hz) annotations to sampled
-    frequency /voicing arrays.
+    frequency (cent)/voicing arrays.
 
     A zero frequency indicates "unvoiced".
 
@@ -286,6 +306,9 @@ def normalize_inputs(ref_time, ref_freq, est_time, est_freq,
     ref_reward : np.ndarray
         Reference voicing reward.
         Default None, which means all frames are weighted equally.
+    base_frequency : float
+        Base frequency in Hz for conversion to cents
+        (Default value = 10.)
     hop : float
         Hop size, in seconds, to resample,
         default None which means use ref_time
@@ -297,12 +320,12 @@ def normalize_inputs(ref_time, ref_freq, est_time, est_freq,
     -------
     ref_voicing : np.ndarray
         Resampled reference voicing array
-    ref_freq : np.ndarray
-        Resampled reference frequency array
+    ref_cent : np.ndarray
+        Resampled reference frequency (cent) array
     est_voicing : np.ndarray
         Resampled estimated voicing array
-    est_freq : np.ndarray
-        Resampled estimated frequency array
+    est_cent : np.ndarray
+        Resampled estimated frequency (cent) array
 
     """
     # Check if missing sample at time 0 and if so add one
@@ -320,34 +343,37 @@ def normalize_inputs(ref_time, ref_freq, est_time, est_freq,
     # Get separated frequency array and voicing array
     ref_freq, ref_voicing = freq_to_voicing(ref_freq, ref_reward)
     est_freq, est_voicing = freq_to_voicing(est_freq, est_voicing)
+    # convert both sequences to cents
+    ref_cent = hz2cents(ref_freq, base_frequency)
+    est_cent = hz2cents(est_freq, base_frequency)
 
     # If we received a hop, use it to resample both
     if hop is not None:
         # Resample to common time base
-        ref_freq, ref_voicing = resample_melody_series(
-            ref_time, ref_freq, ref_voicing,
+        ref_cent, ref_voicing = resample_melody_series(
+            ref_time, ref_cent, ref_voicing,
             constant_hop_timebase(hop, ref_time.max()), kind)
-        est_freq, est_voicing = resample_melody_series(
-            est_time, est_freq, est_voicing,
+        est_cent, est_voicing = resample_melody_series(
+            est_time, est_cent, est_voicing,
             constant_hop_timebase(hop, est_time.max()), kind)
     # Otherwise, only resample estimated to the reference time base
     else:
-        est_freq, est_voicing = resample_melody_series(
-            est_time, est_freq, est_voicing, ref_time, kind)
+        est_cent, est_voicing = resample_melody_series(
+            est_time, est_cent, est_voicing, ref_time, kind)
     # ensure the estimated sequence is the same length as the reference
-    len_diff = ref_freq.shape[0] - est_freq.shape[0]
+    len_diff = ref_cent.shape[0] - est_cent.shape[0]
     if len_diff >= 0:
-        est_freq = np.append(est_freq, np.zeros(len_diff))
+        est_cent = np.append(est_cent, np.zeros(len_diff))
         est_voicing = np.append(est_voicing, np.zeros(len_diff))
     else:
-        est_freq = est_freq[:ref_freq.shape[0]]
+        est_cent = est_cent[:ref_cent.shape[0]]
         est_voicing = est_voicing[:ref_voicing.shape[0]]
 
-    return (ref_voicing, ref_freq, est_voicing, est_freq)
+    return (ref_voicing, ref_cent, est_voicing, est_cent)
 
 
 def voicing_recall(ref_voicing, est_voicing):
-    validate_voicing(ref_voicing, est_voicing)
+    # validate_voicing(ref_voicing, est_voicing)
     if ref_voicing.size == 0 or est_voicing.size == 0:
         return 0.
     ref_indicator = (ref_voicing > 0).astype(float)
@@ -357,7 +383,7 @@ def voicing_recall(ref_voicing, est_voicing):
 
 
 def voicing_false_alarm(ref_voicing, est_voicing):
-    validate_voicing(ref_voicing, est_voicing)
+    # validate_voicing(ref_voicing, est_voicing)
     if ref_voicing.size == 0 or est_voicing.size == 0:
         return 0.
     ref_indicator = (ref_voicing == 0).astype(float)
@@ -366,22 +392,43 @@ def voicing_false_alarm(ref_voicing, est_voicing):
     return np.sum(est_voicing * ref_indicator) / np.sum(ref_indicator)
 
 
-def hz2cents(freq_hz, base_frequency=10.0):
-    freq_cent = np.zeros(freq_hz.shape[0])
-    freq_nonz_ind = np.flatnonzero(freq_hz)
-    normalized_frequency = np.abs(freq_hz[freq_nonz_ind]) / base_frequency
-    freq_cent[freq_nonz_ind] = 1200.0 * np.log2(normalized_frequency)
-    return freq_cent
+def voicing_measures(ref_voicing, est_voicing):
+    """Compute the voicing recall and false alarm rates given two voicing
+    indicator sequences, one as reference (truth) and the other as the estimate
+    (prediction).  The sequences must be of the same length.
+    Examples
+    --------
+    >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
+    >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
+    >>> (ref_v, ref_c,
+    ...  est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
+    ...                                                  ref_freq,
+    ...                                                  est_time,
+    ...                                                  est_freq)
+    >>> recall, false_alarm = mir_eval.melody.voicing_measures(ref_v,
+    ...                                                        est_v)
+    Parameters
+    ----------
+    ref_voicing : np.ndarray
+        Reference boolean voicing array
+    est_voicing : np.ndarray
+        Estimated boolean voicing array
+    Returns
+    -------
+    vx_recall : float
+        Voicing recall rate, the fraction of voiced frames in ref
+        indicated as voiced in est
+    vx_false_alarm : float
+        Voicing false alarm rate, the fraction of unvoiced frames in ref
+        indicated as voiced in est
+    """
+    validate_voicing(ref_voicing, est_voicing)
+    vx_recall = voicing_recall(ref_voicing, est_voicing)
+    vx_false_alm = voicing_false_alarm(ref_voicing, est_voicing)
+    return vx_recall, vx_false_alm
 
 
-def cents2hz(freq_cents, base_frequency=10.0):
-    freq_hz = np.zeros(freq_cents.shape[0])
-    freq_nonz_ind = np.flatnonzero(freq_cents)
-    freq_hz[freq_nonz_ind] = 2.0 ** (freq_cents[freq_nonz_ind] / 1200.0) * base_frequency
-    return freq_hz
-
-
-def raw_pitch_accuracy(ref_voicing, ref_freqs, est_freqs, semitone_tolerance=0.5):
+def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50):
     """Compute the raw pitch accuracy given two pitch (frequency) sequences in
     Hz and matching voicing indicator sequences. The first pitch and voicing
     arrays are treated as the reference (truth), and the second two as the
@@ -392,7 +439,7 @@ def raw_pitch_accuracy(ref_voicing, ref_freqs, est_freqs, semitone_tolerance=0.5
     >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
     >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
     >>> (ref_v, ref_c,
-    ...  est_v, est_c) = mir_eval.melody.normalize_inputs(ref_time,
+    ...  est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
     ...                                                  ref_freq,
     ...                                                  est_time,
     ...                                                  est_freq)
@@ -403,46 +450,52 @@ def raw_pitch_accuracy(ref_voicing, ref_freqs, est_freqs, semitone_tolerance=0.5
     ----------
     ref_voicing : np.ndarray
         Reference voicing array
-    ref_freqs : np.ndarray
-        Reference pitch sequence in Hz
+    ref_cent : np.ndarray
+        Reference pitch sequence in cent
     est_voicing : np.ndarray
         Estimated voicing array
-    est_freqs : np.ndarray
-        Estimate pitch sequence in Hz
-    semitone_tolerance : float
-        Maximum absolute deviation in semitones for a frequency value to be
+    est_cent : np.ndarray
+        Estimate pitch sequence in cent
+    cent_tolerance : float
+        Maximum absolute deviation in cents for a frequency value to be
         considered correct
-        (Default value = 0.5)
+        (Default value = 50)
 
     Returns
     -------
     raw_pitch : float
-        Raw pitch accuracy, the fraction of voiced frames in ref_freqs for
-        which est_freqs provides a correct frequency values
-        (within semitone_tolerance).
+        Raw pitch accuracy, the fraction of voiced frames in ref_cent for
+        which est_cent provides a correct frequency values
+        (within cent_tolerance).
 
     """
 
-    validate_voicing(ref_voicing, ref_voicing)
-    validate(ref_voicing, ref_freqs, ref_voicing, est_freqs)
+    validate_voicing(ref_voicing, est_voicing)
+    validate(ref_voicing, ref_cent, est_voicing, est_cent)
     # When input arrays are empty, return 0 by special case
     # If there are no voiced frames in reference, metric is 0
-    if ref_voicing.size == 0 or ref_voicing.sum() == 0:
+    if ref_voicing.size == 0 or ref_voicing.sum() == 0 \
+       or ref_cent.size == 0 or est_cent.size == 0:
         return 0.
 
     # Raw pitch = the number of voiced frames in the reference for which the
-    # estimate provides a correct frequency value (within semitone_tolerance)
+    # estimate provides a correct frequency value (within cent_tolerance)
     # NB: voicing estimation is ignored in this measure
 
-    nonzero_freqs = np.logical_and(est_freqs != 0, ref_freqs != 0)
-    divisor = np.abs(est_freqs[nonzero_freqs]) / ref_freqs[nonzero_freqs]
-    freq_diff_semitones = np.abs(12.0 * np.log2(divisor))
-    correct_frequencies = freq_diff_semitones < semitone_tolerance
+    nonzero_freqs = np.logical_and(est_cent != 0, ref_cent != 0)
+
+    if sum(nonzero_freqs) == 0:
+        return 0.
+
+    freq_diff_cents = np.abs(ref_cent - est_cent)[nonzero_freqs]
+    # divisor = np.abs(est_cent[nonzero_freqs]) / ref_cent[nonzero_freqs]
+    # freq_diff_semitones = np.abs(12.0 * np.log2(divisor))
+    correct_frequencies = freq_diff_cents < cent_tolerance
     rpa = np.sum(ref_voicing[nonzero_freqs] * correct_frequencies) / np.sum(ref_voicing)
     return rpa
 
 
-def raw_chroma_accuracy(ref_voicing, ref_freqs, est_freqs, semitone_tolerance=0.5):
+def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50):
     """Compute the raw chroma accuracy given two pitch (frequency) sequences
     in Hz and matching voicing indicator sequences. The first pitch and
     voicing arrays are treated as the reference (truth), and the second two as
@@ -453,7 +506,7 @@ def raw_chroma_accuracy(ref_voicing, ref_freqs, est_freqs, semitone_tolerance=0.
     >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
     >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
     >>> (ref_v, ref_c,
-    ...  est_v, est_c) = mir_eval.melody.normalize_inputs(ref_time,
+    ...  est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
     ...                                                  ref_freq,
     ...                                                  est_time,
     ...                                                  est_freq)
@@ -465,23 +518,23 @@ def raw_chroma_accuracy(ref_voicing, ref_freqs, est_freqs, semitone_tolerance=0.
     ----------
     ref_voicing : np.ndarray
         Reference voicing array
-    ref_freqs : np.ndarray
-        Reference pitch sequence in Hz
+    ref_cent : np.ndarray
+        Reference pitch sequence in cent
     est_voicing : np.ndarray
         Estimated voicing array
-    est_freqs : np.ndarray
-        Estimate pitch sequence in Hz
-    semitone_tolerance : float
-        Maximum absolute deviation in semitones for a frequency value to be
+    est_cent : np.ndarray
+        Estimate pitch sequence in cent
+    cent_tolerance : float
+        Maximum absolute deviation in cents for a frequency value to be
         considered correct
-        (Default value = 0.5)
+        (Default value = 50)
 
     Returns
     -------
     raw_chroma : float
-        Raw chroma accuracy, the fraction of voiced frames in ref_freqs for
-        which est_freqs provides a correct frequency values (within
-        semitone_tolerance), ignoring octave errors
+        Raw chroma accuracy, the fraction of voiced frames in ref_cent for
+        which est_cent provides a correct frequency values (within
+        cent_tolerance), ignoring octave errors
 
 
     References
@@ -498,26 +551,31 @@ def raw_chroma_accuracy(ref_voicing, ref_freqs, est_freqs, semitone_tolerance=0.
         Language Processing, 15(4):1247-1256, 2007.
 
     """
-    validate_voicing(ref_voicing, ref_voicing)
-    validate(ref_voicing, ref_freqs, ref_voicing, est_freqs)
+    validate_voicing(ref_voicing, est_voicing)
+    validate(ref_voicing, ref_cent, est_voicing, est_cent)
     # When input arrays are empty, return 0 by special case
     # If there are no voiced frames in reference, metric is 0
-    if ref_voicing.size == 0 or ref_voicing.sum() == 0:
+    if ref_voicing.size == 0 or ref_voicing.sum() == 0 \
+       or ref_cent.size == 0 or est_cent.size == 0:
         return 0.
 
     # # Raw chroma = same as raw pitch except that octave errors are ignored.
-    nonzero_freqs = np.logical_and(est_freqs != 0, ref_freqs != 0)
-    divisor = np.abs(est_freqs[nonzero_freqs]) / ref_freqs[nonzero_freqs]
-    freq_diff_semitones = np.abs(12.0 * np.log2(divisor))
-    octave = 12 * np.floor(freq_diff_semitones / 12 + 0.5)
-    correct_chroma = np.abs(freq_diff_semitones - octave) < semitone_tolerance
+    nonzero_freqs = np.logical_and(est_cent != 0, ref_cent != 0)
+
+    if sum(nonzero_freqs) == 0:
+        return 0.
+    # divisor = np.abs(est_cent[nonzero_freqs]) / ref_cent[nonzero_freqs]
+    # freq_diff_semitones = np.abs(12.0 * np.log2(divisor))
+    freq_diff_cents = np.abs(ref_cent - est_cent)[nonzero_freqs]
+    octave = 1200.0 * np.floor(freq_diff_cents / 1200 + 0.5)
+    correct_chroma = np.abs(freq_diff_cents - octave) < cent_tolerance
     rca = np.sum(ref_voicing[nonzero_freqs] * correct_chroma) / np.sum(ref_voicing)
     return rca
 
 
-def overall_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
-                     semitone_tolerance=0.5):
-    """Compute the overall accuracy given two pitch (frequency) sequences in Hz
+def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
+                     cent_tolerance=50):
+    """Compute the overall accuracy given two pitch (frequency) sequences in cents
     and matching voicing indicator sequences. The first pitch and voicing
     arrays are treated as the reference (truth), and the second two as the
     estimate (prediction).  All 4 sequences must be of the same length.
@@ -527,7 +585,7 @@ def overall_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
     >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
     >>> est_time, est_freq = mir_eval.io.load_time_series('est.txt')
     >>> (ref_v, ref_c,
-    ...  est_v, est_c) = mir_eval.melody.normalize_inputs(ref_time,
+    ...  est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
     ...                                                  ref_freq,
     ...                                                  est_time,
     ...                                                  est_freq)
@@ -538,37 +596,38 @@ def overall_accuracy(ref_voicing, ref_freqs, est_voicing, est_freqs,
     ----------
     ref_voicing : np.ndarray
         Reference voicing array
-    ref_freqs : np.ndarray
-        Reference pitch sequence in Hz
+    ref_cent : np.ndarray
+        Reference pitch sequence in
     est_voicing : np.ndarray
         Estimated voicing array
-    est_freqs : np.ndarray
-        Estimate pitch sequence in Hz
-    semitone_tolerance : float
-        Maximum absolute deviation in semitones for a frequency value to be
+    est_cent : np.ndarray
+        Estimate pitch sequence in
+    cent_tolerance : float
+        Maximum absolute deviation in cents for a frequency value to be
         considered correct
-        (Default value = 0.5)
+        (Default value = 50)
 
     Returns
     -------
     overall_accuracy : float
         Overall accuracy, the total fraction of correctly estimates frames,
-        where provides a correct frequency values (within semitone_tolerance
+        where provides a correct frequency values (within cent_tolerance
         Hz).
 
     """
     validate_voicing(ref_voicing, est_voicing)
-    validate(ref_voicing, ref_freqs, est_voicing, est_freqs)
+    validate(ref_voicing, ref_cent, est_voicing, est_cent)
 
     # When input arrays are empty, return 0 by special case
     if ref_voicing.size == 0 or est_voicing.size == 0 \
-       or ref_freqs.size == 0 or est_freqs.size == 0:
+       or ref_cent.size == 0 or est_cent.size == 0:
         return 0.
 
-    nonzero_freqs = np.logical_and(est_freqs != 0, ref_freqs != 0)
-    divisor = np.abs(est_freqs[nonzero_freqs]) / ref_freqs[nonzero_freqs]
-    freq_diff_semitones = np.abs(12.0 * np.log2(divisor))
-    correct_frequencies = freq_diff_semitones < semitone_tolerance
+    nonzero_freqs = np.logical_and(est_cent != 0, ref_cent != 0)
+    # divisor = np.abs(est_cent[nonzero_freqs]) / ref_cent[nonzero_freqs]
+    # freq_diff_semitones = np.abs(12.0 * np.log2(divisor))
+    freq_diff_cents = np.abs(ref_cent - est_cent)[nonzero_freqs]
+    correct_frequencies = freq_diff_cents < cent_tolerance
     ref_binary = (ref_voicing > 0).astype(float)
     n_frames = float(len(ref_voicing))
 
@@ -626,9 +685,9 @@ def evaluate(ref_time, ref_freq, est_time, est_freq,
 
     """
     # Convert to reference/estimated voicing/frequency arrays
-    (ref_voicing, ref_freq,
-     est_voicing, est_freq) = util.filter_kwargs(
-         normalize_inputs, ref_time, ref_freq, est_time, est_freq,
+    (ref_voicing, ref_cent,
+     est_voicing, est_cent) = util.filter_kwargs(
+         to_cent_voicing, ref_time, ref_freq, est_time, est_freq,
          ref_reward, est_voicing, **kwargs)
 
     # Compute metrics
@@ -643,17 +702,17 @@ def evaluate(ref_time, ref_freq, est_time, est_freq,
                                                        est_voicing, **kwargs)
 
     scores['Raw Pitch Accuracy'] = util.filter_kwargs(raw_pitch_accuracy,
-                                                      ref_voicing, ref_freq,
-                                                      est_freq,
+                                                      ref_voicing, ref_cent,
+                                                      est_voicing, est_cent,
                                                       **kwargs)
 
     scores['Raw Chroma Accuracy'] = util.filter_kwargs(raw_chroma_accuracy,
-                                                       ref_voicing, ref_freq,
-                                                       est_freq,
+                                                       ref_voicing, ref_cent,
+                                                       est_voicing, est_cent,
                                                        **kwargs)
 
     scores['Overall Accuracy'] = util.filter_kwargs(overall_accuracy,
-                                                    ref_voicing, ref_freq,
-                                                    est_voicing, est_freq,
+                                                    ref_voicing, ref_cent,
+                                                    est_voicing, est_cent,
                                                     **kwargs)
     return scores
