@@ -10,6 +10,18 @@ For a detailed explanation of the measures please refer to:
     J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody Extraction
     from Polyphonic Music Signals: Approaches, Applications and Challenges",
     IEEE Signal Processing Magazine, 31(2):118-134, Mar. 2014.
+and:
+    G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
+    Streich, and B. Ong. "Melody transcription from music audio:
+    Approaches and evaluation", IEEE Transactions on Audio, Speech, and
+    Language Processing, 15(4):1247-1256, 2007.
+
+For an explanation of the generalized measures (using non-binary voicings),
+please refer to:
+    R. Bittner and J. Bosch, "Generalized Metrics for Single-F0 Estimation
+    Evaluation", International Society for Music Information Retrieval
+    Conference (ISMIR), 2019.
+
 
 Conventions
 -----------
@@ -23,7 +35,7 @@ values represent the algorithm's pitch estimate for frames it has determined as
 unvoiced, in case they are in fact voiced.
 
 Metrics are computed using a sequence of reference and estimated pitches in
-Hz and voicing arrays, both of which are sampled to the same
+cents and voicing arrays, both of which are sampled to the same
 timebase.  The function :func:`mir_eval.melody.to_cent_voicing` can be used to
 convert a sequence of estimated and reference times and frequency values in Hz
 to voicing arrays and frequency arrays in the format required by the
@@ -280,8 +292,8 @@ def resample_melody_series(times, frequencies, voicing,
 
 
 def to_cent_voicing(ref_time, ref_freq, est_time, est_freq,
-                     est_voicing=None, ref_reward=None, base_frequency=10.,
-                     hop=None, kind='linear'):
+                    est_voicing=None, ref_reward=None, base_frequency=10.,
+                    hop=None, kind='linear'):
     """Converts reference and estimated time/frequency (Hz) annotations to sampled
     frequency (cent)/voicing arrays.
 
@@ -430,7 +442,7 @@ def voicing_measures(ref_voicing, est_voicing):
 
 def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50):
     """Compute the raw pitch accuracy given two pitch (frequency) sequences in
-    Hz and matching voicing indicator sequences. The first pitch and voicing
+    cents and matching voicing indicator sequences. The first pitch and voicing
     arrays are treated as the reference (truth), and the second two as the
     estimate (prediction).  All 4 sequences must be of the same length.
 
@@ -488,8 +500,6 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolera
         return 0.
 
     freq_diff_cents = np.abs(ref_cent - est_cent)[nonzero_freqs]
-    # divisor = np.abs(est_cent[nonzero_freqs]) / ref_cent[nonzero_freqs]
-    # freq_diff_semitones = np.abs(12.0 * np.log2(divisor))
     correct_frequencies = freq_diff_cents < cent_tolerance
     rpa = np.sum(ref_voicing[nonzero_freqs] * correct_frequencies) / np.sum(ref_voicing)
     return rpa
@@ -497,7 +507,7 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolera
 
 def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50):
     """Compute the raw chroma accuracy given two pitch (frequency) sequences
-    in Hz and matching voicing indicator sequences. The first pitch and
+    in cents and matching voicing indicator sequences. The first pitch and
     voicing arrays are treated as the reference (truth), and the second two as
     the estimate (prediction).  All 4 sequences must be of the same length.
 
@@ -536,20 +546,6 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_toler
         which est_cent provides a correct frequency values (within
         cent_tolerance), ignoring octave errors
 
-
-    References
-    ----------
-    .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
-        Extraction from Polyphonic Music Signals: Approaches, Applications
-        and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
-        Mar. 2014.
-
-
-    .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
-        Streich, and B. Ong. "Melody transcription from music audio:
-        Approaches and evaluation", IEEE Transactions on Audio, Speech, and
-        Language Processing, 15(4):1247-1256, 2007.
-
     """
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_cent, est_voicing, est_cent)
@@ -564,8 +560,7 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_toler
 
     if sum(nonzero_freqs) == 0:
         return 0.
-    # divisor = np.abs(est_cent[nonzero_freqs]) / ref_cent[nonzero_freqs]
-    # freq_diff_semitones = np.abs(12.0 * np.log2(divisor))
+
     freq_diff_cents = np.abs(ref_cent - est_cent)[nonzero_freqs]
     octave = 1200.0 * np.floor(freq_diff_cents / 1200 + 0.5)
     correct_chroma = np.abs(freq_diff_cents - octave) < cent_tolerance
@@ -611,8 +606,7 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     -------
     overall_accuracy : float
         Overall accuracy, the total fraction of correctly estimates frames,
-        where provides a correct frequency values (within cent_tolerance
-        Hz).
+        where provides a correct frequency values (within cent_tolerance).
 
     """
     validate_voicing(ref_voicing, est_voicing)
@@ -624,8 +618,6 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
         return 0.
 
     nonzero_freqs = np.logical_and(est_cent != 0, ref_cent != 0)
-    # divisor = np.abs(est_cent[nonzero_freqs]) / ref_cent[nonzero_freqs]
-    # freq_diff_semitones = np.abs(12.0 * np.log2(divisor))
     freq_diff_cents = np.abs(ref_cent - est_cent)[nonzero_freqs]
     correct_frequencies = freq_diff_cents < cent_tolerance
     ref_binary = (ref_voicing > 0).astype(float)
@@ -682,6 +674,24 @@ def evaluate(ref_time, ref_freq, est_time, est_freq,
     scores : dict
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
+
+
+    References
+    ----------
+    .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
+        Extraction from Polyphonic Music Signals: Approaches, Applications
+        and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
+        Mar. 2014.
+
+
+    .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
+        Streich, and B. Ong. "Melody transcription from music audio:
+        Approaches and evaluation", IEEE Transactions on Audio, Speech, and
+        Language Processing, 15(4):1247-1256, 2007.
+
+    .. [#] R. Bittner and J. Bosch, "Generalized Metrics for Single-F0
+        Estimation Evaluation", International Society for Music Information
+        Retrieval Conference (ISMIR), 2019.
 
     """
     # Convert to reference/estimated voicing/frequency arrays
