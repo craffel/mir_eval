@@ -323,7 +323,9 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq,
         Array of estimated frequency values
     est_voicing : np.ndarray
         Estimate voicing confidence.
-        Default None, which means the voicing is inferred from ref_freq
+        Default None, which means the voicing is inferred from ref_freq:
+        Frames with frequency = 0.0 are considered "unvoiced", and all other
+        frames are considered "voiced"
     ref_reward : np.ndarray
         Reference voicing reward.
         Default None, which means all frames are weighted equally.
@@ -722,7 +724,9 @@ def evaluate(ref_time, ref_freq, est_time, est_freq,
         Array of estimated frequency values
     est_voicing : np.ndarray
         Estimate voicing confidence.
-        Default None, which means the voicing is inferred from ref_freq
+        Default None, which means the voicing is inferred from ref_freq:
+        Frames with frequency = 0.0 are considered "unvoiced", and all other
+        frames are considered "voiced"
     ref_reward : np.ndarray
         Reference voicing reward.
         Default None, which means all frames are weighted equally.
