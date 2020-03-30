@@ -162,6 +162,8 @@ def freq_to_voicing(frequencies, voicing=None):
         Array of voicing values.
         Default None. If used, this is used as the voicing array, but
         frequencies with value 0 are forced to have 0 voicing.
+        If this is specified, voicing inferred by negative frequency
+        values is ignored.
 
     Returns
     -------
@@ -304,8 +306,10 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq,
 
     A zero frequency indicates "unvoiced".
 
-    A negative frequency indicates "Predicted as unvoiced, but if it's voiced,
-    this is the frequency estimate".
+    If est_voicing is not provided, a negative frequency indicates:
+        "Predicted as unvoiced, but if it's voiced, this is the frequency estimate".
+    If it is provided, negative frequency values are ignored, and the voicing
+        from est_voicing is directly used.
 
     Parameters
     ----------
@@ -676,12 +680,16 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     ref_binary = (ref_voicing > 0).astype(float)
     n_frames = float(len(ref_voicing))
 
+    if np.sum(ref_voicing) == 0:
+        ratio = 0.0
+    else:
+        ratio = (np.sum(ref_binary) / np.sum(ref_voicing))
+
     accuracy = (
         (
-            (np.sum(ref_binary) / np.sum(ref_voicing)) *
-            np.sum(ref_voicing[nonzero_freqs] *
-                   est_voicing[nonzero_freqs] *
-                   correct_frequencies)
+            ratio * np.sum(ref_voicing[nonzero_freqs] *
+                           est_voicing[nonzero_freqs] *
+                           correct_frequencies)
         ) +
         np.sum((1.0 - ref_binary) * (1.0 - est_voicing))
     ) / n_frames
@@ -751,7 +759,7 @@ def evaluate(ref_time, ref_freq, est_time, est_freq,
     (ref_voicing, ref_cent,
      est_voicing, est_cent) = util.filter_kwargs(
          to_cent_voicing, ref_time, ref_freq, est_time, est_freq,
-         ref_reward, est_voicing, **kwargs)
+         est_voicing, ref_reward, **kwargs)
 
     # Compute metrics
     scores = collections.OrderedDict()
