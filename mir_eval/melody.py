@@ -93,6 +93,10 @@ def validate_voicing(ref_voicing, est_voicing):
     if ref_voicing.shape[0] != est_voicing.shape[0]:
         raise ValueError('Reference and estimated voicing arrays should '
                          'be the same length.')
+    for voicing in [ref_voicing, est_voicing]:
+        # Make sure voicing is between 0 and 1
+        if np.logical_or(voicing < 0, voicing > 1).any():
+            raise ValueError('Voicing arrays must be between 0 and 1.')
 
 
 def validate(ref_voicing, ref_cent, est_voicing, est_cent):
@@ -277,7 +281,8 @@ def resample_melody_series(times, frequencies, voicing,
 
     # Use nearest-neighbor for voicing if it was used for frequencies
     # if voicing is not binary, use linear interpolation
-    is_binary_voicing = np.array_equal(np.round(voicing), voicing)
+    is_binary_voicing = np.all(
+        np.logical_or(np.equal(voicing, 0), np.equal(voicing, 1)))
     if kind == 'nearest' or (kind == 'linear' and not is_binary_voicing):
         voicing_resampled = scipy.interpolate.interp1d(times,
                                                        voicing,

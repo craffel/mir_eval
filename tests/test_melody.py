@@ -56,8 +56,6 @@ def test_resample_melody_series():
     (res_cents,
      res_voicing) = mir_eval.melody.resample_melody_series(times, cents,
                                                            voicing, times_new)
-    print(res_cents)
-    print(expected_cents)
     assert np.allclose(res_cents, expected_cents)
     assert np.allclose(res_voicing, expected_voicing)
 
@@ -90,7 +88,8 @@ def test_to_cent_voicing():
     # Expected values
     test_range = np.arange(220, 225)
     expected_ref_v = np.array([False, False, False, True, True])
-    expected_ref_c = np.array([0., 0., 0., 6056.8837818916609, 6028.5504583021921])
+    expected_ref_c = np.array([0., 0., 0., 6056.8837818916609,
+                               6028.5504583021921])
     expected_est_v = np.array([False]*5)
     expected_est_c = np.array([5351.3179423647571]*5)
     assert np.allclose(ref_v[test_range], expected_ref_v)
@@ -114,7 +113,7 @@ def __unit_test_voicing_measures(metric):
         warnings.simplefilter('always')
         # First, test for warnings due to empty voicing arrays
         score = metric(np.array([]), np.array([]))
-        # assert len(w) == 4
+        assert len(w) == 4
         assert np.all([issubclass(wrn.category, UserWarning) for wrn in w])
         assert [str(wrn.message)
                 for wrn in w] == ["Reference voicing array is empty.",
@@ -153,7 +152,6 @@ def __unit_test_melody_function(metric):
         metric(np.ones(10), np.arange(10), np.zeros(10), np.arange(10))
         assert len(w) == 7
         assert issubclass(w[-1].category, UserWarning)
-        print(str(w[-1].message))
         assert str(w[-1].message) == "Estimated melody has no voiced frames."
 
     # Now test validation function - all inputs must be same length
@@ -178,7 +176,7 @@ def test_melody_functions():
                    mir_eval.melody.raw_pitch_accuracy,
                    mir_eval.melody.raw_chroma_accuracy,
                    mir_eval.melody.overall_accuracy]:
-        if (metric == mir_eval.melody.voicing_measures):
+        if metric == mir_eval.melody.voicing_measures:
             yield (__unit_test_voicing_measures, metric)
         else:
             yield (__unit_test_melody_function, metric)
