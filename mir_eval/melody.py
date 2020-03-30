@@ -160,10 +160,13 @@ def freq_to_voicing(frequencies, voicing=None):
         Array of frequencies.  A frequency <= 0 indicates "unvoiced".
     voicing : np.ndarray
         Array of voicing values.
-        Default None. If used, this is used as the voicing array, but
+        (Default value = None)
+        Default None, which means the voicing is inferred from `frequencies`:
+            frames with frequency <= 0.0 are considered "unvoiced"
+            frames with frequency > 0.0 are considered "voiced"
+        If specified, `voicing` is used as the voicing array, but
         frequencies with value 0 are forced to have 0 voicing.
-        If this is specified, voicing inferred by negative frequency
-        values is ignored.
+            Voicing inferred by negative frequency values is ignored.
 
     Returns
     -------
@@ -323,9 +326,9 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq,
         Array of estimated frequency values
     est_voicing : np.ndarray
         Estimate voicing confidence.
-        Default None, which means the voicing is inferred from ref_freq:
-        Frames with frequency = 0.0 are considered "unvoiced", and all other
-        frames are considered "voiced"
+        Default None, which means the voicing is inferred from est_freq:
+            frames with frequency <= 0.0 are considered "unvoiced"
+            frames with frequency > 0.0 are considered "voiced"
     ref_reward : np.ndarray
         Reference voicing reward.
         Default None, which means all frames are weighted equally.
@@ -724,9 +727,9 @@ def evaluate(ref_time, ref_freq, est_time, est_freq,
         Array of estimated frequency values
     est_voicing : np.ndarray
         Estimate voicing confidence.
-        Default None, which means the voicing is inferred from ref_freq:
-        Frames with frequency = 0.0 are considered "unvoiced", and all other
-        frames are considered "voiced"
+        Default None, which means the voicing is inferred from est_freq:
+            frames with frequency <= 0.0 are considered "unvoiced"
+            frames with frequency > 0.0 are considered "voiced"
     ref_reward : np.ndarray
         Reference voicing reward.
         Default None, which means all frames are weighted equally.
