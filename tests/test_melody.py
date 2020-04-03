@@ -69,7 +69,7 @@ def test_resample_melody_series():
     assert np.allclose(res_cents, expected_cents)
     assert np.allclose(res_voicing, expected_voicing)
 
-    # Check for a small example including a zero transition - nonbianary voicing
+    # Check for a small example including a zero transition - nonbinary voicing
     times = np.arange(4)/35.0
     cents = np.array([2., 0., -1., 1.])
     voicing = np.array([0.8, 0.0, 0.2, 1.0])

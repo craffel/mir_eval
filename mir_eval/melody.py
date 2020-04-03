@@ -224,7 +224,8 @@ def resample_melody_series(times, frequencies, voicing,
     frequencies : np.ndarray
         Array of frequency values, >= 0
     voicing : np.ndarray
-        Array which indicates voiced or unvoiced
+        Array which indicates voiced or unvoiced. This array may be binary
+        or have continuous values between 0 and 1.
     times_new : np.ndarray
         Times to resample frequency and voicing sequences to
     kind : str
@@ -523,7 +524,8 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolera
     Parameters
     ----------
     ref_voicing : np.ndarray
-        Reference voicing array
+        Reference voicing array. When this array is non-binary, it is treated
+        as a 'reference reward', as in (Bittner & Bosch, 2019)
     ref_cent : np.ndarray
         Reference pitch sequence in cents
     est_voicing : np.ndarray
@@ -589,7 +591,8 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_toler
     Parameters
     ----------
     ref_voicing : np.ndarray
-        Reference voicing array
+        Reference voicing array. When this array is non-binary, it is treated
+        as a 'reference reward', as in (Bittner & Bosch, 2019)
     ref_cent : np.ndarray
         Reference pitch sequence in cents
     est_voicing : np.ndarray
@@ -652,7 +655,8 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
     Parameters
     ----------
     ref_voicing : np.ndarray
-        Reference voicing array
+        Reference voicing array. When this array is non-binary, it is treated
+        as a 'reference reward', as in (Bittner & Bosch, 2019)
     ref_cent : np.ndarray
         Reference pitch sequence in cents
     est_voicing : np.ndarray
@@ -731,7 +735,7 @@ def evaluate(ref_time, ref_freq, est_time, est_freq,
             frames with frequency <= 0.0 are considered "unvoiced"
             frames with frequency > 0.0 are considered "voiced"
     ref_reward : np.ndarray
-        Reference voicing reward.
+        Reference pitch estimation reward.
         Default None, which means all frames are weighted equally.
     kwargs
         Additional keyword arguments which will be passed to the
