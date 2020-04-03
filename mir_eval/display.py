@@ -648,7 +648,7 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None,
             freqs = hz_to_midi(freqs)
 
         n_voiced = sum(voicings)
-        voiced_times.extend([t] * n_voiced)
+        voiced_times.extend([t] * int(n_voiced))
         voiced_freqs.extend(freqs[voicings])
         unvoiced_times.extend([t] * (len(freqs) - n_voiced))
         unvoiced_freqs.extend(freqs[~voicings])
