@@ -311,7 +311,8 @@ def to_cent_voicing(ref_time, ref_freq, est_time, est_freq,
     A zero frequency indicates "unvoiced".
 
     If est_voicing is not provided, a negative frequency indicates:
-        "Predicted as unvoiced, but if it's voiced, this is the frequency estimate".
+        "Predicted as unvoiced, but if it's voiced,
+         this is the frequency estimate".
     If it is provided, negative frequency values are ignored, and the voicing
         from est_voicing is directly used.
 
@@ -503,7 +504,8 @@ def voicing_measures(ref_voicing, est_voicing):
     return vx_recall, vx_false_alm
 
 
-def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50):
+def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
+                       cent_tolerance=50):
     """Compute the raw pitch accuracy given two pitch (frequency) sequences in
     cents and matching voicing indicator sequences. The first pitch and voicing
     arrays are treated as the reference (truth), and the second two as the
@@ -565,11 +567,15 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolera
 
     freq_diff_cents = np.abs(ref_cent - est_cent)[nonzero_freqs]
     correct_frequencies = freq_diff_cents < cent_tolerance
-    rpa = np.sum(ref_voicing[nonzero_freqs] * correct_frequencies) / np.sum(ref_voicing)
+    rpa = (
+        np.sum(ref_voicing[nonzero_freqs] * correct_frequencies) /
+        np.sum(ref_voicing)
+    )
     return rpa
 
 
-def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50):
+def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
+                        cent_tolerance=50):
     """Compute the raw chroma accuracy given two pitch (frequency) sequences
     in cents and matching voicing indicator sequences. The first pitch and
     voicing arrays are treated as the reference (truth), and the second two as
@@ -629,16 +635,19 @@ def raw_chroma_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_toler
     freq_diff_cents = np.abs(ref_cent - est_cent)[nonzero_freqs]
     octave = 1200.0 * np.floor(freq_diff_cents / 1200 + 0.5)
     correct_chroma = np.abs(freq_diff_cents - octave) < cent_tolerance
-    rca = np.sum(ref_voicing[nonzero_freqs] * correct_chroma) / np.sum(ref_voicing)
+    rca = (
+        np.sum(ref_voicing[nonzero_freqs] * correct_chroma) /
+        np.sum(ref_voicing)
+    )
     return rca
 
 
 def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent,
                      cent_tolerance=50):
-    """Compute the overall accuracy given two pitch (frequency) sequences in cents
-    and matching voicing indicator sequences. The first pitch and voicing
-    arrays are treated as the reference (truth), and the second two as the
-    estimate (prediction).  All 4 sequences must be of the same length.
+    """Compute the overall accuracy given two pitch (frequency) sequences
+    in cents and matching voicing indicator sequences. The first pitch and
+    voicing arrays are treated as the reference (truth), and the second two
+    as the estimate (prediction).  All 4 sequences must be of the same length.
 
     Examples
     --------

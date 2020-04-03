@@ -75,12 +75,15 @@ def test_resample_melody_series():
     voicing = np.array([0.8, 0.0, 0.2, 1.0])
     times_new = np.linspace(0, .08, 9)
     expected_cents = np.array([2., 2., 2., 0., 0., 0., -.8, -.1, .6])
-    expected_voicing = np.array([0.8, 0.52, 0.24, 0.01, 0.08, 0.15, 0.28, 0.56, 0.84])
+    expected_voicing = np.array(
+        [0.8, 0.52, 0.24, 0.01, 0.08, 0.15, 0.28, 0.56, 0.84]
+    )
     (res_cents,
      res_voicing) = mir_eval.melody.resample_melody_series(times, cents,
                                                            voicing, times_new)
     assert np.allclose(res_cents, expected_cents)
     assert np.allclose(res_voicing, expected_voicing)
+
 
 def test_resample_melody_series_same_times():
     # Check the case where the time bases are identical
@@ -142,7 +145,9 @@ def test_to_cent_voicing():
     # Test custom voicings
     ref_time, ref_freq = mir_eval.io.load_time_series(ref_file)
     _, ref_reward = mir_eval.io.load_time_series("data/melody/reward00.txt")
-    _, est_voicing = mir_eval.io.load_time_series("data/melody/voicingest00.txt")
+    _, est_voicing = mir_eval.io.load_time_series(
+        "data/melody/voicingest00.txt"
+    )
     (ref_v, ref_c,
      est_v, est_c) = mir_eval.melody.to_cent_voicing(ref_time,
                                                      ref_freq,
