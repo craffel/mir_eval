@@ -1,6 +1,37 @@
 Changes
 =======
 
+v0.6
+----
+
+- `#297`_: Return 0 when no overlap in transcription_velocity
+- `#299`_: Allow one reference tempo and both estimate tempi to be zero
+- `#301`_: Allow zero tolerance in tempo, but issue a warning
+- `#302`_: Loosen separation test tolerance
+- `#305`_: Use toarray instead of todense for sparse matrices
+- `#307`_: Use tuple index in chord.rotate_bitmap_to_root
+- `#309`_: Require matplotlib <3 for testing
+- `#312`_: Fix raw chroma accuracy for unvoiced estimates
+- `#320`_: Add comment support to io methods
+- `#323`_: Fix interpolation in sonify.time_frequency
+- `#324`_: Add generalized melody metrics 
+- `#327`_: Stop testing 2.7
+- `#328`_: Cast n_voiced to int in display.multipitch
+
+.. _#297: https://github.com/craffel/mir_eval/pull/297
+.. _#299: https://github.com/craffel/mir_eval/pull/299
+.. _#301: https://github.com/craffel/mir_eval/pull/301
+.. _#302: https://github.com/craffel/mir_eval/pull/302
+.. _#305: https://github.com/craffel/mir_eval/pull/305
+.. _#307: https://github.com/craffel/mir_eval/pull/307
+.. _#309: https://github.com/craffel/mir_eval/pull/309
+.. _#312: https://github.com/craffel/mir_eval/pull/312
+.. _#320: https://github.com/craffel/mir_eval/pull/320
+.. _#323: https://github.com/craffel/mir_eval/pull/323
+.. _#324: https://github.com/craffel/mir_eval/pull/324
+.. _#327: https://github.com/craffel/mir_eval/pull/327
+.. _#328: https://github.com/craffel/mir_eval/pull/328
+
 v0.5
 ----
 

@@ -19,4 +19,4 @@ from . import transcription
 from . import transcription_velocity
 from . import key
 
-__version__ = '0.5'
+__version__ = '0.6'
