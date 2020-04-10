@@ -1,0 +1,207 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Changes &#8212; mir_eval 0.6 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="mir_eval Documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="mir_eval Documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">mir_eval 0.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="changes">
+<h1>Changes<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="v0-6">
+<h2>v0.6<a class="headerlink" href="#v0-6" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/297">#297</a>: Return 0 when no overlap in transcription_velocity</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/299">#299</a>: Allow one reference tempo and both estimate tempi to be zero</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/301">#301</a>: Allow zero tolerance in tempo, but issue a warning</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/302">#302</a>: Loosen separation test tolerance</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/305">#305</a>: Use toarray instead of todense for sparse matrices</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/307">#307</a>: Use tuple index in chord.rotate_bitmap_to_root</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/309">#309</a>: Require matplotlib &lt;3 for testing</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/312">#312</a>: Fix raw chroma accuracy for unvoiced estimates</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/320">#320</a>: Add comment support to io methods</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/323">#323</a>: Fix interpolation in sonify.time_frequency</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/324">#324</a>: Add generalized melody metrics</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/327">#327</a>: Stop testing 2.7</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/328">#328</a>: Cast n_voiced to int in display.multipitch</li>
+</ul>
+</div>
+<div class="section" id="v0-5">
+<h2>v0.5<a class="headerlink" href="#v0-5" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/222">#222</a>: added int cast for inferred length in sonify.clicks</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/225">#225</a>: improved t-measures and l-measures</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/227">#227</a>: added marginal flag to segment.nce</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/234">#234</a>: update display to use matplotlib 2</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/236">#236</a>: force integer division in beat.pscore</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/240">#240</a>: fix unit tests for source separation</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/242">#242</a>: use regexp in chord label validation</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/245">#245</a>: add labeled interval formatter to display</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/247">#247</a>: do not sonify negative amplitudes in time_frequency</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/249">#249</a>: support gaps in util.interpolate_intervals</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/252">#252</a>: add modulo and length arguments to chord.scale_degree_to_bitmap</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/254">#254</a>: fix bss_eval_images single-frame fallback documentation</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/255">#255</a>: fix crackle in sonify.time_frequency</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/258">#258</a>: make util.match_events faster</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/259">#259</a>: run pep8 check after nosetests</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/263">#263</a>: add measures for chord over- and under-segmentation</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/266">#266</a>: add amplitude parameter to sonify.pitch_contour</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/268">#268</a>: update display tests to support mpl2.1</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/277">#277</a>: update requirements and fix deprecations</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/279">#279</a>: isolate matplotlib side effects</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/282">#282</a>: remove evaluator scripts</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/283">#283</a>: add transcription eval with velocity</li>
+</ul>
+</div>
+<div class="section" id="v0-4">
+<h2>v0.4<a class="headerlink" href="#v0-4" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/189">#189</a>: expanded transcription metrics</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/195">#195</a>: added pitch contour sonification</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/196">#196</a>: added the <cite>display</cite> submodule</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/203">#203</a>: support unsorted segment intervals</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/205">#205</a>: correction in documentation for <cite>sonify.time_frequency</cite></li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/208">#208</a>: refactored file/buffer loading</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/210">#210</a>: added <cite>io.load_tempo</cite></li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/212">#212</a>: added frame-wise blind-source separation evaluation</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/pull/218">#218</a>: speed up <cite>melody.resample_melody_series</cite> when times are equivalent</li>
+</ul>
+</div>
+<div class="section" id="v0-3">
+<h2>v0.3<a class="headerlink" href="#v0-3" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/170">#170</a>: implemented transcription metrics</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/173">#173</a>: fixed a bug in chord sonification</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/175">#175</a>: filter_kwargs passes through <cite>**kwargs</cite></li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/181">#181</a>: added key detection metrics</li>
+</ul>
+</div>
+<div class="section" id="v0-2">
+<h2>v0.2<a class="headerlink" href="#v0-2" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/103">#103</a>: incomplete files passed to <cite>melody.evaluate</cite> should warn</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/109">#109</a>: <cite>STRICT_BASS_INTERVALS</cite> is now an argument to <cite>chord.encode</cite></li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/122">#122</a>: improved handling of corner cases in beat tracking</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/136">#136</a>: improved test coverage</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/138">#138</a>: PEP8 compliance</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/139">#139</a>: converted documentation to numpydoc style</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/147">#147</a>: fixed a rounding error in segment intervals</li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/150">#150</a>: <cite>sonify.chroma</cite> and <cite>sonify.chords</cite> pass <cite>kwargs</cite> to <cite>time_frequecy</cite></li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/151">#151</a>: removed <cite>labels</cite> support from <cite>util.boundaries_to_intervals</cite></li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/159">#159</a>: fixed documentation error in <cite>chord.tetrads</cite></li>
+<li><a class="reference external" href="https://github.com/craffel/mir_eval/issues/160">#160</a>: fixed documentation error in <cite>util.intervals_to_samples</cite></li>
+</ul>
+</div>
+<div class="section" id="v0-1">
+<h2>v0.1<a class="headerlink" href="#v0-1" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Initial public release.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Changes</a><ul>
+<li><a class="reference internal" href="#v0-6">v0.6</a></li>
+<li><a class="reference internal" href="#v0-5">v0.5</a></li>
+<li><a class="reference internal" href="#v0-4">v0.4</a></li>
+<li><a class="reference internal" href="#v0-3">v0.3</a></li>
+<li><a class="reference internal" href="#v0-2">v0.2</a></li>
+<li><a class="reference internal" href="#v0-1">v0.1</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter"><code class="docutils literal"><span class="pre">mir_eval</span></code> Documentation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/changes.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="mir_eval Documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">mir_eval 0.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, Colin Raffel et al..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>
