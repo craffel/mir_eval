@@ -37,8 +37,10 @@ def validate_key(key):
     key : str
         Key to verify
     """
-    if len(key.split()) != 2 or not (len(key.split()) == 1 and key == "x"):
+    if len(key.split()) != 2 and not (len(key.split()) == 1 and key.lower() == 'x'):
         raise ValueError("'{}' is not in the form '(key) (mode)'".format(key))
+    if key.lower() == 'x':
+        key = key + ' other'
     key, mode = key.split()
     if key.lower() not in KEY_TO_SEMITONE:
         raise ValueError(
@@ -80,6 +82,8 @@ def split_key_string(key):
     mode : str
         String representing the mode.
     """
+    if key.lower() == 'x':
+        key = key + ' other'
     key, mode = key.split()
     return KEY_TO_SEMITONE[key.lower()], 'other' if key.lower() == 'X' else mode
 
