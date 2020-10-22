@@ -24,7 +24,7 @@ from . import util
 
 KEY_TO_SEMITONE = {'c': 0, 'c#': 1, 'db': 1, 'd': 2, 'd#': 3, 'eb': 3, 'e': 4,
                    'f': 5, 'f#': 6, 'gb': 6, 'g': 7, 'g#': 8, 'ab': 8, 'a': 9,
-                   'a#': 10, 'bb': 10, 'b': 11, 'x': -10}
+                   'a#': 10, 'bb': 10, 'b': 11, 'x': None}
 
 
 def validate_key(key):
@@ -130,6 +130,9 @@ def weighted_score(reference_key, estimated_key):
     # If keys are the same, return 1.
     if reference_key == estimated_key and reference_mode == estimated_mode:
         return 1.
+    # If reference or estimated key are x and they are not the same key then the result is 'Other'.
+    if reference_key == 'x' or estimated_key == 'x':
+        return 0.
     # If keys are the same mode and a perfect fifth (differ by 7 semitones)
     if (estimated_mode == reference_mode and
             (estimated_key - reference_key) % 12 == 7):
