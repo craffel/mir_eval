@@ -37,7 +37,7 @@ def validate_key(key):
     key : str
         Key to verify
     """
-    if len(key.split()) != 2 or (len(key.split()) == 1 and key == "x"):
+    if len(key.split()) != 2 or not (len(key.split()) == 1 and key == "x"):
         raise ValueError("'{}' is not in the form '(key) (mode)'".format(key))
     key, mode = key.split()
     if key.lower() not in KEY_TO_SEMITONE:
