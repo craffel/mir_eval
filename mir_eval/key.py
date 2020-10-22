@@ -24,26 +24,28 @@ from . import util
 
 KEY_TO_SEMITONE = {'c': 0, 'c#': 1, 'db': 1, 'd': 2, 'd#': 3, 'eb': 3, 'e': 4,
                    'f': 5, 'f#': 6, 'gb': 6, 'g': 7, 'g#': 8, 'ab': 8, 'a': 9,
-                   'a#': 10, 'bb': 10, 'b': 11}
+                   'a#': 10, 'bb': 10, 'b': 11, 'x': -10}
 
 
 def validate_key(key):
     """Checks that a key is well-formatted, e.g. in the form ``'C# major'``.
+   The Key can be 'X' if it is not possible to categorize the Key. And mode
+   can be 'other' if it can't be categorized as major or minor.
 
     Parameters
     ----------
     key : str
         Key to verify
     """
-    if len(key.split()) != 2:
+    if len(key.split()) != 2 or (len(key.split()) == 1 and key == "x"):
         raise ValueError("'{}' is not in the form '(key) (mode)'".format(key))
     key, mode = key.split()
     if key.lower() not in KEY_TO_SEMITONE:
         raise ValueError(
             "Key {} is invalid; should be e.g. D or C# or Eb".format(key))
-    if mode not in ['major', 'minor']:
+    if mode not in ['major', 'minor', 'other']:
         raise ValueError(
-            "Mode '{}' is invalid; must be 'major' or 'minor'".format(mode))
+            "Mode '{}' is invalid; must be 'major', 'minor' or 'other'".format(mode))
 
 
 def validate(reference_key, estimated_key):
@@ -79,7 +81,7 @@ def split_key_string(key):
         String representing the mode.
     """
     key, mode = key.split()
-    return KEY_TO_SEMITONE[key.lower()], mode
+    return KEY_TO_SEMITONE[key.lower()], 'other' if key.lower() == 'X' else mode
 
 
 def weighted_score(reference_key, estimated_key):
@@ -89,13 +91,13 @@ def weighted_score(reference_key, estimated_key):
     +------------------------------------------------------+-------+
     | Relationship                                         | Score |
     +------------------------------------------------------+-------+
-    | Same key                                             | 1.0   |
+    | Same key and mode                                    | 1.0   |
     +------------------------------------------------------+-------+
     | Estimated key is a perfect fifth above reference key | 0.5   |
     +------------------------------------------------------+-------+
-    | Relative major/minor                                 | 0.3   |
+    | Relative major/minor (same key signature)            | 0.3   |
     +------------------------------------------------------+-------+
-    | Parallel major/minor                                 | 0.2   |
+    | Parallel major/minor (same Key)                      | 0.2   |
     +------------------------------------------------------+-------+
     | Other                                                | 0.0   |
     +------------------------------------------------------+-------+
