@@ -21,7 +21,6 @@ Metrics
 import collections
 from . import util
 
-
 KEY_TO_SEMITONE = {'c': 0, 'c#': 1, 'db': 1, 'd': 2, 'd#': 3, 'eb': 3, 'e': 4,
                    'f': 5, 'f#': 6, 'gb': 6, 'g': 7, 'g#': 8, 'ab': 8, 'a': 9,
                    'a#': 10, 'bb': 10, 'b': 11, 'x': None}
@@ -37,7 +36,8 @@ def validate_key(key):
     key : str
         Key to verify
     """
-    if len(key.split()) != 2 and not (len(key.split()) == 1 and key.lower() == 'x'):
+    if len(key.split()) != 2 \
+            and not (len(key.split()) == 1 and key.lower() == 'x'):
         raise ValueError("'{}' is not in the form '(key) (mode)'".format(key))
     if key.lower() == 'x':
         key = key + ' other'
@@ -47,7 +47,8 @@ def validate_key(key):
             "Key {} is invalid; should be e.g. D or C# or Eb".format(key))
     if mode not in ['major', 'minor', 'other']:
         raise ValueError(
-            "Mode '{}' is invalid; must be 'major', 'minor' or 'other'".format(mode))
+            "Mode '{}' is invalid; must be 'major', 'minor' or 'other'"
+            .format(mode))
 
 
 def validate(reference_key, estimated_key):
@@ -85,7 +86,7 @@ def split_key_string(key):
     if key.lower() == 'x':
         key = key + ' other'
     key, mode = key.split()
-    return KEY_TO_SEMITONE[key.lower()], 'other' if key.lower() == 'X' else mode
+    return KEY_TO_SEMITONE[key.lower()], mode
 
 
 def weighted_score(reference_key, estimated_key):
@@ -130,7 +131,8 @@ def weighted_score(reference_key, estimated_key):
     # If keys are the same, return 1.
     if reference_key == estimated_key and reference_mode == estimated_mode:
         return 1.
-    # If reference or estimated key are x and they are not the same key then the result is 'Other'.
+    # If reference or estimated key are x and they are not the same key
+    # then the result is 'Other'.
     if reference_key == 'x' or estimated_key == 'x':
         return 0.
     # If keys are the same mode and a perfect fifth (differ by 7 semitones)
@@ -183,6 +185,6 @@ def evaluate(reference_key, estimated_key, **kwargs):
     scores = collections.OrderedDict()
 
     scores['Weighted Score'] = util.filter_kwargs(
-            weighted_score, reference_key, estimated_key)
+        weighted_score, reference_key, estimated_key)
 
     return scores
