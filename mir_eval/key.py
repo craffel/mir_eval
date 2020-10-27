@@ -39,13 +39,15 @@ def validate_key(key):
     if len(key.split()) != 2 \
             and not (len(key.split()) == 1 and key.lower() == 'x'):
         raise ValueError("'{}' is not in the form '(key) (mode)'".format(key))
-    if key.lower() == 'x':
-        key = key + ' other'
-    key, mode = key.split()
+    if key.lower() != 'x':
+        key, mode = key.split()
+    else:
+        mode = None
     if key.lower() not in KEY_TO_SEMITONE:
         raise ValueError(
-            "Key {} is invalid; should be e.g. D or C# or Eb".format(key))
-    if mode not in ['major', 'minor', 'other']:
+            "Key {} is invalid; should be e.g. D or C# or Eb or "
+            "X (Uncategorized)".format(key))
+    if key.lower() != 'x' and mode not in ['major', 'minor', 'other']:
         raise ValueError(
             "Mode '{}' is invalid; must be 'major', 'minor' or 'other'"
             .format(mode))
@@ -83,9 +85,10 @@ def split_key_string(key):
     mode : str
         String representing the mode.
     """
-    if key.lower() == 'x':
-        key = key + ' other'
-    key, mode = key.split()
+    if key.lower() != 'x':
+        key, mode = key.split()
+    else:
+        mode = None
     return KEY_TO_SEMITONE[key.lower()], mode
 
 
@@ -133,7 +136,8 @@ def weighted_score(reference_key, estimated_key):
         return 1.
     # If reference or estimated key are x and they are not the same key
     # then the result is 'Other'.
-    if reference_key == 'x' or estimated_key == 'x':
+    if reference_key == 'X' or estimated_key == 'X' \
+            or reference_key == 'x' or estimated_key == 'x':
         return 0.
     # If keys are the same mode and a perfect fifth (differ by 7 semitones)
     if (estimated_mode == reference_mode and
