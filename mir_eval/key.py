@@ -38,19 +38,22 @@ def validate_key(key):
     """
     if len(key.split()) != 2 \
             and not (len(key.split()) == 1 and key.lower() == 'x'):
-        raise ValueError("'{}' is not in the form '(key) (mode)'".format(key))
+        raise ValueError("'{}' is not in the form '(key) (mode)' or 'X'".format(key))
     if key.lower() != 'x':
         key, mode = key.split()
-    else:
-        mode = None
-    if key.lower() not in KEY_TO_SEMITONE:
-        raise ValueError(
-            "Key {} is invalid; should be e.g. D or C# or Eb or "
-            "X (Uncategorized)".format(key))
-    if key.lower() != 'x' and mode not in ['major', 'minor', 'other']:
-        raise ValueError(
-            "Mode '{}' is invalid; must be 'major', 'minor' or 'other'"
-            .format(mode))
+
+        if key.lower() == 'x':
+            raise ValueError(
+                "Mode {} is invalid; 'X' (Uncategorized) "
+                "doesn't have mode".format(mode))
+        if key.lower() not in KEY_TO_SEMITONE:
+            raise ValueError(
+                "Key {} is invalid; should be e.g. D or C# or Eb or "
+                "X (Uncategorized)".format(key))
+        if mode not in ['major', 'minor', 'other']:
+            raise ValueError(
+                "Mode '{}' is invalid; must be 'major', 'minor' or 'other'"
+                .format(mode))
 
 
 def validate(reference_key, estimated_key):

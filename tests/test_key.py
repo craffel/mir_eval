@@ -19,9 +19,10 @@ SCORES_GLOB = 'data/key/output*.json'
 def __unit_test_key_function(metric):
 
     good_keys = ['C major', 'c major', 'C# major', 'Bb minor',
-                 'db minor', 'X', 'C other']
+                 'db minor', 'X', 'x', 'C other']
     # All of these are invalid key strings
-    bad_keys = ['C maj', 'Cb major', 'C', 'K major', 'F## minor']
+    bad_keys = ['C maj', 'Cb major', 'C', 'K major', 'F## minor'
+                'X other', 'x minor']
 
     for good_key in good_keys:
         for bad_key in bad_keys:
