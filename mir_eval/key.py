@@ -37,7 +37,7 @@ def validate_key(key):
         Key to verify
     """
     if len(key.split()) != 2 \
-            and not (len(key.split()) == 1 and key.lower() == 'x'):
+            and not (len(key.split()) and key.lower() == 'x'):
         raise ValueError("'{}' is not in the form '(key) (mode)' "
                          "or 'X'".format(key))
     if key.lower() != 'x':
