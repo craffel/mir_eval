@@ -21,29 +21,40 @@ Metrics
 import collections
 from . import util
 
-
 KEY_TO_SEMITONE = {'c': 0, 'c#': 1, 'db': 1, 'd': 2, 'd#': 3, 'eb': 3, 'e': 4,
                    'f': 5, 'f#': 6, 'gb': 6, 'g': 7, 'g#': 8, 'ab': 8, 'a': 9,
-                   'a#': 10, 'bb': 10, 'b': 11}
+                   'a#': 10, 'bb': 10, 'b': 11, 'x': None}
 
 
 def validate_key(key):
     """Checks that a key is well-formatted, e.g. in the form ``'C# major'``.
+   The Key can be 'X' if it is not possible to categorize the Key and mode
+   can be 'other' if it can't be categorized as major or minor.
 
     Parameters
     ----------
     key : str
         Key to verify
     """
-    if len(key.split()) != 2:
-        raise ValueError("'{}' is not in the form '(key) (mode)'".format(key))
-    key, mode = key.split()
-    if key.lower() not in KEY_TO_SEMITONE:
-        raise ValueError(
-            "Key {} is invalid; should be e.g. D or C# or Eb".format(key))
-    if mode not in ['major', 'minor']:
-        raise ValueError(
-            "Mode '{}' is invalid; must be 'major' or 'minor'".format(mode))
+    if len(key.split()) != 2 \
+            and not (len(key.split()) and key.lower() == 'x'):
+        raise ValueError("'{}' is not in the form '(key) (mode)' "
+                         "or 'X'".format(key))
+    if key.lower() != 'x':
+        key, mode = key.split()
+
+        if key.lower() == 'x':
+            raise ValueError(
+                "Mode {} is invalid; 'X' (Uncategorized) "
+                "doesn't have mode".format(mode))
+        if key.lower() not in KEY_TO_SEMITONE:
+            raise ValueError(
+                "Key {} is invalid; should be e.g. D or C# or Eb or "
+                "X (Uncategorized)".format(key))
+        if mode not in ['major', 'minor', 'other']:
+            raise ValueError(
+                "Mode '{}' is invalid; must be 'major', 'minor' or 'other'"
+                .format(mode))
 
 
 def validate(reference_key, estimated_key):
@@ -78,7 +89,10 @@ def split_key_string(key):
     mode : str
         String representing the mode.
     """
-    key, mode = key.split()
+    if key.lower() != 'x':
+        key, mode = key.split()
+    else:
+        mode = None
     return KEY_TO_SEMITONE[key.lower()], mode
 
 
@@ -89,13 +103,13 @@ def weighted_score(reference_key, estimated_key):
     +------------------------------------------------------+-------+
     | Relationship                                         | Score |
     +------------------------------------------------------+-------+
-    | Same key                                             | 1.0   |
+    | Same key and mode                                    | 1.0   |
     +------------------------------------------------------+-------+
     | Estimated key is a perfect fifth above reference key | 0.5   |
     +------------------------------------------------------+-------+
-    | Relative major/minor                                 | 0.3   |
+    | Relative major/minor (same key signature)            | 0.3   |
     +------------------------------------------------------+-------+
-    | Parallel major/minor                                 | 0.2   |
+    | Parallel major/minor (same key)                      | 0.2   |
     +------------------------------------------------------+-------+
     | Other                                                | 0.0   |
     +------------------------------------------------------+-------+
@@ -124,6 +138,10 @@ def weighted_score(reference_key, estimated_key):
     # If keys are the same, return 1.
     if reference_key == estimated_key and reference_mode == estimated_mode:
         return 1.
+    # If reference or estimated key are x and they are not the same key
+    # then the result is 'Other'.
+    if reference_key is None or estimated_key is None:
+        return 0.
     # If keys are the same mode and a perfect fifth (differ by 7 semitones)
     if (estimated_mode == reference_mode and
             (estimated_key - reference_key) % 12 == 7):
@@ -174,6 +192,6 @@ def evaluate(reference_key, estimated_key, **kwargs):
     scores = collections.OrderedDict()
 
     scores['Weighted Score'] = util.filter_kwargs(
-            weighted_score, reference_key, estimated_key)
+        weighted_score, reference_key, estimated_key)
 
     return scores
