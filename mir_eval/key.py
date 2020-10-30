@@ -140,8 +140,7 @@ def weighted_score(reference_key, estimated_key):
         return 1.
     # If reference or estimated key are x and they are not the same key
     # then the result is 'Other'.
-    if reference_key == 'x' or estimated_key == 'x'\
-            or reference_key == 'X' or estimated_key == 'X':
+    if not reference_key or not estimated_key:
         return 0.
     # If keys are the same mode and a perfect fifth (differ by 7 semitones)
     if (estimated_mode == reference_mode and
