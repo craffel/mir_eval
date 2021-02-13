@@ -101,9 +101,11 @@ def validate(ref_time, ref_freqs, est_time, est_freqs):
                                   allow_negatives=False)
 
 
-def resample_multipitch(times, frequencies, target_times):
+def resample_multipitch(times, frequencies, target_times, gap_tolerance=None):
     """Resamples multipitch time series to a new timescale. Values in
     ``target_times`` outside the range of ``times`` return no pitch estimate.
+    Values in ``target_times`` with a nearest neighbor ''times'' difference
+    larger than ''gap_tolerance'' will also return no pitch estimate.
 
     Parameters
     ----------
@@ -113,6 +115,8 @@ def resample_multipitch(times, frequencies, target_times):
         List of np.ndarrays of frequency values
     target_times : np.ndarray
         Array of target time stamps
+    gap_tolerance : float or None (optional)
+        Largest tolerated gap before empty estimates are inserted
 
     Returns
     -------
@@ -126,6 +130,35 @@ def resample_multipitch(times, frequencies, target_times):
         return [np.array([])]*len(target_times)
 
     n_times = len(frequencies)
+
+    if gap_tolerance is not None:
+        # Check which index boundaries have time difference larger than tolerated
+        gap_indices = (times[1:] - times[:-1]) > gap_tolerance
+        # Offset the indices by one and extract them
+        gap_indices = np.where(np.append([False], gap_indices))[0]
+
+        offset = 0
+
+        # Loop through the gaps and insert new sample(s) for padding
+        for i in range(len(gap_indices)):
+            gap = gap_indices[i] + offset
+            time_before, time_after = times[gap - 1], times[gap]
+
+            if time_after - time_before <= 2 * gap_tolerance:
+                # Only one new sample is necessary, split difference
+                new_times = [time_before + (time_after - time_before) / 2]
+                new_freqs = [np.array([])]
+            else:
+                # Add new samples at the tolerated gaps
+                new_times = [time_before + gap_tolerance, time_after - gap_tolerance]
+                new_freqs = [np.array([])] * 2
+
+            times = np.insert(times, gap, new_times)
+            frequencies = frequencies[:gap] + new_freqs + frequencies[gap:]
+
+            offset = len(frequencies) - n_times
+
+        n_times += offset
 
     # scipy's interpolate doesn't handle ragged arrays. Instead, we interpolate
     # the frequency index and then map back to the frequency values.

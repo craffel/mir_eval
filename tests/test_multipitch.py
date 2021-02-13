@@ -77,10 +77,50 @@ def test_resample_multif0():
     actual_freqs4 = mir_eval.multipitch.resample_multipitch(
         empty_times, empty_freqs, target_times1)
 
+    times = np.array([0.00, 0.03, 0.07])
+    freqs = [
+        np.array([200.]),
+        np.array([400.]),
+        np.array([200.])
+    ]
+    target_times5 = np.array([0.00, 0.01, 0.02, 0.03,
+                              0.04, 0.05, 0.06, 0.07])
+    target_times6 = np.array([0.00, 0.007, 0.015, 0.023,
+                              0.03, 0.04, 0.05, 0.06, 0.07])
+
+    expected_freqs5 = [
+        np.array([200.]),
+        np.array([]),
+        np.array([]),
+        np.array([400.]),
+        np.array([]),
+        np.array([]),
+        np.array([]),
+        np.array([200.])
+    ]
+    expected_freqs6 = [
+        np.array([200.]),
+        np.array([200.]),
+        np.array([]),
+        np.array([400.]),
+        np.array([400.]),
+        np.array([]),
+        np.array([]),
+        np.array([]),
+        np.array([200.])
+    ]
+
+    actual_freqs5 = mir_eval.multipitch.resample_multipitch(
+        times, freqs, target_times5, 0.005)
+    actual_freqs6 = mir_eval.multipitch.resample_multipitch(
+        times, freqs, target_times6, 0.015)
+
     assert __frequencies_equal(actual_freqs1, expected_freqs1)
     assert __frequencies_equal(actual_freqs2, expected_freqs2)
     assert __frequencies_equal(actual_freqs3, expected_freqs3)
     assert __frequencies_equal(actual_freqs4, expected_freqs4)
+    assert __frequencies_equal(actual_freqs5, expected_freqs5)
+    assert __frequencies_equal(actual_freqs6, expected_freqs6)
 
 
 def test_frequencies_to_midi():
