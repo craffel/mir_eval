@@ -129,9 +129,9 @@ def resample_multipitch(times, frequencies, target_times):
     if not np.allclose(np.diff(times), np.diff(times).mean()):
         warnings.warn(
             "Non-uniform timescale passed to resample_multipitch.  Pitch "
-            "will be linearly interpolated, which will result in undesirable "
-            "behavior if silences are indicated by missing values.  Silences "
-            "should be indicated by nonpositive frequency values.")
+            "will be nearest-neighbor interpolated, which will result in "
+            "undesirable behavior if silences are indicated by missing values."
+            "  Silences should be indicated by nonpositive frequency values.")
 
     n_times = len(frequencies)
 
