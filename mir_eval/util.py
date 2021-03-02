@@ -976,13 +976,14 @@ def estimate_hop_length(times):
     # Make sure the times are sorted
     times = np.sort(times)
 
-    # Estimate the hop in seconds
+    # Determine where there are no gaps
     non_gaps = np.append([False], np.isclose(np.diff(times, n=2), 0))
 
     if not np.sum(non_gaps):
         raise ValueError("Time observations are too irregular.")
 
-    return np.diff(times)[non_gaps].mean()
+    # Take the median of the time differences at non-gaps
+    return np.median(np.diff(times)[non_gaps])
 
 
 def time_series_to_uniform(times, values, hop_length=None, duration=None):
@@ -992,12 +993,13 @@ def time_series_to_uniform(times, values, hop_length=None, duration=None):
     ----------
     times : ndarray
         Array of times corresponding to a time series
-    values : ndarray
+    values : list of ndarray
         Observations made at times
     hop_length : number or None (optional)
         Time interval (seconds) between each observation in the uniform series
-    duration : number of None
+    duration : number or None (optional)
         Total length (seconds) of times series
+        If specified, should be greater than all observation times
 
     Returns
     -------
@@ -1007,6 +1009,9 @@ def time_series_to_uniform(times, values, hop_length=None, duration=None):
         Observations corresponding to uniform times
     """
 
+    if not len(times) and duration is None:
+        return np.array([]), []
+
     if hop_length is None:
         # If a hop length is not provided, estimate it and throw a warning
         warnings.warn(
@@ -1014,14 +1019,20 @@ def time_series_to_uniform(times, values, hop_length=None, duration=None):
             "unwanted behavior if the observation times are sporadic or irregular.")
         hop_length = estimate_hop_length(times)
 
+    # Add an extra entry when duration is unknown
+    extra = 0
+
     if duration is None:
         # Default the duration to the last reported time in the series
         duration = times[-1]
+        extra += 1
 
     # Determine the total number of observations in the uniform time series
-    num_entries = int(np.ceil(duration / hop_length))
+    num_entries = int(np.ceil(duration / hop_length)) + extra
 
-    new_values = [np.array([])] * num_entries
+    # Attempt to fill in blank frames with the appropriate value
+    empty_fill = np.array([])
+    new_values = [empty_fill] * num_entries
     new_times = hop_length * np.arange(num_entries)
 
     # Determine which indices the provided observations fall under
@@ -1029,7 +1040,7 @@ def time_series_to_uniform(times, values, hop_length=None, duration=None):
 
     # Fill the observed values into their respective locations in the uniform series
     for i in range(len(idcs)):
-        if times[i] < duration:
+        if times[i] <= duration:
             new_values[idcs[i]] = values[i]
 
     return new_times, new_values
