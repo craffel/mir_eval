@@ -336,22 +336,54 @@ def evaluate(ref_intervals, ref_pitches, ref_velocities, est_intervals,
 
     # Precision, recall and f-measure taking note offsets into account
     kwargs.setdefault('offset_ratio', 0.2)
+    orig_offset_ratio = kwargs['offset_ratio']
     if kwargs['offset_ratio'] is not None:
-        (scores['Precision'],
-         scores['Recall'],
-         scores['F-measure'],
-         scores['Average_Overlap_Ratio']) = util.filter_kwargs(
+        (scores['Precision_onset_offset_velocity'],
+         scores['Recall_onset_offset_velocity'],
+         scores['F-measure_onset_offset_velocity'],
+         scores['Average_Overlap_Ratio_onset_offset_velocity']) = util.filter_kwargs(
              precision_recall_f1_overlap, ref_intervals, ref_pitches,
              ref_velocities, est_intervals, est_pitches, est_velocities,
              **kwargs)
 
+        (scores['Precision_onset_offset'],
+         scores['Recall_onset_offset'],
+         scores['F-measure_onset_offset'],
+         scores['Average_Overlap_Ratio_onset_offset']) = util.filter_kwargs(
+            transcription.precision_recall_f1_overlap, ref_intervals, ref_pitches,
+            est_intervals, est_pitches, **kwargs)
+
     # Precision, recall and f-measure NOT taking note offsets into account
     kwargs['offset_ratio'] = None
-    (scores['Precision_no_offset'],
-     scores['Recall_no_offset'],
-     scores['F-measure_no_offset'],
-     scores['Average_Overlap_Ratio_no_offset']) = util.filter_kwargs(
+    (scores['Precision_onset_velocity'],
+     scores['Recall_onset_velocity'],
+     scores['F-measure_onset_velocity'],
+     scores['Average_Overlap_Ratio_onset_velocity']) = util.filter_kwargs(
          precision_recall_f1_overlap, ref_intervals, ref_pitches,
          ref_velocities, est_intervals, est_pitches, est_velocities, **kwargs)
+
+    (scores['Precision_onset'],
+     scores['Recall_onset'],
+     scores['F-measure_onset'],
+     scores['Average_Overlap_Ratio_onset']) = (
+        util.filter_kwargs(transcription.precision_recall_f1_overlap,
+                           ref_intervals, ref_pitches,
+                           est_intervals, est_pitches, **kwargs))
+
+    # onset-only metrics
+    (scores['Onset_Precision'],
+     scores['Onset_Recall'],
+     scores['Onset_F-measure']) = (
+        util.filter_kwargs(transcription.onset_precision_recall_f1,
+                           ref_intervals, est_intervals, **kwargs))
+
+    # offset-only metrics
+    kwargs['offset_ratio'] = orig_offset_ratio
+    if kwargs['offset_ratio'] is not None:
+        (scores['Offset_Precision'],
+         scores['Offset_Recall'],
+         scores['Offset_F-measure']) = (
+            util.filter_kwargs(transcription.offset_precision_recall_f1,
+                               ref_intervals, est_intervals, **kwargs))
 
     return scores

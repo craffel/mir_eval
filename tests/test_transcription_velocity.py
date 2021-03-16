@@ -7,9 +7,9 @@ from nose.tools import raises
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'data/transcription_velocity/ref*.txt'
-EST_GLOB = 'data/transcription_velocity/est*.txt'
-SCORES_GLOB = 'data/transcription_velocity/output*.json'
+REF_GLOB = 'tests/data/transcription_velocity/ref*.txt'
+EST_GLOB = 'tests/data/transcription_velocity/est*.txt'
+SCORES_GLOB = 'tests/data/transcription_velocity/output*.json'
 
 
 def test_negative_velocity():
