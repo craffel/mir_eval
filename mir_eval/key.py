@@ -119,6 +119,8 @@ def weighted_score(reference_key, estimated_key,
     When specifying allow_descending_fifths=True, the scoring changes so that
     keys that are a perfect fifth above or below the reference key score 0.5
     points. This is consistent with the scoring used for MIREX since 2017.
+    In the future, the default behaviour will change to use the new method by
+    default.
 
     Examples
     --------
@@ -146,7 +148,8 @@ def weighted_score(reference_key, estimated_key,
     if not allow_descending_fifths:
         warnings.warn('The selected key scoring method does not match that '\
             'currently used by MIREX. To use the same method, specify '\
-            'allow_descending_fifths=True.')
+            'allow_descending_fifths=True. The default behaviour will '\
+            'change to allow_descending_fifths=True in the future.')
 
     validate(reference_key, estimated_key)
     reference_key, reference_mode = split_key_string(reference_key)
