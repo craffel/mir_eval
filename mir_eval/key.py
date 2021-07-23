@@ -19,6 +19,7 @@ Metrics
 '''
 
 import collections
+import warnings
 from . import util
 
 KEY_TO_SEMITONE = {'c': 0, 'c#': 1, 'db': 1, 'd': 2, 'd#': 3, 'eb': 3, 'e': 4,
@@ -96,7 +97,8 @@ def split_key_string(key):
     return KEY_TO_SEMITONE[key.lower()], mode
 
 
-def weighted_score(reference_key, estimated_key):
+def weighted_score(reference_key, estimated_key,
+                   allow_descending_fifths=False):
     """Computes a heuristic score which is weighted according to the
     relationship of the reference and estimated key, as follows:
 
@@ -114,11 +116,16 @@ def weighted_score(reference_key, estimated_key):
     | Other                                                | 0.0   |
     +------------------------------------------------------+-------+
 
+    When specifying allow_descending_fifths=True, the scoring changes so that
+    keys that are a perfect fifth above or below the reference key score 0.5
+    points. This is consistent with the scoring used for MIREX since 2017.
+
     Examples
     --------
     >>> ref_key = mir_eval.io.load_key('ref.txt')
     >>> est_key = mir_eval.io.load_key('est.txt')
-    >>> score = mir_eval.key.weighted_score(ref_key, est_key)
+    >>> score = mir_eval.key.weighted_score(ref_key, est_key,
+    ...                                     allow_descending_fifths=True)
 
     Parameters
     ----------
@@ -126,12 +133,21 @@ def weighted_score(reference_key, estimated_key):
         Reference key string.
     estimated_key : str
         Estimated key string.
+    allow_descending_fifths : bool
+        Specifies whether to score descending fifth errors or not.
 
     Returns
     -------
     score : float
         Score representing how closely related the keys are.
     """
+    # Notify users of difference between default behaviour in mir_eval and
+    # the scoring used by MIREX since 2017
+    if not allow_descending_fifths:
+        warnings.warn('The selected key scoring method does not match that '\
+            'currently used by MIREX. To use the same method, specify '\
+            'allow_descending_fifths=True.')
+
     validate(reference_key, estimated_key)
     reference_key, reference_mode = split_key_string(reference_key)
     estimated_key, estimated_mode = split_key_string(estimated_key)
@@ -142,9 +158,13 @@ def weighted_score(reference_key, estimated_key):
     # then the result is 'Other'.
     if reference_key is None or estimated_key is None:
         return 0.
-    # If keys are the same mode and a perfect fifth (differ by 7 semitones)
+    # If keys are the same mode and a perfect fifth up (7 semitones)
     if (estimated_mode == reference_mode and
             (estimated_key - reference_key) % 12 == 7):
+        return 0.5
+    # If keys are the same mode and a perfect fifth down (7 semitones)
+    if (allow_descending_fifths and estimated_mode == reference_mode and
+            (reference_key - estimated_key) % 12 == 7):
         return 0.5
     # Estimated key is relative minor of reference key (9 semitones)
     if (estimated_mode != reference_mode == 'major' and
@@ -161,23 +181,25 @@ def weighted_score(reference_key, estimated_key):
     return 0.
 
 
-def evaluate(reference_key, estimated_key, **kwargs):
+def evaluate(reference_key, estimated_key, allow_descending_fifths=False,
+             **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
     --------
     >>> ref_key = mir_eval.io.load_key('reference.txt')
     >>> est_key = mir_eval.io.load_key('estimated.txt')
-    >>> scores = mir_eval.key.evaluate(ref_key, est_key)
+    >>> scores = mir_eval.key.evaluate(ref_key, est_key
+    ...                                allow_descending_fifths=True)
 
     Parameters
     ----------
     ref_key : str
         Reference key string.
-
     ref_key : str
         Estimated key string.
-
+    allow_descending_fifths : bool
+        Specifies whether to score descending fifth errors or not.
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -192,6 +214,6 @@ def evaluate(reference_key, estimated_key, **kwargs):
     scores = collections.OrderedDict()
 
     scores['Weighted Score'] = util.filter_kwargs(
-        weighted_score, reference_key, estimated_key)
+        weighted_score, reference_key, estimated_key, allow_descending_fifths)
 
     return scores
