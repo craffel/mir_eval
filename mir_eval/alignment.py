@@ -38,10 +38,11 @@ References
   .. [#dzhambazov2017] G. Dzhambazov.
     "Knowledge-Based Probabilistic Modeling For Tracking Lyrics In Music Audio Signals",
     PhD Thesis, 2017.
-'''
 
-"User-centered evaluation of lyrics to audio alignment",
-N. Lizé-Masclef, A. Vaglio, M. Moussallam, ISMIR 2021
+  .. [#fujihara2011] H. Fujihara, M. Goto, J. Ogata, H. Okuno.
+    "LyricSynchronizer: Automatic synchronization system between musical audio signals and lyrics",
+    IEEE Journal of Selected Topics in Signal Processing, VOL. 5, NO. 6, 2011
+
 """
 
 import collections
@@ -169,6 +170,9 @@ def pcs(reference_timestamps, estimated_timestamps, duration: float):
     the following (start, end) boundaries: (0, t1), (t1, t2), ... (tN, duration).
     The metric then calculates the percentage of overlap between correct segments compared to the
     total duration.
+
+    This metric is based on the paper
+    "LyricSynchronizer: Automatic synchronization system between musical audio signals and lyrics"
 
     Examples
     --------
