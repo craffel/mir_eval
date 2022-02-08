@@ -23,6 +23,25 @@ end time) pairs
 * :func:`mir_eval.alignment.perceptual_metric`: metric based on human synchronicity perception as
 measured in the paper "User-centered evaluation of lyrics to audio alignment",
 N. Lizé-Masclef, A. Vaglio, M. Moussallam, ISMIR 2021
+
+References
+----------
+  .. [#lizemasclef2021] N. Lizé-Masclef, A. Vaglio, M. Moussallam.
+    "User-centered evaluation of lyrics to audio alignment",
+    International Society for Music Information Retrieval (ISMIR) conference,
+    2021.
+
+  .. [#mauch2010] M. Mauch, F: Hiromasa, M. Goto.
+    "Lyrics-to-audio alignment and phrase-level segmentation using incomplete internet-style chord annotations",
+    Frontiers in Proceedings of the Sound Music Computing Conference (SMC), 2010.
+
+  .. [#dzhambazov2017] G. Dzhambazov.
+    "Knowledge-Based Probabilistic Modeling For Tracking Lyrics In Music Audio Signals",
+    PhD Thesis, 2017.
+'''
+
+"User-centered evaluation of lyrics to audio alignment",
+N. Lizé-Masclef, A. Vaglio, M. Moussallam, ISMIR 2021
 """
 
 import collections
