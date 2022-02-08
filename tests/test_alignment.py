@@ -60,7 +60,12 @@ def test_alignment_functions():
         estimated_alignments = mir_eval.io.load_events(est_f)
         # Compute scores
         # Setup some total duration
-        duration = max(np.max(reference_alignments), np.max(estimated_alignments)) + 10
+        if ref_f.__contains__("_mirex"):
+            # MIREX code test case has this specific duration and computes PCS based on token
+            # segments
+            duration = 11.911836
+        else:
+            duration = max(np.max(reference_alignments), np.max(estimated_alignments)) + 10
         scores = mir_eval.alignment.evaluate(reference_alignments, estimated_alignments, duration)
         # Compare them
         for metric in scores:

@@ -163,9 +163,12 @@ def pc(reference_timestamps, estimated_timestamps, window=0.3):
     return np.mean(deviations <= window)
 
 
-def pcs(reference_timestamps, estimated_timestamps, duration=None):
-    """Constructs segments out of predicted and estimated timestamps separately, then calculates
-    the percentage of overlap between correct segments compared to the total duration
+def pcs(reference_timestamps, estimated_timestamps, duration: float):
+    """Constructs segments out of predicted and estimated timestamps separately
+    out of each given timestamp vector with entries (t1,t2, ... tN), yielding segments with
+    the following (start, end) boundaries: (0, t1), (t1, t2), ... (tN, duration).
+    The metric then calculates the percentage of overlap between correct segments compared to the
+    total duration.
 
     Examples
     --------
@@ -255,14 +258,14 @@ def perceptual_metric(reference_timestamps, estimated_timestamps):
     return np.mean(perceptual_score)
 
 
-def evaluate(reference_timestamps, estimated_timestamps, duration, **kwargs):
+def evaluate(reference_timestamps, estimated_timestamps, duration: float, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
     Examples
     --------
     >>> reference_timestamps = mir_eval.io.load_events('reference.txt')
     >>> estimated_timestamps = mir_eval.io.load_events('estimated.txt')
     >>> duration = max(np.max(reference_timestamps), np.max(estimated_timestamps)) + 10
-    >>> scores = mir_eval.align.pcs(reference_onsets, estimated_timestamps, duration)
+    >>> scores = mir_eval.align.evaluate(reference_onsets, estimated_timestamps, duration)
 
     Parameters
     ----------
