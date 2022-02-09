@@ -70,7 +70,7 @@ def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray)
         )
     if not isinstance(estimated_timestamps, np.ndarray):
         raise ValueError(
-            f"Estimate timestamps need to be a numpy array, but got {type(estimated_timestamps)}"
+            f"Estimated timestamps need to be a numpy array, but got {type(estimated_timestamps)}"
         )
     if reference_timestamps.ndim != 1:
         raise ValueError(
@@ -79,7 +79,7 @@ def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray)
         )
     if estimated_timestamps.ndim != 1:
         raise ValueError(
-            "Estimate timestamps need to be a one-dimensional vector, but got"
+            "Estimated timestamps need to be a one-dimensional vector, but got"
             f" {estimated_timestamps.ndim} dimensions"
         )
 
@@ -97,13 +97,13 @@ def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray)
     if not np.all(reference_timestamps[1:] - reference_timestamps[:-1] >= 0):
         raise ValueError("Reference timestamps are not monotonically increasing!")
     if not np.all(estimated_timestamps[1:] - estimated_timestamps[:-1] >= 0):
-        raise ValueError("Estimate timestamps are not monotonically increasing!")
+        raise ValueError("Estimated timestamps are not monotonically increasing!")
 
     # Check positivity (need for correct PCS metric calculation)
     if not np.all(reference_timestamps >= 0):
         raise ValueError("Reference timestamps can not be below 0!")
     if not np.all(estimated_timestamps >= 0):
-        raise ValueError("Estimate timestamps can not be below 0!")
+        raise ValueError("Estimated timestamps can not be below 0!")
 
 
 def ae(reference_timestamps, estimated_timestamps):
@@ -202,7 +202,7 @@ def pcs(reference_timestamps, estimated_timestamps, duration: float):
         f"larger than duration {duration}"
     )
     assert np.max(estimated_timestamps) <= duration, (
-        "Expected largest estimate timestamp "
+        "Expected largest estimated timestamp "
         f"{np.max(estimated_timestamps)} to not be "
         f"larger than duration {duration}"
     )
