@@ -32,7 +32,8 @@ References
     2021.
 
   .. [#mauch2010] M. Mauch, F: Hiromasa, M. Goto.
-    "Lyrics-to-audio alignment and phrase-level segmentation using incomplete internet-style chord annotations",
+    "Lyrics-to-audio alignment and phrase-level segmentation using
+    incomplete internet-style chord annotations",
     Frontiers in Proceedings of the Sound Music Computing Conference (SMC), 2010.
 
   .. [#dzhambazov2017] G. Dzhambazov.
@@ -53,7 +54,9 @@ from scipy.stats import skewnorm
 from mir_eval.util import filter_kwargs
 
 
-def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray):
+def validate(
+    reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray
+):
     """Checks that the input annotations to a metric look like valid onset time
     arrays, and throws helpful errors if not.
 
@@ -67,11 +70,13 @@ def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray)
     # We need to have 1D numpy arrays
     if not isinstance(reference_timestamps, np.ndarray):
         raise ValueError(
-            f"Reference timestamps need to be a numpy array, but got {type(reference_timestamps)}"
+            "Reference timestamps need to be a numpy array, but got"
+            f" {type(reference_timestamps)}"
         )
     if not isinstance(estimated_timestamps, np.ndarray):
         raise ValueError(
-            f"Estimated timestamps need to be a numpy array, but got {type(estimated_timestamps)}"
+            "Estimated timestamps need to be a numpy array, but got"
+            f" {type(estimated_timestamps)}"
         )
     if reference_timestamps.ndim != 1:
         raise ValueError(
@@ -89,16 +94,20 @@ def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray)
         raise ValueError("Reference timestamps are empty.")
     if estimated_timestamps.size != reference_timestamps.size:
         raise ValueError(
-            "Number of timestamps must be the same in prediction and ground truth, "
-            f"but found {estimated_timestamps.size} in prediction and "
-            f"{reference_timestamps.size} in ground truth"
+            "Number of timestamps must be the same in prediction and ground"
+            f" truth, but found {estimated_timestamps.size} in prediction and"
+            f" {reference_timestamps.size} in ground truth"
         )
 
     # Check monotonicity
     if not np.all(reference_timestamps[1:] - reference_timestamps[:-1] >= 0):
-        raise ValueError("Reference timestamps are not monotonically increasing!")
+        raise ValueError(
+            "Reference timestamps are not monotonically increasing!"
+        )
     if not np.all(estimated_timestamps[1:] - estimated_timestamps[:-1] >= 0):
-        raise ValueError("Estimated timestamps are not monotonically increasing!")
+        raise ValueError(
+            "Estimated timestamps are not monotonically increasing!"
+        )
 
     # Check positivity (need for correct PCS metric calculation)
     if not np.all(reference_timestamps >= 0):
@@ -266,7 +275,9 @@ def perceptual_metric(reference_timestamps, estimated_timestamps):
     return np.mean(perceptual_scores)
 
 
-def evaluate(reference_timestamps, estimated_timestamps, duration: float, **kwargs):
+def evaluate(
+    reference_timestamps, estimated_timestamps, duration: float, **kwargs
+):
     """Compute all metrics for the given reference and estimated annotations.
     Examples
     --------
@@ -297,9 +308,15 @@ def evaluate(reference_timestamps, estimated_timestamps, duration: float, **kwar
     # Compute all metrics
     scores = collections.OrderedDict()
 
-    scores["pc"] = filter_kwargs(pc, reference_timestamps, estimated_timestamps, **kwargs)
-    scores["mae"], scores["aae"] = ae(reference_timestamps, estimated_timestamps)
+    scores["pc"] = filter_kwargs(
+        pc, reference_timestamps, estimated_timestamps, **kwargs
+    )
+    scores["mae"], scores["aae"] = ae(
+        reference_timestamps, estimated_timestamps
+    )
     scores["pcs"] = pcs(reference_timestamps, estimated_timestamps, duration)
-    scores["perceptual"] = perceptual_metric(reference_timestamps, estimated_timestamps)
+    scores["perceptual"] = perceptual_metric(
+        reference_timestamps, estimated_timestamps
+    )
 
     return scores

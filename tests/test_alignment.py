@@ -32,7 +32,9 @@ def __unit_test_alignment_function(metric):
     # predicted and estimated alignments must have same length
     pred_alignments = np.array([[1.0, 2.0]])
     est_alignments = np.array([[1.0]])
-    nose.tools.assert_raises(ValueError, metric, est_alignments, pred_alignments)
+    nose.tools.assert_raises(
+        ValueError, metric, est_alignments, pred_alignments
+    )
 
 
 def __check_score(sco_f, metric, score, expected_score):
@@ -65,9 +67,20 @@ def test_alignment_functions():
             # segments
             duration = 11.911836
         else:
-            duration = max(np.max(reference_alignments), np.max(estimated_alignments)) + 10
-        scores = mir_eval.alignment.evaluate(reference_alignments, estimated_alignments, duration)
+            duration = (
+                max(np.max(reference_alignments), np.max(estimated_alignments))
+                + 10
+            )
+        scores = mir_eval.alignment.evaluate(
+            reference_alignments, estimated_alignments, duration
+        )
         # Compare them
         for metric in scores:
             # This is a simple hack to make nosetest's messages more useful
-            yield (__check_score, sco_f, metric, scores[metric], expected_scores[metric])
+            yield (
+                __check_score,
+                sco_f,
+                metric,
+                scores[metric],
+                expected_scores[metric],
+            )
