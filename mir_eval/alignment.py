@@ -221,17 +221,6 @@ def pcs(reference_timestamps, estimated_timestamps, duration: float):
     return overlap_duration / duration
 
 
-def perceptual_synchrony(offset):
-    """function perceptually weighting the deviations of onsets"""
-    skewness = 1.12244251
-    localisation = -0.22270315
-    scale = 0.29779424
-    normalisation_factor = 1.6857
-    return (1.0 / normalisation_factor) * skewnorm.pdf(
-        offset, skewness, loc=localisation, scale=scale
-    )
-
-
 def perceptual_metric(reference_timestamps, estimated_timestamps):
     """Metric based on human synchronicity perception as measured in the paper
 
@@ -263,8 +252,18 @@ def perceptual_metric(reference_timestamps, estimated_timestamps):
         Perceptual score, averaged over all timestamps
     """
     validate(reference_timestamps, estimated_timestamps)
-    perceptual_score = perceptual_synchrony(estimated_timestamps - reference_timestamps)
-    return np.mean(perceptual_score)
+    offsets = estimated_timestamps - reference_timestamps
+
+    # Score offsets using a certain skewed normal distribution
+    skewness = 1.12244251
+    localisation = -0.22270315
+    scale = 0.29779424
+    normalisation_factor = 1.6857
+    perceptual_scores = (1.0 / normalisation_factor) * skewnorm.pdf(
+        offsets, skewness, loc=localisation, scale=scale
+    )
+
+    return np.mean(perceptual_scores)
 
 
 def evaluate(reference_timestamps, estimated_timestamps, duration: float, **kwargs):
