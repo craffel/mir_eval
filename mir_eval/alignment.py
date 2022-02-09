@@ -56,6 +56,7 @@ from mir_eval.util import filter_kwargs
 def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray):
     """Checks that the input annotations to a metric look like valid onset time
     arrays, and throws helpful errors if not.
+
     Parameters
     ----------
     reference_timestamps : np.ndarray
@@ -107,8 +108,8 @@ def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray)
 
 
 def ae(reference_timestamps, estimated_timestamps):
-    """Compute the absolute deviations between predicted and reference timestamps,
-    and then takes the median or average over all events
+    """Compute the absolute deviations between estimated and reference timestamps,
+    and then returns the median and average over all events
 
     Examples
     --------
@@ -122,6 +123,7 @@ def ae(reference_timestamps, estimated_timestamps):
         reference timestamps, in seconds
     estimated_timestamps : np.ndarray
         estimated timestamps, in seconds
+
     Returns
     -------
     mae : float
@@ -153,7 +155,8 @@ def pc(reference_timestamps, estimated_timestamps, window=0.3):
         estimated timestamps, in seconds
     window : float
         Window size, in seconds
-        (Default value = .1)
+        (Default value = .3)
+
     Returns
     -------
     pc : float
@@ -189,6 +192,7 @@ def pcs(reference_timestamps, estimated_timestamps, duration: float):
         estimated timestamps, in seconds
     duration : float
         Total duration of audio (seconds) - this is needed to compute the final segments properly!
+
     Returns
     -------
     pcs : float
@@ -229,7 +233,7 @@ def perceptual_synchrony(offset):
 
 
 def perceptual_metric(reference_timestamps, estimated_timestamps):
-    """metric based on human synchronicity perception as measured in the paper
+    """Metric based on human synchronicity perception as measured in the paper
 
     "User-centered evaluation of lyrics to audio alignment",
     N. Lizé-Masclef, A. Vaglio, M. Moussallam, ISMIR 2021
@@ -252,6 +256,7 @@ def perceptual_metric(reference_timestamps, estimated_timestamps):
         reference timestamps, in seconds
     estimated_timestamps : np.ndarray
         estimated timestamps, in seconds
+
     Returns
     -------
     perceptual_score : float
@@ -283,6 +288,7 @@ def evaluate(reference_timestamps, estimated_timestamps, duration: float, **kwar
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
+
     Returns
     -------
     scores : dict
