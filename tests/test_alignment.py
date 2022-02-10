@@ -50,7 +50,10 @@ def test_alignment_functions():
     assert len(ref_files) == len(est_files) == len(sco_files) > 0
 
     # Unit tests
-    for metric in [mir_eval.alignment.ae, mir_eval.alignment.pc]:
+    for metric in [
+        mir_eval.alignment.absolute_error,
+        mir_eval.alignment.percentage_correct,
+    ]:
         yield (__unit_test_alignment_function, metric)
     # Regression tests
     for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):

@@ -14,8 +14,9 @@ times in seconds in increasing order.
 
 Metrics
 -------
-* :func:`mir_eval.alignment.ae`: Median absolute error and average absolute error
-* :func:`mir_eval.alignment.pc`: Percentage of correct timestamps, where a timestamp is counted
+* :func:`mir_eval.alignment.absolute_error`: Median absolute error and average absolute error
+* :func:`mir_eval.alignment.percentage_correct`: Percentage of correct timestamps,
+where a timestamp is counted
 as correct if it lies within a certain tolerance window around the ground truth timestamp
 * :func:`mir_eval.alignment.pcs`: Percentage of correct segments: Percentage of overlap between
 predicted segments and ground truth segments, where segments are defined by (start time,
@@ -116,7 +117,7 @@ def validate(
         raise ValueError("Estimated timestamps can not be below 0!")
 
 
-def ae(reference_timestamps, estimated_timestamps):
+def absolute_error(reference_timestamps, estimated_timestamps):
     """Compute the absolute deviations between estimated and reference timestamps,
     and then returns the median and average over all events
 
@@ -124,7 +125,7 @@ def ae(reference_timestamps, estimated_timestamps):
     --------
     >>> reference_timestamps = mir_eval.io.load_events('reference.txt')
     >>> estimated_timestamps = mir_eval.io.load_events('estimated.txt')
-    >>> mae, aae = mir_eval.align.ae(reference_onsets, estimated_timestamps)
+    >>> mae, aae = mir_eval.align.absolute_error(reference_onsets, estimated_timestamps)
 
     Parameters
     ----------
@@ -145,7 +146,7 @@ def ae(reference_timestamps, estimated_timestamps):
     return np.median(deviations), np.mean(deviations)
 
 
-def pc(reference_timestamps, estimated_timestamps, window=0.3):
+def percentage_correct(reference_timestamps, estimated_timestamps, window=0.3):
     """Compute the percentage of correctly predicted timestamps. A timestamp is predicted
     correctly if its position doesn't deviate more than the window parameter from the ground
     truth timestamp.
@@ -154,7 +155,7 @@ def pc(reference_timestamps, estimated_timestamps, window=0.3):
     --------
     >>> reference_timestamps = mir_eval.io.load_events('reference.txt')
     >>> estimated_timestamps = mir_eval.io.load_events('estimated.txt')
-    >>> pc = mir_eval.align.pc(reference_onsets, estimated_timestamps, window=0.2)
+    >>> pc = mir_eval.align.percentage_correct(reference_onsets, estimated_timestamps, window=0.2)
 
     Parameters
     ----------
@@ -176,8 +177,11 @@ def pc(reference_timestamps, estimated_timestamps, window=0.3):
     return np.mean(deviations <= window)
 
 
-def pcs(reference_timestamps, estimated_timestamps, duration: float):
-    """Constructs segments out of predicted and estimated timestamps separately
+def percentage_correct_segments(
+    reference_timestamps, estimated_timestamps, duration: float
+):
+    """Calculates the percentage of correct segments (PCS) metric.
+    It constructs segments out of predicted and estimated timestamps separately
     out of each given timestamp vector with entries (t1,t2, ... tN), yielding segments with
     the following (start, end) boundaries: (0, t1), (t1, t2), ... (tN, duration).
     The metric then calculates the percentage of overlap between correct segments compared to the
@@ -191,7 +195,7 @@ def pcs(reference_timestamps, estimated_timestamps, duration: float):
     >>> reference_timestamps = mir_eval.io.load_events('reference.txt')
     >>> estimated_timestamps = mir_eval.io.load_events('estimated.txt')
     >>> duration = max(np.max(reference_timestamps), np.max(estimated_timestamps)) + 10
-    >>> pcs = mir_eval.align.pcs(reference_onsets, estimated_timestamps, duration)
+    >>> pcs = mir_eval.align.percentage_correct_segments(reference_onsets, estimated_timestamps, duration)
 
     Parameters
     ----------
@@ -230,7 +234,7 @@ def pcs(reference_timestamps, estimated_timestamps, duration: float):
     return overlap_duration / duration
 
 
-def perceptual_metric(reference_timestamps, estimated_timestamps):
+def karaoke_perceptual_metric(reference_timestamps, estimated_timestamps):
     """Metric based on human synchronicity perception as measured in the paper
 
     "User-centered evaluation of lyrics to audio alignment",
@@ -246,7 +250,7 @@ def perceptual_metric(reference_timestamps, estimated_timestamps):
     --------
     >>> reference_timestamps = mir_eval.io.load_events('reference.txt')
     >>> estimated_timestamps = mir_eval.io.load_events('estimated.txt')
-    >>> perceptual = mir_eval.align.perceptual_metric(reference_onsets, estimated_timestamps)
+    >>> score = mir_eval.align.karaoke_perceptual_metric(reference_onsets, estimated_timestamps)
 
     Parameters
     ----------
@@ -309,13 +313,15 @@ def evaluate(
     scores = collections.OrderedDict()
 
     scores["pc"] = filter_kwargs(
-        pc, reference_timestamps, estimated_timestamps, **kwargs
+        percentage_correct, reference_timestamps, estimated_timestamps, **kwargs
     )
-    scores["mae"], scores["aae"] = ae(
+    scores["mae"], scores["aae"] = absolute_error(
         reference_timestamps, estimated_timestamps
     )
-    scores["pcs"] = pcs(reference_timestamps, estimated_timestamps, duration)
-    scores["perceptual"] = perceptual_metric(
+    scores["pcs"] = percentage_correct_segments(
+        reference_timestamps, estimated_timestamps, duration
+    )
+    scores["perceptual"] = karaoke_perceptual_metric(
         reference_timestamps, estimated_timestamps
     )
 
