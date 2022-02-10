@@ -195,7 +195,8 @@ def percentage_correct_segments(
     >>> reference_timestamps = mir_eval.io.load_events('reference.txt')
     >>> estimated_timestamps = mir_eval.io.load_events('estimated.txt')
     >>> duration = max(np.max(reference_timestamps), np.max(estimated_timestamps)) + 10
-    >>> pcs = mir_eval.align.percentage_correct_segments(reference_onsets, estimated_timestamps, duration)
+    >>> pcs = mir_eval.align.percentage_correct_segments(reference_timestamps, estimated_timestamps,
+    ...                                                  duration)
 
     Parameters
     ----------
