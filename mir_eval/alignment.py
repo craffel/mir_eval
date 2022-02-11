@@ -48,6 +48,7 @@ References
 """
 
 import collections
+from typing import Optional
 
 import numpy as np
 from scipy.stats import skewnorm
@@ -178,25 +179,39 @@ def percentage_correct(reference_timestamps, estimated_timestamps, window=0.3):
 
 
 def percentage_correct_segments(
-    reference_timestamps, estimated_timestamps, duration: float
+    reference_timestamps, estimated_timestamps, duration: Optional[float] = None
 ):
     """Calculates the percentage of correct segments (PCS) metric.
-    It constructs segments out of predicted and estimated timestamps separately
-    out of each given timestamp vector with entries (t1,t2, ... tN), yielding segments with
-    the following (start, end) boundaries: (0, t1), (t1, t2), ... (tN, duration).
-    The metric then calculates the percentage of overlap between correct segments compared to the
-    total duration.
 
-    This metric is based on the paper
+    It constructs segments out of predicted and estimated timestamps separately
+    out of each given timestamp vector and calculates the percentage of overlap between correct
+    segments compared to the total duration.
+
+    WARNING: This metrics behaves differently depending on whether "duration" is given!
+
+    If duration is not given (default case), the computation follows the MIREX lyrics alignment
+    challenge 2020. For a timestamp vector with entries (t1,t2, ... tN), segments with
+    the following (start, end) boundaries are created: (t1, t2), ... (tN-1, tN).
+    After the segments are created, the overlap between the reference and estimated segments is
+    determined and divided by the total duration, which is the distance between the
+    first and last timestamp in the reference.
+
+    If duration is given, the segment boundaries are instead (0, t1), (t1, t2), ... (tN, duration).
+    The overlap is computed in the same way, but then divided by the duration parameter given to
+    this function.
+    This method follows the original paper
     "LyricSynchronizer: Automatic synchronization system between musical audio signals and lyrics"
+    more closely, where the metric was proposed.
+    As a result, this variant of the metrics punishes cases where the first estimated timestamp
+    is too early or the last estimated timestamp is too late, whereas the MIREX variant does not.
+    On the other hand, the MIREX metric is invariant to how long the eventless beginning and end
+    parts of the audio are, which might be a desirable property.
 
     Examples
     --------
     >>> reference_timestamps = mir_eval.io.load_events('reference.txt')
     >>> estimated_timestamps = mir_eval.io.load_events('estimated.txt')
-    >>> duration = max(np.max(reference_timestamps), np.max(estimated_timestamps)) + 10
-    >>> pcs = mir_eval.align.percentage_correct_segments(reference_timestamps, estimated_timestamps,
-    ...                                                  duration)
+    >>> pcs = mir_eval.align.percentage_correct_segments(reference_timestamps, estimated_timestamps)
 
     Parameters
     ----------
@@ -205,7 +220,8 @@ def percentage_correct_segments(
     estimated_timestamps : np.ndarray
         estimated timestamps, in seconds
     duration : float
-        Total duration of audio (seconds) - this is needed to compute the final segments properly!
+        Optional. Total duration of audio (seconds). WARNING: Metric is computed differently
+        depending on whether this is provided or not - see documentation above!
 
     Returns
     -------
@@ -213,22 +229,40 @@ def percentage_correct_segments(
         Percentage of time where ground truth and predicted segments overlap
     """
     validate(reference_timestamps, estimated_timestamps)
-    duration = float(duration)
-    assert np.max(reference_timestamps) <= duration, (
-        "Expected largest reference timestamp "
-        f"{np.max(reference_timestamps)} to not be "
-        f"larger than duration {duration}"
-    )
-    assert np.max(estimated_timestamps) <= duration, (
-        "Expected largest estimated timestamp "
-        f"{np.max(estimated_timestamps)} to not be "
-        f"larger than duration {duration}"
-    )
+    if duration is not None:
+        duration = float(duration)
+        assert (
+            duration > 0
+        ), f"Positive duration needs to be provided, but got {duration}"
+        assert np.max(reference_timestamps) <= duration, (
+            "Expected largest reference timestamp "
+            f"{np.max(reference_timestamps)} to not be "
+            f"larger than duration {duration}"
+        )
+        assert np.max(estimated_timestamps) <= duration, (
+            "Expected largest estimated timestamp "
+            f"{np.max(estimated_timestamps)} to not be "
+            f"larger than duration {duration}"
+        )
 
-    ref_starts = np.concatenate([[0], reference_timestamps])
-    ref_ends = np.concatenate([reference_timestamps, [duration]])
-    est_starts = np.concatenate([[0], estimated_timestamps])
-    est_ends = np.concatenate([estimated_timestamps, [duration]])
+        ref_starts = np.concatenate([[0], reference_timestamps])
+        ref_ends = np.concatenate([reference_timestamps, [duration]])
+        est_starts = np.concatenate([[0], estimated_timestamps])
+        est_ends = np.concatenate([estimated_timestamps, [duration]])
+    else:
+        # MIREX lyrics alignment 2020 style:
+        # Ignore regions before start and after end reference timestamp
+        duration = reference_timestamps[-1] - reference_timestamps[0]
+        assert duration > 0, (
+            f"Reference timestamps are all identical, can not compute PCS"
+            f" metric!"
+        )
+
+        ref_starts = reference_timestamps[:-1]
+        ref_ends = reference_timestamps[1:]
+        est_starts = estimated_timestamps[:-1]
+        est_ends = estimated_timestamps[1:]
+
     overlap_starts = np.maximum(ref_starts, est_starts)
     overlap_ends = np.minimum(ref_ends, est_ends)
     overlap_duration = np.sum(np.maximum(overlap_ends - overlap_starts, 0))
@@ -280,9 +314,7 @@ def karaoke_perceptual_metric(reference_timestamps, estimated_timestamps):
     return np.mean(perceptual_scores)
 
 
-def evaluate(
-    reference_timestamps, estimated_timestamps, duration: float, **kwargs
-):
+def evaluate(reference_timestamps, estimated_timestamps, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
     Examples
     --------
@@ -297,9 +329,6 @@ def evaluate(
         reference timestamp locations, in seconds
     estimated_timestamps : np.ndarray
         estimated timestamp locations, in seconds
-    duration : float
-        Overall length of the input in seconds, needed to determine end of segments in the PCS
-        metric
     kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -319,8 +348,11 @@ def evaluate(
     scores["mae"], scores["aae"] = absolute_error(
         reference_timestamps, estimated_timestamps
     )
-    scores["pcs"] = percentage_correct_segments(
-        reference_timestamps, estimated_timestamps, duration
+    scores["pcs"] = filter_kwargs(
+        percentage_correct_segments,
+        reference_timestamps,
+        estimated_timestamps,
+        **kwargs,
     )
     scores["perceptual"] = karaoke_perceptual_metric(
         reference_timestamps, estimated_timestamps

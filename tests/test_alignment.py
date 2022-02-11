@@ -53,6 +53,13 @@ def test_alignment_functions():
     for metric in [
         mir_eval.alignment.absolute_error,
         mir_eval.alignment.percentage_correct,
+        mir_eval.alignment.percentage_correct_segments,
+        (
+            lambda ref_ts, est_ts: mir_eval.alignment.percentage_correct_segments(
+                ref_ts, est_ts, duration=max(np.max(ref_ts), np.max(est_ts))
+            )
+        ),
+        mir_eval.alignment.karaoke_perceptual_metric,
     ]:
         yield (__unit_test_alignment_function, metric)
     # Regression tests
@@ -64,18 +71,8 @@ def test_alignment_functions():
         # Load in an example alignment tracker output
         estimated_alignments = mir_eval.io.load_events(est_f)
         # Compute scores
-        # Setup some total duration
-        if ref_f.__contains__("_mirex"):
-            # MIREX code test case has this specific duration and computes PCS based on token
-            # segments
-            duration = 11.911836
-        else:
-            duration = (
-                max(np.max(reference_alignments), np.max(estimated_alignments))
-                + 10
-            )
         scores = mir_eval.alignment.evaluate(
-            reference_alignments, estimated_alignments, duration
+            reference_alignments, estimated_alignments
         )
         # Compare them
         for metric in scores:
