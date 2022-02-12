@@ -230,19 +230,22 @@ def percentage_correct_segments(
     validate(reference_timestamps, estimated_timestamps)
     if duration is not None:
         duration = float(duration)
-        assert (
-            duration > 0
-        ), f"Positive duration needs to be provided, but got {duration}"
-        assert np.max(reference_timestamps) <= duration, (
-            "Expected largest reference timestamp "
-            f"{np.max(reference_timestamps)} to not be "
-            f"larger than duration {duration}"
-        )
-        assert np.max(estimated_timestamps) <= duration, (
-            "Expected largest estimated timestamp "
-            f"{np.max(estimated_timestamps)} to not be "
-            f"larger than duration {duration}"
-        )
+        if duration <= 0:
+            raise ValueError(
+                f"Positive duration needs to be provided, but got {duration}"
+            )
+        if np.max(reference_timestamps) > duration:
+            raise ValueError(
+                "Expected largest reference timestamp"
+                f"{np.max(reference_timestamps)} to not be "
+                f"larger than duration {duration}"
+            )
+        if np.max(estimated_timestamps) > duration:
+            raise ValueError(
+                "Expected largest estimated timestamp "
+                f"{np.max(estimated_timestamps)} to not be "
+                f"larger than duration {duration}"
+            )
 
         ref_starts = np.concatenate([[0], reference_timestamps])
         ref_ends = np.concatenate([reference_timestamps, [duration]])
@@ -252,10 +255,11 @@ def percentage_correct_segments(
         # MIREX lyrics alignment 2020 style:
         # Ignore regions before start and after end reference timestamp
         duration = reference_timestamps[-1] - reference_timestamps[0]
-        assert duration > 0, (
-            f"Reference timestamps are all identical, can not compute PCS"
-            f" metric!"
-        )
+        if duration <= 0:
+            raise ValueError(
+                f"Reference timestamps are all identical, can not compute PCS"
+                f" metric!"
+            )
 
         ref_starts = reference_timestamps[:-1]
         ref_ends = reference_timestamps[1:]
