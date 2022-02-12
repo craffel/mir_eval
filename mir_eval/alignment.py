@@ -199,9 +199,8 @@ def percentage_correct_segments(
     If duration is given, the segment boundaries are instead (0, t1), (t1, t2), ... (tN, duration).
     The overlap is computed in the same way, but then divided by the duration parameter given to
     this function.
-    This method follows the original paper
-    "LyricSynchronizer: Automatic synchronization system between musical audio signals and lyrics"
-    more closely, where the metric was proposed.
+    This method follows the original paper [#fujihara2011] more closely, where the metric was
+    proposed.
     As a result, this variant of the metrics punishes cases where the first estimated timestamp
     is too early or the last estimated timestamp is too late, whereas the MIREX variant does not.
     On the other hand, the MIREX metric is invariant to how long the eventless beginning and end
@@ -271,9 +270,7 @@ def percentage_correct_segments(
 
 def karaoke_perceptual_metric(reference_timestamps, estimated_timestamps):
     """Metric based on human synchronicity perception as measured in the paper
-
-    "User-centered evaluation of lyrics to audio alignment",
-    N. Lizé-Masclef, A. Vaglio, M. Moussallam, ISMIR 2021
+    "User-centered evaluation of lyrics to audio alignment" [#lizemasclef2021]
 
     The parameters of this function were tuned on data collected through a user Karaoke-like
     experiment
