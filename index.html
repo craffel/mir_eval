@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>mir_eval Documentation &#8212; mir_eval 0.6 documentation</title>
+    <title>mir_eval Documentation &#8212; mir_eval 0.7 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -31,7 +31,7 @@
         <li class="right" >
           <a href="changes.html" title="Changes"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">mir_eval 0.6 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="#">mir_eval 0.7 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">mir_eval</span></code> Documentation</a></li> 
       </ul>
     </div>  
@@ -3048,204 +3048,9 @@ instants as belonging to the same structural component <a class="footnote-refere
 annotations and compares them by the Rand Index</p></li>
 <li><p><a class="reference internal" href="#mir_eval.segment.ari" title="mir_eval.segment.ari"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.segment.ari()</span></code></a>: Computes the Rand index, adjusted for chance</p></li>
 <li><p><a class="reference internal" href="#mir_eval.segment.nce" title="mir_eval.segment.nce"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.segment.nce()</span></code></a>: Interprets sampled reference and estimated
-labels as samples of random variables <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">Y_R, Y_E</span>)</p>
-<p>latex exited with error
-[stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=latex)
- restricted \write18 enabled.
-entering extended mode
-(./math.tex
-LaTeX2e &lt;2020-10-01&gt; patch level 4
-L3 programming layer &lt;2021-02-18&gt;
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/size12.clo))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/inputenc.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsmath.sty
-For additional information on amsmath, use the `?' option.
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amstext.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsgen.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsbsy.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsopn.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amscls/amsthm.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
-
-! LaTeX Error: File `anyfontsize.sty' not found.
-
-Type X to quit or &lt;RETURN&gt; to proceed,
-or enter new name. (Default extension: sty)
-
-Enter file name: 
-! Emergency stop.
-&lt;read *&gt; 
-         
-l.8 \usepackage
-               {bm}^^M
-No pages of output.
-Transcript written on math.log.
-</p>
-</div>
- from which the
-conditional entropy of <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">Y_R</span>)</p>
-<p>latex exited with error
-[stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=latex)
- restricted \write18 enabled.
-entering extended mode
-(./math.tex
-LaTeX2e &lt;2020-10-01&gt; patch level 4
-L3 programming layer &lt;2021-02-18&gt;
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/size12.clo))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/inputenc.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsmath.sty
-For additional information on amsmath, use the `?' option.
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amstext.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsgen.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsbsy.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsopn.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amscls/amsthm.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
-
-! LaTeX Error: File `anyfontsize.sty' not found.
-
-Type X to quit or &lt;RETURN&gt; to proceed,
-or enter new name. (Default extension: sty)
-
-Enter file name: 
-! Emergency stop.
-&lt;read *&gt; 
-         
-l.8 \usepackage
-               {bm}^^M
-No pages of output.
-Transcript written on math.log.
-</p>
-</div>
- given <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">Y_E</span>)</p>
-<p>latex exited with error
-[stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=latex)
- restricted \write18 enabled.
-entering extended mode
-(./math.tex
-LaTeX2e &lt;2020-10-01&gt; patch level 4
-L3 programming layer &lt;2021-02-18&gt;
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/size12.clo))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/inputenc.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsmath.sty
-For additional information on amsmath, use the `?' option.
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amstext.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsgen.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsbsy.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsopn.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amscls/amsthm.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
-
-! LaTeX Error: File `anyfontsize.sty' not found.
-
-Type X to quit or &lt;RETURN&gt; to proceed,
-or enter new name. (Default extension: sty)
-
-Enter file name: 
-! Emergency stop.
-&lt;read *&gt; 
-         
-l.8 \usepackage
-               {bm}^^M
-No pages of output.
-Transcript written on math.log.
-</p>
-</div>
- (Under-Segmentation) and
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">Y_E</span>)</p>
-<p>latex exited with error
-[stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=latex)
- restricted \write18 enabled.
-entering extended mode
-(./math.tex
-LaTeX2e &lt;2020-10-01&gt; patch level 4
-L3 programming layer &lt;2021-02-18&gt;
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/size12.clo))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/inputenc.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsmath.sty
-For additional information on amsmath, use the `?' option.
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amstext.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsgen.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsbsy.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsopn.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amscls/amsthm.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
-
-! LaTeX Error: File `anyfontsize.sty' not found.
-
-Type X to quit or &lt;RETURN&gt; to proceed,
-or enter new name. (Default extension: sty)
-
-Enter file name: 
-! Emergency stop.
-&lt;read *&gt; 
-         
-l.8 \usepackage
-               {bm}^^M
-No pages of output.
-Transcript written on math.log.
-</p>
-</div>
- given <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">Y_R</span>)</p>
-<p>latex exited with error
-[stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=latex)
- restricted \write18 enabled.
-entering extended mode
-(./math.tex
-LaTeX2e &lt;2020-10-01&gt; patch level 4
-L3 programming layer &lt;2021-02-18&gt;
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/size12.clo))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/inputenc.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsmath.sty
-For additional information on amsmath, use the `?' option.
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amstext.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsgen.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsbsy.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsopn.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amscls/amsthm.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
-
-! LaTeX Error: File `anyfontsize.sty' not found.
-
-Type X to quit or &lt;RETURN&gt; to proceed,
-or enter new name. (Default extension: sty)
-
-Enter file name: 
-! Emergency stop.
-&lt;read *&gt; 
-         
-l.8 \usepackage
-               {bm}^^M
-No pages of output.
-Transcript written on math.log.
-</p>
-</div>
- (Over-Segmentation) are estimated
+labels as samples of random variables <span class="math">Y_R, Y_E</span> from which the
+conditional entropy of <span class="math">Y_R</span> given <span class="math">Y_E</span> (Under-Segmentation) and
+<span class="math">Y_E</span> given <span class="math">Y_R</span> (Over-Segmentation) are estimated
 <a class="footnote-reference brackets" href="#lukashevich2008" id="id25">9</a></p></li>
 <li><p><a class="reference internal" href="#mir_eval.segment.mutual_information" title="mir_eval.segment.mutual_information"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.segment.mutual_information()</span></code></a>: Computes the standard,
 normalized, and adjusted mutual information of sampled reference and
@@ -5454,7 +5259,9 @@ keys.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="mir_eval.key.validate_key">
 <span class="sig-prename descclassname"><span class="pre">mir_eval.key.</span></span><span class="sig-name descname"><span class="pre">validate_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.key.validate_key" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks that a key is well-formatted, e.g. in the form <code class="docutils literal notranslate"><span class="pre">'C#</span> <span class="pre">major'</span></code>.</p>
+<dd><p>Checks that a key is well-formatted, e.g. in the form <code class="docutils literal notranslate"><span class="pre">'C#</span> <span class="pre">major'</span></code>.
+The Key can be ‘X’ if it is not possible to categorize the Key and mode
+can be ‘other’ if it can’t be categorized as major or minor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -5520,16 +5327,16 @@ relationship of the reference and estimated key, as follows:</p>
 <tr class="row-odd"><td><p>Relationship</p></td>
 <td><p>Score</p></td>
 </tr>
-<tr class="row-even"><td><p>Same key</p></td>
+<tr class="row-even"><td><p>Same key and mode</p></td>
 <td><p>1.0</p></td>
 </tr>
 <tr class="row-odd"><td><p>Estimated key is a perfect fifth above reference key</p></td>
 <td><p>0.5</p></td>
 </tr>
-<tr class="row-even"><td><p>Relative major/minor</p></td>
+<tr class="row-even"><td><p>Relative major/minor (same key signature)</p></td>
 <td><p>0.3</p></td>
 </tr>
-<tr class="row-odd"><td><p>Parallel major/minor</p></td>
+<tr class="row-odd"><td><p>Parallel major/minor (same key)</p></td>
 <td><p>0.2</p></td>
 </tr>
 <tr class="row-even"><td><p>Other</p></td>
@@ -6629,46 +6436,7 @@ or the time interval corresponding to each column.</p>
 </dd>
 <dt><strong>fs</strong><span class="classifier">int</span></dt><dd><p>desired sampling rate of the output signal</p>
 </dd>
-<dt><strong>function</strong><span class="classifier">function</span></dt><dd><p>function to use to synthesize notes, should be <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">2\pi</span>)</p>
-<p>latex exited with error
-[stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=latex)
- restricted \write18 enabled.
-entering extended mode
-(./math.tex
-LaTeX2e &lt;2020-10-01&gt; patch level 4
-L3 programming layer &lt;2021-02-18&gt;
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/size12.clo))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/inputenc.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsmath.sty
-For additional information on amsmath, use the `?' option.
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amstext.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsgen.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsbsy.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsopn.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amscls/amsthm.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
-
-! LaTeX Error: File `anyfontsize.sty' not found.
-
-Type X to quit or &lt;RETURN&gt; to proceed,
-or enter new name. (Default extension: sty)
-
-Enter file name: 
-! Emergency stop.
-&lt;read *&gt; 
-         
-l.8 \usepackage
-               {bm}^^M
-No pages of output.
-Transcript written on math.log.
-</p>
-</div>
--periodic</p>
+<dt><strong>function</strong><span class="classifier">function</span></dt><dd><p>function to use to synthesize notes, should be <span class="math">2\pi</span>-periodic</p>
 </dd>
 <dt><strong>length</strong><span class="classifier">int</span></dt><dd><p>desired number of samples in the output signal,
 defaults to <code class="docutils literal notranslate"><span class="pre">times[-1]*fs</span></code></p>
@@ -6704,46 +6472,7 @@ Non-positive measurements will be interpreted as un-voiced samples.</p>
 <dt><strong>amplitudes</strong><span class="classifier">np.ndarray</span></dt><dd><p>amplitude measurments, nonnegative
 defaults to <code class="docutils literal notranslate"><span class="pre">np.ones((length,))</span></code></p>
 </dd>
-<dt><strong>function</strong><span class="classifier">function</span></dt><dd><p>function to use to synthesize notes, should be <div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">2\pi</span>)</p>
-<p>latex exited with error
-[stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=latex)
- restricted \write18 enabled.
-entering extended mode
-(./math.tex
-LaTeX2e &lt;2020-10-01&gt; patch level 4
-L3 programming layer &lt;2021-02-18&gt;
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/size12.clo))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/inputenc.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsmath.sty
-For additional information on amsmath, use the `?' option.
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amstext.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsgen.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsbsy.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsmath/amsopn.sty))
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amscls/amsthm.sty)
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
-(/usr/local/texlive/2021basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
-
-! LaTeX Error: File `anyfontsize.sty' not found.
-
-Type X to quit or &lt;RETURN&gt; to proceed,
-or enter new name. (Default extension: sty)
-
-Enter file name: 
-! Emergency stop.
-&lt;read *&gt; 
-         
-l.8 \usepackage
-               {bm}^^M
-No pages of output.
-Transcript written on math.log.
-</p>
-</div>
--periodic</p>
+<dt><strong>function</strong><span class="classifier">function</span></dt><dd><p>function to use to synthesize notes, should be <span class="math">2\pi</span>-periodic</p>
 </dd>
 <dt><strong>length</strong><span class="classifier">int</span></dt><dd><p>desired number of samples in the output signal,
 defaults to <code class="docutils literal notranslate"><span class="pre">max(times)*fs</span></code></p>
@@ -7391,7 +7120,7 @@ By default, uses the current axes handle.</p>
         <li class="right" >
           <a href="changes.html" title="Changes"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">mir_eval 0.6 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="#">mir_eval 0.7 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href=""><code class="docutils literal notranslate"><span class="pre">mir_eval</span></code> Documentation</a></li> 
       </ul>
     </div>

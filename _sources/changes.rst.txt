@@ -1,6 +1,15 @@
 Changes
 =======
 
+v0.7
+----
+
+- `#334`_: Support notation for unknown/ambiguous key or mode
+- `#343`_: Add suite of alignment metrics
+
+.. _#334: https://github.com/craffel/mir_eval/pull/334
+.. _#343: https://github.com/craffel/mir_eval/pull/343
+
 v0.6
 ----
 
