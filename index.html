@@ -101,6 +101,262 @@ Finally, each task submodule also includes functions for common data pre-process
 <li><p><a class="reference internal" href="#module-mir_eval.display" title="mir_eval.display"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.display</span></code></a> which provides functions for plotting annotations for various tasks.</p></li>
 </ul>
 <p>The following subsections document each submodule.</p>
+<section id="mir-eval-alignment">
+<h3><a class="reference internal" href="#module-mir_eval.alignment" title="mir_eval.alignment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.alignment</span></code></a><a class="headerlink" href="#mir-eval-alignment" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="module-mir_eval.alignment"></span><p>Alignment models are given a sequence of events along with a piece of audio, and then return a
+sequence of timestamps, with one timestamp for each event, indicating the position of this event
+in the audio. The events are listed in order of occurrence in the audio, so that output
+timestamps have to be monotonically increasing.
+Evaluation usually involves taking the series of predicted and ground truth timestamps and
+comparing their distance, usually on a pair-wise basis, e.g. taking the median absolute error in
+seconds.</p>
+<section id="conventions">
+<h4>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h4>
+<p>Timestamps should be provided in the form of a 1-dimensional array of onset
+times in seconds in increasing order.</p>
+</section>
+<section id="metrics">
+<h4>Metrics<a class="headerlink" href="#metrics" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p><a class="reference internal" href="#mir_eval.alignment.absolute_error" title="mir_eval.alignment.absolute_error"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.alignment.absolute_error()</span></code></a>: Median absolute error and average absolute error</p></li>
+<li><p><a class="reference internal" href="#mir_eval.alignment.percentage_correct" title="mir_eval.alignment.percentage_correct"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.alignment.percentage_correct()</span></code></a>: Percentage of correct timestamps,</p></li>
+</ul>
+<p>where a timestamp is counted
+as correct if it lies within a certain tolerance window around the ground truth timestamp
+* <code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.alignment.pcs()</span></code>: Percentage of correct segments: Percentage of overlap between
+predicted segments and ground truth segments, where segments are defined by (start time,
+end time) pairs
+* <code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.alignment.perceptual_metric()</span></code>: metric based on human synchronicity perception as
+measured in the paper “User-centered evaluation of lyrics to audio alignment”,
+N. Lizé-Masclef, A. Vaglio, M. Moussallam, ISMIR 2021</p>
+</section>
+<section id="references">
+<h4>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><dl class="footnote brackets">
+<dt class="label" id="lizemasclef2021"><span class="brackets">1</span></dt>
+<dd><p>N. Lizé-Masclef, A. Vaglio, M. Moussallam.
+“User-centered evaluation of lyrics to audio alignment”,
+International Society for Music Information Retrieval (ISMIR) conference,
+2021.</p>
+</dd>
+<dt class="label" id="mauch2010"><span class="brackets">2</span></dt>
+<dd><p>M. Mauch, F: Hiromasa, M. Goto.
+“Lyrics-to-audio alignment and phrase-level segmentation using
+incomplete internet-style chord annotations”,
+Frontiers in Proceedings of the Sound Music Computing Conference (SMC), 2010.</p>
+</dd>
+<dt class="label" id="dzhambazov2017"><span class="brackets">3</span></dt>
+<dd><p>G. Dzhambazov.
+“Knowledge-Based Probabilistic Modeling For Tracking Lyrics In Music Audio Signals”,
+PhD Thesis, 2017.</p>
+</dd>
+<dt class="label" id="fujihara2011"><span class="brackets">4</span></dt>
+<dd><p>H. Fujihara, M. Goto, J. Ogata, H. Okuno.
+“LyricSynchronizer: Automatic synchronization system between musical audio signals and lyrics”,
+IEEE Journal of Selected Topics in Signal Processing, VOL. 5, NO. 6, 2011</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py function">
+<dt class="sig sig-object py" id="mir_eval.alignment.validate">
+<span class="sig-prename descclassname"><span class="pre">mir_eval.alignment.</span></span><span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_timestamps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_timestamps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.alignment.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that the input annotations to a metric look like valid onset time
+arrays, and throws helpful errors if not.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>reference_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>reference timestamp locations, in seconds</p>
+</dd>
+<dt><strong>estimated_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>estimated timestamp locations, in seconds</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mir_eval.alignment.absolute_error">
+<span class="sig-prename descclassname"><span class="pre">mir_eval.alignment.</span></span><span class="sig-name descname"><span class="pre">absolute_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_timestamps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.alignment.absolute_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the absolute deviations between estimated and reference timestamps,
+and then returns the median and average over all events</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>reference_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>reference timestamps, in seconds</p>
+</dd>
+<dt><strong>estimated_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>estimated timestamps, in seconds</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mae</strong><span class="classifier">float</span></dt><dd><p>Median absolute error</p>
+</dd>
+<dt>aae: float</dt><dd><p>Average absolute error</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reference_timestamps</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">load_events</span><span class="p">(</span><span class="s1">&#39;reference.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">estimated_timestamps</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">load_events</span><span class="p">(</span><span class="s1">&#39;estimated.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mae</span><span class="p">,</span> <span class="n">aae</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">align</span><span class="o">.</span><span class="n">absolute_error</span><span class="p">(</span><span class="n">reference_onsets</span><span class="p">,</span> <span class="n">estimated_timestamps</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mir_eval.alignment.percentage_correct">
+<span class="sig-prename descclassname"><span class="pre">mir_eval.alignment.</span></span><span class="sig-name descname"><span class="pre">percentage_correct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.alignment.percentage_correct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the percentage of correctly predicted timestamps. A timestamp is predicted
+correctly if its position doesn’t deviate more than the window parameter from the ground
+truth timestamp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>reference_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>reference timestamps, in seconds</p>
+</dd>
+<dt><strong>estimated_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>estimated timestamps, in seconds</p>
+</dd>
+<dt><strong>window</strong><span class="classifier">float</span></dt><dd><p>Window size, in seconds
+(Default value = .3)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>pc</strong><span class="classifier">float</span></dt><dd><p>Percentage of correct timestamps</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reference_timestamps</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">load_events</span><span class="p">(</span><span class="s1">&#39;reference.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">estimated_timestamps</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">load_events</span><span class="p">(</span><span class="s1">&#39;estimated.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pc</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">align</span><span class="o">.</span><span class="n">percentage_correct</span><span class="p">(</span><span class="n">reference_onsets</span><span class="p">,</span> <span class="n">estimated_timestamps</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mir_eval.alignment.percentage_correct_segments">
+<span class="sig-prename descclassname"><span class="pre">mir_eval.alignment.</span></span><span class="sig-name descname"><span class="pre">percentage_correct_segments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.alignment.percentage_correct_segments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the percentage of correct segments (PCS) metric.</p>
+<p>It constructs segments out of predicted and estimated timestamps separately
+out of each given timestamp vector and calculates the percentage of overlap between correct
+segments compared to the total duration.</p>
+<p>WARNING: This metrics behaves differently depending on whether “duration” is given!</p>
+<p>If duration is not given (default case), the computation follows the MIREX lyrics alignment
+challenge 2020. For a timestamp vector with entries (t1,t2, … tN), segments with
+the following (start, end) boundaries are created: (t1, t2), … (tN-1, tN).
+After the segments are created, the overlap between the reference and estimated segments is
+determined and divided by the total duration, which is the distance between the
+first and last timestamp in the reference.</p>
+<p>If duration is given, the segment boundaries are instead (0, t1), (t1, t2), … (tN, duration).
+The overlap is computed in the same way, but then divided by the duration parameter given to
+this function.
+This method follows the original paper [#fujihara2011] more closely, where the metric was
+proposed.
+As a result, this variant of the metrics punishes cases where the first estimated timestamp
+is too early or the last estimated timestamp is too late, whereas the MIREX variant does not.
+On the other hand, the MIREX metric is invariant to how long the eventless beginning and end
+parts of the audio are, which might be a desirable property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>reference_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>reference timestamps, in seconds</p>
+</dd>
+<dt><strong>estimated_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>estimated timestamps, in seconds</p>
+</dd>
+<dt><strong>duration</strong><span class="classifier">float</span></dt><dd><p>Optional. Total duration of audio (seconds). WARNING: Metric is computed differently
+depending on whether this is provided or not - see documentation above!</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>pcs</strong><span class="classifier">float</span></dt><dd><p>Percentage of time where ground truth and predicted segments overlap</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reference_timestamps</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">load_events</span><span class="p">(</span><span class="s1">&#39;reference.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">estimated_timestamps</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">load_events</span><span class="p">(</span><span class="s1">&#39;estimated.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pcs</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">align</span><span class="o">.</span><span class="n">percentage_correct_segments</span><span class="p">(</span><span class="n">reference_timestamps</span><span class="p">,</span> <span class="n">estimated_timestamps</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mir_eval.alignment.karaoke_perceptual_metric">
+<span class="sig-prename descclassname"><span class="pre">mir_eval.alignment.</span></span><span class="sig-name descname"><span class="pre">karaoke_perceptual_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_timestamps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.alignment.karaoke_perceptual_metric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Metric based on human synchronicity perception as measured in the paper
+“User-centered evaluation of lyrics to audio alignment” [#lizemasclef2021]</p>
+<p>The parameters of this function were tuned on data collected through a user Karaoke-like
+experiment
+It reflects human judgment of how “synchronous” lyrics and audio stimuli are perceived
+in that setup.
+Beware that this metric is non-symmetrical and by construction it is also not equal to 1 at 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>reference_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>reference timestamps, in seconds</p>
+</dd>
+<dt><strong>estimated_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>estimated timestamps, in seconds</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>perceptual_score</strong><span class="classifier">float</span></dt><dd><p>Perceptual score, averaged over all timestamps</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reference_timestamps</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">load_events</span><span class="p">(</span><span class="s1">&#39;reference.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">estimated_timestamps</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">load_events</span><span class="p">(</span><span class="s1">&#39;estimated.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">score</span> <span class="o">=</span> <span class="n">mir_eval</span><span class="o">.</span><span class="n">align</span><span class="o">.</span><span class="n">karaoke_perceptual_metric</span><span class="p">(</span><span class="n">reference_onsets</span><span class="p">,</span> <span class="n">estimated_timestamps</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mir_eval.alignment.evaluate">
+<span class="sig-prename descclassname"><span class="pre">mir_eval.alignment.</span></span><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_timestamps</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.alignment.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute all metrics for the given reference and estimated annotations.
+Examples
+——–
+&gt;&gt;&gt; reference_timestamps = mir_eval.io.load_events(‘reference.txt’)
+&gt;&gt;&gt; estimated_timestamps = mir_eval.io.load_events(‘estimated.txt’)
+&gt;&gt;&gt; duration = max(np.max(reference_timestamps), np.max(estimated_timestamps)) + 10
+&gt;&gt;&gt; scores = mir_eval.align.evaluate(reference_onsets, estimated_timestamps, duration)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>reference_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>reference timestamp locations, in seconds</p>
+</dd>
+<dt><strong>estimated_timestamps</strong><span class="classifier">np.ndarray</span></dt><dd><p>estimated timestamp locations, in seconds</p>
+</dd>
+<dt><strong>kwargs</strong></dt><dd><p>Additional keyword arguments which will be passed to the
+appropriate metric or preprocessing functions.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>scores</strong><span class="classifier">dict</span></dt><dd><p>Dictionary of scores, where the key is the metric name (str) and
+the value is the (float) score achieved.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
 <section id="module-mir_eval.beat">
 <span id="mir-eval-beat"></span><h3><a class="reference internal" href="#module-mir_eval.beat" title="mir_eval.beat"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.beat</span></code></a><a class="headerlink" href="#module-mir_eval.beat" title="Permalink to this headline">¶</a></h3>
 <p>The aim of a beat detection algorithm is to report the times at which a typical
@@ -118,15 +374,15 @@ London, United Kingdom, 8 October 2009.</p>
 <dt>See also the Beat Evaluation Toolbox:</dt><dd><p><a class="reference external" href="https://code.soundsoftware.ac.uk/projects/beat-evaluation/">https://code.soundsoftware.ac.uk/projects/beat-evaluation/</a></p>
 </dd>
 </dl>
-<section id="conventions">
-<h4>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h4>
+<section id="id2">
+<h4>Conventions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <p>Beat times should be provided in the form of a 1-dimensional array of beat
 times in seconds in increasing order.  Typically, any beats which occur before
 5s are ignored; this can be accomplished using
 <a class="reference internal" href="#mir_eval.beat.trim_beats" title="mir_eval.beat.trim_beats"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.beat.trim_beats()</span></code></a>.</p>
 </section>
-<section id="metrics">
-<h4>Metrics<a class="headerlink" href="#metrics" title="Permalink to this headline">¶</a></h4>
+<section id="id3">
+<h4>Metrics<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.beat.f_measure" title="mir_eval.beat.f_measure"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.beat.f_measure()</span></code></a>: The F-measure of the beat sequence, where an
 estimated beat is considered correct if it is sufficiently close to a
@@ -462,10 +718,10 @@ shorthand (maj) and scale degrees (6), and the bass interval (5).
 This submodule provides functions both for comparing a sequences of chord
 labels according to some chord subalphabet mapping and for using these
 comparisons to score a sequence of estimated chords against a reference.</p>
-<section id="id2">
-<h4>Conventions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<section id="id4">
+<h4>Conventions<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <p>A sequence of chord labels is represented as a list of strings, where each
-label is the chord name based on the syntax of <a class="footnote-reference brackets" href="#harte2010towards" id="id3">1</a>.  Reference
+label is the chord name based on the syntax of <a class="footnote-reference brackets" href="#harte2010towards" id="id5">5</a>.  Reference
 and estimated chord label sequences should be of the same length for comparison
 functions.  When converting the chord string into its constituent parts,</p>
 <ul class="simple">
@@ -479,8 +735,8 @@ and may be absolute or relative depending on context in the code.</p></li>
 <p>If no chord is present at a given point in time, it should have the label ‘N’,
 which is defined in the variable <code class="docutils literal notranslate"><span class="pre">mir_eval.chord.NO_CHORD</span></code>.</p>
 </section>
-<section id="id4">
-<h4>Metrics<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<section id="id6">
+<h4>Metrics<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.chord.root" title="mir_eval.chord.root"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.chord.root()</span></code></a>: Only compares the root of the chords.</p></li>
 <li><p><a class="reference internal" href="#mir_eval.chord.majmin" title="mir_eval.chord.majmin"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.chord.majmin()</span></code></a>: Only compares major, minor, and “no chord”
@@ -522,11 +778,11 @@ between estimated and reference intervals.</p></li>
 under-segmentation between estimated and reference intervals.</p></li>
 </ul>
 </section>
-<section id="references">
-<h4>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h4>
+<section id="id7">
+<h4>References<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <div><dl class="footnote brackets">
-<dt class="label" id="harte2010towards"><span class="brackets">1</span><span class="fn-backref">(<a href="#id3">1</a>,<a href="#id5">2</a>)</span></dt>
+<dt class="label" id="harte2010towards"><span class="brackets">5</span><span class="fn-backref">(<a href="#id5">1</a>,<a href="#id8">2</a>)</span></dt>
 <dd><p>C. Harte. Towards Automatic Extraction of Harmony
 Information from Music Signals. PhD thesis, Queen Mary University of
 London, August 2010.</p>
@@ -1410,7 +1666,7 @@ gamut.</p>
 <dt class="sig sig-object py" id="mir_eval.chord.directional_hamming_distance">
 <span class="sig-prename descclassname"><span class="pre">mir_eval.chord.</span></span><span class="sig-name descname"><span class="pre">directional_hamming_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_intervals</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mir_eval.chord.directional_hamming_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the directional hamming distance between reference and
-estimated intervals as defined by <a class="footnote-reference brackets" href="#harte2010towards" id="id5">1</a> and used for MIREX
+estimated intervals as defined by <a class="footnote-reference brackets" href="#harte2010towards" id="id8">5</a> and used for MIREX
 ‘OverSeg’, ‘UnderSeg’ and ‘MeanSeg’ measures.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1628,8 +1884,8 @@ please refer to:</p>
 Evaluation”, International Society for Music Information Retrieval
 Conference (ISMIR), 2019.</p>
 </div></blockquote>
-<section id="id6">
-<h4>Conventions<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<section id="id9">
+<h4>Conventions<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
 <p>Melody annotations are assumed to be given in the format of a 1d array of
 frequency values which are accompanied by a 1d array of times denoting when
 each frequency value occurs.  In a reference melody time series, a frequency
@@ -1645,8 +1901,8 @@ to voicing arrays and frequency arrays in the format required by the
 metric functions.  By default, the convention is to resample the estimated
 melody time series to the reference melody time series’ timebase.</p>
 </section>
-<section id="id7">
-<h4>Metrics<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
+<section id="id10">
+<h4>Metrics<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.melody.voicing_measures" title="mir_eval.melody.voicing_measures"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.melody.voicing_measures()</span></code></a>: Voicing measures, including the
 recall rate (proportion of frames labeled as melody frames in the reference
@@ -2168,19 +2424,19 @@ the value is the (float) score achieved.</p>
 </dl>
 <p class="rubric">References</p>
 <dl class="footnote brackets">
-<dt class="label" id="id8"><span class="brackets">2</span></dt>
+<dt class="label" id="id11"><span class="brackets">6</span></dt>
 <dd><p>J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, “Melody
 Extraction from Polyphonic Music Signals: Approaches, Applications
 and Challenges”, IEEE Signal Processing Magazine, 31(2):118-134,
 Mar. 2014.</p>
 </dd>
-<dt class="label" id="id9"><span class="brackets">3</span></dt>
+<dt class="label" id="id12"><span class="brackets">7</span></dt>
 <dd><p>G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
 Streich, and B. Ong. “Melody transcription from music audio:
 Approaches and evaluation”, IEEE Transactions on Audio, Speech, and
 Language Processing, 15(4):1247-1256, 2007.</p>
 </dd>
-<dt class="label" id="id10"><span class="brackets">4</span></dt>
+<dt class="label" id="id13"><span class="brackets">8</span></dt>
 <dd><p>R. Bittner and J. Bosch, “Generalized Metrics for Single-F0
 Estimation Evaluation”, International Society for Music Information
 Retrieval Conference (ISMIR), 2019.</p>
@@ -2202,8 +2458,8 @@ Retrieval Conference (ISMIR), 2019.</p>
 <p>The goal of multiple f0 (multipitch) estimation and tracking is to identify
 all of the active fundamental frequencies in each time frame in a complex music
 signal.</p>
-<section id="id11">
-<h4>Conventions<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
+<section id="id14">
+<h4>Conventions<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
 <p>Multipitch estimates are represented by a timebase and a corresponding list
 of arrays of frequency estimates. Frequency estimates may have any number of
 frequency values, including 0 (represented by an empty array). Time values are
@@ -2221,25 +2477,25 @@ values modulo 12 to map them down to a single octave. A chroma-wrapped
 frequency estimate is correct if it’s single-octave value is within 0.5
 semitones of the single-octave reference frequency.</p>
 <p>The metrics are based on those described in
-<a class="footnote-reference brackets" href="#poliner2007" id="id12">5</a> and <a class="footnote-reference brackets" href="#bay2009" id="id13">6</a>.</p>
+<a class="footnote-reference brackets" href="#poliner2007" id="id15">9</a> and <a class="footnote-reference brackets" href="#bay2009" id="id16">10</a>.</p>
 </section>
-<section id="id14">
-<h4>Metrics<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
+<section id="id17">
+<h4>Metrics<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.multipitch.metrics" title="mir_eval.multipitch.metrics"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.multipitch.metrics()</span></code></a>: Precision, Recall, Accuracy,
 Substitution, Miss, False Alarm, and Total Error scores based both on raw
 frequency values and values mapped to a single octave (chroma).</p></li>
 </ul>
 </section>
-<section id="id15">
-<h4>References<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
+<section id="id18">
+<h4>References<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
 <dl class="footnote brackets">
-<dt class="label" id="poliner2007"><span class="brackets"><a class="fn-backref" href="#id12">5</a></span></dt>
+<dt class="label" id="poliner2007"><span class="brackets"><a class="fn-backref" href="#id15">9</a></span></dt>
 <dd><p>G. E. Poliner, and D. P. W. Ellis, “A Discriminative
 Model for Polyphonic Piano Transription”, EURASIP Journal on Advances in
 Signal Processing, 2007(1):154-163, Jan. 2007.</p>
 </dd>
-<dt class="label" id="bay2009"><span class="brackets"><a class="fn-backref" href="#id13">6</a></span></dt>
+<dt class="label" id="bay2009"><span class="brackets"><a class="fn-backref" href="#id16">10</a></span></dt>
 <dd><p>Bay, M., Ehmann, A. F., &amp; Downie, J. S. (2009). Evaluation of
 Multiple-F0 Estimation and Tracking Systems. In ISMIR (pp. 315-320).</p>
 </dd>
@@ -2559,13 +2815,13 @@ onset.</p>
 <blockquote>
 <div><p><a class="reference external" href="https://github.com/CPJKU/onset_detection/blob/master/onset_evaluation.py">https://github.com/CPJKU/onset_detection/blob/master/onset_evaluation.py</a></p>
 </div></blockquote>
-<section id="id16">
-<h4>Conventions<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
+<section id="id19">
+<h4>Conventions<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
 <p>Onsets should be provided in the form of a 1-dimensional array of onset
 times in seconds in increasing order.</p>
 </section>
-<section id="id17">
-<h4>Metrics<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
+<section id="id20">
+<h4>Metrics<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.onset.f_measure" title="mir_eval.onset.f_measure"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.onset.f_measure()</span></code></a>: Precision, Recall, and F-measure scores
 based on the number of esimated onsets which are sufficiently close to
@@ -2673,8 +2929,8 @@ the present patterns in a piece, but also to find all of their occurrences.</p>
 2013.</p>
 </dd>
 </dl>
-<section id="id18">
-<h4>Conventions<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
+<section id="id21">
+<h4>Conventions<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h4>
 <p>The input format can be automatically generated by calling
 <a class="reference internal" href="#mir_eval.io.load_patterns" title="mir_eval.io.load_patterns"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.io.load_patterns()</span></code></a>.  This format is a list of a list of
 tuples.  The first list collections patterns, each of which is a list of
@@ -2685,8 +2941,8 @@ of that pattern (i.e. the most representative of all the occurrences).  An
 occurrence is a list of tuples containing the onset time and the midi note
 number.</p>
 </section>
-<section id="id19">
-<h4>Metrics<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
+<section id="id22">
+<h4>Metrics<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.pattern.standard_FPR" title="mir_eval.pattern.standard_FPR"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.pattern.standard_FPR()</span></code></a>: Strict metric in order to find the
 possibly transposed patterns of exact length. This is the only metric that
@@ -3022,8 +3278,8 @@ of assigning labels to detected segments.  The estimated labels may be
 arbitrary strings - such as A, B, C, - and they need not describe functional
 concepts.  Metrics for structural annotation are similar to those used for
 clustering data.</p>
-<section id="id20">
-<h4>Conventions<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h4>
+<section id="id23">
+<h4>Conventions<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h4>
 <p>Both boundary and structural annotation metrics require two dimensional arrays
 with two columns, one for boundary start times and one for boundary end times.
 Structural annotation further require lists of reference and estimated segment
@@ -3033,17 +3289,17 @@ annotations express a partitioning of the track into intervals.  The function
 <a class="reference internal" href="#mir_eval.util.adjust_intervals" title="mir_eval.util.adjust_intervals"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.util.adjust_intervals()</span></code></a> can be used to pad or crop the segment
 boundaries to span the duration of the entire track.</p>
 </section>
-<section id="id21">
-<h4>Metrics<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h4>
+<section id="id24">
+<h4>Metrics<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.segment.detection" title="mir_eval.segment.detection"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.segment.detection()</span></code></a>: An estimated boundary is considered
 correct if it falls within a window around a reference boundary
-<a class="footnote-reference brackets" href="#turnbull2007" id="id22">7</a></p></li>
+<a class="footnote-reference brackets" href="#turnbull2007" id="id25">11</a></p></li>
 <li><p><a class="reference internal" href="#mir_eval.segment.deviation" title="mir_eval.segment.deviation"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.segment.deviation()</span></code></a>: Computes the median absolute time
 difference from a reference boundary to its nearest estimated boundary, and
-vice versa <a class="footnote-reference brackets" href="#turnbull2007" id="id23">7</a></p></li>
+vice versa <a class="footnote-reference brackets" href="#turnbull2007" id="id26">11</a></p></li>
 <li><p><a class="reference internal" href="#mir_eval.segment.pairwise" title="mir_eval.segment.pairwise"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.segment.pairwise()</span></code></a>: For classifying pairs of sampled time
-instants as belonging to the same structural component <a class="footnote-reference brackets" href="#levy2008" id="id24">8</a></p></li>
+instants as belonging to the same structural component <a class="footnote-reference brackets" href="#levy2008" id="id27">12</a></p></li>
 <li><p><a class="reference internal" href="#mir_eval.segment.rand_index" title="mir_eval.segment.rand_index"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.segment.rand_index()</span></code></a>: Clusters reference and estimated
 annotations and compares them by the Rand Index</p></li>
 <li><p><a class="reference internal" href="#mir_eval.segment.ari" title="mir_eval.segment.ari"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.segment.ari()</span></code></a>: Computes the Rand index, adjusted for chance</p></li>
@@ -3051,37 +3307,37 @@ annotations and compares them by the Rand Index</p></li>
 labels as samples of random variables <span class="math">Y_R, Y_E</span> from which the
 conditional entropy of <span class="math">Y_R</span> given <span class="math">Y_E</span> (Under-Segmentation) and
 <span class="math">Y_E</span> given <span class="math">Y_R</span> (Over-Segmentation) are estimated
-<a class="footnote-reference brackets" href="#lukashevich2008" id="id25">9</a></p></li>
+<a class="footnote-reference brackets" href="#lukashevich2008" id="id28">13</a></p></li>
 <li><p><a class="reference internal" href="#mir_eval.segment.mutual_information" title="mir_eval.segment.mutual_information"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.segment.mutual_information()</span></code></a>: Computes the standard,
 normalized, and adjusted mutual information of sampled reference and
 estimated segments</p></li>
 <li><p><a class="reference internal" href="#mir_eval.segment.vmeasure" title="mir_eval.segment.vmeasure"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.segment.vmeasure()</span></code></a>: Computes the V-Measure, which is similar
 to the conditional entropy metrics, but uses the marginal distributions
 as normalization rather than the maximum entropy distribution
-<a class="footnote-reference brackets" href="#rosenberg2007" id="id26">10</a></p></li>
+<a class="footnote-reference brackets" href="#rosenberg2007" id="id29">14</a></p></li>
 </ul>
 </section>
-<section id="id27">
-<h4>References<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h4>
+<section id="id30">
+<h4>References<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <div><dl class="footnote brackets">
-<dt class="label" id="turnbull2007"><span class="brackets">7</span><span class="fn-backref">(<a href="#id22">1</a>,<a href="#id23">2</a>)</span></dt>
+<dt class="label" id="turnbull2007"><span class="brackets">11</span><span class="fn-backref">(<a href="#id25">1</a>,<a href="#id26">2</a>)</span></dt>
 <dd><p>Turnbull, D., Lanckriet, G. R., Pampalk, E.,
 &amp; Goto, M.  A Supervised Approach for Detecting Boundaries in Music
 Using Difference Features and Boosting. In ISMIR (pp. 51-54).</p>
 </dd>
-<dt class="label" id="levy2008"><span class="brackets"><a class="fn-backref" href="#id24">8</a></span></dt>
+<dt class="label" id="levy2008"><span class="brackets"><a class="fn-backref" href="#id27">12</a></span></dt>
 <dd><p>Levy, M., &amp; Sandler, M.
 Structural segmentation of musical audio by constrained clustering.
 IEEE transactions on audio, speech, and language processing, 16(2),
 318-326.</p>
 </dd>
-<dt class="label" id="lukashevich2008"><span class="brackets"><a class="fn-backref" href="#id25">9</a></span></dt>
+<dt class="label" id="lukashevich2008"><span class="brackets"><a class="fn-backref" href="#id28">13</a></span></dt>
 <dd><p>Lukashevich, H. M.
 Towards Quantitative Measures of Evaluating Song Segmentation.
 In ISMIR (pp. 375-380).</p>
 </dd>
-<dt class="label" id="rosenberg2007"><span class="brackets"><a class="fn-backref" href="#id26">10</a></span></dt>
+<dt class="label" id="rosenberg2007"><span class="brackets"><a class="fn-backref" href="#id29">14</a></span></dt>
 <dd><p>Rosenberg, A., &amp; Hirschberg, J.
 V-Measure: A Conditional Entropy-Based External Cluster Evaluation
 Measure.
@@ -3659,8 +3915,8 @@ a kind of “parse tree” of the composition.  Unlike the flat segmentation
 metrics defined in <a class="reference internal" href="#module-mir_eval.segment" title="mir_eval.segment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.segment</span></code></a>, which can only encode one level of
 analysis, hierarchical annotations expose the relationships between short
 segments and the larger compositional elements to which they belong.</p>
-<section id="id28">
-<h4>Conventions<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h4>
+<section id="id31">
+<h4>Conventions<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h4>
 <p>Annotations are assumed to take the form of an ordered list of segmentations.
 As in the <a class="reference internal" href="#module-mir_eval.segment" title="mir_eval.segment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.segment</span></code></a> metrics, each segmentation itself consists of
 an n-by-2 array of interval times, so that the <code class="docutils literal notranslate"><span class="pre">i</span></code> th segment spans time
@@ -3669,8 +3925,8 @@ an n-by-2 array of interval times, so that the <code class="docutils literal not
 first segmentation should contain the fewest segments, and the last
 segmentation contains the most.</p>
 </section>
-<section id="id29">
-<h4>Metrics<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h4>
+<section id="id32">
+<h4>Metrics<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.hierarchy.tmeasure" title="mir_eval.hierarchy.tmeasure"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.hierarchy.tmeasure()</span></code></a>: Precision, recall, and F-measure of
 triplet-based frame accuracy for boundary detection.</p></li>
@@ -3678,17 +3934,17 @@ triplet-based frame accuracy for boundary detection.</p></li>
 triplet-based frame accuracy for segment labeling.</p></li>
 </ul>
 </section>
-<section id="id30">
-<h4>References<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h4>
+<section id="id33">
+<h4>References<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <div><dl class="footnote brackets">
-<dt class="label" id="mcfee2015"><span class="brackets">11</span></dt>
+<dt class="label" id="mcfee2015"><span class="brackets">15</span></dt>
 <dd><p>Brian McFee, Oriol Nieto, and Juan P. Bello.
 “Hierarchical evaluation of segment boundary detection”,
 International Society for Music Information Retrieval (ISMIR) conference,
 2015.</p>
 </dd>
-<dt class="label" id="mcfee2017"><span class="brackets">12</span></dt>
+<dt class="label" id="mcfee2017"><span class="brackets">16</span></dt>
 <dd><p>Brian McFee, Oriol Nieto, Morwaread Farbood, and
 Juan P. Bello.
 “Evaluating hierarchical structure in music annotations”,
@@ -3777,7 +4033,7 @@ ordered from top to bottom, so that the last list of intervals should
 be the most specific.</p>
 </dd>
 <dt><strong>reference_labels_hier</strong><span class="classifier">list of list of str</span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">reference_labels_hier[i]</span></code> contains the segment labels for the
-<a href="#id31"><span class="problematic" id="id32">``</span></a>i``th layer of the annotations</p>
+<a href="#id34"><span class="problematic" id="id35">``</span></a>i``th layer of the annotations</p>
 </dd>
 <dt><strong>estimated_intervals_hier</strong><span class="classifier">list of ndarray</span></dt><dd></dd>
 <dt><strong>estimated_labels_hier</strong><span class="classifier">list of ndarray</span></dt><dd><p>Like <code class="docutils literal notranslate"><span class="pre">reference_intervals_hier</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_labels_hier</span></code>
@@ -3904,16 +4160,16 @@ attempt to measure the perceptual quality of the separation.</p>
 <dt>See also the bss_eval MATLAB toolbox:</dt><dd><p><a class="reference external" href="http://bass-db.gforge.inria.fr/bss_eval/">http://bass-db.gforge.inria.fr/bss_eval/</a></p>
 </dd>
 </dl>
-<section id="id33">
-<h4>Conventions<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h4>
+<section id="id36">
+<h4>Conventions<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h4>
 <p>An audio signal is expected to be in the format of a 1-dimensional array where
 the entries are the samples of the audio signal.  When providing a group of
 estimated or reference sources, they should be provided in a 2-dimensional
 array, where the first dimension corresponds to the source number and the
 second corresponds to the samples.</p>
 </section>
-<section id="id34">
-<h4>Metrics<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h4>
+<section id="id37">
+<h4>Metrics<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.separation.bss_eval_sources" title="mir_eval.separation.bss_eval_sources"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.separation.bss_eval_sources()</span></code></a>: Computes the bss_eval_sources
 metrics from bss_eval, which optionally optimally match the estimated sources
@@ -3929,11 +4185,11 @@ distortion ratio.</p></li>
 bss_eval_images metrics on a frame-by-frame basis.</p></li>
 </ul>
 </section>
-<section id="id35">
-<h4>References<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h4>
+<section id="id38">
+<h4>References<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <div><dl class="footnote brackets">
-<dt class="label" id="vincent2006performance"><span class="brackets">13</span><span class="fn-backref">(<a href="#id36">1</a>,<a href="#id38">2</a>)</span></dt>
+<dt class="label" id="vincent2006performance"><span class="brackets">17</span><span class="fn-backref">(<a href="#id39">1</a>,<a href="#id41">2</a>)</span></dt>
 <dd><p>Emmanuel Vincent, Rémi Gribonval, and Cédric
 Févotte, “Performance measurement in blind audio source separation,” IEEE
 Trans. on Audio, Speech and Language Processing, 14(4):1462-1469, 2006.</p>
@@ -3963,7 +4219,7 @@ errors if not.</p>
 <dd><p>Ordering and measurement of the separation quality for estimated source
 signals in terms of filtered true source, interference and artifacts.</p>
 <p>The decomposition allows a time-invariant filter distortion of length
-512, as described in Section III.B of <a class="footnote-reference brackets" href="#vincent2006performance" id="id36">13</a>.</p>
+512, as described in Section III.B of <a class="footnote-reference brackets" href="#vincent2006performance" id="id39">17</a>.</p>
 <p>Passing <code class="docutils literal notranslate"><span class="pre">False</span></code> for <code class="docutils literal notranslate"><span class="pre">compute_permutation</span></code> will improve the computation
 performance of the evaluation; however, it is not always appropriate and
 is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_sources.</p>
@@ -3998,7 +4254,7 @@ true source number <code class="docutils literal notranslate"><span class="pre">
 </dl>
 <p class="rubric">References</p>
 <dl class="footnote brackets">
-<dt class="label" id="id37"><span class="brackets">14</span></dt>
+<dt class="label" id="id40"><span class="brackets">18</span></dt>
 <dd><p>Emmanuel Vincent, Shoko Araki, Fabian J. Theis, Guido Nolte, Pau
 Bofill, Hiroshi Sawada, Alexey Ozerov, B. Vikrham Gowreesunker, Dominik
 Lutter and Ngoc Q.K. Duong, “The Signal Separation Evaluation Campaign
@@ -4093,7 +4349,7 @@ BSS_EVAL Matlab toolbox.</p>
 signals in terms of filtered true source, interference and artifacts.
 This method also provides the ISR measure.</p>
 <p>The decomposition allows a time-invariant filter distortion of length
-512, as described in Section III.B of <a class="footnote-reference brackets" href="#vincent2006performance" id="id38">13</a>.</p>
+512, as described in Section III.B of <a class="footnote-reference brackets" href="#vincent2006performance" id="id41">17</a>.</p>
 <p>Passing <code class="docutils literal notranslate"><span class="pre">False</span></code> for <code class="docutils literal notranslate"><span class="pre">compute_permutation</span></code> will improve the computation
 performance of the evaluation; however, it is not always appropriate and
 is not the way that the BSS_EVAL Matlab toolbox computes bss_eval_images.</p>
@@ -4128,7 +4384,7 @@ if <code class="docutils literal notranslate"><span class="pre">compute_permutat
 </dl>
 <p class="rubric">References</p>
 <dl class="footnote brackets">
-<dt class="label" id="id39"><span class="brackets">15</span></dt>
+<dt class="label" id="id42"><span class="brackets">19</span></dt>
 <dd><p>Emmanuel Vincent, Shoko Araki, Fabian J. Theis, Guido Nolte, Pau
 Bofill, Hiroshi Sawada, Alexey Ozerov, B. Vikrham Gowreesunker, Dominik
 Lutter and Ngoc Q.K. Duong, “The Signal Separation Evaluation Campaign
@@ -4262,14 +4518,14 @@ the value is the (float) score achieved.</p>
 of a piece of music, measured in beats per minute (BPM).</p>
 <p>See <a class="reference external" href="http://www.music-ir.org/mirex/wiki/2014:Audio_Tempo_Estimation">http://www.music-ir.org/mirex/wiki/2014:Audio_Tempo_Estimation</a> for a
 description of the task and evaluation criteria.</p>
-<section id="id40">
-<h4>Conventions<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h4>
+<section id="id43">
+<h4>Conventions<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h4>
 <p>Reference and estimated tempi should be positive, and provided in ascending
 order as a numpy array of length 2.</p>
 <p>The weighting value from the reference must be a float in the range [0, 1].</p>
 </section>
-<section id="id41">
-<h4>Metrics<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h4>
+<section id="id44">
+<h4>Metrics<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.tempo.detection" title="mir_eval.tempo.detection"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.tempo.detection()</span></code></a>: Relative error, hits, and weighted
 precision of tempo estimation.</p></li>
@@ -4448,16 +4704,16 @@ latter (<code class="docutils literal notranslate"><span class="pre">&lt;=</span
 <a class="reference internal" href="#mir_eval.transcription.precision_recall_f1_overlap" title="mir_eval.transcription.precision_recall_f1_overlap"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.transcription.precision_recall_f1_overlap()</span></code></a> in which case
 <code class="docutils literal notranslate"><span class="pre">&lt;</span></code> will be used. The default value (<code class="docutils literal notranslate"><span class="pre">strict=False</span></code>) is the same as that
 used in MIREX 2015 for the Note Tracking subtask on the Su dataset.</p>
-<section id="id42">
-<h4>Conventions<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h4>
+<section id="id45">
+<h4>Conventions<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h4>
 <p>Notes should be provided in the form of an interval array and a pitch array.
 The interval array contains two columns, one for note onsets and the second
 for note offsets (each row represents a single note). The pitch array contains
 one column with the corresponding note pitch values (one value per note),
 represented by their fundamental frequency (f0) in Hertz.</p>
 </section>
-<section id="id43">
-<h4>Metrics<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h4>
+<section id="id46">
+<h4>Metrics<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.transcription.precision_recall_f1_overlap" title="mir_eval.transcription.precision_recall_f1_overlap"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.transcription.precision_recall_f1_overlap()</span></code></a>: The precision,
 recall, F-measure, and Average Overlap Ratio of the note transcription,
@@ -4978,7 +5234,7 @@ correctly transcribed. This is done by defining a new function
 <a class="reference internal" href="#mir_eval.transcription_velocity.match_notes" title="mir_eval.transcription_velocity.match_notes"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.transcription_velocity.match_notes()</span></code></a> which first calls
 <a class="reference internal" href="#mir_eval.transcription.match_notes" title="mir_eval.transcription.match_notes"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.transcription.match_notes()</span></code></a> to get a note matching based on
 onset, offset, and pitch. Then, we follow the evaluation procedure described in
-<a class="footnote-reference brackets" href="#hawthorne2018onsets" id="id44">16</a> to test whether an estimated note should be considered
+<a class="footnote-reference brackets" href="#hawthorne2018onsets" id="id47">20</a> to test whether an estimated note should be considered
 correct:</p>
 <ol class="arabic simple">
 <li><p>Reference velocities are re-scaled to the range [0, 1].</p></li>
@@ -4994,14 +5250,14 @@ velocities are within a predefined threshold, defaulting to 0.1.</p></li>
 <p><a class="reference internal" href="#mir_eval.transcription_velocity.match_notes" title="mir_eval.transcription_velocity.match_notes"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.transcription_velocity.match_notes()</span></code></a> is used to define a new
 variant <a class="reference internal" href="#mir_eval.transcription_velocity.precision_recall_f1_overlap" title="mir_eval.transcription_velocity.precision_recall_f1_overlap"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.transcription_velocity.precision_recall_f1_overlap()</span></code></a>
 which considers velocity.</p>
-<section id="id45">
-<h4>Conventions<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h4>
+<section id="id48">
+<h4>Conventions<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h4>
 <p>This submodule follows the conventions of <a class="reference internal" href="#module-mir_eval.transcription" title="mir_eval.transcription"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.transcription</span></code></a> and
 additionally requires velocities to be provided as MIDI velocities in the range
 [0, 127].</p>
 </section>
-<section id="id46">
-<h4>Metrics<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h4>
+<section id="id49">
+<h4>Metrics<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.transcription_velocity.precision_recall_f1_overlap" title="mir_eval.transcription_velocity.precision_recall_f1_overlap"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.transcription_velocity.precision_recall_f1_overlap()</span></code></a>: The
 precision, recall, F-measure, and Average Overlap Ratio of the note
@@ -5010,11 +5266,11 @@ onset, velocity and (optionally) offset are sufficiently close to a reference
 note.</p></li>
 </ul>
 </section>
-<section id="id47">
-<h4>References<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h4>
+<section id="id50">
+<h4>References<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <div><dl class="footnote brackets">
-<dt class="label" id="hawthorne2018onsets"><span class="brackets"><a class="fn-backref" href="#id44">16</a></span></dt>
+<dt class="label" id="hawthorne2018onsets"><span class="brackets"><a class="fn-backref" href="#id47">20</a></span></dt>
 <dd><p>Curtis Hawthorne, Erich Elsen, Jialin Song, Adam
 Roberts, Ian Simon, Colin Raffel, Jesse Engel, Sageev Oore, and Douglas
 Eck, “Onsets and Frames: Dual-Objective Piano Transcription”, Proceedings
@@ -5242,16 +5498,16 @@ the value is the (float) score achieved.</p>
 and note transitions) in a piece of music.  Key detection algorithms are
 evaluated by comparing their estimated key to a ground-truth reference key and
 reporting a score according to the relationship of the keys.</p>
-<section id="id48">
-<h4>Conventions<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h4>
+<section id="id51">
+<h4>Conventions<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h4>
 <p>Keys are represented as strings of the form <code class="docutils literal notranslate"><span class="pre">'(key)</span> <span class="pre">(mode)'</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">'C#</span>
 <span class="pre">major'</span></code> or <code class="docutils literal notranslate"><span class="pre">'Fb</span> <span class="pre">minor'</span></code>.  The case of the key is ignored.  Note that certain
 key strings are equivalent, e.g. <code class="docutils literal notranslate"><span class="pre">'C#</span> <span class="pre">major'</span></code> and <code class="docutils literal notranslate"><span class="pre">'Db</span> <span class="pre">major'</span></code>.  The mode
 may only be specified as either <code class="docutils literal notranslate"><span class="pre">'major'</span></code> or <code class="docutils literal notranslate"><span class="pre">'minor'</span></code>, no other mode
 strings will be accepted.</p>
 </section>
-<section id="id49">
-<h4>Metrics<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h4>
+<section id="id52">
+<h4>Metrics<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference internal" href="#mir_eval.key.weighted_score" title="mir_eval.key.weighted_score"><code class="xref py py-func docutils literal notranslate"><span class="pre">mir_eval.key.weighted_score()</span></code></a>: Heuristic scoring of the relation of two
 keys.</p></li>
@@ -6681,7 +6937,7 @@ If none is provided, a new set of axes is created.</p>
 <td><p>Return the format for tick value <em>x</em> at position pos.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fix_minus</span></code>(s)</p></td>
-<td><p>Some classes may want to replace a hyphen for minus with the proper unicode symbol (U+2212) for typographical correctness. This is a helper method to perform such a replacement when it is enabled via <a href="#id50"><span class="problematic" id="id51">:rc:`axes.unicode_minus`</span></a>.</p></td>
+<td><p>Some classes may want to replace a hyphen for minus with the proper unicode symbol (U+2212) for typographical correctness. This is a helper method to perform such a replacement when it is enabled via <a href="#id53"><span class="problematic" id="id54">:rc:`axes.unicode_minus`</span></a>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">format_data</span></code>(value)</p></td>
 <td><p>Return the full string representation of the value with the position unspecified.</p></td>
@@ -6998,75 +7254,81 @@ By default, uses the current axes handle.</p>
 <li><a class="reference internal" href="#installing-mir-eval">Installing <code class="docutils literal notranslate"><span class="pre">mir_eval</span></code></a></li>
 <li><a class="reference internal" href="#using-mir-eval">Using <code class="docutils literal notranslate"><span class="pre">mir_eval</span></code></a></li>
 <li><a class="reference internal" href="#mir-eval"><code class="docutils literal notranslate"><span class="pre">mir_eval</span></code></a><ul>
-<li><a class="reference internal" href="#module-mir_eval.beat"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.beat</span></code></a><ul>
+<li><a class="reference internal" href="#mir-eval-alignment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.alignment</span></code></a><ul>
 <li><a class="reference internal" href="#conventions">Conventions</a></li>
 <li><a class="reference internal" href="#metrics">Metrics</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-mir_eval.chord"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.chord</span></code></a><ul>
-<li><a class="reference internal" href="#id2">Conventions</a></li>
-<li><a class="reference internal" href="#id4">Metrics</a></li>
 <li><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#module-mir_eval.beat"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.beat</span></code></a><ul>
+<li><a class="reference internal" href="#id2">Conventions</a></li>
+<li><a class="reference internal" href="#id3">Metrics</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mir_eval.chord"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.chord</span></code></a><ul>
+<li><a class="reference internal" href="#id4">Conventions</a></li>
+<li><a class="reference internal" href="#id6">Metrics</a></li>
+<li><a class="reference internal" href="#id7">References</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-mir_eval.melody"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.melody</span></code></a><ul>
-<li><a class="reference internal" href="#id6">Conventions</a></li>
-<li><a class="reference internal" href="#id7">Metrics</a></li>
+<li><a class="reference internal" href="#id9">Conventions</a></li>
+<li><a class="reference internal" href="#id10">Metrics</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-mir_eval.multipitch"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.multipitch</span></code></a><ul>
-<li><a class="reference internal" href="#id11">Conventions</a></li>
-<li><a class="reference internal" href="#id14">Metrics</a></li>
-<li><a class="reference internal" href="#id15">References</a></li>
+<li><a class="reference internal" href="#id14">Conventions</a></li>
+<li><a class="reference internal" href="#id17">Metrics</a></li>
+<li><a class="reference internal" href="#id18">References</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-mir_eval.onset"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.onset</span></code></a><ul>
-<li><a class="reference internal" href="#id16">Conventions</a></li>
-<li><a class="reference internal" href="#id17">Metrics</a></li>
+<li><a class="reference internal" href="#id19">Conventions</a></li>
+<li><a class="reference internal" href="#id20">Metrics</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-mir_eval.pattern"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.pattern</span></code></a><ul>
-<li><a class="reference internal" href="#id18">Conventions</a></li>
-<li><a class="reference internal" href="#id19">Metrics</a></li>
+<li><a class="reference internal" href="#id21">Conventions</a></li>
+<li><a class="reference internal" href="#id22">Metrics</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-mir_eval.segment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.segment</span></code></a><ul>
-<li><a class="reference internal" href="#id20">Conventions</a></li>
-<li><a class="reference internal" href="#id21">Metrics</a></li>
-<li><a class="reference internal" href="#id27">References</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-mir_eval.hierarchy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.hierarchy</span></code></a><ul>
-<li><a class="reference internal" href="#id28">Conventions</a></li>
-<li><a class="reference internal" href="#id29">Metrics</a></li>
+<li><a class="reference internal" href="#id23">Conventions</a></li>
+<li><a class="reference internal" href="#id24">Metrics</a></li>
 <li><a class="reference internal" href="#id30">References</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#module-mir_eval.hierarchy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.hierarchy</span></code></a><ul>
+<li><a class="reference internal" href="#id31">Conventions</a></li>
+<li><a class="reference internal" href="#id32">Metrics</a></li>
+<li><a class="reference internal" href="#id33">References</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-mir_eval.separation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.separation</span></code></a><ul>
-<li><a class="reference internal" href="#id33">Conventions</a></li>
-<li><a class="reference internal" href="#id34">Metrics</a></li>
-<li><a class="reference internal" href="#id35">References</a></li>
+<li><a class="reference internal" href="#id36">Conventions</a></li>
+<li><a class="reference internal" href="#id37">Metrics</a></li>
+<li><a class="reference internal" href="#id38">References</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-mir_eval.tempo"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.tempo</span></code></a><ul>
-<li><a class="reference internal" href="#id40">Conventions</a></li>
-<li><a class="reference internal" href="#id41">Metrics</a></li>
+<li><a class="reference internal" href="#id43">Conventions</a></li>
+<li><a class="reference internal" href="#id44">Metrics</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-mir_eval.transcription"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.transcription</span></code></a><ul>
-<li><a class="reference internal" href="#id42">Conventions</a></li>
-<li><a class="reference internal" href="#id43">Metrics</a></li>
+<li><a class="reference internal" href="#id45">Conventions</a></li>
+<li><a class="reference internal" href="#id46">Metrics</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-mir_eval.transcription_velocity"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.transcription_velocity</span></code></a><ul>
-<li><a class="reference internal" href="#id45">Conventions</a></li>
-<li><a class="reference internal" href="#id46">Metrics</a></li>
-<li><a class="reference internal" href="#id47">References</a></li>
+<li><a class="reference internal" href="#id48">Conventions</a></li>
+<li><a class="reference internal" href="#id49">Metrics</a></li>
+<li><a class="reference internal" href="#id50">References</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-mir_eval.key"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.key</span></code></a><ul>
-<li><a class="reference internal" href="#id48">Conventions</a></li>
-<li><a class="reference internal" href="#id49">Metrics</a></li>
+<li><a class="reference internal" href="#id51">Conventions</a></li>
+<li><a class="reference internal" href="#id52">Metrics</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-mir_eval.util"><code class="xref py py-mod docutils literal notranslate"><span class="pre">mir_eval.util</span></code></a></li>

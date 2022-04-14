@@ -79,6 +79,14 @@ Finally, each task submodule also includes functions for common data pre-process
 
 The following subsections document each submodule.
 
+:mod:`mir_eval.alignment`
+--------------------
+.. automodule:: mir_eval.alignment
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+
 :mod:`mir_eval.beat`
 --------------------
 .. automodule:: mir_eval.beat
