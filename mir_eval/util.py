@@ -960,7 +960,7 @@ def midi_to_hz(midi):
 
 
 def estimate_hop_length(times):
-    """Estimate hop length of a semi-regular but non-uniform series of times.
+    '''Estimate hop length of a semi-regular but non-uniform series of times.
 
     Parameters
     ----------
@@ -971,7 +971,10 @@ def estimate_hop_length(times):
     -------
     hop_length : number
         Estimated hop length (seconds)
-    """
+    '''
+
+    if not len(times):
+        raise ValueError("Cannot estimate hop length from an empty time array.")
 
     # Make sure the times are sorted
     times = np.sort(times)
@@ -987,7 +990,7 @@ def estimate_hop_length(times):
 
 
 def time_series_to_uniform(times, values, hop_length=None, duration=None):
-    """Convert a semi-regular time series with gaps into a uniform time series.
+    '''Convert a semi-regular time series with gaps into a uniform time series.
 
     Parameters
     ----------
@@ -1007,9 +1010,9 @@ def time_series_to_uniform(times, values, hop_length=None, duration=None):
         Uniform time array
     values : ndarray
         Observations corresponding to uniform times
-    """
+    '''
 
-    if not len(times) and duration is None:
+    if not len(times) or not len(values):
         return np.array([]), []
 
     if hop_length is None:
