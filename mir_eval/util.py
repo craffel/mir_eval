@@ -1022,16 +1022,12 @@ def time_series_to_uniform(times, values, hop_length=None, duration=None):
             "unwanted behavior if the observation times are sporadic or irregular.")
         hop_length = estimate_hop_length(times)
 
-    # Add an extra entry when duration is unknown
-    extra = 0
-
     if duration is None:
         # Default the duration to the last reported time in the series
         duration = times[-1]
-        extra += 1
 
     # Determine the total number of observations in the uniform time series
-    num_entries = int(np.ceil(duration / hop_length)) + extra
+    num_entries = int(np.ceil(duration / hop_length)) + 1
 
     # Attempt to fill in blank frames with the appropriate value
     empty_fill = np.array([])
