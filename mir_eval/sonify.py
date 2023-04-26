@@ -155,6 +155,9 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     time_centers = np.mean(times, axis=1) * float(fs)
 
     for n, frequency in enumerate(frequencies):
+        if np.sum(gram[n,:]) < 0.01: # TODO set threshold intelligently.
+            # print(f"Freq {n}, {frequency} has no energy") 
+            continue
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
 
