@@ -540,7 +540,7 @@ def _contingency_matrix(reference_indices, estimated_indices):
     return scipy.sparse.coo_matrix((np.ones(ref_class_idx.shape[0]),
                                     (ref_class_idx, est_class_idx)),
                                    shape=(n_ref_classes, n_est_classes),
-                                   dtype=np.int).toarray()
+                                   dtype=np.int64).toarray()
 
 
 def _adjusted_rand_index(reference_indices, estimated_indices):
@@ -720,7 +720,7 @@ def _entropy(labels):
     if len(labels) == 0:
         return 1.0
     label_idx = np.unique(labels, return_inverse=True)[1]
-    pi = np.bincount(label_idx).astype(np.float)
+    pi = np.bincount(label_idx).astype(np.float64)
     pi = pi[pi > 0]
     pi_sum = np.sum(pi)
     # log(a / b) should be calculated as log(a) - log(b) for
