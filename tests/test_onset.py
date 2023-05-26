@@ -43,7 +43,7 @@ def __unit_test_onset_function(metric):
     nose.tools.assert_raises(ValueError, metric, onsets, onsets)
 
     # Valid onsets which are the same produce a score of 1 for all metrics
-    onsets = np.arange(10, dtype=np.float)
+    onsets = np.arange(10, dtype=np.float64)
     assert np.allclose(metric(onsets, onsets), 1)
 
 
