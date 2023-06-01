@@ -103,11 +103,18 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     if length is None:
         length = int(times[-1, 1] * fs)
 
-    times, _ = util.adjust_intervals(times, t_max=length)
+    last_time_in_secs = float(length) / fs
+    times, _ = util.adjust_intervals(times, t_max=last_time_in_secs)
 
-    # Truncate times so that the shape matches gram
-    n_times = gram.shape[1]
-    times = times[:n_times]
+    # Truncate times so that the shape matches gram. However if the time boundaries were converted
+    # to intervals, then the number of times will be reduced by one, so we only truncate
+    # if the gram is smaller.
+    if gram.shape[1] < times.shape[0]:
+        n_times = gram.shape[1]
+        times = times[:n_times]
+    else:
+        n_times = times.shape[0]
+    sample_intervals = (times * fs).astype(int)
 
     def _fast_synthesize(frequency):
         """A faster way to synthesize a signal.
@@ -147,6 +154,8 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
             return value
         return __interpolator
 
+    print(f"sonify.time_frequency length {length}, n_times {n_times}, gram shape {gram.shape}, times shape {times.shape}")
+
     # Threshold the tfgram to remove non-positive values
     gram = np.maximum(gram, 0)
 
@@ -154,31 +163,33 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     output = np.zeros(length)
     time_centers = np.mean(times, axis=1) * float(fs)
 
-    spectral_energies = np.sum(gram, axis = 1)
+    # Not really a true spectral energy, just a summation for optimisation.
+    spectral_sums = np.sum(gram, axis = 1)
     for n, frequency in enumerate(frequencies):
-        if spectral_energies[n] < 0.01: # TODO set threshold intelligently.
-            # print(f"Freq {n}, {frequency} has no energy") 
+        if spectral_sums[n] < 0.01: # TODO set threshold intelligently.
             continue
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
+        print(f"Freq {n} {frequency}Hz energy {spectral_sums[n]}, length of wave {len(wave)}")
 
         # Interpolate the values in gram over the time grid
         if len(time_centers) > 1:
             gram_interpolator = interp1d(
-                time_centers, gram[n, :],
+                time_centers, gram[n, :-1],
                 kind='linear', bounds_error=False,
                 fill_value=(gram[n, 0], gram[n, -1]))
         # If only one time point, create constant interpolator
         else:
             gram_interpolator = _const_interpolator(gram[n, 0])
 
-        # Scale each time interval by the piano roll magnitude
-        for m, (start, end) in enumerate((times * fs).astype(int)):
+        scaler = np.zeros(length)
+        # Create the time-varying scaling for each time interval by the piano roll magnitude
+        for m, (start, end) in enumerate(sample_intervals):
             # Clip the timings to make sure the indices are valid
             start, end = max(start, 0), min(end, length)
-            # add to waveform
-            output[start:end] += (
-                wave[start:end] * gram_interpolator(np.arange(start, end)))
+            scaler[start:end] = gram_interpolator(np.arange(start, end))
+        # add to waveform
+        output += wave[:length] * scaler
 
     # Normalize, but only if there's non-zero values
     norm = np.abs(output).max()
