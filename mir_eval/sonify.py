@@ -154,7 +154,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
             return value
         return __interpolator
 
-    print(f"sonify.time_frequency length {length}, n_times {n_times}, gram shape {gram.shape}, times shape {times.shape}")
+    # print(f"sonify.time_frequency length {length}, n_times {n_times}, gram shape {gram.shape}, times shape {times.shape}")
 
     # Threshold the tfgram to remove non-positive values
     gram = np.maximum(gram, 0)
@@ -170,7 +170,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
             continue
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
-        print(f"Freq {n} {frequency}Hz energy {spectral_sums[n]}, length of wave {len(wave)}")
+        # print(f"Freq {n} {frequency}Hz energy {spectral_sums[n]}, length of wave {len(wave)}")
 
         # Interpolate the values in gram over the time grid
         if len(time_centers) > 1:
