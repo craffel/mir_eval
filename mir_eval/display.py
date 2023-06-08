@@ -532,7 +532,7 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
 
     # First, segment into contiguously voiced contours
     frequencies, voicings = freq_to_voicing(np.asarray(frequencies,
-                                                       dtype=np.float))
+                                                       dtype=np.float64))
     voicings = voicings.astype(bool)
 
     # Here are all the change-points
@@ -638,7 +638,7 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None,
         if not len(freqs):
             continue
 
-        freqs, voicings = freq_to_voicing(np.asarray(freqs, dtype=np.float))
+        freqs, voicings = freq_to_voicing(np.asarray(freqs, dtype=np.float64))
 
         # Discard all 0-frequency measurements
         idx = freqs > 0

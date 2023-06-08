@@ -510,7 +510,7 @@ def encode(chord_label, reduce_extended_chords=False,
         semitone_bitmap += scale_degree_to_bitmap(scale_degree,
                                                   reduce_extended_chords)
 
-    semitone_bitmap = (semitone_bitmap > 0).astype(np.int)
+    semitone_bitmap = (semitone_bitmap > 0).astype(np.int64)
     if not semitone_bitmap[bass_number] and strict_bass_intervals:
         raise InvalidChordException(
             "Given bass scale degree is absent from this chord: "
@@ -544,8 +544,8 @@ def encode_many(chord_labels, reduce_extended_chords=False):
 
     """
     num_items = len(chord_labels)
-    roots, basses = np.zeros([2, num_items], dtype=np.int)
-    semitones = np.zeros([num_items, 12], dtype=np.int)
+    roots, basses = np.zeros([2, num_items], dtype=np.int64)
+    semitones = np.zeros([num_items, 12], dtype=np.int64)
     local_cache = dict()
     for i, label in enumerate(chord_labels):
         result = local_cache.get(label, None)
@@ -749,7 +749,7 @@ def thirds(reference_labels, estimated_labels):
 
     eq_roots = ref_roots == est_roots
     eq_thirds = ref_semitones[:, 3] == est_semitones[:, 3]
-    comparison_scores = (eq_roots * eq_thirds).astype(np.float)
+    comparison_scores = (eq_roots * eq_thirds).astype(np.float64)
 
     # Ignore 'X' chords
     comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
@@ -797,7 +797,7 @@ def thirds_inv(reference_labels, estimated_labels):
     eq_root = ref_roots == est_roots
     eq_bass = ref_bass == est_bass
     eq_third = ref_semitones[:, 3] == est_semitones[:, 3]
-    comparison_scores = (eq_root * eq_third * eq_bass).astype(np.float)
+    comparison_scores = (eq_root * eq_third * eq_bass).astype(np.float64)
 
     # Ignore 'X' chords
     comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
@@ -845,7 +845,7 @@ def triads(reference_labels, estimated_labels):
     eq_roots = ref_roots == est_roots
     eq_semitones = np.all(
         np.equal(ref_semitones[:, :8], est_semitones[:, :8]), axis=1)
-    comparison_scores = (eq_roots * eq_semitones).astype(np.float)
+    comparison_scores = (eq_roots * eq_semitones).astype(np.float64)
 
     # Ignore 'X' chords
     comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
@@ -894,7 +894,7 @@ def triads_inv(reference_labels, estimated_labels):
     eq_basses = ref_bass == est_bass
     eq_semitones = np.all(
         np.equal(ref_semitones[:, :8], est_semitones[:, :8]), axis=1)
-    comparison_scores = (eq_roots * eq_semitones * eq_basses).astype(np.float)
+    comparison_scores = (eq_roots * eq_semitones * eq_basses).astype(np.float64)
 
     # Ignore 'X' chords
     comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
@@ -941,7 +941,7 @@ def tetrads(reference_labels, estimated_labels):
 
     eq_roots = ref_roots == est_roots
     eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
-    comparison_scores = (eq_roots * eq_semitones).astype(np.float)
+    comparison_scores = (eq_roots * eq_semitones).astype(np.float64)
 
     # Ignore 'X' chords
     comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
@@ -989,7 +989,7 @@ def tetrads_inv(reference_labels, estimated_labels):
     eq_roots = ref_roots == est_roots
     eq_basses = ref_bass == est_bass
     eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
-    comparison_scores = (eq_roots * eq_semitones * eq_basses).astype(np.float)
+    comparison_scores = (eq_roots * eq_semitones * eq_basses).astype(np.float64)
 
     # Ignore 'X' chords
     comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
@@ -1035,7 +1035,7 @@ def root(reference_labels, estimated_labels):
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots = encode_many(estimated_labels, False)[0]
-    comparison_scores = (ref_roots == est_roots).astype(np.float)
+    comparison_scores = (ref_roots == est_roots).astype(np.float64)
 
     # Ignore 'X' chords
     comparison_scores[np.any(ref_semitones < 0, axis=1)] = -1.0
@@ -1087,7 +1087,7 @@ def mirex(reference_labels, estimated_labels):
     eq_chroma = (ref_chroma * est_chroma).sum(axis=-1)
 
     # Chroma matching for set bits
-    comparison_scores = (eq_chroma >= min_intersection).astype(np.float)
+    comparison_scores = (eq_chroma >= min_intersection).astype(np.float64)
 
     # No-chord matching; match -1 roots, SKIP_CHORDS dropped next
     no_root = np.logical_and(ref_data[0] == -1, est_data[0] == -1)
@@ -1150,7 +1150,7 @@ def majmin(reference_labels, estimated_labels):
     eq_root = ref_roots == est_roots
     eq_quality = np.all(np.equal(ref_semitones[:, :8],
                                  est_semitones[:, :8]), axis=1)
-    comparison_scores = (eq_root * eq_quality).astype(np.float)
+    comparison_scores = (eq_root * eq_quality).astype(np.float64)
 
     # Test for Major / Minor / No-chord
     is_maj = np.all(np.equal(ref_semitones[:, :8], maj_semitones), axis=1)
@@ -1217,7 +1217,7 @@ def majmin_inv(reference_labels, estimated_labels):
     eq_root_bass = (ref_roots == est_roots) * (ref_bass == est_bass)
     eq_semitones = np.all(np.equal(ref_semitones[:, :8],
                                    est_semitones[:, :8]), axis=1)
-    comparison_scores = (eq_root_bass * eq_semitones).astype(np.float)
+    comparison_scores = (eq_root_bass * eq_semitones).astype(np.float64)
 
     # Test for Major / Minor / No-chord
     is_maj = np.all(np.equal(ref_semitones[:, :8], maj_semitones), axis=1)
@@ -1280,7 +1280,7 @@ def sevenths(reference_labels, estimated_labels):
 
     eq_root = ref_roots == est_roots
     eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
-    comparison_scores = (eq_root * eq_semitones).astype(np.float)
+    comparison_scores = (eq_root * eq_semitones).astype(np.float64)
 
     # Test for reference chord inclusion
     is_valid = np.array([np.all(np.equal(ref_semitones, semitones), axis=1)
@@ -1335,7 +1335,7 @@ def sevenths_inv(reference_labels, estimated_labels):
 
     eq_roots_basses = (ref_roots == est_roots) * (ref_basses == est_basses)
     eq_semitones = np.all(np.equal(ref_semitones, est_semitones), axis=1)
-    comparison_scores = (eq_roots_basses * eq_semitones).astype(np.float)
+    comparison_scores = (eq_roots_basses * eq_semitones).astype(np.float64)
 
     # Test for Major / Minor / No-chord
     is_valid = np.array([np.all(np.equal(ref_semitones, semitones), axis=1)

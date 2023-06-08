@@ -19,9 +19,9 @@ SCORES_GLOB = 'data/beat/output*.json'
 
 def test_trim_beats():
     # Construct dummy beat times [0., 1., ...]
-    dummy_beats = np.arange(10, dtype=np.float)
+    dummy_beats = np.arange(10, dtype=np.float64)
     # We expect trim_beats to remove all beats < 5s
-    expected_beats = np.arange(5, 10, dtype=np.float)
+    expected_beats = np.arange(5, 10, dtype=np.float64)
     assert np.allclose(mir_eval.beat.trim_beats(dummy_beats), expected_beats)
 
 
@@ -51,7 +51,7 @@ def __unit_test_beat_function(metric):
     nose.tools.assert_raises(ValueError, metric, beats, beats)
 
     # Valid beats which are the same produce a score of 1 for all metrics
-    beats = np.arange(10, dtype=np.float)
+    beats = np.arange(10, dtype=np.float64)
     assert np.allclose(metric(beats, beats), 1)
 
 
