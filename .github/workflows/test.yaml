@@ -1,0 +1,39 @@
+name: Test Python code
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: setup.py
+
+      - name: Install package in development mode
+        run: pip install -e .[display,testing]
+
+      - name: Install test runner
+        run: pip install pytest pytest-cov
+
+      - name: Install legacy test runner
+        run: pip install nose
+
+      - name: Run unit tests
+        run: pytest --cov=mir_eval
+        working-directory: tests
