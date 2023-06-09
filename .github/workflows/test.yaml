@@ -28,12 +28,6 @@ jobs:
       - name: Install package in development mode
         run: pip install -e .[display,testing]
 
-      - name: Install test runner
-        run: pip install pytest pytest-cov
-
-      - name: Install legacy test runner
-        run: pip install nose
-
       - name: Run unit tests
         run: pytest --cov=mir_eval
         working-directory: tests
