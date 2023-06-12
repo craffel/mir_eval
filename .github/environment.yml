@@ -1,0 +1,16 @@
+name: test
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pip
+  - atlas
+  - numpy
+  - scipy
+  - sphinx
+  - nose
+  - six
+  - future
+  - pep8
+  - matplotlib>=2.1.0,<3
+  - decorator
