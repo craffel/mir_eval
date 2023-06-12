@@ -32,7 +32,7 @@ jobs:
           cache-dependency-path: setup.py
 
       - name: Install package in development mode
-        run: pip install -e .[display,testing]
+        run: pip install --upgrade-strategy=only-if-needed -e .[display,testing]
 
       - name: Run unit tests
         run: pytest --cov=mir_eval
