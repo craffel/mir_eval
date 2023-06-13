@@ -44,6 +44,7 @@ jobs:
           auto-activate-base: false
           channel-priority: ${{ matrix.channel-priority }}
           environment-file: .github/environment.yml
+          use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
 
       - name: Install package in development mode
         shell: bash -l {0}
