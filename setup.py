@@ -35,6 +35,7 @@ setup(
                     'decorator',
                     'pytest',
                     'pytest-cov',
+                    'pytest-mpl',
                     'nose']
     }
 )
