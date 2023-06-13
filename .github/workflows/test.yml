@@ -14,13 +14,20 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version:
-          - "3.8"
-          - "3.9"
-          - "3.10"
+        os: [ubuntu-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        channel-priority: [strict]
+        include:
+          - python-version: "3.11"
+            os: macos-latest
+          - python-version: "3.11"
+            os: windows-latest
+          - python-version: "3.11"
+            os: ubuntu-latest
+            channel-priority: flexible
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
 
@@ -35,7 +42,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           auto-activate-base: false
-          channel-priority: strict
+          channel-priority: ${{ matrix.channel-priority }}
           environment-file: .github/environment.yml
 
       - name: Install package in development mode
