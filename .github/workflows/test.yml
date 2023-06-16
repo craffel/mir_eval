@@ -50,6 +50,16 @@ jobs:
         shell: bash -l {0}
         run: python -m pip install --upgrade-strategy=only-if-needed -e .[display,testing]
 
+      - name: Log installed packages for debugging
+        shell: bash -l {0}
+        run: |
+          conda info -a
+          conda list
+
+      - name: Show libraries in the system on which NumPy was built
+        shell: bash -l {0}
+        run: python -c "import numpy; numpy.show_config()"
+
       - name: Run unit tests
         shell: bash -l {0}
         run: pytest --cov=mir_eval
