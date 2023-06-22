@@ -10,8 +10,7 @@ matplotlib.use('Agg')  # nopep8
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Import the hacked image comparison module
-from mpl_ic import image_comparison
+import pytest
 
 from nose.tools import raises
 
@@ -33,7 +32,7 @@ def styled(f, *args, **kwargs):
     return f(*args, **kwargs)
 
 
-@image_comparison(baseline_images=['segment'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['segment'], extensions=['png'])
 @styled
 def test_display_segment():
 
@@ -49,7 +48,7 @@ def test_display_segment():
     plt.legend()
 
 
-@image_comparison(baseline_images=['segment_text'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['segment_text'], extensions=['png'])
 @styled
 def test_display_segment_text():
     plt.figure()
@@ -61,7 +60,7 @@ def test_display_segment_text():
     mir_eval.display.segments(intervals, labels, text=True)
 
 
-@image_comparison(baseline_images=['labeled_intervals'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['labeled_intervals'], extensions=['png'])
 @styled
 def test_display_labeled_intervals():
 
@@ -74,7 +73,7 @@ def test_display_labeled_intervals():
     mir_eval.display.labeled_intervals(intervals, labels)
 
 
-@image_comparison(baseline_images=['labeled_intervals_noextend'],
+@pytest.mark.mpl_image_compare(baseline_images=['labeled_intervals_noextend'],
                   extensions=['png'])
 @styled
 def test_display_labeled_intervals_noextend():
@@ -93,7 +92,7 @@ def test_display_labeled_intervals_noextend():
                                        ax=ax)
 
 
-@image_comparison(baseline_images=['labeled_intervals_compare'],
+@pytest.mark.mpl_image_compare(baseline_images=['labeled_intervals_compare'],
                   extensions=['png'])
 @styled
 def test_display_labeled_intervals_compare():
@@ -113,7 +112,7 @@ def test_display_labeled_intervals_compare():
     plt.legend()
 
 
-@image_comparison(baseline_images=['labeled_intervals_compare_noextend'],
+@pytest.mark.mpl_image_compare(baseline_images=['labeled_intervals_compare_noextend'],
                   extensions=['png'])
 @styled
 def test_display_labeled_intervals_compare_noextend():
@@ -134,7 +133,7 @@ def test_display_labeled_intervals_compare_noextend():
     plt.legend()
 
 
-@image_comparison(baseline_images=['labeled_intervals_compare_common'],
+@pytest.mark.mpl_image_compare(baseline_images=['labeled_intervals_compare_common'],
                   extensions=['png'])
 @styled
 def test_display_labeled_intervals_compare_common():
@@ -158,7 +157,7 @@ def test_display_labeled_intervals_compare_common():
     plt.legend()
 
 
-@image_comparison(baseline_images=['hierarchy_nolabel'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['hierarchy_nolabel'], extensions=['png'])
 @styled
 def test_display_hierarchy_nolabel():
 
@@ -175,7 +174,7 @@ def test_display_hierarchy_nolabel():
     plt.legend()
 
 
-@image_comparison(baseline_images=['hierarchy_label'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['hierarchy_label'], extensions=['png'])
 @styled
 def test_display_hierarchy_label():
 
@@ -193,7 +192,7 @@ def test_display_hierarchy_label():
     plt.legend()
 
 
-@image_comparison(baseline_images=['pitch_hz'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['pitch_hz'], extensions=['png'])
 @styled
 def test_pitch_hz():
     plt.figure()
@@ -209,7 +208,7 @@ def test_pitch_hz():
     plt.legend()
 
 
-@image_comparison(baseline_images=['pitch_midi'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['pitch_midi'], extensions=['png'])
 @styled
 def test_pitch_midi():
     plt.figure()
@@ -221,7 +220,7 @@ def test_pitch_midi():
     mir_eval.display.ticker_notes()
 
 
-@image_comparison(baseline_images=['pitch_midi_hz'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['pitch_midi_hz'], extensions=['png'])
 @styled
 def test_pitch_midi_hz():
     plt.figure()
@@ -233,7 +232,7 @@ def test_pitch_midi_hz():
     mir_eval.display.ticker_pitch()
 
 
-@image_comparison(baseline_images=['multipitch_hz_unvoiced'],
+@pytest.mark.mpl_image_compare(baseline_images=['multipitch_hz_unvoiced'],
                   extensions=['png'])
 @styled
 def test_multipitch_hz_unvoiced():
@@ -245,7 +244,7 @@ def test_multipitch_hz_unvoiced():
     mir_eval.display.multipitch(times, pitches, midi=False, unvoiced=True)
 
 
-@image_comparison(baseline_images=['multipitch_hz_voiced'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['multipitch_hz_voiced'], extensions=['png'])
 @styled
 def test_multipitch_hz_voiced():
     plt.figure()
@@ -255,7 +254,7 @@ def test_multipitch_hz_voiced():
     mir_eval.display.multipitch(times, pitches, midi=False, unvoiced=False)
 
 
-@image_comparison(baseline_images=['multipitch_midi'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['multipitch_midi'], extensions=['png'])
 @styled
 def test_multipitch_midi():
     plt.figure()
@@ -272,7 +271,7 @@ def test_multipitch_midi():
     plt.legend()
 
 
-@image_comparison(baseline_images=['piano_roll'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['piano_roll'], extensions=['png'])
 @styled
 def test_pianoroll():
     plt.figure()
@@ -288,7 +287,7 @@ def test_pianoroll():
     plt.legend()
 
 
-@image_comparison(baseline_images=['piano_roll_midi'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['piano_roll_midi'], extensions=['png'])
 @styled
 def test_pianoroll_midi():
     plt.figure()
@@ -306,7 +305,7 @@ def test_pianoroll_midi():
     plt.legend()
 
 
-@image_comparison(baseline_images=['ticker_midi_zoom'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['ticker_midi_zoom'], extensions=['png'])
 @styled
 def test_ticker_midi_zoom():
 
@@ -316,7 +315,7 @@ def test_ticker_midi_zoom():
     mir_eval.display.ticker_notes()
 
 
-@image_comparison(baseline_images=['separation'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['separation'], extensions=['png'])
 @styled
 def test_separation():
     plt.figure()
@@ -328,7 +327,7 @@ def test_separation():
     mir_eval.display.separation([x0, x1, x2], fs=fs)
 
 
-@image_comparison(baseline_images=['separation_label'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['separation_label'], extensions=['png'])
 @styled
 def test_separation_label():
     plt.figure()
@@ -343,7 +342,7 @@ def test_separation_label():
     plt.legend()
 
 
-@image_comparison(baseline_images=['events'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['events'], extensions=['png'])
 @styled
 def test_events():
     plt.figure()
@@ -358,7 +357,7 @@ def test_events():
     plt.legend()
 
 
-@image_comparison(baseline_images=['labeled_events'], extensions=['png'])
+@pytest.mark.mpl_image_compare(baseline_images=['labeled_events'], extensions=['png'])
 @styled
 def test_labeled_events():
     plt.figure()

@@ -30,8 +30,12 @@ setup(
         'six'
     ],
     extras_require={
-        'display': ['matplotlib>=1.5.0',
-                    'scipy>=1.0.0'],
-        'testing': ['matplotlib>=2.1.0,<3']
+        'display': ['matplotlib>=1.5.0'],
+        'testing': ['matplotlib>=2.1.0',
+                    'decorator',
+                    'pytest',
+                    'pytest-cov',
+                    'pytest-mpl',
+                    'nose']
     }
 )
