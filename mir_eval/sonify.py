@@ -73,11 +73,11 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
         Non-positive magnitudes are interpreted as silence.
 
     frequencies : np.ndarray
-        array of size ``gram.shape[0]`` denoting the frequency of
+        array of size ``gram.shape[0]`` denoting the frequency (in Hz) of
         each row of gram
     times : np.ndarray, shape= ``(gram.shape[1],)`` or ``(gram.shape[1], 2)``
-        Either the start time of each column in the gram,
-        or the time interval corresponding to each column.
+        Either the start time (in seconds) of each column in the gram,
+        or the time interval (in seconds) corresponding to each column.
     fs : int
         desired sampling rate of the output signal
     function : function
@@ -154,8 +154,6 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
             return value
         return __interpolator
 
-    # print(f"sonify.time_frequency length {length}, n_times {n_times}, gram shape {gram.shape}, times shape {times.shape}")
-
     # Threshold the tfgram to remove non-positive values
     gram = np.maximum(gram, 0)
 
@@ -170,8 +168,6 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
             continue
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
-        # print(f"Freq {n} {frequency}Hz energy {spectral_sums[n]}, length of wave {len(wave)}")
-
         # Interpolate the values in gram over the time grid
         if len(time_centers) > 1:
             gram_interpolator = interp1d(
