@@ -5,7 +5,6 @@ submodules, such as preprocessing, validation, and common computations.
 
 import os
 import inspect
-import six
 
 import numpy as np
 
@@ -861,16 +860,13 @@ def has_kwargs(function):
     False otherwise.
     '''
 
-    if six.PY2:
-        return inspect.getargspec(function).keywords is not None
-    else:
-        sig = inspect.signature(function)
+    sig = inspect.signature(function)
 
-        for param in sig.parameters.values():
-            if param.kind == param.VAR_KEYWORD:
-                return True
+    for param in list(sig.parameters.values()):
+        if param.kind == param.VAR_KEYWORD:
+            return True
 
-        return False
+    return False
 
 
 def filter_kwargs(_function, *args, **kwargs):
@@ -893,7 +889,7 @@ def filter_kwargs(_function, *args, **kwargs):
         return _function(*args, **kwargs)
 
     # Get the list of function arguments
-    func_code = six.get_function_code(_function)
+    func_code = _function.__code__
     function_args = func_code.co_varnames[:func_code.co_argcount]
     # Construct a dict of those kwargs which appear in the function
     filtered_kwargs = {}

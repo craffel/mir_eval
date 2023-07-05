@@ -184,7 +184,7 @@ def test_encode():
                           [1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0]]
     expected_bass = [7, 0, 4, 3]
 
-    args = zip(labels, expected_roots, expected_intervals, expected_bass)
+    args = list(zip(labels, expected_roots, expected_intervals, expected_bass))
     for label, e_root, e_interval, e_bass in args:
         yield (__check_encode, label, e_root, e_interval, e_bass, False, False)
 

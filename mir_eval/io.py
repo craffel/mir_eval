@@ -7,7 +7,6 @@ import numpy as np
 import re
 import warnings
 import scipy.io.wavfile
-import six
 
 from . import util
 from . import key
@@ -26,7 +25,7 @@ def _open(file_or_str, **kwargs):
     '''
     if hasattr(file_or_str, 'read'):
         yield file_or_str
-    elif isinstance(file_or_str, six.string_types):
+    elif isinstance(file_or_str, str):
         with open(file_or_str, **kwargs) as file_desc:
             yield file_desc
     else:
@@ -646,10 +645,10 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
             try:
                 converted_time = float(data[0])
             except (TypeError, ValueError) as exe:
-                six.raise_from(ValueError("Couldn't convert value {} using {} "
-                                          "found at {}:{:d}:\n\t{}".format(
-                                            data[0], float.__name__,
-                                            filename, row, line)), exe)
+                raise ValueError("Couldn't convert value {} using {} "
+                                 "found at {}:{:d}:\n\t{}".format(
+                                   data[0], float.__name__,
+                                   filename, row, line)) from exe
             times.append(converted_time)
 
             # cast values to a numpy array. time stamps with no values are cast
@@ -657,10 +656,10 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
             try:
                 converted_value = np.array(data[1:], dtype=dtype)
             except (TypeError, ValueError) as exe:
-                six.raise_from(ValueError("Couldn't convert value {} using {} "
-                                          "found at {}:{:d}:\n\t{}".format(
-                                            data[1:], dtype.__name__,
-                                            filename, row, line)), exe)
+                raise ValueError("Couldn't convert value {} using {} "
+                                 "found at {}:{:d}:\n\t{}".format(
+                                   data[1:], dtype.__name__,
+                                   filename, row, line)) from exe
             values.append(converted_value)
 
     return np.array(times), values
