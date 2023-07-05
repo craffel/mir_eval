@@ -34,5 +34,6 @@ setup(
                     'pytest-cov',
                     'pytest-mpl',
                     'nose']
-    }
+    },
+    python_requires='>=3',
 )
