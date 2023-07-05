@@ -890,7 +890,7 @@ def filter_kwargs(_function, *args, **kwargs):
         return _function(*args, **kwargs)
 
     # Get the list of function arguments
-    func_code = six.get_function_code(_function)
+    func_code = _function.__code__
     function_args = func_code.co_varnames[:func_code.co_argcount]
     # Construct a dict of those kwargs which appear in the function
     filtered_kwargs = {}
