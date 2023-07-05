@@ -5,7 +5,6 @@ submodules, such as preprocessing, validation, and common computations.
 
 import os
 import inspect
-import six
 
 import numpy as np
 

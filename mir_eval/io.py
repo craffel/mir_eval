@@ -7,7 +7,6 @@ import numpy as np
 import re
 import warnings
 import scipy.io.wavfile
-import six
 
 from . import util
 from . import key
