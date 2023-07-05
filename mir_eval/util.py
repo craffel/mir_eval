@@ -866,7 +866,7 @@ def has_kwargs(function):
     else:
         sig = inspect.signature(function)
 
-        for param in sig.parameters.values():
+        for param in list(sig.parameters.values()):
             if param.kind == param.VAR_KEYWORD:
                 return True
 

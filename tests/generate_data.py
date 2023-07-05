@@ -19,7 +19,7 @@ So, for example, if you'd like to generate data for onset and melody,run
     ./generate_data.py onset melody
 '''
 
-from __future__ import print_function
+
 import mir_eval
 import glob
 import json
