@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/craffel/mir_eval.svg?branch=master
-    :target: https://travis-ci.org/craffel/mir_eval
+.. image:: https://github.com/craffel/mir_eval/actions/workflows/test.yaml/badge.svg
+    :target: https://github.com/craffel/mir_eval/actions/workflows/test.yaml
 .. image:: https://coveralls.io/repos/craffel/mir_eval/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/craffel/mir_eval?branch=master
 
