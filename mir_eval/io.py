@@ -646,10 +646,10 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
             try:
                 converted_time = float(data[0])
             except (TypeError, ValueError) as exe:
-                six.raise_from(ValueError("Couldn't convert value {} using {} "
-                                          "found at {}:{:d}:\n\t{}".format(
-                                            data[0], float.__name__,
-                                            filename, row, line)), exe)
+                raise ValueError("Couldn't convert value {} using {} "
+                                 "found at {}:{:d}:\n\t{}".format(
+                                   data[0], float.__name__,
+                                   filename, row, line)) from exe
             times.append(converted_time)
 
             # cast values to a numpy array. time stamps with no values are cast
@@ -657,10 +657,10 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
             try:
                 converted_value = np.array(data[1:], dtype=dtype)
             except (TypeError, ValueError) as exe:
-                six.raise_from(ValueError("Couldn't convert value {} using {} "
-                                          "found at {}:{:d}:\n\t{}".format(
-                                            data[1:], dtype.__name__,
-                                            filename, row, line)), exe)
+                raise ValueError("Couldn't convert value {} using {} "
+                                 "found at {}:{:d}:\n\t{}".format(
+                                   data[1:], dtype.__name__,
+                                   filename, row, line)) from exe
             values.append(converted_value)
 
     return np.array(times), values
