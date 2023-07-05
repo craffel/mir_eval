@@ -861,16 +861,13 @@ def has_kwargs(function):
     False otherwise.
     '''
 
-    if six.PY2:
-        return inspect.getargspec(function).keywords is not None
-    else:
-        sig = inspect.signature(function)
+    sig = inspect.signature(function)
 
-        for param in list(sig.parameters.values()):
-            if param.kind == param.VAR_KEYWORD:
-                return True
+    for param in list(sig.parameters.values()):
+        if param.kind == param.VAR_KEYWORD:
+            return True
 
-        return False
+    return False
 
 
 def filter_kwargs(_function, *args, **kwargs):
