@@ -26,7 +26,7 @@ def _open(file_or_str, **kwargs):
     '''
     if hasattr(file_or_str, 'read'):
         yield file_or_str
-    elif isinstance(file_or_str, six.string_types):
+    elif isinstance(file_or_str, str):
         with open(file_or_str, **kwargs) as file_desc:
             yield file_desc
     else:
