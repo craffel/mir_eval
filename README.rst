@@ -1,5 +1,5 @@
-.. image:: https://github.com/craffel/mir_eval/actions/workflows/test.yaml/badge.svg
-    :target: https://github.com/craffel/mir_eval/actions/workflows/test.yaml
+.. image:: https://github.com/craffel/mir_eval/actions/workflows/test.yml/badge.svg
+    :target: https://github.com/craffel/mir_eval/actions/workflows/test.yml
 .. image:: https://coveralls.io/repos/craffel/mir_eval/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/craffel/mir_eval?branch=master
 
