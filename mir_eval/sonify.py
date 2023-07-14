@@ -109,11 +109,8 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     # Truncate times so that the shape matches gram. However if the time boundaries were converted
     # to intervals, then the number of times will be reduced by one, so we only truncate
     # if the gram is smaller.
-    if gram.shape[1] < times.shape[0]:
-        n_times = gram.shape[1]
-        times = times[:n_times]
-    else:
-        n_times = times.shape[0]
+    n_times = min(gram.shape[1], times.shape[0])
+    times = times[:n_times]
     sample_intervals = (times * fs).astype(int)
 
     def _fast_synthesize(frequency):
@@ -168,10 +165,14 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
             continue
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
-        # Interpolate the values in gram over the time grid
+
+        # Interpolate the values in gram over the time grid.
         if len(time_centers) > 1:
+            # If times was converted from boundaries to intervals, it will change shape from
+            # (len, 1) to (len-1, 2), and hence differ from the length of gram (i.e one less),
+            # so we ensure gram is reduced appropriately.
             gram_interpolator = interp1d(
-                time_centers, gram[n, :-1],
+                time_centers, gram[n, :n_times],
                 kind='linear', bounds_error=False,
                 fill_value=(gram[n, 0], gram[n, -1]))
         # If only one time point, create constant interpolator
