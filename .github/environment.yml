@@ -1,0 +1,12 @@
+name: test
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pip
+  - numpy
+  - scipy
+  - matplotlib
+  - pytest
+  - pytest-cov
+  - pytest-mpl

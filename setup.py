@@ -18,7 +18,6 @@ setup(
         'Development Status :: 5 - Production/Stable',
         "Intended Audience :: Developers",
         "Topic :: Multimedia :: Sound/Audio :: Analysis",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
     ],
     keywords='audio music mir dsp',
@@ -26,12 +25,15 @@ setup(
     install_requires=[
         'numpy >= 1.7.0',
         'scipy >= 1.0.0',
-        'future',
-        'six'
     ],
     extras_require={
-        'display': ['matplotlib>=1.5.0',
-                    'scipy>=1.0.0'],
-        'testing': ['matplotlib>=2.1.0,<3']
-    }
+        'display': ['matplotlib>=1.5.0'],
+        'testing': ['matplotlib>=2.1.0',
+                    'decorator',
+                    'pytest',
+                    'pytest-cov',
+                    'pytest-mpl',
+                    'nose']
+    },
+    python_requires='>=3',
 )
