@@ -161,7 +161,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     # Not really a true spectral energy, just a summation for optimisation.
     spectral_sums = np.sum(gram, axis = 1)
     for n, frequency in enumerate(frequencies):
-        if spectral_sums[n] < 0.01: # TODO set threshold intelligently.
+        if spectral_sums[n] < 0.1: # TODO set threshold intelligently.
             continue
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
@@ -179,14 +179,11 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
         else:
             gram_interpolator = _const_interpolator(gram[n, 0])
 
-        scaler = np.zeros(length)
-        # Create the time-varying scaling for each time interval by the piano roll magnitude
-        for m, (start, end) in enumerate(sample_intervals):
-            # Clip the timings to make sure the indices are valid
-            start, end = max(start, 0), min(end, length)
-            scaler[start:end] = gram_interpolator(np.arange(start, end))
-        # add to waveform
-        output += wave[:length] * scaler
+        # Create the time-varying scaling for the entire time interval by the piano roll
+        # magnitude and add to the accumulating waveform.
+        print(n, sample_intervals[0][0], sample_intervals[-1][-1])
+        output += wave[:length] * gram_interpolator(np.arange(max(sample_intervals[0][0], 0),
+                                                              min(sample_intervals[-1][-1], length)))
 
     # Normalize, but only if there's non-zero values
     norm = np.abs(output).max()
