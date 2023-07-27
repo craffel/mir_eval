@@ -181,7 +181,6 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
 
         # Create the time-varying scaling for the entire time interval by the piano roll
         # magnitude and add to the accumulating waveform.
-        print(n, sample_intervals[0][0], sample_intervals[-1][-1])
         output += wave[:length] * gram_interpolator(np.arange(max(sample_intervals[0][0], 0),
                                                               min(sample_intervals[-1][-1], length)))
 
