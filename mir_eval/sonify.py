@@ -164,9 +164,9 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     time_centers = np.mean(times, axis=1) * float(fs)
 
     # Not really a true spectral energy, just an average for optimisation.
-    spectral_sums = np.mean(gram, axis = 1)
+    spectral_mean_magnitudes = np.mean(gram, axis = 1)
     for n, frequency in enumerate(frequencies):
-        if spectral_sums[n] < threshold: # TODO set threshold intelligently.
+        if spectral_mean_magntiudes[n] < threshold: # TODO set threshold intelligently.
             continue
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
