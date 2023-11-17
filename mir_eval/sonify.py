@@ -61,7 +61,7 @@ def clicks(times, fs, click=None, length=None):
 
 
 def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
-                   n_dec=1):
+                   n_dec=1, threshold=0.01):
     """Reverse synthesis of a time-frequency representation of a signal
 
     Parameters
@@ -88,6 +88,9 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     n_dec : int
         the number of decimals used to approximate each sonfied frequency.
         Defaults to 1 decimal place. Higher precision will be slower.
+    threshold : float
+        optimizes synthesis to only occur for frequencies that have an average
+        linear magnitude of each element in gram above the given threshold.
 
     Returns
     -------
@@ -111,7 +114,9 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     # if the gram is smaller.
     n_times = min(gram.shape[1], times.shape[0])
     times = times[:n_times]
-    sample_intervals = (times * fs).astype(int)
+    # Round up to ensure that the adjusted interval last time does not diverge from length
+    # due to a loss of precision and truncation to ints.
+    sample_intervals = np.round(times * fs).astype(int)
 
     def _fast_synthesize(frequency):
         """A faster way to synthesize a signal.
@@ -158,10 +163,10 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     output = np.zeros(length)
     time_centers = np.mean(times, axis=1) * float(fs)
 
-    # Not really a true spectral energy, just a summation for optimisation.
-    spectral_sums = np.sum(gram, axis = 1)
+    # Not really a true spectral energy, just an average for optimisation.
+    spectral_sums = np.mean(gram, axis = 1)
     for n, frequency in enumerate(frequencies):
-        if spectral_sums[n] < 0.1: # TODO set threshold intelligently.
+        if spectral_sums[n] < threshold: # TODO set threshold intelligently.
             continue
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
