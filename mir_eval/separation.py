@@ -459,6 +459,7 @@ def bss_eval_images(reference_sources, estimated_sources,
             dum = popt = np.arange(nsrc)
         else:
             dum, popt = _linear_sum_assignment_with_inf(-sir.T)
+
         idx = (popt, dum)
         return (sdr[idx], isr[idx], sir[idx], sar[idx], np.asarray(popt))
     else:

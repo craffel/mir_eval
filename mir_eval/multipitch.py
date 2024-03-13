@@ -102,8 +102,9 @@ def validate(ref_time, ref_freqs, est_time, est_freqs):
 
 
 def resample_multipitch(times, frequencies, target_times):
-    """Resamples multipitch time series to a new timescale. Values in
-    ``target_times`` outside the range of ``times`` return no pitch estimate.
+    """Resamples multipitch time series to a new timescale using nearest
+    neighbor interpolation. Values in ``target_times`` outside the range
+    of ``times`` return no pitch estimate.
 
     Parameters
     ----------

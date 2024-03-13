@@ -386,14 +386,14 @@ def p_score(reference_beats,
     estimated_beats = np.array(estimated_beats - offset)
     reference_beats = np.array(reference_beats - offset)
     # Get the largest time index
-    end_point = np.int(np.ceil(np.max([np.max(estimated_beats),
-                                       np.max(reference_beats)])))
+    end_point = np.int64(np.ceil(np.max([np.max(estimated_beats),
+                                         np.max(reference_beats)])))
     # Make impulse trains with impulses at beat locations
     reference_train = np.zeros(end_point*sampling_rate + 1)
-    beat_indices = np.ceil(reference_beats*sampling_rate).astype(np.int)
+    beat_indices = np.ceil(reference_beats*sampling_rate).astype(np.int64)
     reference_train[beat_indices] = 1.0
     estimated_train = np.zeros(end_point*sampling_rate + 1)
-    beat_indices = np.ceil(estimated_beats*sampling_rate).astype(np.int)
+    beat_indices = np.ceil(estimated_beats*sampling_rate).astype(np.int64)
     estimated_train[beat_indices] = 1.0
     # Window size to take the correlation over
     # defined as .2*median(inter-annotation-intervals)

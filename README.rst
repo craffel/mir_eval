@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/craffel/mir_eval.svg?branch=master
-    :target: https://travis-ci.org/craffel/mir_eval
+.. image:: https://github.com/craffel/mir_eval/actions/workflows/test.yml/badge.svg
+    :target: https://github.com/craffel/mir_eval/actions/workflows/test.yml
 .. image:: https://coveralls.io/repos/craffel/mir_eval/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/craffel/mir_eval?branch=master
 
@@ -15,8 +15,6 @@ If you're looking for the mir_eval web service, which you can use to run mir_eva
 Dependencies:
 
 * `Scipy/Numpy <http://www.scipy.org/>`_
-* future
-* six
 
 If you use mir_eval in a research project, please cite the following paper:
 

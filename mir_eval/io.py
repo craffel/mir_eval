@@ -7,7 +7,6 @@ import numpy as np
 import re
 import warnings
 import scipy.io.wavfile
-import six
 
 from . import util
 from . import key
@@ -26,14 +25,14 @@ def _open(file_or_str, **kwargs):
     '''
     if hasattr(file_or_str, 'read'):
         yield file_or_str
-    elif isinstance(file_or_str, six.string_types):
+    elif isinstance(file_or_str, str):
         with open(file_or_str, **kwargs) as file_desc:
             yield file_desc
     else:
         raise IOError('Invalid file-or-str object: {}'.format(file_or_str))
 
 
-def load_delimited(filename, converters, delimiter=r'\s+'):
+def load_delimited(filename, converters, delimiter=r'\s+', comment='#'):
     r"""Utility function for loading in data from an annotation file where columns
     are delimited.  The number of columns is inferred from the length of
     the provided converters list.
@@ -55,6 +54,11 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+    comment : str or None
+        Comment regular expression.
+        Any lines beginning with this string or pattern will be ignored.
+
+        Setting to `None` disables comments.
 
     Returns
     -------
@@ -70,6 +74,12 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
     # Create re object for splitting lines
     splitter = re.compile(delimiter)
 
+    # And one for comments
+    if comment is None:
+        commenter = None
+    else:
+        commenter = re.compile('^{}'.format(comment))
+
     # Note: we do io manually here for two reasons.
     #   1. The csv module has difficulties with unicode, which may lead
     #      to failures on certain annotation strings
@@ -78,6 +88,10 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
     #
     with _open(filename, mode='r') as input_file:
         for row, line in enumerate(input_file, 1):
+            # Skip commented lines
+            if comment is not None and commenter.match(line):
+                continue
+
             # Split each line using the supplied delimiter
             data = splitter.split(line.strip(), n_columns - 1)
 
@@ -105,7 +119,7 @@ def load_delimited(filename, converters, delimiter=r'\s+'):
         return columns
 
 
-def load_events(filename, delimiter=r'\s+'):
+def load_events(filename, delimiter=r'\s+', comment='#'):
     r"""Import time-stamp events from an annotation file.  The file should
     consist of a single column of numeric values corresponding to the event
     times. This is primarily useful for processing events which lack duration,
@@ -118,6 +132,11 @@ def load_events(filename, delimiter=r'\s+'):
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+    comment : str or None
+        Comment regular expression.
+        Any lines beginning with this string or pattern will be ignored.
+
+        Setting to `None` disables comments.
 
     Returns
     -------
@@ -126,7 +145,8 @@ def load_events(filename, delimiter=r'\s+'):
 
     """
     # Use our universal function to load in the events
-    events = load_delimited(filename, [float], delimiter)
+    events = load_delimited(filename, [float],
+                            delimiter=delimiter, comment=comment)
     events = np.array(events)
     # Validate them, but throw a warning in place of an error
     try:
@@ -137,7 +157,7 @@ def load_events(filename, delimiter=r'\s+'):
     return events
 
 
-def load_labeled_events(filename, delimiter=r'\s+'):
+def load_labeled_events(filename, delimiter=r'\s+', comment='#'):
     r"""Import labeled time-stamp events from an annotation file.  The file should
     consist of two columns; the first having numeric values corresponding to
     the event times and the second having string labels for each event.  This
@@ -151,6 +171,11 @@ def load_labeled_events(filename, delimiter=r'\s+'):
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+    comment : str or None
+        Comment regular expression.
+        Any lines beginning with this string or pattern will be ignored.
+
+        Setting to `None` disables comments.
 
     Returns
     -------
@@ -161,7 +186,9 @@ def load_labeled_events(filename, delimiter=r'\s+'):
 
     """
     # Use our universal function to load in the events
-    events, labels = load_delimited(filename, [float, str], delimiter)
+    events, labels = load_delimited(filename, [float, str],
+                                    delimiter=delimiter,
+                                    comment=comment)
     events = np.array(events)
     # Validate them, but throw a warning in place of an error
     try:
@@ -172,7 +199,7 @@ def load_labeled_events(filename, delimiter=r'\s+'):
     return events, labels
 
 
-def load_intervals(filename, delimiter=r'\s+'):
+def load_intervals(filename, delimiter=r'\s+', comment='#'):
     r"""Import intervals from an annotation file.  The file should consist of two
     columns of numeric values corresponding to start and end time of each
     interval.  This is primarily useful for processing events which span a
@@ -185,6 +212,11 @@ def load_intervals(filename, delimiter=r'\s+'):
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+    comment : str or None
+        Comment regular expression.
+        Any lines beginning with this string or pattern will be ignored.
+
+        Setting to `None` disables comments.
 
     Returns
     -------
@@ -193,7 +225,9 @@ def load_intervals(filename, delimiter=r'\s+'):
 
     """
     # Use our universal function to load in the events
-    starts, ends = load_delimited(filename, [float, float], delimiter)
+    starts, ends = load_delimited(filename, [float, float],
+                                  delimiter=delimiter,
+                                  comment=comment)
     # Stack into an interval matrix
     intervals = np.array([starts, ends]).T
     # Validate them, but throw a warning in place of an error
@@ -205,7 +239,7 @@ def load_intervals(filename, delimiter=r'\s+'):
     return intervals
 
 
-def load_labeled_intervals(filename, delimiter=r'\s+'):
+def load_labeled_intervals(filename, delimiter=r'\s+', comment='#'):
     r"""Import labeled intervals from an annotation file.  The file should consist
     of three columns: Two consisting of numeric values corresponding to start
     and end time of each interval and a third corresponding to the label of
@@ -219,6 +253,11 @@ def load_labeled_intervals(filename, delimiter=r'\s+'):
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+    comment : str or None
+        Comment regular expression.
+        Any lines beginning with this string or pattern will be ignored.
+
+        Setting to `None` disables comments.
 
     Returns
     -------
@@ -230,7 +269,8 @@ def load_labeled_intervals(filename, delimiter=r'\s+'):
     """
     # Use our universal function to load in the events
     starts, ends, labels = load_delimited(filename, [float, float, str],
-                                          delimiter)
+                                          delimiter=delimiter,
+                                          comment=comment)
     # Stack into an interval matrix
     intervals = np.array([starts, ends]).T
     # Validate them, but throw a warning in place of an error
@@ -242,7 +282,7 @@ def load_labeled_intervals(filename, delimiter=r'\s+'):
     return intervals, labels
 
 
-def load_time_series(filename, delimiter=r'\s+'):
+def load_time_series(filename, delimiter=r'\s+', comment='#'):
     r"""Import a time series from an annotation file.  The file should consist of
     two columns of numeric values corresponding to the time and value of each
     sample of the time series.
@@ -254,6 +294,11 @@ def load_time_series(filename, delimiter=r'\s+'):
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+    comment : str or None
+        Comment regular expression.
+        Any lines beginning with this string or pattern will be ignored.
+
+        Setting to `None` disables comments.
 
     Returns
     -------
@@ -264,7 +309,9 @@ def load_time_series(filename, delimiter=r'\s+'):
 
     """
     # Use our universal function to load in the events
-    times, values = load_delimited(filename, [float, float], delimiter)
+    times, values = load_delimited(filename, [float, float],
+                                   delimiter=delimiter,
+                                   comment=comment)
     times = np.array(times)
     values = np.array(values)
 
@@ -387,7 +434,7 @@ def load_wav(path, mono=True):
     return audio_data, fs
 
 
-def load_valued_intervals(filename, delimiter=r'\s+'):
+def load_valued_intervals(filename, delimiter=r'\s+', comment='#'):
     r"""Import valued intervals from an annotation file. The file should
     consist of three columns: Two consisting of numeric values corresponding to
     start and end time of each interval and a third, also of numeric values,
@@ -402,6 +449,11 @@ def load_valued_intervals(filename, delimiter=r'\s+'):
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+    comment : str or None
+        Comment regular expression.
+        Any lines beginning with this string or pattern will be ignored.
+
+        Setting to `None` disables comments.
 
     Returns
     -------
@@ -413,7 +465,8 @@ def load_valued_intervals(filename, delimiter=r'\s+'):
     """
     # Use our universal function to load in the events
     starts, ends, values = load_delimited(filename, [float, float, float],
-                                          delimiter)
+                                          delimiter=delimiter,
+                                          comment=comment)
     # Stack into an interval matrix
     intervals = np.array([starts, ends]).T
     # Validate them, but throw a warning in place of an error
@@ -428,7 +481,7 @@ def load_valued_intervals(filename, delimiter=r'\s+'):
     return intervals, values
 
 
-def load_key(filename, delimiter=r'\s+'):
+def load_key(filename, delimiter=r'\s+', comment='#'):
     r"""Load key labels from an annotation file. The file should
     consist of two string columns: One denoting the key scale degree
     (semitone), and the other denoting the mode (major or minor).  The file
@@ -441,6 +494,11 @@ def load_key(filename, delimiter=r'\s+'):
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+    comment : str or None
+        Comment regular expression.
+        Any lines beginning with this string or pattern will be ignored.
+
+        Setting to `None` disables comments.
 
     Returns
     -------
@@ -449,7 +507,9 @@ def load_key(filename, delimiter=r'\s+'):
 
     """
     # Use our universal function to load the key and mode strings
-    scale, mode = load_delimited(filename, [str, str], delimiter)
+    scale, mode = load_delimited(filename, [str, str],
+                                 delimiter=delimiter,
+                                 comment=comment)
     if len(scale) != 1:
         raise ValueError('Key file should contain only one line.')
     scale, mode = scale[0], mode[0]
@@ -464,7 +524,7 @@ def load_key(filename, delimiter=r'\s+'):
     return key_string
 
 
-def load_tempo(filename, delimiter=r'\s+'):
+def load_tempo(filename, delimiter=r'\s+', comment='#'):
     r"""Load tempo estimates from an annotation file in MIREX format.
     The file should consist of three numeric columns: the first two
     correspond to tempo estimates (in beats-per-minute), and the third
@@ -478,6 +538,11 @@ def load_tempo(filename, delimiter=r'\s+'):
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+    comment : str or None
+        Comment regular expression.
+        Any lines beginning with this string or pattern will be ignored.
+
+        Setting to `None` disables comments.
 
     Returns
     -------
@@ -488,7 +553,9 @@ def load_tempo(filename, delimiter=r'\s+'):
         The relative importance of ``tempi[0]`` compared to ``tempi[1]``
     """
     # Use our universal function to load the key and mode strings
-    t1, t2, weight = load_delimited(filename, [float, float, float], delimiter)
+    t1, t2, weight = load_delimited(filename, [float, float, float],
+                                    delimiter=delimiter,
+                                    comment=comment)
 
     weight = weight[0]
     tempi = np.concatenate([t1, t2])
@@ -509,7 +576,7 @@ def load_tempo(filename, delimiter=r'\s+'):
 
 
 def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
-                            header=False):
+                            header=False, comment='#'):
     r"""Utility function for loading in data from a delimited time series
     annotation file with a variable number of columns.
     Assumes that column 0 contains time stamps and columns 1 through n contain
@@ -536,6 +603,11 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
     header : bool
         Indicates whether a header row is present or not.
         By default, assumes no header is present.
+    comment : str or None
+        Comment regular expression.
+        Any lines beginning with this string or pattern will be ignored.
+
+        Setting to `None` disables comments.
 
     Returns
     -------
@@ -552,21 +624,31 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
     # Create re object for splitting lines
     splitter = re.compile(delimiter)
 
+    # And one for comments
+    if comment is None:
+        commenter = None
+    else:
+        commenter = re.compile('^{}'.format(comment))
+
     if header:
         start_row = 1
     else:
         start_row = 0
     with _open(filename, mode='r') as input_file:
         for row, line in enumerate(input_file, start_row):
+            # If this is a comment line, skip it
+            if comment is not None and commenter.match(line):
+                continue
+
             # Split each line using the supplied delimiter
             data = splitter.split(line.strip())
             try:
                 converted_time = float(data[0])
             except (TypeError, ValueError) as exe:
-                six.raise_from(ValueError("Couldn't convert value {} using {} "
-                                          "found at {}:{:d}:\n\t{}".format(
-                                            data[0], float.__name__,
-                                            filename, row, line)), exe)
+                raise ValueError("Couldn't convert value {} using {} "
+                                 "found at {}:{:d}:\n\t{}".format(
+                                   data[0], float.__name__,
+                                   filename, row, line)) from exe
             times.append(converted_time)
 
             # cast values to a numpy array. time stamps with no values are cast
@@ -574,10 +656,10 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
             try:
                 converted_value = np.array(data[1:], dtype=dtype)
             except (TypeError, ValueError) as exe:
-                six.raise_from(ValueError("Couldn't convert value {} using {} "
-                                          "found at {}:{:d}:\n\t{}".format(
-                                            data[1:], dtype.__name__,
-                                            filename, row, line)), exe)
+                raise ValueError("Couldn't convert value {} using {} "
+                                 "found at {}:{:d}:\n\t{}".format(
+                                   data[1:], dtype.__name__,
+                                   filename, row, line)) from exe
             values.append(converted_value)
 
     return np.array(times), values
