@@ -61,7 +61,7 @@ def clicks(times, fs, click=None, length=None):
 
 
 def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
-                   n_dec=1):
+                   n_dec=1, threshold=0.01):
     """Reverse synthesis of a time-frequency representation of a signal
 
     Parameters
@@ -73,11 +73,11 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
         Non-positive magnitudes are interpreted as silence.
 
     frequencies : np.ndarray
-        array of size ``gram.shape[0]`` denoting the frequency of
+        array of size ``gram.shape[0]`` denoting the frequency (in Hz) of
         each row of gram
     times : np.ndarray, shape= ``(gram.shape[1],)`` or ``(gram.shape[1], 2)``
-        Either the start time of each column in the gram,
-        or the time interval corresponding to each column.
+        Either the start time (in seconds) of each column in the gram,
+        or the time interval (in seconds) corresponding to each column.
     fs : int
         desired sampling rate of the output signal
     function : function
@@ -88,6 +88,9 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     n_dec : int
         the number of decimals used to approximate each sonfied frequency.
         Defaults to 1 decimal place. Higher precision will be slower.
+    threshold : float
+        optimizes synthesis to only occur for frequencies that have a
+        linear magnitude of at least one element in gram above the given threshold.
 
     Returns
     -------
@@ -103,11 +106,17 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     if length is None:
         length = int(times[-1, 1] * fs)
 
-    times, _ = util.adjust_intervals(times, t_max=length)
+    last_time_in_secs = float(length) / fs
+    times, _ = util.adjust_intervals(times, t_max=last_time_in_secs)
 
-    # Truncate times so that the shape matches gram
-    n_times = gram.shape[1]
+    # Truncate times so that the shape matches gram. However if the time boundaries were converted
+    # to intervals, then the number of times will be reduced by one, so we only truncate
+    # if the gram is smaller.
+    n_times = min(gram.shape[1], times.shape[0])
     times = times[:n_times]
+    # Round up to ensure that the adjusted interval last time does not diverge from length
+    # due to a loss of precision and truncation to ints.
+    sample_intervals = np.round(times * fs).astype(int)
 
     def _fast_synthesize(frequency):
         """A faster way to synthesize a signal.
@@ -154,27 +163,32 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     output = np.zeros(length)
     time_centers = np.mean(times, axis=1) * float(fs)
 
+    # Check if there is at least one element on each frequency that has a value above the threshold
+    # to justify processing, for optimisation.
+    spectral_max_magnitudes = np.max(gram, axis = 1)
     for n, frequency in enumerate(frequencies):
+        if spectral_max_magnitudes[n] < threshold:
+            continue
         # Get a waveform of length samples at this frequency
         wave = _fast_synthesize(frequency)
 
-        # Interpolate the values in gram over the time grid
+        # Interpolate the values in gram over the time grid.
         if len(time_centers) > 1:
+            # If times was converted from boundaries to intervals, it will change shape from
+            # (len, 1) to (len-1, 2), and hence differ from the length of gram (i.e one less),
+            # so we ensure gram is reduced appropriately.
             gram_interpolator = interp1d(
-                time_centers, gram[n, :],
+                time_centers, gram[n, :n_times],
                 kind='linear', bounds_error=False,
                 fill_value=(gram[n, 0], gram[n, -1]))
         # If only one time point, create constant interpolator
         else:
             gram_interpolator = _const_interpolator(gram[n, 0])
 
-        # Scale each time interval by the piano roll magnitude
-        for m, (start, end) in enumerate((times * fs).astype(int)):
-            # Clip the timings to make sure the indices are valid
-            start, end = max(start, 0), min(end, length)
-            # add to waveform
-            output[start:end] += (
-                wave[start:end] * gram_interpolator(np.arange(start, end)))
+        # Create the time-varying scaling for the entire time interval by the piano roll
+        # magnitude and add to the accumulating waveform.
+        output += wave[:length] * gram_interpolator(np.arange(max(sample_intervals[0][0], 0),
+                                                              min(sample_intervals[-1][-1], length)))
 
     # Normalize, but only if there's non-zero values
     norm = np.abs(output).max()
