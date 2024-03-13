@@ -7,7 +7,7 @@ import json
 import mir_eval
 import glob
 import warnings
-import nose.tools
+import pytest
 
 A_TOL = 1e-12
 
@@ -15,6 +15,26 @@ A_TOL = 1e-12
 REF_GLOB = 'data/segment/ref*.lab'
 EST_GLOB = 'data/segment/est*.lab'
 SCORES_GLOB = 'data/segment/output*.json'
+
+ref_files = sorted(glob.glob(REF_GLOB))
+est_files = sorted(glob.glob(EST_GLOB))
+sco_files = sorted(glob.glob(SCORES_GLOB))
+
+assert len(ref_files) == len(est_files) == len(sco_files) > 0
+
+file_sets = list(zip(ref_files, est_files, sco_files))
+
+@pytest.fixture
+def segment_data(request):
+    ref_f, est_f, sco_f = request.param
+    with open(sco_f, "r") as f:
+        expected_scores = json.load(f)
+    reference_segments = mir_eval.io.load_events(ref_f)
+    estimated_segments = mir_eval.io.load_events(est_f)
+
+    return reference_segments, estimated_segments, expected_scores
+
+
 
 
 def __unit_test_boundary_function(metric):
