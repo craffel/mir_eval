@@ -12,9 +12,9 @@ import pytest
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'tests/data/beat/ref*.txt'
-EST_GLOB = 'tests/data/beat/est*.txt'
-SCORES_GLOB = 'tests/data/beat/output*.json'
+REF_GLOB = 'data/beat/ref*.txt'
+EST_GLOB = 'data/beat/est*.txt'
+SCORES_GLOB = 'data/beat/output*.json'
 
 ref_files = sorted(glob.glob(REF_GLOB))
 est_files = sorted(glob.glob(EST_GLOB))

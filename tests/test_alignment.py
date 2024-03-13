@@ -13,9 +13,9 @@ import mir_eval
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = "tests/data/alignment/ref*.txt"
-EST_GLOB = "tests/data/alignment/est*.txt"
-SCORES_GLOB = "tests/data/alignment/output*.json"
+REF_GLOB = "data/alignment/ref*.txt"
+EST_GLOB = "data/alignment/est*.txt"
+SCORES_GLOB = "data/alignment/output*.json"
 
 ref_files = sorted(glob.glob(REF_GLOB))
 est_files = sorted(glob.glob(EST_GLOB))

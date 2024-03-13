@@ -7,9 +7,9 @@ import json
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'tests/data/transcription_velocity/ref*.txt'
-EST_GLOB = 'tests/data/transcription_velocity/est*.txt'
-SCORES_GLOB = 'tests/data/transcription_velocity/output*.json'
+REF_GLOB = 'data/transcription_velocity/ref*.txt'
+EST_GLOB = 'data/transcription_velocity/est*.txt'
+SCORES_GLOB = 'data/transcription_velocity/output*.json'
 ref_files = sorted(glob.glob(REF_GLOB))
 est_files = sorted(glob.glob(EST_GLOB))
 sco_files = sorted(glob.glob(SCORES_GLOB))

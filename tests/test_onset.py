@@ -12,9 +12,9 @@ import warnings
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'tests/data/onset/ref*.txt'
-EST_GLOB = 'tests/data/onset/est*.txt'
-SCORES_GLOB = 'tests/data/onset/output*.json'
+REF_GLOB = 'data/onset/ref*.txt'
+EST_GLOB = 'data/onset/est*.txt'
+SCORES_GLOB = 'data/onset/output*.json'
 
 ref_files = sorted(glob.glob(REF_GLOB))
 est_files = sorted(glob.glob(EST_GLOB))
