@@ -6,7 +6,6 @@ import numpy as np
 import json
 import mir_eval
 import glob
-import warnings
 import pytest
 
 A_TOL = 1e-12
@@ -91,4 +90,3 @@ def test_pattern_functions(pattern_data):
     assert scores.keys() == expected_scores.keys()
     for metric in scores:
         assert np.allclose(scores[metric], expected_scores[metric], atol=A_TOL)
-
