@@ -87,21 +87,6 @@ def test_beat_perfect(metric):
     assert np.allclose(metric(beats, beats), 1)
 
 
-def __check_score(sco_f, metric, score, expected_score):
-    assert np.allclose(score, expected_score, atol=A_TOL)
-
-
-def _test_beat_functions():
-    # Unit tests
-    for metric in [mir_eval.beat.f_measure,
-                   mir_eval.beat.cemgil,
-                   mir_eval.beat.goto,
-                   mir_eval.beat.p_score,
-                   mir_eval.beat.continuity,
-                   mir_eval.beat.information_gain]:
-        yield (__unit_test_beat_function, metric)
-
-
 @pytest.mark.parametrize("beat_data", file_sets, indirect=True)
 def test_beat_functions(beat_data):
     reference_beats, estimated_beats, expected_scores = beat_data
