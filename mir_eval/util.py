@@ -7,6 +7,7 @@ import os
 import inspect
 
 import numpy as np
+import warnings
 
 
 def index_labels(labels, case_sensitive=False):
@@ -952,3 +953,89 @@ def midi_to_hz(midi):
         Frequency/frequencies in Hz corresponding to `midi`
     '''
     return 440.0 * (2.0 ** ((midi - 69.0)/12.0))
+
+
+def estimate_hop_length(times):
+    '''Estimate hop length of a semi-regular but non-uniform series of times.
+
+    Parameters
+    ----------
+    times : ndarray
+        Array of times corresponding to a time series
+
+    Returns
+    -------
+    hop_length : number
+        Estimated hop length (seconds)
+    '''
+
+    if not len(times):
+        raise ValueError("Cannot estimate hop length from an empty time array.")
+
+    # Make sure the times are sorted
+    times = np.sort(times)
+
+    # Determine where there are no gaps
+    non_gaps = np.append([False], np.isclose(np.diff(times, n=2), 0))
+
+    if not np.sum(non_gaps):
+        raise ValueError("Time observations are too irregular.")
+
+    # Take the median of the time differences at non-gaps
+    return np.median(np.diff(times)[non_gaps])
+
+
+def time_series_to_uniform(times, values, hop_length=None, duration=None):
+    '''Convert a semi-regular time series with gaps into a uniform time series.
+
+    Parameters
+    ----------
+    times : ndarray
+        Array of times corresponding to a time series
+    values : list of ndarray
+        Observations made at times
+    hop_length : number or None (optional)
+        Time interval (seconds) between each observation in the uniform series
+    duration : number or None (optional)
+        Total length (seconds) of times series
+        If specified, should be greater than all observation times
+
+    Returns
+    -------
+    times : ndarray
+        Uniform time array
+    values : ndarray
+        Observations corresponding to uniform times
+    '''
+
+    if not len(times) or not len(values):
+        return np.array([]), []
+
+    if hop_length is None:
+        # If a hop length is not provided, estimate it and throw a warning
+        warnings.warn(
+            "Since hop length is unknown, it will be estimated. This may lead to "
+            "unwanted behavior if the observation times are sporadic or irregular.")
+        hop_length = estimate_hop_length(times)
+
+    if duration is None:
+        # Default the duration to the last reported time in the series
+        duration = times[-1]
+
+    # Determine the total number of observations in the uniform time series
+    num_entries = int(np.ceil(duration / hop_length)) + 1
+
+    # Attempt to fill in blank frames with the appropriate value
+    empty_fill = np.array([])
+    new_values = [empty_fill] * num_entries
+    new_times = hop_length * np.arange(num_entries)
+
+    # Determine which indices the provided observations fall under
+    idcs = np.round(times / hop_length).astype(int)
+
+    # Fill the observed values into their respective locations in the uniform series
+    for i in range(len(idcs)):
+        if times[i] <= duration:
+            new_values[idcs[i]] = values[i]
+
+    return new_times, new_values

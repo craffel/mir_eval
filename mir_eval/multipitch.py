@@ -126,6 +126,14 @@ def resample_multipitch(times, frequencies, target_times):
     if times.size == 0:
         return [np.array([])]*len(target_times)
 
+    # Warn when the delta between the original times is not constant
+    if not np.allclose(np.diff(times), np.diff(times).mean()):
+        warnings.warn(
+            "Non-uniform timescale passed to resample_multipitch.  Pitch "
+            "will be nearest-neighbor interpolated, which will result in "
+            "undesirable behavior if silences are indicated by missing values."
+            "  Silences should be indicated by empty arrays, i.e. np.array([]).")
+
     n_times = len(frequencies)
 
     # scipy's interpolate doesn't handle ragged arrays. Instead, we interpolate

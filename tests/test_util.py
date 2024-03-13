@@ -8,6 +8,8 @@ import nose.tools
 import mir_eval
 from mir_eval import util
 
+A_TOL = 1e-12
+
 
 def test_interpolate_intervals():
     """Check that an interval set is interpolated properly, with boundaries
@@ -338,3 +340,94 @@ def test_sort_labeled_intervals():
     yield __test, x1, x1_true
     yield __test_labeled, x1_true, labels_true, x1_true, labels_true
     yield __test, x1_true, x1_true
+
+
+def test_estimate_hop_length():
+    times1 = np.array([0.00, 0.01, 0.02, 0.03, 0.04])
+    times2 = np.concatenate((times1, [0.10, 0.11, 0.12, 0.13, 0.14]))
+    times3 = np.array([0.00, 0.01, 0.03, 0.06, 0.10])
+
+    expected_hop = 0.01
+
+    actual_hop1 = mir_eval.util.estimate_hop_length(times1)
+    actual_hop2 = mir_eval.util.estimate_hop_length(times2)
+
+    # NumPy diff() does not always return exact values
+    assert abs(actual_hop1 - expected_hop) < A_TOL
+    assert abs(actual_hop2 - expected_hop) < A_TOL
+
+    nose.tools.assert_raises(ValueError, util.estimate_hop_length, times3)
+
+
+def __times_equal(times_a, times_b):
+    if len(times_a) != len(times_b):
+        return False
+    else:
+        equal = True
+        for time_a, time_b in zip(times_a, times_b):
+            equal = equal and abs(time_a - time_b) < A_TOL
+        return equal
+
+
+def __frequencies_equal(freqs_a, freqs_b):
+    if len(freqs_a) != len(freqs_b):
+        return False
+    else:
+        equal = True
+        for freq_a, freq_b in zip(freqs_a, freqs_b):
+            if freq_a.size != freq_b.size:
+                return False
+            equal = equal and np.allclose(freq_a, freq_b, atol=A_TOL)
+        return equal
+
+
+def test_time_series_to_uniform():
+    times1 = np.array([0.00, 0.01, 0.02, 0.03])
+    times2 = np.array([0.00, 0.01, 0.03, 0.04])
+    times3 = times2
+
+    freqs = [np.array([100.]),
+             np.array([100.]),
+             np.array([200.]),
+             np.array([200.])]
+
+    hop_size = 0.01
+
+    expected_times1 = times1
+    expected_freqs1 = freqs
+
+    expected_times2 = np.array([0.00, 0.01, 0.02, 0.03, 0.04])
+    expected_freqs2 = [np.array([100.]),
+                       np.array([100.]),
+                       np.array([]),
+                       np.array([200.]),
+                       np.array([200.])]
+
+    expected_times3 = hop_size * np.arange(20)
+    expected_freqs3 = [np.array([100.]),
+                       np.array([100.]),
+                       np.array([]),
+                       np.array([200.]),
+                       np.array([200.])] + \
+                      [np.array([])] * 15
+
+    expected_times4 = np.array([0.00, 0.01, 0.02])
+    expected_freqs4 = [np.array([])] * 3
+
+    actual_times1, actual_values1 = mir_eval.util.time_series_to_uniform(times1, freqs, hop_size, None)
+    actual_times2, actual_values2 = mir_eval.util.time_series_to_uniform(times2, freqs, hop_size, None)
+    actual_times3, actual_values3 = mir_eval.util.time_series_to_uniform(times3, freqs, hop_size, 0.195)
+
+    actual_times4, actual_values4 = mir_eval.util.time_series_to_uniform(np.array([]), [], hop_size, times1[-1])
+
+    assert __times_equal(actual_times1, expected_times1)
+    assert __frequencies_equal(actual_values1, expected_freqs1)
+
+    assert __times_equal(actual_times2, expected_times2)
+    assert __frequencies_equal(actual_values2, expected_freqs2)
+
+    assert __times_equal(actual_times3, expected_times3)
+    assert __frequencies_equal(actual_values3, expected_freqs3)
+
+    assert __times_equal(actual_times4, expected_times4)
+    assert __frequencies_equal(actual_values4, expected_freqs4)
