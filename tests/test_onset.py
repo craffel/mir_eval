@@ -65,12 +65,6 @@ def test_onset_match():
 
 @pytest.mark.parametrize("onset_data", file_sets, indirect=True)
 def test_onset_functions(onset_data):
-    reference_onsets, estimated_onsets, expected_scores = onset_data
-    assert len(ref_files) == len(est_files) == len(sco_files) > 0
-
-    # Unit tests
-    #for metric in [mir_eval.onset.f_measure]:
-    #    yield (__unit_test_onset_function, metric)
     # Compute scores
     scores = mir_eval.onset.evaluate(reference_onsets, estimated_onsets)
     # Compare them
