@@ -60,7 +60,11 @@ jobs:
         shell: bash -l {0}
         run: python -c "import numpy; numpy.show_config()"
 
+      - name: Show libraries in the system on which SciPy was built
+        shell: bash -l {0}
+        run: python -c "import scipy; scipy.show_config()"
+
       - name: Run unit tests
         shell: bash -l {0}
-        run: pytest --cov=mir_eval
+        run: pytest
         working-directory: tests
