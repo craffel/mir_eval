@@ -17,16 +17,23 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.11", "3.12"]
         channel-priority: [strict]
+        envfile: ".github/environment.yml"
         include:
-          - python-version: "3.10"
+          - python-version: "3.12"
             os: macos-latest
-          - python-version: "3.10"
+          - python-version: "3.12"
             os: windows-latest
-          - python-version: "3.10"
+          - python-version: "3.12"
             os: ubuntu-latest
             channel-priority: flexible
+          - os: ubuntu-latest
+            python-version: "3.7"
+            envfile: ".github/environment-minimal.yml"
+            channel-priority: "flexible"
+            name: "Minimal dependencies"
+          
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -35,7 +42,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('.github/environment.yml') }}
+          key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles(matrix.envfile) }}
 
       - name: Create conda environment
         uses: conda-incubator/setup-miniconda@v2
@@ -43,7 +50,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           auto-activate-base: false
           channel-priority: ${{ matrix.channel-priority }}
-          environment-file: .github/environment.yml
+          environment-file: ${{ matrix.envfile }}
           use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
 
       - name: Install package in development mode
