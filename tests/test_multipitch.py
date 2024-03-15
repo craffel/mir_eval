@@ -7,7 +7,7 @@ import json
 import mir_eval
 import glob
 import warnings
-import nose.tools
+import pytest
 
 A_TOL = 1e-12
 
@@ -218,14 +218,12 @@ def unit_test_metrics():
     est_freqs = [np.array([200.]), np.array([])]
 
     # ref sizes unequal
-    nose.tools.assert_raises(
-        ValueError, mir_eval.multipitch.metrics,
-        np.array([0.0]), ref_freqs, est_time, est_freqs)
+    with pytest.raises(ValueError):
+        mir_eval.multipitch.metrics(np.array([0.0]), ref_freqs, est_time, est_freqs)
 
     # est sizes unequal
-    nose.tools.assert_raises(
-        ValueError, mir_eval.multipitch.metrics,
-        ref_time, ref_freqs, np.array([0.0]), est_freqs)
+    with pytest.raises(ValueError):
+        mir_eval.multipitch.metrics(ref_time, ref_freqs, np.array([0.0]), est_freqs)
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
