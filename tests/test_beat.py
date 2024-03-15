@@ -6,7 +6,6 @@ import numpy as np
 import json
 import mir_eval
 import glob
-import warnings
 import pytest
 
 A_TOL = 1e-12
