@@ -12,8 +12,6 @@ import numpy as np
 
 import pytest
 
-from nose.tools import raises
-
 # We'll make a decorator to handle style contexts
 from decorator import decorator
 
