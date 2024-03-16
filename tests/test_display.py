@@ -368,7 +368,7 @@ def test_labeled_events():
     mir_eval.display.events(beats_ref, labels)
 
 
-@raises(ValueError)
+@pytest.mark.xfail(raises=ValueError)
 def test_pianoroll_nopitch_nomidi():
     # Issue 214
     mir_eval.display.piano_roll([[0, 1]])

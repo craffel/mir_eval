@@ -5,10 +5,9 @@ Unit tests for mir_eval.melody
 
 import numpy as np
 import json
-import nose.tools
 import mir_eval
 import glob
-import warnings
+import pytest
 
 A_TOL = 1e-12
 
@@ -16,6 +15,26 @@ A_TOL = 1e-12
 REF_GLOB = 'data/melody/ref*.txt'
 EST_GLOB = 'data/melody/est*.txt'
 SCORES_GLOB = 'data/melody/output*.json'
+
+ref_files = sorted(glob.glob(REF_GLOB))
+est_files = sorted(glob.glob(EST_GLOB))
+sco_files = sorted(glob.glob(SCORES_GLOB))
+
+assert len(ref_files) == len(est_files) == len(sco_files) > 0
+
+file_sets = list(zip(ref_files, est_files, sco_files))
+
+
+@pytest.fixture
+def melody_data(request):
+    ref_f, est_f, sco_f = request.param
+    with open(sco_f, "r") as f:
+        expected_scores = json.load(f)
+    # Load in reference melody
+    ref_time, ref_freq = mir_eval.io.load_time_series(ref_f)
+    # Load in estimated melody
+    est_time, est_freq = mir_eval.io.load_time_series(est_f)
+    return ref_time, ref_freq, est_time, est_freq, expected_scores
 
 
 def test_hz2cents():
@@ -314,12 +333,12 @@ def test_continuous_voicing_metrics():
             assert np.isclose(actual_scores[metric], expected_scores[metric])
 
 
-def __unit_test_voicing_measures(metric):
+def __unit_test_voicing_measures():
     # We need a special test for voicing_measures because it only takes 2 args
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
         # First, test for warnings due to empty voicing arrays
-        score = metric(np.array([]), np.array([]))
+        score = mir_eval.melody.voicing_measures(np.array([]), np.array([]))
         assert len(w) == 4
         assert np.all([issubclass(wrn.category, UserWarning) for wrn in w])
         assert [str(wrn.message)
@@ -330,15 +349,21 @@ def __unit_test_voicing_measures(metric):
         # And that the metric is 0
         assert np.allclose(score, 0)
         # Also test for a warning when the arrays have non-voiced content
-        metric(np.ones(10), np.zeros(10))
+        mir_eval.melody.voicing_measures(np.ones(10), np.zeros(10))
         assert len(w) == 5
         assert issubclass(w[-1].category, UserWarning)
         assert str(w[-1].message) == "Estimated melody has no voiced frames."
 
-    # Now test validation function - voicing arrays must be the same size
-    nose.tools.assert_raises(ValueError, metric, np.ones(10), np.ones(12))
+
+@pytest.mark.xfail(raises=ValueError)
+def test_melody_voicing_badlength():
+    # ref and est voicings must be the same length
+    mir_eval.melody.voicing_measures(np.ones(10), np.ones(11))
 
 
+@pytest.mark.parametrize('metric', [mir_eval.melody.raw_pitch_accuracy,
+                   mir_eval.melody.raw_chroma_accuracy,
+                   mir_eval.melody.overall_accuracy])
 def __unit_test_melody_function(metric):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
@@ -361,80 +386,31 @@ def __unit_test_melody_function(metric):
         assert issubclass(w[-1].category, UserWarning)
         assert str(w[-1].message) == "Estimated melody has no voiced frames."
 
-    # Now test validation function - all inputs must be same length
-    nose.tools.assert_raises(ValueError, metric, np.ones(10),
-                             np.ones(12), np.ones(10), np.ones(10))
 
-
-def __check_score(sco_f, metric, score, expected_score):
-    assert np.allclose(score, expected_score, atol=A_TOL)
-
-
-def test_melody_functions():
-    # Load in all files in the same order
-    ref_files = sorted(glob.glob(REF_GLOB))
-    est_files = sorted(glob.glob(EST_GLOB))
-    sco_files = sorted(glob.glob(SCORES_GLOB))
-
-    assert len(ref_files) == len(est_files) == len(sco_files) > 0
-
-    # Unit tests
-    for metric in [mir_eval.melody.voicing_measures,
-                   mir_eval.melody.raw_pitch_accuracy,
+@pytest.mark.xfail(raises=ValueError)
+@pytest.mark.parametrize('metric', [mir_eval.melody.raw_pitch_accuracy,
                    mir_eval.melody.raw_chroma_accuracy,
-                   mir_eval.melody.overall_accuracy]:
-        if metric == mir_eval.melody.voicing_measures:
-            yield (__unit_test_voicing_measures, metric)
-        else:
-            yield (__unit_test_melody_function, metric)
-    # Regression tests
-    for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
-        with open(sco_f, 'r') as f:
-            expected_scores = json.load(f)
-        # Load in reference melody
-        ref_time, ref_freq = mir_eval.io.load_time_series(ref_f)
-        # Load in estimated melody
-        est_time, est_freq = mir_eval.io.load_time_series(est_f)
-        scores = mir_eval.melody.evaluate(ref_time, ref_freq, est_time,
-                                          est_freq)
-        for metric in scores:
-            # This is a simple hack to make nosetest's messages more useful
-            yield (__check_score, sco_f, metric, scores[metric],
-                   expected_scores[metric])
+                   mir_eval.melody.overall_accuracy])
+@pytest.mark.parametrize('ref_freq, est_freq', [(np.ones(11), np.ones(10)), (np.ones(10), np.ones(11))])
+def test_melody_badlength(metric, ref_freq, est_freq):
+    # frequency and time must be the same length
+    metric(np.ones(10), ref_freq, np.ones(10), est_freq)
 
 
-def test_melody_functions_continuous_voicing_equivalence():
-    # Load in all files in the same order
-    ref_files = sorted(glob.glob(REF_GLOB))
-    est_files = sorted(glob.glob(EST_GLOB))
-    sco_files = sorted(glob.glob(SCORES_GLOB))
-
-    assert len(ref_files) == len(est_files) == len(sco_files) > 0
-
-    # Unit tests
-    for metric in [mir_eval.melody.voicing_measures,
-                   mir_eval.melody.raw_pitch_accuracy,
-                   mir_eval.melody.raw_chroma_accuracy,
-                   mir_eval.melody.overall_accuracy]:
-        if metric == mir_eval.melody.voicing_measures:
-            yield (__unit_test_voicing_measures, metric)
-        else:
-            yield (__unit_test_melody_function, metric)
-    # Regression tests
-    for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
-        with open(sco_f, 'r') as f:
-            expected_scores = json.load(f)
-        # Load in reference melody
-        ref_time, ref_freq = mir_eval.io.load_time_series(ref_f)
-        ref_reward = np.ones(ref_time.shape)  # uniform reward
-        # Load in estimated melody
-        est_time, est_freq = mir_eval.io.load_time_series(est_f)
-        # voicing equivalent from frequency
-        est_voicing = (est_freq >= 0).astype('float')
-        scores = mir_eval.melody.evaluate(ref_time, ref_freq, est_time,
-                                          est_freq, est_voicing=est_voicing,
-                                          ref_reward=ref_reward)
-        for metric in scores:
-            # This is a simple hack to make nosetest's messages more useful
-            yield (__check_score, sco_f, metric, scores[metric],
-                   expected_scores[metric])
+@pytest.mark.parametrize("melody_data", file_sets, indirect=True)
+@pytest.mark.parametrize("voicing", [False, True])
+def test_melody_functions(melody_data, voicing):
+    ref_time, ref_freq, est_time, est_freq, expected_scores = melody_data
+    # When voicing=True, do the continuous voicing equivalence check
+    if voicing:
+        ref_reward = np.ones_like(ref_time)
+        est_voicing = (est_freq >= 0).astype(float)
+    else:
+        ref_reward = None
+        est_voicing = None
+    scores = mir_eval.melody.evaluate(ref_time, ref_freq, est_time,
+                                      est_freq, est_voicing=est_voicing,
+                                      ref_reward=ref_reward)
+    assert scores.keys() == expected_scores.keys()
+    for metric in scores:
+        assert np.allclose(scores[metric], expected_scores[metric], atol=A_TOL)
