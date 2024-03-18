@@ -333,24 +333,27 @@ def test_continuous_voicing_metrics():
             assert np.isclose(actual_scores[metric], expected_scores[metric])
 
 
-def __unit_test_voicing_measures():
+def test_voicing_measures_empty():
     # We need a special test for voicing_measures because it only takes 2 args
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
+    with pytest.warns() as w:
         # First, test for warnings due to empty voicing arrays
         score = mir_eval.melody.voicing_measures(np.array([]), np.array([]))
-        assert len(w) == 4
-        assert np.all([issubclass(wrn.category, UserWarning) for wrn in w])
-        assert [str(wrn.message)
-                for wrn in w] == ["Reference voicing array is empty.",
-                                  "Estimated voicing array is empty.",
-                                  "Reference melody has no voiced frames.",
-                                  "Estimated melody has no voiced frames."]
-        # And that the metric is 0
-        assert np.allclose(score, 0)
+    assert len(w) == 4
+    assert np.all([issubclass(wrn.category, UserWarning) for wrn in w])
+    assert [str(wrn.message)
+            for wrn in w] == ["Reference voicing array is empty.",
+                              "Estimated voicing array is empty.",
+                              "Reference melody has no voiced frames.",
+                              "Estimated melody has no voiced frames."]
+    # And that the metric is 0
+    assert np.allclose(score, 0)
+
+
+def test_voicing_measures_unvoiced():
+    with pytest.warns() as w:
         # Also test for a warning when the arrays have non-voiced content
         mir_eval.melody.voicing_measures(np.ones(10), np.zeros(10))
-        assert len(w) == 5
+        assert len(w) == 1
         assert issubclass(w[-1].category, UserWarning)
         assert str(w[-1].message) == "Estimated melody has no voiced frames."
 
@@ -364,9 +367,8 @@ def test_melody_voicing_badlength():
 @pytest.mark.parametrize('metric', [mir_eval.melody.raw_pitch_accuracy,
                    mir_eval.melody.raw_chroma_accuracy,
                    mir_eval.melody.overall_accuracy])
-def __unit_test_melody_function(metric):
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
+def test_melody_function_empty(metric):
+    with pytest.warns() as w:
         # First, test for warnings due to empty voicing arrays
         score = metric(np.array([]), np.array([]), np.array([]), np.array([]))
         assert len(w) == 6
