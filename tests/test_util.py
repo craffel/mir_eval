@@ -3,8 +3,8 @@
 
 import collections
 
+import pytest
 import numpy as np
-import nose.tools
 import mir_eval
 from mir_eval import util
 
@@ -31,7 +31,7 @@ def test_interpolate_intervals_gap():
             expected_ans)
 
 
-@nose.tools.raises(ValueError)
+@pytest.mark.xfail(raises=ValueError)
 def test_interpolate_intervals_badtime():
     """Check that interpolate_intervals throws an exception if
     input is unordered.
@@ -65,7 +65,7 @@ def test_intervals_to_samples():
 
 
 def test_intersect_files():
-    """Check that two non-identical yield correct results.
+    """Check that two non-identical produce correct results.
     """
     flist1 = ['/a/b/abc.lab', '/c/d/123.lab', '/e/f/xyz.lab']
     flist2 = ['/g/h/xyz.npy', '/i/j/123.txt', '/k/l/456.lab']
@@ -111,8 +111,8 @@ def test_merge_labeled_intervals():
 
     # Check that invalid inputs raise a ValueError
     y_intvs[-1, -1] = 10.0
-    nose.tools.assert_raises(ValueError, util.merge_labeled_intervals, x_intvs,
-                             x_labels, y_intvs, y_labels)
+    with pytest.raises(ValueError):
+        util.merge_labeled_intervals(x_intvs, x_labels, y_intvs, y_labels)
 
 
 def test_boundaries_to_intervals():
@@ -166,14 +166,14 @@ def test_bipartite_match():
     matching = util._bipartite_match(G)
 
     # Make sure that each u vertex is matched
-    nose.tools.eq_(len(matching), len(u_set))
+    assert len(matching) == len(u_set)
 
     # Make sure that there are no duplicate keys
     lhs = set([k for k in matching])
     rhs = set([matching[k] for k in matching])
 
-    nose.tools.eq_(len(matching), len(lhs))
-    nose.tools.eq_(len(matching), len(rhs))
+    assert len(matching) == len(lhs)
+    assert len(matching) == len(rhs)
 
     # Finally, make sure that all detected edges are present in G
     for k in matching:
@@ -228,66 +228,60 @@ def test_fast_hit_windows():
     assert np.all(est_fast == est_slow)
 
 
-def test_validate_intervals():
-    # Test for ValueError when interval shape is invalid
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_intervals,
-        np.array([[1.], [2.5], [5.]]))
-    # Test for ValueError when times are negative
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_intervals,
-        np.array([[1., -2.], [2.5, 3.], [5., 6.]]))
-    # Test for ValueError when duration is zero
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_intervals,
-        np.array([[1., 2.], [2.5, 2.5], [5., 6.]]))
-    # Test for ValueError when duration is negative
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_intervals,
-        np.array([[1., 2.], [2.5, 1.5], [5., 6.]]))
+@pytest.mark.xfail(raises=ValueError)
+@pytest.mark.parametrize('intervals',
+        [
+        # Test for ValueError when interval shape is invalid
+        np.array([[1.], [2.5], [5.]]), 
+        # Test for ValueError when times are negative
+        np.array([[1., -2.], [2.5, 3.], [5., 6.]]),
+        # Test for ValueError when duration is zero
+        np.array([[1., 2.], [2.5, 2.5], [5., 6.]]),
+        # Test for ValueError when duration is negative
+        np.array([[1., 2.], [2.5, 1.5], [5., 6.]])])
+def test_validate_intervals(intervals):
+    mir_eval.util.validate_intervals(intervals)
 
 
-def test_validate_events():
-    # Test for ValueError when max_time is violated
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events, np.array([100., 100000.]))
-    # Test for ValueError when events aren't 1-d arrays
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events,
-        np.array([[1., 2.], [3., 4.]]))
-    # Test for ValueError when event times are not increasing
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_events,
-        np.array([1., 2., 5., 3.]))
+@pytest.mark.xfail(raises=ValueError)
+@pytest.mark.parametrize('events',
+        [
+        # Test for ValueError when max_time is violated
+        np.array([100., 100000.]),
+        # Test for ValueError when events aren't 1-d arrays
+        np.array([[1., 2.], [3., 4.]]),
+        # Test for ValueError when event times are not increasing
+        np.array([1., 2., 5., 3.])])
+def test_validate_events(events):
+    mir_eval.util.validate_events(events)
 
 
-def test_validate_frequencies():
+@pytest.mark.xfail(raises=ValueError)
+@pytest.mark.parametrize('freqs',
+        [
     # Test for ValueError when max_freq is violated
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_frequencies,
-        np.array([100., 100000.]), 5000., 20.)
+    np.array([100, 10000]),
     # Test for ValueError when min_freq is violated
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_frequencies,
-        np.array([2., 200.]), 5000., 20.)
+    np.array([2, 200]),
     # Test for ValueError when events aren't 1-d arrays
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_frequencies,
-        np.array([[100., 200.], [300., 400.]]), 5000., 20.)
+    np.array([[100, 200], [300, 400]]),
     # Test for ValueError when allow_negatives is false and negative values
     # are passed
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_frequencies,
-        np.array([[-100., 200.], [300., 400.]]), 5000., 20.,
-        allow_negatives=False)
+    np.array([-100, 200])
+            ])
+def test_validate_frequencies(freqs):
+    mir_eval.util.validate_frequencies(freqs, 5000, 20, allow_negatives=False)
+
+
+@pytest.mark.xfail(raises=ValueError)
+@pytest.mark.parametrize('freqs', [
     # Test for ValueError when max_freq is violated and allow_negatives=True
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_frequencies,
-        np.array([100., -100000.]), 5000., 20., allow_negatives=True)
+    np.array([100, -100000]),
     # Test for ValueError when min_freq is violated and allow_negatives=True
-    nose.tools.assert_raises(
-        ValueError, mir_eval.util.validate_frequencies,
-        np.array([-2., 200.]), 5000., 20., allow_negatives=True)
+    np.array([-2, 200])
+    ])
+def test_validate_frequencies_negative(freqs):
+    mir_eval.util.validate_frequencies(freqs, 5000, 20, allow_negatives=True)
 
 
 def test_has_kwargs():
@@ -310,31 +304,26 @@ def test_has_kwargs():
     def f5(_=5, **kw):
         return None
 
-    yield __test, False, f1
-    yield __test, False, f2
-    yield __test, False, f3
-    yield __test, True, f4
-    yield __test, True, f5
+    assert not mir_eval.util.has_kwargs(f1)
+    assert not mir_eval.util.has_kwargs(f2)
+    assert not mir_eval.util.has_kwargs(f3)
+    assert mir_eval.util.has_kwargs(f4)
+    assert mir_eval.util.has_kwargs(f5)
 
 
-def test_sort_labeled_intervals():
+@pytest.mark.parametrize("x,labels,x_true,lab_true", [
+    (np.asarray([[10, 20], [0, 10]]), ['a', 'b'], np.asarray([[0, 10], [10, 20]]), ['b', 'a']),
+    (np.asarray([[0, 10], [10, 20]]), ['b', 'a'], np.asarray([[0, 10], [10, 20]]), ['b', 'a'])
+])
+def test_sort_labeled_intervals_with_labels(x, labels, x_true, lab_true):
+    xs, ls = mir_eval.util.sort_labeled_intervals(x, labels)
+    assert np.allclose(xs, x_true)
+    assert ls == lab_true
 
-    def __test_labeled(x, labels, x_true, lab_true):
-        xs, ls = mir_eval.util.sort_labeled_intervals(x, labels)
-
-        assert np.allclose(xs, x_true)
-        nose.tools.eq_(ls, lab_true)
-
-    def __test(x, x_true):
-        xs = mir_eval.util.sort_labeled_intervals(x)
-        assert np.allclose(xs, x_true)
-
-    x1 = np.asarray([[10, 20], [0, 10]])
-    x1_true = np.asarray([[0, 10], [10, 20]])
-    labels = ['a', 'b']
-    labels_true = ['b', 'a']
-
-    yield __test_labeled, x1, labels, x1_true, labels_true
-    yield __test, x1, x1_true
-    yield __test_labeled, x1_true, labels_true, x1_true, labels_true
-    yield __test, x1_true, x1_true
+@pytest.mark.parametrize("x,x_true", [
+    (np.asarray([[10, 20], [0, 10]]), np.asarray([[0, 10], [10, 20]])),
+    (np.asarray([[0, 10], [10, 20]]), np.asarray([[0, 10], [10, 20]]))
+])
+def test_sort_labeled_intervals_without_labels(x, x_true):
+    xs = mir_eval.util.sort_labeled_intervals(x)
+    assert np.allclose(xs, x_true)
