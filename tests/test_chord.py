@@ -5,7 +5,6 @@ Unit tests for mir_eval.chord
 import mir_eval
 import numpy as np
 import pytest
-import nose.tools
 import warnings
 import glob
 import json
@@ -35,17 +34,6 @@ def chord_data(request):
     # Load in estimated melody
     est_intervals, est_labels = mir_eval.io.load_labeled_intervals(est_f)
     return ref_intervals, ref_labels, est_intervals, est_labels, expected_scores
-
-
-def __check_valid(function, parameters, result):
-    ''' Helper function for checking the output of a function '''
-    assert function(*parameters) == result
-
-
-def __check_exception(function, parameters, exception):
-    ''' Makes sure the provided function throws the provided
-    exception given the provided input '''
-    nose.tools.assert_raises(exception, function, *parameters)
 
 
 @pytest.mark.parametrize('pitch, semitone', [
