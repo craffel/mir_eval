@@ -4,6 +4,7 @@ Unit tests for mir_eval.chord
 
 import mir_eval
 import numpy as np
+import pytest
 import nose.tools
 import warnings
 import glob
@@ -15,6 +16,25 @@ A_TOL = 1e-12
 REF_GLOB = 'data/chord/ref*.lab'
 EST_GLOB = 'data/chord/est*.lab'
 SCORES_GLOB = 'data/chord/output*.json'
+
+ref_files = sorted(glob.glob(REF_GLOB))
+est_files = sorted(glob.glob(EST_GLOB))
+sco_files = sorted(glob.glob(SCORES_GLOB))
+
+assert len(ref_files) == len(est_files) == len(sco_files) > 0
+
+file_sets = list(zip(ref_files, est_files, sco_files))
+
+@pytest.fixture
+def chord_data(request):
+    ref_f, est_f, sco_f = request.param
+    with open(sco_f, "r") as f:
+        expected_scores = json.load(f)
+    # Load in reference melody
+    ref_intervals, ref_labels = mir_eval.io.load_labeled_intervals(ref_f)
+    # Load in estimated melody
+    est_intervals, est_labels = mir_eval.io.load_labeled_intervals(est_f)
+    return ref_intervals, ref_labels, est_intervals, est_labels, expected_scores
 
 
 def __check_valid(function, parameters, result):
@@ -28,34 +48,33 @@ def __check_exception(function, parameters, exception):
     nose.tools.assert_raises(exception, function, *parameters)
 
 
-def test_pitch_class_to_semitone():
-    valid_classes = ['Gbb', 'G', 'G#', 'Cb', 'B#']
-    valid_semitones = [5, 7, 8, 11, 0]
-
-    for pitch_class, semitone in zip(valid_classes, valid_semitones):
-        yield (__check_valid, mir_eval.chord.pitch_class_to_semitone,
-               (pitch_class,), semitone)
-
-    invalid_classes = ['Cab', '#C', 'bG']
-
-    for pitch_class in invalid_classes:
-        yield (__check_exception, mir_eval.chord.pitch_class_to_semitone,
-               (pitch_class,), mir_eval.chord.InvalidChordException)
+@pytest.mark.parametrize('pitch, semitone', [
+    ('Gbb', 5),
+    ('G', 7),
+    ('G#', 8),
+    ('Cb', 11),
+    ('B#', 0)
+])
+def test_pitch_class_to_semitone_valid(pitch, semitone):
+    assert mir_eval.chord.pitch_class_to_semitone(pitch) == semitone
 
 
-def test_scale_degree_to_semitone():
-    valid_degrees = ['b7', '#3', '1', 'b1', '#7', 'bb5', '11', '#13']
-    valid_semitones = [10, 5, 0, -1, 12, 5, 17, 22]
+@pytest.mark.parametrize('pitch', ['Cab', '#C', 'bG'])
+@pytest.mark.xfail(raises=mir_eval.chord.InvalidChordException)
+def test_pitch_class_to_semitone_fail(pitch):
+    mir_eval.chord.pitch_class_to_semitone(pitch)
 
-    for scale_degree, semitone in zip(valid_degrees, valid_semitones):
-        yield (__check_valid, mir_eval.chord.scale_degree_to_semitone,
-               (scale_degree,), semitone)
 
-    invalid_degrees = ['7b', '4#', '77', '15']
+@pytest.mark.parametrize('degree, semitone',
+        [('b7', 10), ('#3', 5), ('1', 0), ('b1', -1), ('#7', 12), ('bb5', 5), ('11', 17), ('#13', 22)])
+def test_scale_degree_to_semitone(degree, semitone):
+    assert mir_eval.chord.scale_degree_to_semitone(degree) == semitone
 
-    for scale_degree in invalid_degrees:
-        yield (__check_exception, mir_eval.chord.scale_degree_to_semitone,
-               (scale_degree,), mir_eval.chord.InvalidChordException)
+
+@pytest.mark.parametrize('degree', ['7b', '4#', '77', '15'])
+@pytest.mark.xfail(raises=mir_eval.chord.InvalidChordException)
+def test_scale_degree_to_semitone(degree):
+    mir_eval.chord.scale_degree_to_semitone(degree)
 
 
 def test_scale_degree_to_bitmap():
@@ -82,84 +101,69 @@ def test_scale_degree_to_bitmap():
            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]))
 
 
-def test_validate_chord_label():
-    valid_labels = ['C', 'Eb:min/5', 'A#:dim7', 'B:maj(*1,*5)/3',
-                    'A#:sus4', 'A:(9,11)']
+@pytest.mark.parametrize('label', ['C', 'Eb:min/5', 'A#:dim7', 'B:maj(*1,*5)/3',
+                                    'A#:sus4', 'A:(9,11)'])
+def test_validate_chord_label(label):
     # For valid labels, calling the function without an error = pass
-    for chord_label in valid_labels:
-        yield (mir_eval.chord.validate_chord_label, chord_label)
-
-    invalid_labels = ["C::maj", "C//5", "C((4)", "C5))",
-                      "C:maj(*3/3", "Cmaj*3/3)", 'asdf']
-
-    for chord_label in invalid_labels:
-        yield (__check_exception, mir_eval.chord.validate_chord_label,
-               (chord_label,), mir_eval.chord.InvalidChordException)
+    mir_eval.chord.validate_chord_label(label)
 
 
-def test_split():
-    labels = ['C', 'B:maj(*1,*3)/5', 'Ab:min/b3', 'N', 'G:(3)']
-    splits = [['C', 'maj', set(), '1'],
-              ['B', 'maj', set(['*1', '*3']), '5'],
-              ['Ab', 'min', set(), 'b3'],
-              ['N', '', set(), ''],
-              ['G', '', set(['3']), '1']]
+@pytest.mark.parametrize('label', ["C::maj", "C//5", "C((4)", "C5))",
+                      "C:maj(*3/3", "Cmaj*3/3)", 'asdf'])
+@pytest.mark.xfail(raises=mir_eval.chord.InvalidChordException)
+def test_validate_bad_chord_label(label):
+    mir_eval.chord.validate_chord_label(label)
 
-    for chord_label, split_chord in zip(labels, splits):
-        yield (__check_valid, mir_eval.chord.split,
-               (chord_label,), split_chord)
 
+@pytest.mark.parametrize('label, split',
+        [('C', ['C', 'maj', set(), '1']),
+ ('B:maj(*1,*3)/5', ['B', 'maj', {'*1', '*3'}, '5']),
+ ('Ab:min/b3', ['Ab', 'min', set(), 'b3']),
+ ('N', ['N', '', set(), '']),
+ ('G:(3)', ['G', '', {'3'}, '1'])]
+        )
+def test_split(label, split):
+    assert mir_eval.chord.split(label) == split
+
+@pytest.mark.parametrize('label, split', [('C', ['C', 'maj', set(), '1']), ('C:minmaj7', ['C', 'min', {'7'}, '1'])])
+def test_split_extended(label, split):
     # Test with reducing extended chords
-    labels = ['C', 'C:minmaj7']
-    splits = [['C', 'maj', set(), '1'],
-              ['C', 'min', set(['7']), '1']]
-    for chord_label, split_chord in zip(labels, splits):
-        yield (__check_valid, mir_eval.chord.split,
-               (chord_label, True), split_chord)
+    mir_eval.chord.split(label, reduce_extended_chords=True) == split
 
+
+@pytest.mark.xfail(raises=mir_eval.chord.InvalidChordException)
+def test_split_fail():
     # Test that an exception is raised when a chord with an omission but no
     # quality is supplied
-    yield (__check_exception, mir_eval.chord.split,
-           ('C(*5)',), mir_eval.chord.InvalidChordException)
+    mir_eval.chord.split('C(*5)')
 
 
-def test_join():
-    # Arguments are root, quality, extensions, bass
-    splits = [('F#', '', None, ''),
-              ('F#', 'hdim7', None, ''),
-              ('F#', '', ['*b3', '4'], ''),
-              ('F#', '', None, 'b7'),
-              ('F#', '', ['*b3', '4'], 'b7'),
-              ('F#', 'hdim7', None, 'b7'),
-              ('F#', 'hdim7', ['*b3', '4'], 'b7')]
-    labels = ['F#', 'F#:hdim7', 'F#:(*b3,4)', 'F#/b7',
-              'F#:(*b3,4)/b7', 'F#:hdim7/b7', 'F#:hdim7(*b3,4)/b7']
-
-    for split_chord, chord_label in zip(splits, labels):
-        yield (__check_valid, mir_eval.chord.join,
-               split_chord, chord_label)
+# Arguments are root, quality, extensions, bass
+@pytest.mark.parametrize('label, split', [('F#', ('F#', '', None, '')),
+ ('F#:hdim7', ('F#', 'hdim7', None, '')),
+ ('F#:(*b3,4)', ('F#', '', ['*b3', '4'], '')),
+ ('F#/b7', ('F#', '', None, 'b7')),
+ ('F#:(*b3,4)/b7', ('F#', '', ['*b3', '4'], 'b7')),
+ ('F#:hdim7/b7', ('F#', 'hdim7', None, 'b7')),
+ ('F#:hdim7(*b3,4)/b7', ('F#', 'hdim7', ['*b3', '4'], 'b7'))])
+def test_join(label, split):
+    # Test is relying on implicit parameter ordering here: root, quality, extensions, bass
+    assert mir_eval.chord.join(*split) == label
 
 
-def test_rotate_bitmaps_to_roots():
-    def __check_bitmaps(bitmaps, roots, expected_bitmaps):
-        ''' Helper function for checking bitmaps_to_roots '''
-        ans = mir_eval.chord.rotate_bitmaps_to_roots(bitmaps, roots)
-        assert np.all(ans == expected_bitmaps)
-
-    bitmaps = [
-        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]]
-    roots = [0, 5, 11]
-    expected_bitmaps = [
-        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]]
-
-    # The function can operate on many bitmaps/roots at a time
-    # but we should only test them one at a time.
-    for bitmap, root, expected_bitmap in zip(bitmaps, roots, expected_bitmaps):
-        yield (__check_bitmaps, [bitmap], [root], [expected_bitmap])
+@pytest.mark.parametrize('bitmap, root, expected_bitmap',
+[([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+  0,
+  [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]),
+ ([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+  5,
+  [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]),
+ ([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+  11,
+  [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1])])
+def test_rotate_bitmaps_to_roots(bitmap, root, expected_bitmap):
+    ans = mir_eval.chord.rotate_bitmaps_to_roots([bitmap], [root])
+    assert np.all(ans == [expected_bitmap])
 
 
 def test_encode():
@@ -188,20 +192,29 @@ def test_encode():
     for label, e_root, e_interval, e_bass in args:
         yield (__check_encode, label, e_root, e_interval, e_bass, False, False)
 
+
+@pytest.mark.parametrize('label, e_root, e_interval, e_bass, reduce, strict',
+        [('B:maj(*1,*3)/5', 11, [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], 7, False, False),
+ ('G:dim', 7, [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0], 0, False, False),
+ ('C:(3)/3', 0, [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], 4, False, False),
+ ('A:9/b3', 9, [1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0], 3, False, False),
+ ('G:dim(4)/6', 7, [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0], 9, False, False),
+ ('A:9', 9, [1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0], 0, True, False)]
+        )
+def test_chord_encode(label, e_root, e_interval, e_bass, reduce, strict):
+    root, intervals, bass = mir_eval.chord.encode(label,
+        reduce_extended_chords=reduce,
+        strict_bass_intervals=strict)
+    assert root == e_root, (root, e_root)
+    assert np.all(intervals == e_interval), (intervals, e_interval)
+    assert bass == e_bass, (bass, e_bass)
+
+
+@pytest.mark.xfail(raises=mir_eval.chord.InvalidChordException)
+def test_chord_encode_fail():
     # Non-chord bass notes *must* be explicitly named as extensions when
     #   strict_bass_intervals == True
-    yield (__check_exception, mir_eval.chord.encode,
-           ('G:dim(4)/6', False, True), mir_eval.chord.InvalidChordException)
-
-    # Otherwise, we can cut a little slack.
-    yield (__check_encode, 'G:dim(4)/6', 7,
-                           [1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0], 9,
-                           False, False)
-
-    # Check that extended scale degrees are mapped back into pitch classes.
-    yield (__check_encode, 'A:9', 9,
-                           [1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0], 0,
-                           True, False)
+    mir_eval.chord.encode('G:dim(4)/6', reduce_extended_chords=False, strict_bass_intervals=True)
 
 
 def test_encode_many():
@@ -451,8 +464,10 @@ def test_directional_hamming_distance():
 
     ivs_overlap_all = np.array([[0., 1.], [0.9, 2.]])
     ivs_overlap_one = np.array([[0., 1.], [0.9, 2.], [2., 3.]])
-    nose.tools.assert_raises(ValueError, dhd, ivs_overlap_all, est_ivs)
-    nose.tools.assert_raises(ValueError, dhd, ivs_overlap_one, est_ivs)
+    with pytest.raises(ValueError):
+        dhd(ivs_overlap_all, est_ivs)
+    with pytest.raises(ValueError):
+        dhd(ivs_overlap_one, est_ivs)
 
 
 def test_segmentation_functions():
@@ -501,27 +516,25 @@ def test_merge_chord_intervals():
 
 
 def test_weighted_accuracy():
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
-        # First, test for a warning on empty beats
+    # First, test for a warning on empty beats
+    with pytest.warns(UserWarning, match="No nonzero weights, returning 0"):
         score = mir_eval.chord.weighted_accuracy(np.array([1, 0, 1]),
                                                  np.array([0, 0, 0]))
-        assert len(w) == 1
-        assert issubclass(w[-1].category, UserWarning)
-        assert str(w[-1].message) == 'No nonzero weights, returning 0'
         # And that the metric is 0
         assert np.allclose(score, 0)
 
     # len(comparisons) must equal len(weights)
     comparisons = np.array([1, 0, 1])
     weights = np.array([1, 1])
-    nose.tools.assert_raises(ValueError, mir_eval.chord.weighted_accuracy,
-                             comparisons, weights)
+
+    with pytest.raises(ValueError):
+        mir_eval.chord.weighted_accuracy(comparisons, weights)
+
     # Weights must all be positive
     comparisons = np.array([1, 1])
     weights = np.array([-1, -1])
-    nose.tools.assert_raises(ValueError, mir_eval.chord.weighted_accuracy,
-                             comparisons, weights)
+    with pytest.raises(ValueError):
+        mir_eval.chord.weighted_accuracy(comparisons, weights)
 
     # Make sure accuracy = 1 and 0 when all comparisons are True and False resp
     comparisons = np.array([1, 1, 1])
@@ -533,34 +546,17 @@ def test_weighted_accuracy():
     assert np.allclose(score, 0)
 
 
-def __check_score(sco_f, metric, score, expected_score):
-    assert np.allclose(score, expected_score, atol=A_TOL)
+@pytest.mark.parametrize("chord_data", file_sets, indirect=True)
+def test_chord_functions(chord_data):
+    ref_intervals, ref_labels, est_intervals, est_labels, expected_scores = chord_data
 
-
-def test_chord_functions():
-    # Load in all files in the same order
-    ref_files = sorted(glob.glob(REF_GLOB))
-    est_files = sorted(glob.glob(EST_GLOB))
-    sco_files = sorted(glob.glob(SCORES_GLOB))
-
-    assert len(ref_files) == len(est_files) == len(sco_files) > 0
-
-    # Regression tests
-    for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
-        with open(sco_f, 'r') as f:
-            expected_scores = json.load(f)
-        # Load in an example beat annotation
-        ref_intervals, ref_labels = mir_eval.io.load_labeled_intervals(ref_f)
-        # Load in an example beat tracker output
-        est_intervals, est_labels = mir_eval.io.load_labeled_intervals(est_f)
-        # Compute scores
-        scores = mir_eval.chord.evaluate(ref_intervals, ref_labels,
-                                         est_intervals, est_labels)
-        # Compare them
-        for metric in scores:
-            # This is a simple hack to make nosetest's messages more useful
-            yield (__check_score, sco_f, metric, scores[metric],
-                   expected_scores[metric])
+    # Compute scores
+    scores = mir_eval.chord.evaluate(ref_intervals, ref_labels,
+                                     est_intervals, est_labels)
+    # Compare them
+    assert scores.keys() == expected_scores.keys()
+    for metric in scores:
+        assert np.allclose(scores[metric], expected_scores[metric], atol=A_TOL)
 
 
 def test_quality_to_bitmap():
@@ -569,25 +565,26 @@ def test_quality_to_bitmap():
     assert np.all(mir_eval.chord.quality_to_bitmap('maj') == np.array(
         [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]))
 
+
+@pytest.mark.xfail(raises=mir_eval.chord.InvalidChordException)
+@pytest.mark.parametrize('quality', ['maj5', '2', '#7'])
+def test_quality_to_bitmap_fail(quality):
     # Check exceptions for qualities not in the QUALITIES list
-    invalid_qualities = ['maj5', '2', '#7']
-    for quality in invalid_qualities:
-        yield (__check_exception, mir_eval.chord.quality_to_bitmap,
-               (quality,), mir_eval.chord.InvalidChordException)
+    mir_eval.chord.quality_to_bitmap(quality)
 
 
 def test_validate():
     # Test that the validate function raises the appropriate errors and
     # warnings
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
+    with pytest.warns() as w:
         # First, test for warnings on empty labels
         mir_eval.chord.validate([], [])
-        assert len(w) == 2
-        assert issubclass(w[-1].category, UserWarning)
-        assert str(w[-1].message) == "Estimated labels are empty"
-        assert issubclass(w[-2].category, UserWarning)
-        assert str(w[-2].message) == "Reference labels are empty"
-        # Test that error is thrown on different-length labels
-        nose.tools.assert_raises(
-            ValueError, mir_eval.chord.validate, [], ['C'])
+    assert len(w) == 2
+    assert issubclass(w[-1].category, UserWarning)
+    assert str(w[-1].message) == "Estimated labels are empty"
+    assert issubclass(w[-2].category, UserWarning)
+    assert str(w[-2].message) == "Reference labels are empty"
+
+    # Test that error is thrown on different-length labels
+    with pytest.raises(ValueError):
+        mir_eval.chord.validate([], ['C'])
