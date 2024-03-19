@@ -24,6 +24,7 @@ assert len(ref_files) == len(est_files) == len(sco_files) > 0
 
 file_sets = list(zip(ref_files, est_files, sco_files))
 
+
 @pytest.fixture
 def chord_data(request):
     ref_f, est_f, sco_f = request.param
@@ -65,28 +66,16 @@ def test_scale_degree_to_semitone(degree):
     mir_eval.chord.scale_degree_to_semitone(degree)
 
 
-def test_scale_degree_to_bitmap():
-
-    def __check_bitmaps(function, parameters, result):
-        actual = function(*parameters)
-        assert np.all(actual == result), (actual, result)
-
-    valid_degrees = ['3', '*3', 'b1', '9']
-    valid_bitmaps = [[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                     [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-
-    for scale_degree, bitmap in zip(valid_degrees, valid_bitmaps):
-        yield (__check_bitmaps, mir_eval.chord.scale_degree_to_bitmap,
-               (scale_degree, True, 12), np.array(bitmap))
-
-    yield (__check_bitmaps, mir_eval.chord.scale_degree_to_bitmap,
-           ('9', False, 12), np.array([0] * 12))
-
-    yield (__check_bitmaps, mir_eval.chord.scale_degree_to_bitmap,
-           ('9', False, 15),
-           np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]))
+@pytest.mark.parametrize('degree, bitmap, modulo, length',
+[('3', [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], True, 12),
+ ('*3', [0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0], True, 12),
+ ('b1', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], True, 12),
+ ('9', [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], True, 12),
+ ('9', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], False, 12),
+ ('9', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], False, 15)]
+)
+def test_scale_degree_to_bitmap(degree, bitmap, modulo, length):
+    assert np.allclose(mir_eval.chord.scale_degree_to_bitmap(degree, modulo=modulo, length=length), bitmap)
 
 
 @pytest.mark.parametrize('label', ['C', 'Eb:min/5', 'A#:dim7', 'B:maj(*1,*5)/3',
@@ -154,33 +143,6 @@ def test_rotate_bitmaps_to_roots(bitmap, root, expected_bitmap):
     assert np.all(ans == [expected_bitmap])
 
 
-def test_encode():
-    def __check_encode(label, expected_root, expected_intervals,
-                       expected_bass, reduce_extended_chords,
-                       strict_bass_intervals):
-        ''' Helper function for checking encode '''
-        root, intervals, bass = mir_eval.chord.encode(
-            label, reduce_extended_chords=reduce_extended_chords,
-            strict_bass_intervals=strict_bass_intervals)
-        assert root == expected_root, (root, expected_root)
-        assert np.all(intervals == expected_intervals), (intervals,
-                                                         expected_intervals)
-        assert bass == expected_bass, (bass, expected_bass)
-
-    labels = ['B:maj(*1,*3)/5', 'G:dim', 'C:(3)/3', 'A:9/b3']
-    expected_roots = [11, 7, 0, 9]
-    expected_intervals = [[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-                          [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-                          [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-                          # Note that extended scale degrees are dropped.
-                          [1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0]]
-    expected_bass = [7, 0, 4, 3]
-
-    args = list(zip(labels, expected_roots, expected_intervals, expected_bass))
-    for label, e_root, e_interval, e_bass in args:
-        yield (__check_encode, label, e_root, e_interval, e_bass, False, False)
-
-
 @pytest.mark.parametrize('label, e_root, e_interval, e_bass, reduce, strict',
         [('B:maj(*1,*3)/5', 11, [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], 7, False, False),
  ('G:dim', 7, [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0], 0, False, False),
@@ -206,14 +168,7 @@ def test_chord_encode_fail():
 
 
 def test_encode_many():
-    def __check_encode_many(labels, expected_roots, expected_intervals,
-                            expected_basses):
-        ''' Does all of the logic for checking encode_many '''
-        roots, intervals, basses = mir_eval.chord.encode_many(labels)
-        assert np.all(roots == expected_roots)
-        assert np.all(intervals == expected_intervals)
-        assert np.all(basses == expected_basses)
-
+    ''' Does all of the logic for checking encode_many '''
     labels = ['B:maj(*1,*3)/5',
               'B:maj(*1,*3)/5',
               'N',
@@ -228,8 +183,10 @@ def test_encode_many():
         [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]]
     expected_basses = [7, 7, -1, 0, 0]
 
-    yield (__check_encode_many, labels, expected_roots, expected_intervals,
-           expected_basses)
+    roots, intervals, basses = mir_eval.chord.encode_many(labels)
+    assert np.all(roots == expected_roots)
+    assert np.all(intervals == expected_intervals)
+    assert np.all(basses == expected_basses)
 
 
 def __check_one_metric(metric, ref_label, est_label, score):
@@ -258,46 +215,55 @@ def __check_not_comparable(metric, ref_label, est_label):
 # TODO(ejhumphrey): Comparison functions lacking unit tests.
 # test_root()
 
-
-def test_mirex():
-    ref_labels = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min', 'C:maj',
-                  'C:maj',  'G:min',  'C:maj', 'C:min',   'C:min',
-                  'C:maj',  'F:maj',  'C:maj7',    'A:maj', 'A:maj']
-    est_labels = ['N', 'N',     'C:aug', 'C:dim', 'C:dim', 'C:5',
-                  'C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:min7',
-                  'C:maj6', 'F:min6', 'C:minmaj7', 'A:7',   'A:9']
-    scores = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-              0.0, 0.0, 0.0, 0.0, 1.0,
-              1.0, 0.0, 1.0, 1.0, 1.0]
-
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.mirex,
-               ref_label, est_label, score)
-
-    ref_not_comparable = ['C:5', 'X']
-    est_not_comparable = ['C:maj', 'N']
-
-    for ref_label, est_label in zip(ref_not_comparable, est_not_comparable):
-        yield (__check_not_comparable, mir_eval.chord.mirex,
-               ref_label, est_label)
+@pytest.mark.parametrize('ref_label, est_label, score',
+    [('N', 'N', 1.0),
+ ('C:maj', 'N', 0.0),
+ ('C:maj', 'C:aug', 0.0),
+ ('C:maj', 'C:dim', 0.0),
+ ('C:min', 'C:dim', 0.0),
+ ('C:maj', 'C:5', 0.0),
+ ('C:maj', 'C:sus4', 0.0),
+ ('G:min', 'G:sus2', 0.0),
+ ('C:maj', 'G:maj', 0.0),
+ ('C:min', 'C:hdim7', 0.0),
+ ('C:min', 'C:min7', 1.0),
+ ('C:maj', 'C:maj6', 1.0),
+ ('F:maj', 'F:min6', 0.0),
+ ('C:maj7', 'C:minmaj7', 1.0),
+ ('A:maj', 'A:7', 1.0),
+ ('A:maj', 'A:9', 1.0)])
+def test_mirex(ref_label, est_label, score):
+    __check_one_metric(mir_eval.chord.mirex, ref_label, est_label, score)
 
 
-def test_thirds():
-    ref_labels = ['N', 'C:maj', 'C:maj', 'C:maj', 'C:min',
-                  'C:maj', 'G:min', 'C:maj', 'C:min', 'C:min',
-                  'C:maj', 'F:maj', 'C:maj', 'A:maj', 'A:maj']
-    est_labels = ['N', 'N', 'C:aug', 'C:dim', 'C:dim',
-                  'C:sus4', 'G:sus2', 'G:maj', 'C:hdim7', 'C:min7',
-                  'C:maj6', 'F:min6', 'C:minmaj7', 'A:7', 'A:9']
-    scores = [1.0, 0.0, 1.0, 0.0, 1.0,
-              1.0, 0.0, 0.0, 1.0, 1.0,
-              1.0, 0.0, 0.0, 1.0, 1.0]
+@pytest.mark.parametrize('ref, est', [('C:5', 'C:maj'), ('X', 'N')])
+def test_mirex_nocomp(ref, est):
+    __check_not_comparable(mir_eval.chord.mirex, ref, est)
 
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.thirds,
-               ref_label, est_label, score)
 
-    yield (__check_not_comparable, mir_eval.chord.thirds, 'X', 'N')
+@pytest.mark.parametrize('ref_label, est_label, score',
+        [('N', 'N', 1.0),
+ ('C:maj', 'N', 0.0),
+ ('C:maj', 'C:aug', 1.0),
+ ('C:maj', 'C:dim', 0.0),
+ ('C:min', 'C:dim', 1.0),
+ ('C:maj', 'C:sus4', 1.0),
+ ('G:min', 'G:sus2', 0.0),
+ ('C:maj', 'G:maj', 0.0),
+ ('C:min', 'C:hdim7', 1.0),
+ ('C:min', 'C:min7', 1.0),
+ ('C:maj', 'C:maj6', 1.0),
+ ('F:maj', 'F:min6', 0.0),
+ ('C:maj', 'C:minmaj7', 0.0),
+ ('A:maj', 'A:7', 1.0),
+ ('A:maj', 'A:9', 1.0)]
+        )
+def test_thirds(ref_label, est_label, score):
+        __check_one_metric(mir_eval.chord.thirds, ref_label, est_label, score)
+
+
+def test_thirds_nocomp():
+    __check_not_comparable(mir_eval.chord.thirds, 'X', 'N')
 
 
 def test_thirds_inv():
@@ -309,7 +275,8 @@ def test_thirds_inv():
         yield (__check_one_metric, mir_eval.chord.thirds_inv,
                ref_label, est_label, score)
 
-    yield (__check_not_comparable, mir_eval.chord.thirds_inv, 'X', 'N')
+def test_thirds_inv_nocomp():
+    __check_not_comparable(mir_eval.chord.thirds_inv, 'X', 'N')
 
 
 def test_triads():
@@ -324,7 +291,9 @@ def test_triads():
         yield (__check_one_metric, mir_eval.chord.triads,
                ref_label, est_label, score)
 
-    yield (__check_not_comparable, mir_eval.chord.triads, 'X', 'N')
+
+def test_triads_nocomp():
+    __check_not_comparable(mir_eval.chord.triads, 'X', 'N')
 
 
 def test_triads_inv():
@@ -336,7 +305,8 @@ def test_triads_inv():
         yield (__check_one_metric, mir_eval.chord.triads_inv,
                ref_label, est_label, score)
 
-    yield (__check_not_comparable, mir_eval.chord.triads_inv, 'X', 'N')
+def test_traids_inv_nocomp():
+    __check_not_comparable(mir_eval.chord.triads_inv, 'X', 'N')
 
 
 def test_tetrads():
@@ -351,7 +321,8 @@ def test_tetrads():
         yield (__check_one_metric, mir_eval.chord.tetrads,
                ref_label, est_label, score)
 
-    yield (__check_not_comparable, mir_eval.chord.tetrads, 'X', 'N')
+def test_tetrads_nocomp():
+    __check_not_comparable(mir_eval.chord.tetrads, 'X', 'N')
 
 
 def test_tetrads_inv():
@@ -363,7 +334,9 @@ def test_tetrads_inv():
         yield (__check_one_metric, mir_eval.chord.tetrads_inv,
                ref_label, est_label, score)
 
-    yield (__check_not_comparable, mir_eval.chord.tetrads_inv, 'X', 'N')
+
+def test_tetrads_inv_nocomp():
+    __check_not_comparable(mir_eval.chord.tetrads_inv, 'X', 'N')
 
 
 def test_majmin():
