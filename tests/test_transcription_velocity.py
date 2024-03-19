@@ -107,4 +107,4 @@ def test_regression(velocity_data):
         ref_int, ref_pitch, ref_vel, est_int, est_pitch, est_vel)
     assert scores.keys() == expected_scores.keys()
     for metric in scores:
-        assert np.allclose(scores[metric], expected_scores[metric], atol=A_TOL)
+        assert np.allclose(scores[metric], expected_scores[metric], atol=A_TOL), metric
