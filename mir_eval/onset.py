@@ -33,7 +33,7 @@ MAX_TIME = 30000.0
 
 
 def validate(reference_onsets, estimated_onsets):
-    """Checks that the input annotations to a metric look like valid onset time
+    """Check that the input annotations to a metric look like valid onset time
     arrays, and throws helpful errors if not.
 
     Parameters

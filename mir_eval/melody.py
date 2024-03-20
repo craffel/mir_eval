@@ -71,7 +71,7 @@ from . import util
 
 
 def validate_voicing(ref_voicing, est_voicing):
-    """Checks that voicing inputs to a metric are in the correct format.
+    """Check that voicing inputs to a metric are in the correct format.
 
     Parameters
     ----------
@@ -101,7 +101,7 @@ def validate_voicing(ref_voicing, est_voicing):
 
 
 def validate(ref_voicing, ref_cent, est_voicing, est_cent):
-    """Checks that voicing and frequency arrays are well-formed.  To be used in
+    """Check that voicing and frequency arrays are well-formed.  To be used in
     conjunction with :func:`mir_eval.melody.validate_voicing`
 
     Parameters
@@ -185,8 +185,7 @@ def freq_to_voicing(frequencies, voicing=None):
 
 
 def constant_hop_timebase(hop, end_time):
-    """Generates a time series from 0 to ``end_time`` with times spaced ``hop``
-    apart
+    """Generate a time series from 0 to ``end_time`` with times spaced ``hop`` apart
 
     Parameters
     ----------
@@ -317,7 +316,7 @@ def to_cent_voicing(
     hop=None,
     kind="linear",
 ):
-    """Converts reference and estimated time/frequency (Hz) annotations to sampled
+    """Convert reference and estimated time/frequency (Hz) annotations to sampled
     frequency (cent)/voicing arrays.
 
     A zero frequency indicates "unvoiced".
@@ -425,6 +424,7 @@ def voicing_recall(ref_voicing, est_voicing):
     """Compute the voicing recall given two voicing
     indicator sequences, one as reference (truth) and the other as the estimate
     (prediction).  The sequences must be of the same length.
+
     Examples
     --------
     >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
@@ -435,12 +435,14 @@ def voicing_recall(ref_voicing, est_voicing):
     ...                                                  est_time,
     ...                                                  est_freq)
     >>> recall = mir_eval.melody.voicing_recall(ref_v, est_v)
+
     Parameters
     ----------
     ref_voicing : np.ndarray
         Reference boolean voicing array
     est_voicing : np.ndarray
         Estimated boolean voicing array
+    
     Returns
     -------
     vx_recall : float
@@ -459,6 +461,7 @@ def voicing_false_alarm(ref_voicing, est_voicing):
     """Compute the voicing false alarm rates given two voicing
     indicator sequences, one as reference (truth) and the other as the estimate
     (prediction).  The sequences must be of the same length.
+
     Examples
     --------
     >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
@@ -469,12 +472,14 @@ def voicing_false_alarm(ref_voicing, est_voicing):
     ...                                                  est_time,
     ...                                                  est_freq)
     >>> false_alarm = mir_eval.melody.voicing_false_alarm(ref_v, est_v)
+    
     Parameters
     ----------
     ref_voicing : np.ndarray
         Reference boolean voicing array
     est_voicing : np.ndarray
         Estimated boolean voicing array
+    
     Returns
     -------
     vx_false_alarm : float
@@ -493,6 +498,7 @@ def voicing_measures(ref_voicing, est_voicing):
     """Compute the voicing recall and false alarm rates given two voicing
     indicator sequences, one as reference (truth) and the other as the estimate
     (prediction).  The sequences must be of the same length.
+    
     Examples
     --------
     >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
@@ -504,12 +510,14 @@ def voicing_measures(ref_voicing, est_voicing):
     ...                                                  est_freq)
     >>> recall, false_alarm = mir_eval.melody.voicing_measures(ref_v,
     ...                                                        est_v)
+    
     Parameters
     ----------
     ref_voicing : np.ndarray
         Reference boolean voicing array
     est_voicing : np.ndarray
         Estimated boolean voicing array
+    
     Returns
     -------
     vx_recall : float
@@ -565,9 +573,7 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolera
         Raw pitch accuracy, the fraction of voiced frames in ref_cent for
         which est_cent provides a correct frequency values
         (within cent_tolerance cents).
-
     """
-
     validate_voicing(ref_voicing, est_voicing)
     validate(ref_voicing, ref_cent, est_voicing, est_cent)
     # When input arrays are empty, return 0 by special case

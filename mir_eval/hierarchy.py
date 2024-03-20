@@ -155,7 +155,6 @@ def _lca(intervals_hier, frame_size):
         A sparse matrix such that ``lca_matrix[i, j]`` contains the depth
         of the deepest segment containing frames ``i`` and ``j``.
     """
-
     frame_size = float(frame_size)
 
     # Figure out how many frames we need
@@ -202,7 +201,6 @@ def _meet(intervals_hier, labels_hier, frame_size):
         A sparse matrix such that ``meet_matrix[i, j]`` contains the depth
         of the deepest segment label containing both ``i`` and ``j``.
     """
-
     frame_size = float(frame_size)
 
     # Figure out how many frames we need
@@ -348,7 +346,6 @@ def _count_inversions(a, b):
     inversions : int
         The number of detected inversions
     """
-
     a, a_counts = np.unique(a, return_counts=True)
     b, b_counts = np.unique(b, return_counts=True)
 
@@ -389,7 +386,6 @@ def _compare_frame_rankings(ref, est, transitive=False):
         If transitive=True, then this is |{(i,j) : ref[i] < ref[j]}|
         If transitive=False, then this is |{i,j) : ref[i] +1 = ref[j]}|
     """
-
     idx = np.argsort(ref)
     ref_sorted = ref[idx]
     est_sorted = est[idx]
@@ -448,7 +444,6 @@ def validate_hier_intervals(intervals_hier):
 
         If any segmentation does not start at 0.
     """
-
     # Synthesize a label array for the top layer.
     label_top = util.generate_labels(intervals_hier[0])
 
@@ -477,7 +472,7 @@ def tmeasure(
     frame_size=0.1,
     beta=1.0,
 ):
-    """Computes the tree measures for hierarchical segment annotations.
+    """Compute the tree measures for hierarchical segment annotations.
 
     Parameters
     ----------
@@ -517,7 +512,6 @@ def tmeasure(
 
         If ``frame_size > window`` or ``frame_size <= 0``
     """
-
     # Compute the number of frames in the window
     if frame_size <= 0:
         raise ValueError(
@@ -560,7 +554,7 @@ def lmeasure(
     frame_size=0.1,
     beta=1.0,
 ):
-    """Computes the tree measures for hierarchical segment annotations.
+    """Compute the tree measures for hierarchical segment annotations.
 
     Parameters
     ----------
@@ -600,7 +594,6 @@ def lmeasure(
 
         If ``frame_size > window`` or ``frame_size <= 0``
     """
-
     # Compute the number of frames in the window
     if frame_size <= 0:
         raise ValueError(
@@ -627,7 +620,7 @@ def lmeasure(
 def evaluate(
     ref_intervals_hier, ref_labels_hier, est_intervals_hier, est_labels_hier, **kwargs
 ):
-    """Compute all hierarchical structure metrics for the given reference and
+    r"""Compute all hierarchical structure metrics for the given reference and
     estimated annotations.
 
     Examples
@@ -701,7 +694,6 @@ def evaluate(
     ValueError
         Thrown when the provided annotations are not valid.
     """
-
     # First, find the maximum length of the reference
     _, t_end = _hierarchy_bounds(ref_intervals_hier)
 

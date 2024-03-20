@@ -55,7 +55,7 @@ MIN_FREQ = 20.0  # The minimum allowable frequency (Hz)
 
 
 def validate(ref_time, ref_freqs, est_time, est_freqs):
-    """Checks that the time and frequency inputs are well-formed.
+    """Check that the time and frequency inputs are well-formed.
 
     Parameters
     ----------
@@ -67,9 +67,7 @@ def validate(ref_time, ref_freqs, est_time, est_freqs):
         estimate time stamps in seconds
     est_freqs : list of np.ndarray
         estimated frequencies in Hz
-
     """
-
     util.validate_events(ref_time, max_time=MAX_TIME)
     util.validate_events(est_time, max_time=MAX_TIME)
 
@@ -156,7 +154,7 @@ def resample_multipitch(times, frequencies, target_times):
 
 
 def frequencies_to_midi(frequencies, ref_frequency=440.0):
-    """Converts frequencies to continuous MIDI values.
+    """Convert frequencies to continuous MIDI values.
 
     Parameters
     ----------
@@ -191,7 +189,7 @@ def midi_to_chroma(frequencies_midi):
 
 
 def compute_num_freqs(frequencies):
-    """Computes the number of frequencies for each time point.
+    """Compute the number of frequencies for each time point.
 
     Parameters
     ----------

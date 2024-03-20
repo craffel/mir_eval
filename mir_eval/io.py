@@ -1,6 +1,4 @@
-"""
-Functions for loading in annotations from files in different formats.
-"""
+"""Functions for loading annotations from files in different formats."""
 
 import contextlib
 import numpy as np
@@ -33,9 +31,8 @@ def _open(file_or_str, **kwargs):
 
 
 def load_delimited(filename, converters, delimiter=r"\s+", comment="#"):
-    r"""Utility function for loading in data from an annotation file where columns
-    are delimited.  The number of columns is inferred from the length of
-    the provided converters list.
+    r"""Load data from an annotation file where columns are delimited.
+    The number of columns is inferred from the length of the provided converters list.
 
     Examples
     --------
@@ -68,7 +65,6 @@ def load_delimited(filename, converters, delimiter=r"\s+", comment="#"):
     columns : tuple of lists
         Each list in this tuple corresponds to values in one of the columns
         in the file.
-
     """
     # Initialize list of empty lists
     n_columns = len(converters)
@@ -334,7 +330,7 @@ def load_time_series(filename, delimiter=r"\s+", comment="#"):
 
 
 def load_patterns(filename):
-    """Loads the patterns contained in the filename and puts them into a list
+    """Load the patterns contained in the filename and puts them into a list
     of patterns, each pattern being a list of occurrence, and each
     occurrence being a list of (onset, midi) pairs.
 
@@ -375,9 +371,7 @@ def load_patterns(filename):
             pattern2 = [occ1, occ2]
 
             pattern_list = [pattern1, pattern2]
-
     """
-
     # List with all the patterns
     pattern_list = []
     # Current pattern, which will contain all occs
@@ -413,7 +407,7 @@ def load_patterns(filename):
 
 
 def load_wav(path, mono=True):
-    """Loads a .wav file as a numpy array using ``scipy.io.wavfile``.
+    """Load a .wav file as a numpy array using ``scipy.io.wavfile``.
 
     Parameters
     ----------
@@ -429,9 +423,7 @@ def load_wav(path, mono=True):
         Array of audio samples, normalized to the range [-1., 1.]
     fs : int
         Sampling rate of the audio data
-
     """
-
     fs, audio_data = scipy.io.wavfile.read(path)
     # Make float in range [-1, 1]
     if audio_data.dtype == "int8":
@@ -597,10 +589,11 @@ def load_tempo(filename, delimiter=r"\s+", comment="#"):
 def load_ragged_time_series(
     filename, dtype=float, delimiter=r"\s+", header=False, comment="#"
 ):
-    r"""Utility function for loading in data from a delimited time series
-    annotation file with a variable number of columns.
-    Assumes that column 0 contains time stamps and columns 1 through n contain
-    values. n may be variable from time stamp to time stamp.
+    r"""Load data from a delimited time series annotation file with
+    a variable number of columns.
+    This function assumes that column 0 contains time stamps and 
+    columns 1 through n contain values.
+    n may be variable from time stamp to time stamp.
 
     Examples
     --------
