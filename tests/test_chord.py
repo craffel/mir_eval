@@ -5,7 +5,6 @@ Unit tests for mir_eval.chord
 import mir_eval
 import numpy as np
 import pytest
-import warnings
 import glob
 import json
 
@@ -199,16 +198,11 @@ def __check_one_metric(metric, ref_label, est_label, score):
 
 def __check_not_comparable(metric, ref_label, est_label):
     ''' Checks that ref_label is not comparable to est_label by metric '''
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
-        # Try to produce the warning
+    # Try to produce the warning
+    with pytest.warns(UserWarning, match="No reference chords were comparable to estimated chords, returning 0."):
         score = mir_eval.chord.weighted_accuracy(metric([ref_label],
                                                         [est_label]),
                                                  np.array([1]))
-        assert len(w) == 1
-        assert issubclass(w[-1].category, UserWarning)
-        assert str(w[-1].message) == ("No reference chords were comparable "
-                                      "to estimated chords, returning 0.")
         # And confirm that the metric is 0
         assert np.allclose(score, 0)
 
@@ -266,149 +260,162 @@ def test_thirds_nocomp():
     __check_not_comparable(mir_eval.chord.thirds, 'X', 'N')
 
 
-def test_thirds_inv():
-    ref_labels = ['C:maj/5',  'G:min',    'C:maj',   'C:min/b3',   'C:min']
-    est_labels = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:hdim7/b3', 'C:dim']
-    scores = [1.0, 0.0, 0.0, 1.0, 1.0]
-
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.thirds_inv,
-               ref_label, est_label, score)
+@pytest.mark.parametrize('ref_label, est_label, score',
+        [('C:maj/5', 'C:sus4/5', 1.0),
+ ('G:min', 'G:min/b3', 0.0),
+ ('C:maj', 'C:maj/5', 0.0),
+ ('C:min/b3', 'C:hdim7/b3', 1.0),
+ ('C:min', 'C:dim', 1.0)]
+        )
+def test_thirds_inv(ref_label, est_label, score):
+    __check_one_metric(mir_eval.chord.thirds_inv, ref_label, est_label, score)
 
 def test_thirds_inv_nocomp():
     __check_not_comparable(mir_eval.chord.thirds_inv, 'X', 'N')
 
 
-def test_triads():
-    ref_labels = ['C:min',  'C:maj', 'C:maj', 'C:min', 'C:maj',
-                  'C:maj',  'G:min',     'C:maj', 'C:min',   'C:min']
-    est_labels = ['C:min7', 'C:7',   'C:aug', 'C:dim', 'C:sus2',
-                  'C:sus4', 'G:minmaj7', 'G:maj', 'C:hdim7', 'C:min6']
-    scores = [1.0, 1.0, 0.0, 0.0, 0.0,
-              0.0, 1.0, 0.0, 0.0, 1.0]
-
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.triads,
-               ref_label, est_label, score)
+@pytest.mark.parametrize('ref_label, est_label, score',
+        [('C:min', 'C:min7', 1.0),
+ ('C:maj', 'C:7', 1.0),
+ ('C:maj', 'C:aug', 0.0),
+ ('C:min', 'C:dim', 0.0),
+ ('C:maj', 'C:sus2', 0.0),
+ ('C:maj', 'C:sus4', 0.0),
+ ('G:min', 'G:minmaj7', 1.0),
+ ('C:maj', 'G:maj', 0.0),
+ ('C:min', 'C:hdim7', 0.0),
+ ('C:min', 'C:min6', 1.0)]
+        )
+def test_triads(ref_label, est_label, score):
+    __check_one_metric(mir_eval.chord.triads, ref_label, est_label, score)
 
 
 def test_triads_nocomp():
     __check_not_comparable(mir_eval.chord.triads, 'X', 'N')
 
 
-def test_triads_inv():
-    ref_labels = ['C:maj/5',  'G:min',    'C:maj', 'C:min/b3',  'C:min/b3']
-    est_labels = ['C:maj7/5', 'G:min7/5', 'C:7/5', 'C:min6/b3', 'C:dim/b3']
-    scores = [1.0, 0.0, 0.0, 1.0, 0.0]
+@pytest.mark.parametrize('ref_label, est_label, score',
+        [('C:maj/5', 'C:maj7/5', 1.0),
+ ('G:min', 'G:min7/5', 0.0),
+ ('C:maj', 'C:7/5', 0.0),
+ ('C:min/b3', 'C:min6/b3', 1.0),
+ ('C:min/b3', 'C:dim/b3', 0.0)])
+def test_triads_inv(ref_label, est_label, score):
+    __check_one_metric(mir_eval.chord.triads_inv, ref_label, est_label, score)
 
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.triads_inv,
-               ref_label, est_label, score)
-
-def test_traids_inv_nocomp():
+def test_triads_inv_nocomp():
     __check_not_comparable(mir_eval.chord.triads_inv, 'X', 'N')
 
 
-def test_tetrads():
-    ref_labels = ['C:min', 'C:maj', 'C:7', 'C:maj7', 'C:sus2',
-                  'C:7/3', 'G:min', 'C:maj', 'C:min', 'C:min']
-    est_labels = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5', 'C:sus2/2',
-                  'C:11/b7', 'G:sus2', 'G:maj', 'C:hdim7', 'C:minmaj7']
-    scores = [0.0, 0.0, 1.0, 1.0, 1.0,
-              1.0, 0.0, 0.0, 0.0, 0.0]
+@pytest.mark.parametrize('ref_label, est_label, score',
+    [('C:min', 'C:min7', 0.0),
+ ('C:maj', 'C:maj6', 0.0),
+ ('C:7', 'C:9', 1.0),
+ ('C:maj7', 'C:maj7/5', 1.0),
+ ('C:sus2', 'C:sus2/2', 1.0),
+ ('C:7/3', 'C:11/b7', 1.0),
+ ('G:min', 'G:sus2', 0.0),
+ ('C:maj', 'G:maj', 0.0),
+ ('C:min', 'C:hdim7', 0.0),
+ ('C:min', 'C:minmaj7', 0.0)]
 
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.tetrads,
-               ref_label, est_label, score)
+)
+def test_tetrads(ref_label, est_label, score):
+    __check_one_metric(mir_eval.chord.tetrads, ref_label, est_label, score)
 
 def test_tetrads_nocomp():
     __check_not_comparable(mir_eval.chord.tetrads, 'X', 'N')
 
 
-def test_tetrads_inv():
-    ref_labels = ['C:maj7/5', 'G:min', 'C:7/5', 'C:min/b3', 'C:min9']
-    est_labels = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:hdim7/b3', 'C:min7']
-    scores = [0.0, 0.0, 1.0, 0.0, 1.0]
-
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.tetrads_inv,
-               ref_label, est_label, score)
+@pytest.mark.parametrize('ref_label, est_label, score',
+[('C:maj7/5', 'C:maj7/3', 0.0),
+ ('G:min', 'G:min/b3', 0.0),
+ ('C:7/5', 'C:13/5', 1.0),
+ ('C:min/b3', 'C:hdim7/b3', 0.0),
+ ('C:min9', 'C:min7', 1.0)])
+def test_tetrads_inv(ref_label, est_label, score):
+    __check_one_metric(mir_eval.chord.tetrads_inv, ref_label, est_label, score)
 
 
 def test_tetrads_inv_nocomp():
     __check_not_comparable(mir_eval.chord.tetrads_inv, 'X', 'N')
 
 
-def test_majmin():
-    ref_labels = ['N', 'C:maj', 'C:maj', 'C:min', 'G:maj7']
-    est_labels = ['N', 'N',     'C:aug', 'C:dim', 'G']
-    scores = [1.0,  0.0, 0.0, 0.0, 1.0]
-
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.majmin,
-               ref_label, est_label, score)
-
-    ref_not_comparable = ['C:aug', 'X']
-    est_not_comparable = ['C:maj', 'N']
-
-    for ref_label, est_label in zip(ref_not_comparable, est_not_comparable):
-        yield (__check_not_comparable, mir_eval.chord.majmin,
-               ref_label, est_label)
+@pytest.mark.parametrize('ref_label, est_label, score',
+[('N', 'N', 1.0),
+ ('C:maj', 'N', 0.0),
+ ('C:maj', 'C:aug', 0.0),
+ ('C:min', 'C:dim', 0.0),
+ ('G:maj7', 'G', 1.0)]
+)
+def test_majmin(ref_label, est_label, score):
+    __check_one_metric(mir_eval.chord.majmin, ref_label, est_label, score)
 
 
-def test_majmin_inv():
-    ref_labels = ['C:maj/5',  'G:min',    'C:maj/5', 'C:min7',
-                  'G:min/b3', 'C:maj7/5', 'C:7']
-    est_labels = ['C:sus4/5', 'G:min/b3', 'C:maj/5', 'C:min',
-                  'G:min/b3', 'C:maj/5', 'C:maj']
-    scores = [0.0, 0.0, 1.0, 1.0,
-              1.0, 1.0, 1.0]
-
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.majmin_inv,
-               ref_label, est_label, score)
-
-    ref_not_comparable = ['C:hdim7/b3', 'C:maj/4', 'C:maj/2', 'X']
-    est_not_comparable = ['C:min/b3', 'C:maj/4', 'C:sus2/2',  'N']
-
-    for ref_label, est_label in zip(ref_not_comparable, est_not_comparable):
-        yield (__check_not_comparable, mir_eval.chord.majmin_inv,
-               ref_label, est_label)
+@pytest.mark.parametrize('ref_label, est_label',
+        [('C:aug', 'C:maj'), ('X', 'N')])
+def test_majmin_nocomp(ref_label, est_label):
+    __check_not_comparable(mir_eval.chord.majmin, ref_label, est_label)
 
 
-def test_sevenths():
-    ref_labels = ['C:min',  'C:maj',  'C:7', 'C:maj7',
-                  'C:7/3',   'G:min',  'C:maj', 'C:7']
-    est_labels = ['C:min7', 'C:maj6', 'C:9', 'C:maj7/5',
-                  'C:11/b7', 'G:sus2', 'G:maj', 'C:maj7']
-    scores = [0.0, 0.0, 1.0, 1.0,
-              1.0, 0.0, 0.0, 0.0]
 
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.sevenths,
-               ref_label, est_label, score)
-
-    ref_not_comparable = ['C:sus2',   'C:hdim7', 'X']
-    est_not_comparable = ['C:sus2/2', 'C:hdim7', 'N']
-    for ref_label, est_label in zip(ref_not_comparable, est_not_comparable):
-        yield (__check_not_comparable, mir_eval.chord.sevenths,
-               ref_label, est_label)
+@pytest.mark.parametrize('ref_label, est_label, score', 
+[('C:maj/5', 'C:sus4/5', 0.0),
+ ('G:min', 'G:min/b3', 0.0),
+ ('C:maj/5', 'C:maj/5', 1.0),
+ ('C:min7', 'C:min', 1.0),
+ ('G:min/b3', 'G:min/b3', 1.0),
+ ('C:maj7/5', 'C:maj/5', 1.0),
+ ('C:7', 'C:maj', 1.0)]
+)
+def test_majmin_inv(ref_label, est_label, score):
+    __check_one_metric(mir_eval.chord.majmin_inv, ref_label, est_label, score)
 
 
-def test_sevenths_inv():
-    ref_labels = ['C:maj7/5', 'G:min',    'C:7/5',  'C:min7/b7']
-    est_labels = ['C:maj7/3', 'G:min/b3', 'C:13/5', 'C:min7/b7']
-    scores = [0.0, 0.0, 1.0, 1.0]
+@pytest.mark.parametrize('ref_label, est_label',
+[('C:hdim7/b3', 'C:min/b3'),
+ ('C:maj/4', 'C:maj/4'),
+ ('C:maj/2', 'C:sus2/2'),
+ ('X', 'N')]
+)
+def test_majmin_inv_nocomp(ref_label, est_label):
+    __check_not_comparable(mir_eval.chord.majmin_inv, ref_label, est_label)
 
-    for ref_label, est_label, score in zip(ref_labels, est_labels, scores):
-        yield (__check_one_metric, mir_eval.chord.sevenths_inv,
-               ref_label, est_label, score)
 
-    ref_not_comparable = ['C:dim7/b3', 'X']
-    est_not_comparable = ['C:dim7/b3', 'N']
-    for ref_label, est_label in zip(ref_not_comparable, est_not_comparable):
-        yield (__check_not_comparable, mir_eval.chord.sevenths_inv,
-               ref_label, est_label)
+@pytest.mark.parametrize('ref_label, est_label, score',
+[('C:min', 'C:min7', 0.0),
+ ('C:maj', 'C:maj6', 0.0),
+ ('C:7', 'C:9', 1.0),
+ ('C:maj7', 'C:maj7/5', 1.0),
+ ('C:7/3', 'C:11/b7', 1.0),
+ ('G:min', 'G:sus2', 0.0),
+ ('C:maj', 'G:maj', 0.0),
+ ('C:7', 'C:maj7', 0.0)]
+)
+def test_sevenths(ref_label, est_label, score):
+    __check_one_metric(mir_eval.chord.sevenths, ref_label, est_label, score)
+
+@pytest.mark.parametrize('ref_label, est_label',
+[('C:sus2', 'C:sus2/2'), ('C:hdim7', 'C:hdim7'), ('X', 'N')]
+)
+def test_sevenths_nocomp(ref_label, est_label):
+    __check_not_comparable(mir_eval.chord.sevenths, ref_label, est_label)
+
+
+@pytest.mark.parametrize('ref_label, est_label, score',
+        [('C:maj7/5', 'C:maj7/3', 0.0),
+ ('G:min', 'G:min/b3', 0.0),
+ ('C:7/5', 'C:13/5', 1.0),
+ ('C:min7/b7', 'C:min7/b7', 1.0)]
+        )
+def test_sevenths_inv(ref_label, est_label, score):
+    __check_one_metric(mir_eval.chord.sevenths_inv, ref_label, est_label, score)
+
+
+@pytest.mark.parametrize('ref_label, est_label',
+        [('C:dim7/b3', 'C:dim7/b3'), ('X', 'N')])
+def test_sevenths_inv_nocomp(ref_label, est_label):
+    __check_not_comparable(mir_eval.chord.sevenths_inv, ref_label, est_label)
 
 
 def test_directional_hamming_distance():
