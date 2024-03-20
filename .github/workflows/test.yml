@@ -51,7 +51,9 @@ jobs:
           auto-activate-base: false
           channel-priority: ${{ matrix.channel-priority }}
           environment-file: ${{ matrix.envfile }}
-          use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+          # Disabling bz2 to get more recent dependencies.
+          # NOTE: this breaks cache support, so CI will be slower.
+          use-only-tar-bz2: False # IMPORTANT: This needs to be set for caching to work properly!
 
       - name: Install package in development mode
         shell: bash -l {0}
