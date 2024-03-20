@@ -56,9 +56,7 @@ from scipy.stats import skewnorm
 from mir_eval.util import filter_kwargs
 
 
-def validate(
-    reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray
-):
+def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray):
     """Checks that the input annotations to a metric look like valid onset time
     arrays, and throws helpful errors if not.
 
@@ -103,13 +101,9 @@ def validate(
 
     # Check monotonicity
     if not np.all(reference_timestamps[1:] - reference_timestamps[:-1] >= 0):
-        raise ValueError(
-            "Reference timestamps are not monotonically increasing!"
-        )
+        raise ValueError("Reference timestamps are not monotonically increasing!")
     if not np.all(estimated_timestamps[1:] - estimated_timestamps[:-1] >= 0):
-        raise ValueError(
-            "Estimated timestamps are not monotonically increasing!"
-        )
+        raise ValueError("Estimated timestamps are not monotonically increasing!")
 
     # Check positivity (need for correct PCS metric calculation)
     if not np.all(reference_timestamps >= 0):

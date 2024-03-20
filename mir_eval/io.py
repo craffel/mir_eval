@@ -15,24 +15,24 @@ from . import tempo
 
 @contextlib.contextmanager
 def _open(file_or_str, **kwargs):
-    '''Either open a file handle, or use an existing file-like object.
+    """Either open a file handle, or use an existing file-like object.
 
     This will behave as the `open` function if `file_or_str` is a string.
 
     If `file_or_str` has the `read` attribute, it will return `file_or_str`.
 
     Otherwise, an `IOError` is raised.
-    '''
-    if hasattr(file_or_str, 'read'):
+    """
+    if hasattr(file_or_str, "read"):
         yield file_or_str
     elif isinstance(file_or_str, str):
         with open(file_or_str, **kwargs) as file_desc:
             yield file_desc
     else:
-        raise IOError('Invalid file-or-str object: {}'.format(file_or_str))
+        raise IOError("Invalid file-or-str object: {}".format(file_or_str))
 
 
-def load_delimited(filename, converters, delimiter=r'\s+', comment='#'):
+def load_delimited(filename, converters, delimiter=r"\s+", comment="#"):
     r"""Utility function for loading in data from an annotation file where columns
     are delimited.  The number of columns is inferred from the length of
     the provided converters list.
@@ -78,7 +78,7 @@ def load_delimited(filename, converters, delimiter=r'\s+', comment='#'):
     if comment is None:
         commenter = None
     else:
-        commenter = re.compile('^{}'.format(comment))
+        commenter = re.compile("^{}".format(comment))
 
     # Note: we do io manually here for two reasons.
     #   1. The csv module has difficulties with unicode, which may lead
@@ -86,7 +86,7 @@ def load_delimited(filename, converters, delimiter=r'\s+', comment='#'):
     #
     #   2. numpy's text loader does not handle non-numeric data
     #
-    with _open(filename, mode='r') as input_file:
+    with _open(filename, mode="r") as input_file:
         for row, line in enumerate(input_file, 1):
             # Skip commented lines
             if comment is not None and commenter.match(line):
@@ -97,19 +97,22 @@ def load_delimited(filename, converters, delimiter=r'\s+', comment='#'):
 
             # Throw a helpful error if we got an unexpected # of columns
             if n_columns != len(data):
-                raise ValueError('Expected {} columns, got {} at '
-                                 '{}:{:d}:\n\t{}'.format(n_columns, len(data),
-                                                         filename, row, line))
+                raise ValueError(
+                    "Expected {} columns, got {} at "
+                    "{}:{:d}:\n\t{}".format(n_columns, len(data), filename, row, line)
+                )
 
             for value, column, converter in zip(data, columns, converters):
                 # Try converting the value, throw a helpful error on failure
                 try:
                     converted_value = converter(value)
                 except:
-                    raise ValueError("Couldn't convert value {} using {} "
-                                     "found at {}:{:d}:\n\t{}".format(
-                                         value, converter.__name__, filename,
-                                         row, line))
+                    raise ValueError(
+                        "Couldn't convert value {} using {} "
+                        "found at {}:{:d}:\n\t{}".format(
+                            value, converter.__name__, filename, row, line
+                        )
+                    )
                 column.append(converted_value)
 
     # Sane output
@@ -119,7 +122,7 @@ def load_delimited(filename, converters, delimiter=r'\s+', comment='#'):
         return columns
 
 
-def load_events(filename, delimiter=r'\s+', comment='#'):
+def load_events(filename, delimiter=r"\s+", comment="#"):
     r"""Import time-stamp events from an annotation file.  The file should
     consist of a single column of numeric values corresponding to the event
     times. This is primarily useful for processing events which lack duration,
@@ -145,8 +148,7 @@ def load_events(filename, delimiter=r'\s+', comment='#'):
 
     """
     # Use our universal function to load in the events
-    events = load_delimited(filename, [float],
-                            delimiter=delimiter, comment=comment)
+    events = load_delimited(filename, [float], delimiter=delimiter, comment=comment)
     events = np.array(events)
     # Validate them, but throw a warning in place of an error
     try:
@@ -157,7 +159,7 @@ def load_events(filename, delimiter=r'\s+', comment='#'):
     return events
 
 
-def load_labeled_events(filename, delimiter=r'\s+', comment='#'):
+def load_labeled_events(filename, delimiter=r"\s+", comment="#"):
     r"""Import labeled time-stamp events from an annotation file.  The file should
     consist of two columns; the first having numeric values corresponding to
     the event times and the second having string labels for each event.  This
@@ -186,9 +188,9 @@ def load_labeled_events(filename, delimiter=r'\s+', comment='#'):
 
     """
     # Use our universal function to load in the events
-    events, labels = load_delimited(filename, [float, str],
-                                    delimiter=delimiter,
-                                    comment=comment)
+    events, labels = load_delimited(
+        filename, [float, str], delimiter=delimiter, comment=comment
+    )
     events = np.array(events)
     # Validate them, but throw a warning in place of an error
     try:
@@ -199,7 +201,7 @@ def load_labeled_events(filename, delimiter=r'\s+', comment='#'):
     return events, labels
 
 
-def load_intervals(filename, delimiter=r'\s+', comment='#'):
+def load_intervals(filename, delimiter=r"\s+", comment="#"):
     r"""Import intervals from an annotation file.  The file should consist of two
     columns of numeric values corresponding to start and end time of each
     interval.  This is primarily useful for processing events which span a
@@ -225,9 +227,9 @@ def load_intervals(filename, delimiter=r'\s+', comment='#'):
 
     """
     # Use our universal function to load in the events
-    starts, ends = load_delimited(filename, [float, float],
-                                  delimiter=delimiter,
-                                  comment=comment)
+    starts, ends = load_delimited(
+        filename, [float, float], delimiter=delimiter, comment=comment
+    )
     # Stack into an interval matrix
     intervals = np.array([starts, ends]).T
     # Validate them, but throw a warning in place of an error
@@ -239,7 +241,7 @@ def load_intervals(filename, delimiter=r'\s+', comment='#'):
     return intervals
 
 
-def load_labeled_intervals(filename, delimiter=r'\s+', comment='#'):
+def load_labeled_intervals(filename, delimiter=r"\s+", comment="#"):
     r"""Import labeled intervals from an annotation file.  The file should consist
     of three columns: Two consisting of numeric values corresponding to start
     and end time of each interval and a third corresponding to the label of
@@ -268,9 +270,9 @@ def load_labeled_intervals(filename, delimiter=r'\s+', comment='#'):
 
     """
     # Use our universal function to load in the events
-    starts, ends, labels = load_delimited(filename, [float, float, str],
-                                          delimiter=delimiter,
-                                          comment=comment)
+    starts, ends, labels = load_delimited(
+        filename, [float, float, str], delimiter=delimiter, comment=comment
+    )
     # Stack into an interval matrix
     intervals = np.array([starts, ends]).T
     # Validate them, but throw a warning in place of an error
@@ -282,7 +284,7 @@ def load_labeled_intervals(filename, delimiter=r'\s+', comment='#'):
     return intervals, labels
 
 
-def load_time_series(filename, delimiter=r'\s+', comment='#'):
+def load_time_series(filename, delimiter=r"\s+", comment="#"):
     r"""Import a time series from an annotation file.  The file should consist of
     two columns of numeric values corresponding to the time and value of each
     sample of the time series.
@@ -309,9 +311,9 @@ def load_time_series(filename, delimiter=r'\s+', comment='#'):
 
     """
     # Use our universal function to load in the events
-    times, values = load_delimited(filename, [float, float],
-                                   delimiter=delimiter,
-                                   comment=comment)
+    times, values = load_delimited(
+        filename, [float, float], delimiter=delimiter, comment=comment
+    )
     times = np.array(times)
     values = np.array(values)
 
@@ -369,7 +371,7 @@ def load_patterns(filename):
     pattern = []
     # Current occurrence, containing (onset, midi)
     occurrence = []
-    with _open(filename, mode='r') as input_file:
+    with _open(filename, mode="r") as input_file:
         for line in input_file.readlines():
             if "pattern" in line:
                 if occurrence != []:
@@ -419,22 +421,21 @@ def load_wav(path, mono=True):
 
     fs, audio_data = scipy.io.wavfile.read(path)
     # Make float in range [-1, 1]
-    if audio_data.dtype == 'int8':
-        audio_data = audio_data/float(2**8)
-    elif audio_data.dtype == 'int16':
-        audio_data = audio_data/float(2**16)
-    elif audio_data.dtype == 'int32':
-        audio_data = audio_data/float(2**24)
+    if audio_data.dtype == "int8":
+        audio_data = audio_data / float(2**8)
+    elif audio_data.dtype == "int16":
+        audio_data = audio_data / float(2**16)
+    elif audio_data.dtype == "int32":
+        audio_data = audio_data / float(2**24)
     else:
-        raise ValueError('Got unexpected .wav data type '
-                         '{}'.format(audio_data.dtype))
+        raise ValueError("Got unexpected .wav data type " "{}".format(audio_data.dtype))
     # Optionally convert to mono
     if mono and audio_data.ndim != 1:
         audio_data = audio_data.mean(axis=1)
     return audio_data, fs
 
 
-def load_valued_intervals(filename, delimiter=r'\s+', comment='#'):
+def load_valued_intervals(filename, delimiter=r"\s+", comment="#"):
     r"""Import valued intervals from an annotation file. The file should
     consist of three columns: Two consisting of numeric values corresponding to
     start and end time of each interval and a third, also of numeric values,
@@ -464,9 +465,9 @@ def load_valued_intervals(filename, delimiter=r'\s+', comment='#'):
 
     """
     # Use our universal function to load in the events
-    starts, ends, values = load_delimited(filename, [float, float, float],
-                                          delimiter=delimiter,
-                                          comment=comment)
+    starts, ends, values = load_delimited(
+        filename, [float, float, float], delimiter=delimiter, comment=comment
+    )
     # Stack into an interval matrix
     intervals = np.array([starts, ends]).T
     # Validate them, but throw a warning in place of an error
@@ -481,7 +482,7 @@ def load_valued_intervals(filename, delimiter=r'\s+', comment='#'):
     return intervals, values
 
 
-def load_key(filename, delimiter=r'\s+', comment='#'):
+def load_key(filename, delimiter=r"\s+", comment="#"):
     r"""Load key labels from an annotation file. The file should
     consist of two string columns: One denoting the key scale degree
     (semitone), and the other denoting the mode (major or minor).  The file
@@ -507,14 +508,14 @@ def load_key(filename, delimiter=r'\s+', comment='#'):
 
     """
     # Use our universal function to load the key and mode strings
-    scale, mode = load_delimited(filename, [str, str],
-                                 delimiter=delimiter,
-                                 comment=comment)
+    scale, mode = load_delimited(
+        filename, [str, str], delimiter=delimiter, comment=comment
+    )
     if len(scale) != 1:
-        raise ValueError('Key file should contain only one line.')
+        raise ValueError("Key file should contain only one line.")
     scale, mode = scale[0], mode[0]
     # Join with a space
-    key_string = '{} {}'.format(scale, mode)
+    key_string = "{} {}".format(scale, mode)
     # Validate them, but throw a warning in place of an error
     try:
         key.validate_key(key_string)
@@ -524,7 +525,7 @@ def load_key(filename, delimiter=r'\s+', comment='#'):
     return key_string
 
 
-def load_tempo(filename, delimiter=r'\s+', comment='#'):
+def load_tempo(filename, delimiter=r"\s+", comment="#"):
     r"""Load tempo estimates from an annotation file in MIREX format.
     The file should consist of three numeric columns: the first two
     correspond to tempo estimates (in beats-per-minute), and the third
@@ -553,15 +554,15 @@ def load_tempo(filename, delimiter=r'\s+', comment='#'):
         The relative importance of ``tempi[0]`` compared to ``tempi[1]``
     """
     # Use our universal function to load the key and mode strings
-    t1, t2, weight = load_delimited(filename, [float, float, float],
-                                    delimiter=delimiter,
-                                    comment=comment)
+    t1, t2, weight = load_delimited(
+        filename, [float, float, float], delimiter=delimiter, comment=comment
+    )
 
     weight = weight[0]
     tempi = np.concatenate([t1, t2])
 
     if len(t1) != 1:
-        raise ValueError('Tempo file should contain only one line.')
+        raise ValueError("Tempo file should contain only one line.")
 
     # Validate them, but throw a warning in place of an error
     try:
@@ -570,13 +571,14 @@ def load_tempo(filename, delimiter=r'\s+', comment='#'):
         warnings.warn(error.args[0])
 
     if not 0 <= weight <= 1:
-        raise ValueError('Invalid weight: {}'.format(weight))
+        raise ValueError("Invalid weight: {}".format(weight))
 
     return tempi, weight
 
 
-def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
-                            header=False, comment='#'):
+def load_ragged_time_series(
+    filename, dtype=float, delimiter=r"\s+", header=False, comment="#"
+):
     r"""Utility function for loading in data from a delimited time series
     annotation file with a variable number of columns.
     Assumes that column 0 contains time stamps and columns 1 through n contain
@@ -628,13 +630,13 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
     if comment is None:
         commenter = None
     else:
-        commenter = re.compile('^{}'.format(comment))
+        commenter = re.compile("^{}".format(comment))
 
     if header:
         start_row = 1
     else:
         start_row = 0
-    with _open(filename, mode='r') as input_file:
+    with _open(filename, mode="r") as input_file:
         for row, line in enumerate(input_file, start_row):
             # If this is a comment line, skip it
             if comment is not None and commenter.match(line):
@@ -645,10 +647,12 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
             try:
                 converted_time = float(data[0])
             except (TypeError, ValueError) as exe:
-                raise ValueError("Couldn't convert value {} using {} "
-                                 "found at {}:{:d}:\n\t{}".format(
-                                   data[0], float.__name__,
-                                   filename, row, line)) from exe
+                raise ValueError(
+                    "Couldn't convert value {} using {} "
+                    "found at {}:{:d}:\n\t{}".format(
+                        data[0], float.__name__, filename, row, line
+                    )
+                ) from exe
             times.append(converted_time)
 
             # cast values to a numpy array. time stamps with no values are cast
@@ -656,10 +660,12 @@ def load_ragged_time_series(filename, dtype=float, delimiter=r'\s+',
             try:
                 converted_value = np.array(data[1:], dtype=dtype)
             except (TypeError, ValueError) as exe:
-                raise ValueError("Couldn't convert value {} using {} "
-                                 "found at {}:{:d}:\n\t{}".format(
-                                   data[1:], dtype.__name__,
-                                   filename, row, line)) from exe
+                raise ValueError(
+                    "Couldn't convert value {} using {} "
+                    "found at {}:{:d}:\n\t{}".format(
+                        data[1:], dtype.__name__, filename, row, line
+                    )
+                ) from exe
             values.append(converted_value)
 
     return np.array(times), values

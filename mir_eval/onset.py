@@ -1,4 +1,4 @@
-'''
+"""
 The goal of an onset detection algorithm is to automatically determine when
 notes are played in a piece of music.  The primary method used to evaluate
 onset detectors is to first determine which estimated onsets are "correct",
@@ -21,7 +21,7 @@ Metrics
 * :func:`mir_eval.onset.f_measure`: Precision, Recall, and F-measure scores
   based on the number of estimated onsets which are sufficiently close to
   reference onsets.
-'''
+"""
 
 import collections
 from . import util
@@ -29,7 +29,7 @@ import warnings
 
 
 # The maximum allowable beat time
-MAX_TIME = 30000.
+MAX_TIME = 30000.0
 
 
 def validate(reference_onsets, estimated_onsets):
@@ -53,7 +53,7 @@ def validate(reference_onsets, estimated_onsets):
         util.validate_events(onsets, MAX_TIME)
 
 
-def f_measure(reference_onsets, estimated_onsets, window=.05):
+def f_measure(reference_onsets, estimated_onsets, window=0.05):
     """Compute the F-measure of correct vs incorrectly predicted onsets.
     "Correctness" is determined over a small window.
 
@@ -87,13 +87,13 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     validate(reference_onsets, estimated_onsets)
     # If either list is empty, return 0s
     if reference_onsets.size == 0 or estimated_onsets.size == 0:
-        return 0., 0., 0.
+        return 0.0, 0.0, 0.0
     # Compute the best-case matching between reference and estimated onset
     # locations
     matching = util.match_events(reference_onsets, estimated_onsets, window)
 
-    precision = float(len(matching))/len(estimated_onsets)
-    recall = float(len(matching))/len(reference_onsets)
+    precision = float(len(matching)) / len(estimated_onsets)
+    recall = float(len(matching)) / len(reference_onsets)
     # Compute F-measure and return all statistics
     return util.f_measure(precision, recall), precision, recall
 
@@ -128,9 +128,8 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
     # Compute all metrics
     scores = collections.OrderedDict()
 
-    (scores['F-measure'],
-     scores['Precision'],
-     scores['Recall']) = util.filter_kwargs(f_measure, reference_onsets,
-                                            estimated_onsets, **kwargs)
+    (scores["F-measure"], scores["Precision"], scores["Recall"]) = util.filter_kwargs(
+        f_measure, reference_onsets, estimated_onsets, **kwargs
+    )
 
     return scores

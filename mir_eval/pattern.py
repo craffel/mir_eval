@@ -97,19 +97,22 @@ def validate(reference_patterns, estimated_patterns):
     """
     # Warn if pattern lists are empty
     if _n_onset_midi(reference_patterns) == 0:
-        warnings.warn('Reference patterns are empty.')
+        warnings.warn("Reference patterns are empty.")
     if _n_onset_midi(estimated_patterns) == 0:
-        warnings.warn('Estimated patterns are empty.')
+        warnings.warn("Estimated patterns are empty.")
     for patterns in [reference_patterns, estimated_patterns]:
         for pattern in patterns:
             if len(pattern) <= 0:
-                raise ValueError("Each pattern must contain at least one "
-                                 "occurrence.")
+                raise ValueError(
+                    "Each pattern must contain at least one " "occurrence."
+                )
             for occurrence in pattern:
                 for onset_midi in occurrence:
                     if len(onset_midi) != 2:
-                        raise ValueError("The (onset, midi) tuple must "
-                                         "contain exactly 2 elements.")
+                        raise ValueError(
+                            "The (onset, midi) tuple must "
+                            "contain exactly 2 elements."
+                        )
 
 
 def _occurrence_intersection(occ_P, occ_Q):
@@ -130,7 +133,7 @@ def _occurrence_intersection(occ_P, occ_Q):
     """
     set_P = set([tuple(onset_midi) for onset_midi in occ_P])
     set_Q = set([tuple(onset_midi) for onset_midi in occ_Q])
-    return set_P & set_Q    # Return the intersection
+    return set_P & set_Q  # Return the intersection
 
 
 def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
@@ -155,18 +158,18 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
         The score matrix between P and Q using the similarity_metric.
 
     """
-    sm = np.zeros((len(P), len(Q)))     # The score matrix
+    sm = np.zeros((len(P), len(Q)))  # The score matrix
     for iP, occ_P in enumerate(P):
         for iQ, occ_Q in enumerate(Q):
             if similarity_metric == "cardinality_score":
                 denom = float(np.max([len(occ_P), len(occ_Q)]))
                 # Compute the score
-                sm[iP, iQ] = len(_occurrence_intersection(occ_P, occ_Q)) / \
-                    denom
+                sm[iP, iQ] = len(_occurrence_intersection(occ_P, occ_Q)) / denom
             # TODO: More scores: 'normalised matching socre'
             else:
-                raise ValueError("The similarity metric (%s) can only be: "
-                                 "'cardinality_score'.")
+                raise ValueError(
+                    "The similarity metric (%s) can only be: " "'cardinality_score'."
+                )
     return sm
 
 
@@ -208,18 +211,17 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
 
     """
     validate(reference_patterns, estimated_patterns)
-    nP = len(reference_patterns)    # Number of patterns in the reference
-    nQ = len(estimated_patterns)    # Number of patterns in the estimation
-    k = 0                           # Number of patterns that match
+    nP = len(reference_patterns)  # Number of patterns in the reference
+    nQ = len(estimated_patterns)  # Number of patterns in the estimation
+    k = 0  # Number of patterns that match
 
     # If no patterns were provided, metric is zero
-    if _n_onset_midi(reference_patterns) == 0 or \
-       _n_onset_midi(estimated_patterns) == 0:
-        return 0., 0., 0.
+    if _n_onset_midi(reference_patterns) == 0 or _n_onset_midi(estimated_patterns) == 0:
+        return 0.0, 0.0, 0.0
 
     # Find matches of the prototype patterns
     for ref_pattern in reference_patterns:
-        P = np.asarray(ref_pattern[0])      # Get reference prototype
+        P = np.asarray(ref_pattern[0])  # Get reference prototype
         for est_pattern in estimated_patterns:
             Q = np.asarray(est_pattern[0])  # Get estimation prototype
 
@@ -227,8 +229,7 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
                 continue
 
             # Check transposition given a certain tolerance
-            if (len(P) == len(Q) == 1 or
-                    np.max(np.abs(np.diff(P - Q, axis=0))) < tol):
+            if len(P) == len(Q) == 1 or np.max(np.abs(np.diff(P - Q, axis=0))) < tol:
                 k += 1
                 break
 
@@ -239,8 +240,9 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
     return f_measure, precision, recall
 
 
-def establishment_FPR(reference_patterns, estimated_patterns,
-                      similarity_metric="cardinality_score"):
+def establishment_FPR(
+    reference_patterns, estimated_patterns, similarity_metric="cardinality_score"
+):
     """Establishment F1 Score, Precision and Recall.
 
     Examples
@@ -281,19 +283,17 @@ def establishment_FPR(reference_patterns, estimated_patterns,
 
     """
     validate(reference_patterns, estimated_patterns)
-    nP = len(reference_patterns)    # Number of elements in reference
-    nQ = len(estimated_patterns)    # Number of elements in estimation
-    S = np.zeros((nP, nQ))          # Establishment matrix
+    nP = len(reference_patterns)  # Number of elements in reference
+    nQ = len(estimated_patterns)  # Number of elements in estimation
+    S = np.zeros((nP, nQ))  # Establishment matrix
 
     # If no patterns were provided, metric is zero
-    if _n_onset_midi(reference_patterns) == 0 or \
-       _n_onset_midi(estimated_patterns) == 0:
-        return 0., 0., 0.
+    if _n_onset_midi(reference_patterns) == 0 or _n_onset_midi(estimated_patterns) == 0:
+        return 0.0, 0.0, 0.0
 
     for iP, ref_pattern in enumerate(reference_patterns):
         for iQ, est_pattern in enumerate(estimated_patterns):
-            s = _compute_score_matrix(ref_pattern, est_pattern,
-                                      similarity_metric)
+            s = _compute_score_matrix(ref_pattern, est_pattern, similarity_metric)
             S[iP, iQ] = np.max(s)
 
     # Compute scores
@@ -303,8 +303,12 @@ def establishment_FPR(reference_patterns, estimated_patterns,
     return f_measure, precision, recall
 
 
-def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
-                   similarity_metric="cardinality_score"):
+def occurrence_FPR(
+    reference_patterns,
+    estimated_patterns,
+    thres=0.75,
+    similarity_metric="cardinality_score",
+):
     """Establishment F1 Score, Precision and Recall.
 
 
@@ -359,14 +363,12 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
     rel_idx = np.empty((0, 2), dtype=int)
 
     # If no patterns were provided, metric is zero
-    if _n_onset_midi(reference_patterns) == 0 or \
-       _n_onset_midi(estimated_patterns) == 0:
-        return 0., 0., 0.
+    if _n_onset_midi(reference_patterns) == 0 or _n_onset_midi(estimated_patterns) == 0:
+        return 0.0, 0.0, 0.0
 
     for iP, ref_pattern in enumerate(reference_patterns):
         for iQ, est_pattern in enumerate(estimated_patterns):
-            s = _compute_score_matrix(ref_pattern, est_pattern,
-                                      similarity_metric)
+            s = _compute_score_matrix(ref_pattern, est_pattern, similarity_metric)
             if np.max(s) >= thres:
                 O_PR[iP, iQ, 0] = np.mean(np.max(s, axis=0))
                 O_PR[iP, iQ, 1] = np.mean(np.max(s, axis=1))
@@ -378,11 +380,9 @@ def occurrence_FPR(reference_patterns, estimated_patterns, thres=.75,
         recall = 0
     else:
         P = O_PR[:, :, 0]
-        precision = np.mean(np.max(P[np.ix_(rel_idx[:, 0], rel_idx[:, 1])],
-                                   axis=0))
+        precision = np.mean(np.max(P[np.ix_(rel_idx[:, 0], rel_idx[:, 1])], axis=0))
         R = O_PR[:, :, 1]
-        recall = np.mean(np.max(R[np.ix_(rel_idx[:, 0], rel_idx[:, 1])],
-                                axis=1))
+        recall = np.mean(np.max(R[np.ix_(rel_idx[:, 0], rel_idx[:, 1])], axis=1))
     f_measure = util.f_measure(precision, recall)
     return f_measure, precision, recall
 
@@ -487,12 +487,11 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
 
         """
         if layer != 1 and layer != 2:
-            raise ValueError("Layer (%d) must be an integer between 1 and 2"
-                             % layer)
+            raise ValueError("Layer (%d) must be an integer between 1 and 2" % layer)
 
-        nP = len(ref_elements)      # Number of elements in reference
-        nQ = len(est_elements)      # Number of elements in estimation
-        F = np.zeros((nP, nQ))      # F-measure matrix for the given layer
+        nP = len(ref_elements)  # Number of elements in reference
+        nQ = len(est_elements)  # Number of elements in estimation
+        F = np.zeros((nP, nQ))  # F-measure matrix for the given layer
         for iP in range(nP):
             for iQ in range(nQ):
                 if layer == 1:
@@ -506,9 +505,8 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         return F
 
     # If no patterns were provided, metric is zero
-    if _n_onset_midi(reference_patterns) == 0 or \
-       _n_onset_midi(estimated_patterns) == 0:
-        return 0., 0., 0.
+    if _n_onset_midi(reference_patterns) == 0 or _n_onset_midi(estimated_patterns) == 0:
+        return 0.0, 0.0, 0.0
 
     # Compute the second layer (it includes the first layer)
     F_2 = compute_layer(reference_patterns, estimated_patterns, layer=2)
@@ -555,17 +553,16 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
 
     validate(reference_patterns, estimated_patterns)
     # If no patterns were provided, metric is zero
-    if _n_onset_midi(reference_patterns) == 0 or \
-       _n_onset_midi(estimated_patterns) == 0:
-        return 0., 0., 0.
+    if _n_onset_midi(reference_patterns) == 0 or _n_onset_midi(estimated_patterns) == 0:
+        return 0.0, 0.0, 0.0
 
     # Get only the first n patterns from the estimated results
-    fn_est_patterns = estimated_patterns[:min(len(estimated_patterns), n)]
+    fn_est_patterns = estimated_patterns[: min(len(estimated_patterns), n)]
 
     # Compute the three-layer scores for the first n estimated patterns
     F, P, R = three_layer_FPR(reference_patterns, fn_est_patterns)
 
-    return P    # Return the precision only
+    return P  # Return the precision only
 
 
 def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
@@ -603,12 +600,11 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
 
     validate(reference_patterns, estimated_patterns)
     # If no patterns were provided, metric is zero
-    if _n_onset_midi(reference_patterns) == 0 or \
-       _n_onset_midi(estimated_patterns) == 0:
-        return 0., 0., 0.
+    if _n_onset_midi(reference_patterns) == 0 or _n_onset_midi(estimated_patterns) == 0:
+        return 0.0, 0.0, 0.0
 
     # Get only the first n patterns from the estimated results
-    fn_est_patterns = estimated_patterns[:min(len(estimated_patterns), n)]
+    fn_est_patterns = estimated_patterns[: min(len(estimated_patterns), n)]
 
     F, P, R = establishment_FPR(reference_patterns, fn_est_patterns)
     return R
@@ -646,38 +642,40 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
     scores = collections.OrderedDict()
 
     # Standard scores
-    scores['F'], scores['P'], scores['R'] = \
-        util.filter_kwargs(standard_FPR, ref_patterns, est_patterns, **kwargs)
+    scores["F"], scores["P"], scores["R"] = util.filter_kwargs(
+        standard_FPR, ref_patterns, est_patterns, **kwargs
+    )
 
     # Establishment scores
-    scores['F_est'], scores['P_est'], scores['R_est'] = \
-        util.filter_kwargs(establishment_FPR, ref_patterns, est_patterns,
-                           **kwargs)
+    scores["F_est"], scores["P_est"], scores["R_est"] = util.filter_kwargs(
+        establishment_FPR, ref_patterns, est_patterns, **kwargs
+    )
 
     # Occurrence scores
     # Force these values for thresh
-    kwargs['thresh'] = .5
-    scores['F_occ.5'], scores['P_occ.5'], scores['R_occ.5'] = \
-        util.filter_kwargs(occurrence_FPR, ref_patterns, est_patterns,
-                           **kwargs)
-    kwargs['thresh'] = .75
-    scores['F_occ.75'], scores['P_occ.75'], scores['R_occ.75'] = \
-        util.filter_kwargs(occurrence_FPR, ref_patterns, est_patterns,
-                           **kwargs)
+    kwargs["thresh"] = 0.5
+    scores["F_occ.5"], scores["P_occ.5"], scores["R_occ.5"] = util.filter_kwargs(
+        occurrence_FPR, ref_patterns, est_patterns, **kwargs
+    )
+    kwargs["thresh"] = 0.75
+    scores["F_occ.75"], scores["P_occ.75"], scores["R_occ.75"] = util.filter_kwargs(
+        occurrence_FPR, ref_patterns, est_patterns, **kwargs
+    )
 
     # Three-layer scores
-    scores['F_3'], scores['P_3'], scores['R_3'] = \
-        util.filter_kwargs(three_layer_FPR, ref_patterns, est_patterns,
-                           **kwargs)
+    scores["F_3"], scores["P_3"], scores["R_3"] = util.filter_kwargs(
+        three_layer_FPR, ref_patterns, est_patterns, **kwargs
+    )
 
     # First Five Patterns scores
     # Set default value of n
-    if 'n' not in kwargs:
-        kwargs['n'] = 5
-    scores['FFP'] = util.filter_kwargs(first_n_three_layer_P, ref_patterns,
-                                       est_patterns, **kwargs)
-    scores['FFTP_est'] = \
-        util.filter_kwargs(first_n_target_proportion_R, ref_patterns,
-                           est_patterns, **kwargs)
+    if "n" not in kwargs:
+        kwargs["n"] = 5
+    scores["FFP"] = util.filter_kwargs(
+        first_n_three_layer_P, ref_patterns, est_patterns, **kwargs
+    )
+    scores["FFTP_est"] = util.filter_kwargs(
+        first_n_target_proportion_R, ref_patterns, est_patterns, **kwargs
+    )
 
     return scores
