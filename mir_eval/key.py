@@ -44,7 +44,7 @@ KEY_TO_SEMITONE = {
 
 
 def validate_key(key):
-    """Checks that a key is well-formatted, e.g. in the form ``'C# major'``.
+    """Check that a key is well-formatted, e.g. in the form ``'C# major'``.
     The Key can be 'X' if it is not possible to categorize the Key and mode
     can be 'other' if it can't be categorized as major or minor.
 
@@ -75,7 +75,7 @@ def validate_key(key):
 
 
 def validate(reference_key, estimated_key):
-    """Checks that the input annotations to a metric are valid key strings and
+    """Check that the input annotations to a metric are valid key strings and
     throws helpful errors if not.
 
     Parameters
@@ -90,7 +90,7 @@ def validate(reference_key, estimated_key):
 
 
 def split_key_string(key):
-    """Splits a key string (of the form, e.g. ``'C# major'``), into a tuple of
+    """Split a key string (of the form, e.g. ``'C# major'``), into a tuple of
     ``(key, mode)`` where ``key`` is is an integer representing the semitone
     distance from C.
 
@@ -114,7 +114,7 @@ def split_key_string(key):
 
 
 def weighted_score(reference_key, estimated_key):
-    """Computes a heuristic score which is weighted according to the
+    """Compute a heuristic score which is weighted according to the
     relationship of the reference and estimated key, as follows:
 
     +------------------------------------------------------+-------+

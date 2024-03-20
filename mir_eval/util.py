@@ -1,6 +1,6 @@
 """
-This submodule collects useful functionality required across the task
-submodules, such as preprocessing, validation, and common computations.
+Useful functionality required across the task submodules,
+such as preprocessing, validation, and common computations.
 """
 
 import os
@@ -28,9 +28,7 @@ def index_labels(labels, case_sensitive=False):
     index_to_label : dict
         Mapping to convert numerical indices back to labels.
         ``labels[i] == index_to_label[indices[i]]``
-
     """
-
     label_to_index = {}
     index_to_label = {}
 
@@ -105,9 +103,7 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1, fill_valu
     -----
         Intervals will be rounded down to the nearest multiple
         of ``sample_size``.
-
     """
-
     # Round intervals to the sample size
     num_samples = int(np.floor(intervals.max() / sample_size))
     sample_indices = np.arange(num_samples, dtype=np.float32)
@@ -153,7 +149,6 @@ def interpolate_intervals(intervals, labels, time_points, fill_value=None):
     ValueError
         If `time_points` is not in non-decreasing order.
     """
-
     # Verify that time_points is sorted
     time_points = np.asarray(time_points)
 
@@ -187,7 +182,6 @@ def sort_labeled_intervals(intervals, labels=None):
     intervals_sorted or (intervals_sorted, labels_sorted)
         Labels are only returned if provided as input
     """
-
     idx = np.argsort(intervals[:, 0])
 
     intervals_sorted = intervals[idx]
@@ -215,9 +209,7 @@ def f_measure(precision, recall, beta=1.0):
     -------
     f_measure : float
         The weighted f-measure
-
     """
-
     if precision == 0 and recall == 0:
         return 0.0
 
@@ -238,9 +230,7 @@ def intervals_to_boundaries(intervals, q=5):
     -------
     boundaries : np.ndarray
         Interval boundary times, including the end of the final interval
-
     """
-
     return np.unique(np.ravel(np.round(intervals, decimals=q)))
 
 
@@ -258,7 +248,6 @@ def boundaries_to_intervals(boundaries):
     intervals : np.ndarray, shape=(n_intervals, 2)
         Start and end time for each interval
     """
-
     if not np.allclose(boundaries, np.unique(boundaries)):
         raise ValueError("Boundary times are not unique or not ascending.")
 
@@ -313,9 +302,7 @@ def adjust_intervals(
         Intervals spanning ``[t_min, t_max]``
     new_labels : list
         List of labels for ``new_labels``
-
     """
-
     # When supplied intervals are empty and t_max and t_min are supplied,
     # create one interval from t_min to t_max with the label start_label
     if t_min is not None and t_max is not None and intervals.size == 0:
@@ -466,7 +453,7 @@ def intersect_files(flist1, flist2):
     """
 
     def fname(abs_path):
-        """Returns the filename given an absolute path.
+        """Return the filename given an absolute path.
 
         Parameters
         ----------
@@ -474,7 +461,7 @@ def intersect_files(flist1, flist2):
 
         Returns
         -------
-
+        filename
 
         """
         return os.path.splitext(os.path.split(abs_path)[-1])[0]
@@ -729,7 +716,6 @@ def _fast_hit_windows(ref, est, window):
     hit_est : np.ndarray
         indices such that ``|hit_ref[i] - hit_est[i]| <= window``
     """
-
     ref = np.asarray(ref)
     est = np.asarray(est)
     ref_idx = np.argsort(ref)
@@ -748,16 +734,14 @@ def _fast_hit_windows(ref, est, window):
 
 
 def validate_intervals(intervals):
-    """Checks that an (n, 2) interval ndarray is well-formed, and raises errors
+    """Check that an (n, 2) interval ndarray is well-formed, and raises errors
     if not.
 
     Parameters
     ----------
     intervals : np.ndarray, shape=(n, 2)
         Array of interval start/end locations.
-
     """
-
     # Validate interval shape
     if intervals.ndim != 2 or intervals.shape[1] != 2:
         raise ValueError(
@@ -775,7 +759,7 @@ def validate_intervals(intervals):
 
 
 def validate_events(events, max_time=30000.0):
-    """Checks that a 1-d event location ndarray is well-formed, and raises
+    """Check that a 1-d event location ndarray is well-formed, and raises
     errors if not.
 
     Parameters
@@ -785,7 +769,6 @@ def validate_events(events, max_time=30000.0):
     max_time : float
         If an event is found above this time, a ValueError will be raised.
         (Default value = 30000.)
-
     """
     # Make sure no event times are huge
     if (events > max_time).any():
@@ -807,7 +790,7 @@ def validate_events(events, max_time=30000.0):
 
 
 def validate_frequencies(frequencies, max_freq, min_freq, allow_negatives=False):
-    """Checks that a 1-d frequency ndarray is well-formed, and raises
+    """Check that a 1-d frequency ndarray is well-formed, and raises
     errors if not.
 
     Parameters
@@ -863,7 +846,6 @@ def has_kwargs(function):
     True if function accepts arbitrary keyword arguments.
     False otherwise.
     """
-
     sig = inspect.signature(function)
 
     for param in list(sig.parameters.values()):
@@ -874,7 +856,7 @@ def has_kwargs(function):
 
 
 def filter_kwargs(_function, *args, **kwargs):
-    """Given a function and args and keyword args to pass to it, call the function
+    r"""Given a function and args and keyword args to pass to it, call the function
     but using only the keyword arguments which it accepts.  This is equivalent
     to redefining the function with an additional \*\*kwargs to accept slop
     keyword args.
@@ -890,7 +872,6 @@ def filter_kwargs(_function, *args, **kwargs):
     **kwargs
         Arguments and keyword arguments to _function.
     """
-
     if has_kwargs(_function):
         return _function(*args, **kwargs)
 
@@ -907,7 +888,7 @@ def filter_kwargs(_function, *args, **kwargs):
 
 
 def intervals_to_durations(intervals):
-    """Converts an array of n intervals to their n durations.
+    """Convert an array of n intervals to their n durations.
 
     Parameters
     ----------
