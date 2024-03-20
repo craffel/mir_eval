@@ -67,7 +67,7 @@ Metrics
   entire quality in closed voicing, i.e. spanning only a single octave;
   extended chords (9's, 11's and 13's) are rolled into a single octave with any
   upper voices included as extensions. For example, ('A:7', 'A:9') are
-  equivlent but ('A:7', 'A:maj7') are not.
+  equivalent but ('A:7', 'A:maj7') are not.
 
 * :func:`mir_eval.chord.tetrads_inv`: Same as above, with inversions (bass
   relationships).
@@ -557,7 +557,7 @@ def encode_many(chord_labels, reduce_extended_chords=False):
 
 
 def rotate_bitmap_to_root(bitmap, chord_root):
-    """Circularly shift a relative bitmap to its asbolute pitch classes.
+    """Circularly shift a relative bitmap to its absolute pitch classes.
 
     For clarity, the best explanation is an example. Given 'G:Maj', the root
     and quality map are as follows::
@@ -592,7 +592,7 @@ def rotate_bitmap_to_root(bitmap, chord_root):
 
 
 def rotate_bitmaps_to_roots(bitmaps, roots):
-    """Circularly shift a relative bitmaps to asbolute pitch classes.
+    """Circularly shift a relative bitmaps to absolute pitch classes.
 
     See :func:`rotate_bitmap_to_root` for more information.
 

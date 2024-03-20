@@ -19,7 +19,7 @@ Metrics
 -------
 
 * :func:`mir_eval.onset.f_measure`: Precision, Recall, and F-measure scores
-  based on the number of esimated onsets which are sufficiently close to
+  based on the number of estimated onsets which are sufficiently close to
   reference onsets.
 '''
 
@@ -55,7 +55,7 @@ def validate(reference_onsets, estimated_onsets):
 
 def f_measure(reference_onsets, estimated_onsets, window=.05):
     """Compute the F-measure of correct vs incorrectly predicted onsets.
-    "Corectness" is determined over a small window.
+    "Correctness" is determined over a small window.
 
     Examples
     --------

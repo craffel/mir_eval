@@ -44,7 +44,7 @@ jobs:
 
     - name: Spell check package
       shell: bash -l {0}
-      run: codespell --ignore-words-list="nce,FPR,Shepard,dum" mir_eval
+      run: codespell --ignore-words .codespell_ignore_list mir_eval
 
     - name: Security check
       shell: bash -l {0}

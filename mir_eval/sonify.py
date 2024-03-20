@@ -215,7 +215,7 @@ def pitch_contour(times, frequencies, fs, amplitudes=None, function=np.sin,
         desired sampling rate of the output signal
 
     amplitudes : np.ndarray
-        amplitude measurments, nonnegative
+        amplitude measurements, nonnegative
         defaults to ``np.ones((length,))``
 
     function : function

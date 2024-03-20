@@ -471,7 +471,7 @@ def bss_eval_images(reference_sources, estimated_sources,
         isr = np.empty(nsrc)
         sir = np.empty(nsrc)
         sar = np.empty(nsrc)
-        Gj = [0] * nsrc  # prepare G matrics with zeroes
+        Gj = [0] * nsrc  # prepare G matrices with zeroes
         G = np.zeros(1)
         for j in range(nsrc):
             # save G matrix to avoid recomputing it every call
@@ -638,7 +638,7 @@ def _bss_decomp_mtifilt_images(reference_sources, estimated_source, j, flen,
     Improved performance can be gained by passing Gj and G parameters initially
     as all zeros. These parameters store the results from the computation of
     the G matrix in _project_images and then return them for subsequent calls
-    to this function. This only works when not computing permuations.
+    to this function. This only works when not computing permutations.
     """
     nsampl = np.shape(estimated_source)[0]
     nchan = np.shape(estimated_source)[1]

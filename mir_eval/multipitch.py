@@ -420,7 +420,7 @@ def metrics(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
     ref_freqs_chroma = midi_to_chroma(ref_freqs_midi)
     est_freqs_chroma = midi_to_chroma(est_freqs_midi)
 
-    # count number of occurences
+    # count number of occurrences
     n_ref = compute_num_freqs(ref_freqs_midi)
     n_est = compute_num_freqs(est_freqs_midi)
 

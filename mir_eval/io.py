@@ -319,7 +319,7 @@ def load_time_series(filename, delimiter=r'\s+', comment='#'):
 
 
 def load_patterns(filename):
-    """Loads the patters contained in the filename and puts them into a list
+    """Loads the patterns contained in the filename and puts them into a list
     of patterns, each pattern being a list of occurrence, and each
     occurrence being a list of (onset, midi) pairs.
 
