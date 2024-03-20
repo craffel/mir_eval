@@ -368,6 +368,9 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
     levels : list of string
         Each element ``levels[i]`` is a label for the ```i`` th segmentation.
         This is used in the legend to denote the levels in a segment hierarchy.
+    ax : matplotlib.pyplot.axes
+        An axis handle on which to draw the intervals.
+        If none is provided, a new set of axes is created.
     **kwargs
         Additional keyword arguments to `labeled_intervals`.
 

@@ -192,9 +192,9 @@ def evaluate(reference_key, estimated_key, **kwargs):
 
     Parameters
     ----------
-    ref_key : str
+    reference_key : str
         Reference key string.
-    ref_key : str
+    estimated_key : str
         Estimated key string.
     **kwargs
         Additional keyword arguments which will be passed to the

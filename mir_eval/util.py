@@ -886,7 +886,9 @@ def filter_kwargs(_function, *args, **kwargs):
     ----------
     _function : callable
         Function to call.  Can take in any number of args or kwargs
-
+    *args
+    **kwargs
+        Arguments and keyword arguments to _function.
     """
 
     if has_kwargs(_function):

@@ -605,9 +605,9 @@ def rotate_bitmaps_to_roots(bitmaps, roots):
 
     Parameters
     ----------
-    bitmap : np.ndarray, shape=(N, 12)
+    bitmaps : np.ndarray, shape=(N, 12)
         Bitmap of active notes, relative to the given root.
-    root : np.ndarray, shape=(N,)
+    roots : np.ndarray, shape=(N,)
         Absolute pitch class number.
 
     Returns
