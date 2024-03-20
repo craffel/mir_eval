@@ -27,7 +27,7 @@ from . import util
 
 
 def validate_tempi(tempi, reference=True):
-    """Checks that there are two non-negative tempi.
+    """Check that there are two non-negative tempi.
     For a reference value, at least one tempo has to be greater than zero.
 
     Parameters
@@ -36,9 +36,7 @@ def validate_tempi(tempi, reference=True):
         length-2 array of tempo, in bpm
     reference : bool
         indicates a reference value
-
     """
-
     if tempi.size != 2:
         raise ValueError("tempi must have exactly two values")
 
@@ -52,7 +50,7 @@ def validate_tempi(tempi, reference=True):
 
 
 def validate(reference_tempi, reference_weight, estimated_tempi):
-    """Checks that the input annotations to a metric look like valid tempo
+    """Check that the input annotations to a metric look like valid tempo
     annotations.
 
     Parameters
@@ -109,7 +107,6 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
 
         If ``tol < 0`` or ``tol > 1``.
     """
-
     validate(reference_tempi, reference_weight, estimated_tempi)
 
     if tol < 0 or tol > 1:

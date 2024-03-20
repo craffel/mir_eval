@@ -17,8 +17,7 @@ from .util import midi_to_hz, hz_to_midi
 
 
 def __expand_limits(ax, limits, which="x"):
-    """Helper function to expand axis limits"""
-
+    """Expand axis limits"""
     if which == "x":
         getter, setter = ax.get_xlim, ax.set_xlim
     elif which == "y":
@@ -60,9 +59,7 @@ def __get_axes(ax=None, fig=None):
     new_axes : bool
         If `True`, the axis object was newly constructed.
         If `False`, the axis object already existed.
-
     """
-
     new_axes = False
 
     if ax is not None:
@@ -256,7 +253,6 @@ def labeled_intervals(
     ax : matplotlib.pyplot.axes._subplots.AxesSubplot
         A handle to the (possibly constructed) plot axes
     """
-
     # Get the axes handle
     ax, _ = __get_axes(ax=ax)
 
@@ -347,6 +343,7 @@ class IntervalFormatter(Formatter):
         self._map = {int(k): v for k, v in zip(base, ticks)}
 
     def __call__(self, x, pos=None):
+        """Map the input position to its corresponding interval label"""
         return self._map.get(int(x), "")
 
 
@@ -379,7 +376,6 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
     ax : matplotlib.pyplot.axes._subplots.AxesSubplot
         A handle to the (possibly constructed) plot axes
     """
-
     # This will break if a segment label exists in multiple levels
     if levels is None:
         levels = list(range(len(intervals_hier)))
@@ -529,7 +525,6 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
     ax : matplotlib.pyplot.axes._subplots.AxesSubplot
         A handle to the (possibly constructed) plot axes
     """
-
     ax, _ = __get_axes(ax=ax)
 
     times = np.asarray(times)
@@ -616,7 +611,6 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs
     ax : matplotlib.pyplot.axes._subplots.AxesSubplot
         A handle to the (possibly constructed) plot axes
     """
-
     # Get the axes handle
     ax, _ = __get_axes(ax=ax)
 
@@ -697,7 +691,6 @@ def piano_roll(intervals, pitches=None, midi=None, ax=None, **kwargs):
     ax : matplotlib.pyplot.axes._subplots.AxesSubplot
         A handle to the (possibly constructed) plot axes
     """
-
     if midi is None:
         if pitches is None:
             raise ValueError("At least one of `midi` or `pitches` " "must be provided.")
@@ -745,7 +738,6 @@ def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
     ax
         The axis handle for this plot
     """
-
     # Get the axes handle
     ax, new_axes = __get_axes(ax=ax)
 
@@ -807,12 +799,11 @@ def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
 
 
 def __ticker_midi_note(x, pos):
-    """A ticker function for midi notes.
+    """Format midi notes for ticker decoration.
 
     Inputs x are interpreted as midi numbers, and converted
     to [NOTE][OCTAVE]+[cents].
     """
-
     NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
     cents = float(np.mod(x, 1.0))
@@ -830,12 +821,11 @@ def __ticker_midi_note(x, pos):
 
 
 def __ticker_midi_hz(x, pos):
-    """A ticker function for midi pitches.
+    """Format midi pitches for ticker decoration.
 
     Inputs x are interpreted as midi numbers, and converted
     to Hz.
     """
-
     return "{:g}".format(midi_to_hz(x))
 
 

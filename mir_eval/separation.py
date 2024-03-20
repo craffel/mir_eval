@@ -60,7 +60,7 @@ MAX_SOURCES = 100
 
 
 def validate(reference_sources, estimated_sources):
-    """Checks that the input data to a metric are valid, and throws helpful
+    """Check that the input data to a metric are valid, and throws helpful
     errors if not.
 
     Parameters
@@ -71,7 +71,6 @@ def validate(reference_sources, estimated_sources):
         matrix containing estimated sources
 
     """
-
     if reference_sources.shape != estimated_sources.shape:
         raise ValueError(
             "The shape of estimated sources and the true "
@@ -136,7 +135,7 @@ def validate(reference_sources, estimated_sources):
 
 
 def _any_source_silent(sources):
-    """Returns true if the parameter sources has any silent first dimensions"""
+    """Return true if the parameter sources has any silent first dimensions"""
     return np.any(
         np.all(np.sum(sources, axis=tuple(range(2, sources.ndim))) == 0, axis=1)
     )
@@ -198,7 +197,6 @@ def bss_eval_sources(reference_sources, estimated_sources, compute_permutation=T
         92, pp. 1928-1936, 2012.
 
     """
-
     # make sure the input is of shape (nsrc, nsampl)
     if estimated_sources.ndim == 1:
         estimated_sources = estimated_sources[np.newaxis, :]
@@ -319,9 +317,7 @@ def bss_eval_sources_framewise(
         the mean SIR sense (estimated source number ``perm[j]`` corresponds to
         true source number ``j``).  Note: ``perm`` will be ``range(nsrc)`` for
         all windows if ``compute_permutation`` is ``False``
-
     """
-
     # make sure the input is of shape (nsrc, nsampl)
     if estimated_sources.ndim == 1:
         estimated_sources = estimated_sources[np.newaxis, :]
@@ -367,7 +363,7 @@ def bss_eval_sources_framewise(
 
 
 def bss_eval_images(reference_sources, estimated_sources, compute_permutation=True):
-    """Implementation of the bss_eval_images function from the
+    """Compute the bss_eval_images function from the
     BSS_EVAL Matlab toolbox.
 
     Ordering and measurement of the separation quality for estimated source
@@ -423,9 +419,7 @@ def bss_eval_images(reference_sources, estimated_sources, compute_permutation=Tr
         Lutter and Ngoc Q.K. Duong, "The Signal Separation Evaluation Campaign
         (2007-2010): Achievements and remaining challenges", Signal Processing,
         92, pp. 1928-1936, 2012.
-
     """
-
     # make sure the input has 3 dimensions
     # assuming input is in shape (nsampl) or (nsrc, nsampl)
     estimated_sources = np.atleast_3d(estimated_sources)
@@ -570,9 +564,7 @@ def bss_eval_images_framewise(
         true source number j)
         Note: perm will be range(nsrc) for all windows if compute_permutation
         is False
-
     """
-
     # make sure the input has 3 dimensions
     # assuming input is in shape (nsampl) or (nsrc, nsampl)
     estimated_sources = np.atleast_3d(estimated_sources)

@@ -12,7 +12,7 @@ from . import chord
 
 
 def clicks(times, fs, click=None, length=None):
-    """Returns a signal with the signal 'click' placed at each specified time
+    """Return a signal with the signal 'click' placed at each specified time
 
     Parameters
     ----------
@@ -63,7 +63,7 @@ def clicks(times, fs, click=None, length=None):
 def time_frequency(
     gram, frequencies, times, fs, function=np.sin, length=None, n_dec=1, threshold=0.01
 ):
-    """Reverse synthesis of a time-frequency representation of a signal
+    r"""Reverse synthesis of a time-frequency representation of a signal
 
     Parameters
     ----------
@@ -126,7 +126,7 @@ def time_frequency(
     sample_intervals = np.round(times * fs).astype(int)
 
     def _fast_synthesize(frequency):
-        """A faster way to synthesize a signal.
+        """Efficiently synthesize a signal.
         Generate one cycle, and simulate arbitrary repetitions
         using array indexing tricks.
         """
@@ -217,7 +217,7 @@ def time_frequency(
 def pitch_contour(
     times, frequencies, fs, amplitudes=None, function=np.sin, length=None, kind="linear"
 ):
-    """Sonify a pitch contour.
+    r"""Sonify a pitch contour.
 
     Parameters
     ----------
@@ -245,7 +245,6 @@ def pitch_contour(
     output : np.ndarray
         synthesized version of the pitch contour
     """
-
     fs = float(fs)
 
     if length is None:

@@ -67,7 +67,7 @@ def validate(
     est_pitches,
     est_velocities,
 ):
-    """Checks that the input annotations have valid time intervals, pitches,
+    """Check that the input annotations have valid time intervals, pitches,
     and velocities, and throws helpful errors if not.
 
     Parameters

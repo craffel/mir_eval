@@ -85,7 +85,7 @@ from . import util
 
 
 def validate_boundary(reference_intervals, estimated_intervals, trim):
-    """Checks that the input annotations to a segment boundary estimation
+    """Check that the input annotations to a segment boundary estimation
     metric (i.e. one that only takes in segment intervals) look like valid
     segment times, and throws helpful errors if not.
 
@@ -101,9 +101,7 @@ def validate_boundary(reference_intervals, estimated_intervals, trim):
         :func:`mir_eval.io.load_labeled_intervals`.
     trim : bool
         will the start and end events be trimmed?
-
     """
-
     if trim:
         # If we're trimming, then we need at least 2 intervals
         min_size = 2
@@ -124,7 +122,7 @@ def validate_boundary(reference_intervals, estimated_intervals, trim):
 def validate_structure(
     reference_intervals, reference_labels, estimated_intervals, estimated_labels
 ):
-    """Checks that the input annotations to a structure estimation metric (i.e.
+    """Check that the input annotations to a structure estimation metric (i.e.
     one that takes in both segment boundaries and their labels) look like valid
     segment times and labels, and throws helpful errors if not.
 
@@ -226,9 +224,7 @@ def detection(
         recall of reference reference boundaries
     f_measure : float
         F-measure (weighted harmonic mean of ``precision`` and ``recall``)
-
     """
-
     validate_boundary(reference_intervals, estimated_intervals, trim)
 
     # Convert intervals to boundaries
@@ -288,9 +284,7 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
     estimated_to_reference : float
         median time from each estimated boundary to the
         closest reference boundary
-
     """
-
     validate_boundary(reference_intervals, estimated_intervals, trim)
 
     # Convert intervals to boundaries
@@ -471,9 +465,7 @@ def rand_index(
     -------
     rand_index : float > 0
         Rand index
-
     """
-
     validate_structure(
         reference_intervals, reference_labels, estimated_intervals, estimated_labels
     )
@@ -519,7 +511,7 @@ def rand_index(
 
 
 def _contingency_matrix(reference_indices, estimated_indices):
-    """Computes the contingency matrix of a true labeling vs an estimated one.
+    """Compute the contingency matrix of a true labeling vs an estimated one.
 
     Parameters
     ----------
@@ -602,7 +594,7 @@ def ari(
     estimated_labels,
     frame_size=0.1,
 ):
-    """Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
+    """Compute the Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
 
     Examples
     --------
@@ -715,7 +707,7 @@ def _mutual_info_score(reference_indices, estimated_indices, contingency=None):
 
 
 def _entropy(labels):
-    """Calculates the entropy for a labeling.
+    """Calculate the entropy for a labeling.
 
     Parameters
     ----------
@@ -1044,9 +1036,7 @@ def nce(
         If `|y_ref|==1`, then `S_under` will be 0.
     S_F
         F-measure for (S_over, S_under)
-
     """
-
     validate_structure(
         reference_intervals, reference_labels, estimated_intervals, estimated_labels
     )
@@ -1177,9 +1167,7 @@ def vmeasure(
         If `|y_ref|==1`, then `V_recall` will be 0.
     V_F
         F-measure for (V_precision, V_recall)
-
     """
-
     return nce(
         reference_intervals,
         reference_labels,
@@ -1226,9 +1214,7 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     scores : dict
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
-
     """
-
     # Adjust timespan of estimations relative to ground truth
     ref_intervals, ref_labels = util.adjust_intervals(
         ref_intervals, labels=ref_labels, t_min=0.0

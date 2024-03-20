@@ -115,7 +115,7 @@ N_DECIMALS = 4
 
 
 def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
-    """Checks that the input annotations to a metric look like time intervals
+    """Check that the input annotations to a metric look like time intervals
     and a pitch list, and throws helpful errors if not.
 
     Parameters
@@ -146,7 +146,7 @@ def validate(ref_intervals, ref_pitches, est_intervals, est_pitches):
 
 
 def validate_intervals(ref_intervals, est_intervals):
-    """Checks that the input annotations to a metric look like time intervals,
+    """Check that the input annotations to a metric look like time intervals,
     and throws helpful errors if not.
 
     Parameters
