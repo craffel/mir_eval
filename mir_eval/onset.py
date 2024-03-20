@@ -114,7 +114,7 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
         reference onset locations, in seconds
     estimated_onsets : np.ndarray
         estimated onset locations, in seconds
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

@@ -727,7 +727,7 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
         Reference beat times, in seconds
     estimated_beats : np.ndarray
         Query beat times, in seconds
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

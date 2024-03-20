@@ -871,7 +871,7 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl[, nchan])
         matrix containing estimated sources
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

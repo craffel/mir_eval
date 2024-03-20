@@ -68,7 +68,6 @@ def _round(t, frame_size):
     ----------
     t : number or ndarray
         The time-stamp to round
-
     frame_size : number > 0
         The resolution to round to
 
@@ -110,10 +109,8 @@ def _align_intervals(int_hier, lab_hier, t_min=0.0, t_max=None):
         Hierarchical segment annotations, encoded as a
         list of list of intervals (int_hier) and list of
         list of strings (lab_hier)
-
     t_min : None or number >= 0
         The minimum time value for the segmentation
-
     t_max : None or number >= t_min
         The maximum time value for the segmentation
 
@@ -149,7 +146,6 @@ def _lca(intervals_hier, frame_size):
     intervals_hier : list of ndarray
         An ordered list of segment interval arrays.
         The list is assumed to be ordered by increasing specificity (depth).
-
     frame_size : number
         The length of the sample frames (in seconds)
 
@@ -194,11 +190,9 @@ def _meet(intervals_hier, labels_hier, frame_size):
     intervals_hier : list of ndarray
         An ordered list of segment interval arrays.
         The list is assumed to be ordered by increasing specificity (depth).
-
     labels_hier : list of list of str
         ``labels_hier[i]`` contains the segment labels for the
         ``i``th layer of the annotations
-
     frame_size : number
         The length of the sample frames (in seconds)
 
@@ -251,6 +245,7 @@ def _gauc(ref_lca, est_lca, transitive, window):
     Parameters
     ----------
     ref_lca : scipy.sparse
+
     est_lca : scipy.sparse
         The least common ancestor matrices for the reference and
         estimated annotations
@@ -380,7 +375,6 @@ def _compare_frame_rankings(ref, est, transitive=False):
     est : np.ndarray, shape=(n,)
         Reference and estimate ranked lists.
         `ref[i]` is the relevance score for point `i`.
-
     transitive : bool
         If true, all pairs of reference levels are compared.
         If false, only adjacent pairs of reference levels are compared.
@@ -390,7 +384,6 @@ def _compare_frame_rankings(ref, est, transitive=False):
     inversions : int
         The number of pairs of indices `i, j` where
         `ref[i] < ref[j]` but `est[i] >= est[j]`.
-
     normalizer : float
         The total number of pairs (i, j) under consideration.
         If transitive=True, then this is |{(i,j) : ref[i] < ref[j]}|
@@ -493,21 +486,16 @@ def tmeasure(
         (in seconds) for the ``i`` th layer of the annotations.  Layers are
         ordered from top to bottom, so that the last list of intervals should
         be the most specific.
-
     estimated_intervals_hier : list of ndarray
         Like ``reference_intervals_hier`` but for the estimated annotation
-
     transitive : bool
         whether to compute the t-measures using transitivity or not.
-
     window : float > 0
         size of the window (in seconds).  For each query frame q,
         result frames are only counted within q +- window.
-
     frame_size : float > 0
         length (in seconds) of frames.  The frame size cannot be longer than
         the window.
-
     beta : float > 0
         beta parameter for the F-measure.
 
@@ -515,10 +503,8 @@ def tmeasure(
     -------
     t_precision : number [0, 1]
         T-measure Precision
-
     t_recall : number [0, 1]
         T-measure Recall
-
     t_measure : number [0, 1]
         F-beta measure for ``(t_precision, t_recall)``
 
@@ -583,20 +569,16 @@ def lmeasure(
         (in seconds) for the ``i`` th layer of the annotations.  Layers are
         ordered from top to bottom, so that the last list of intervals should
         be the most specific.
-
     reference_labels_hier : list of list of str
         ``reference_labels_hier[i]`` contains the segment labels for the
         ``i``th layer of the annotations
-
     estimated_intervals_hier : list of ndarray
     estimated_labels_hier : list of ndarray
         Like ``reference_intervals_hier`` and ``reference_labels_hier``
         but for the estimated annotation
-
     frame_size : float > 0
         length (in seconds) of frames.  The frame size cannot be longer than
         the window.
-
     beta : float > 0
         beta parameter for the F-measure.
 
@@ -604,10 +586,8 @@ def lmeasure(
     -------
     l_precision : number [0, 1]
         L-measure Precision
-
     l_recall : number [0, 1]
         L-measure Recall
-
     l_measure : number [0, 1]
         F-beta measure for ``(l_precision, l_recall)``
 
@@ -694,7 +674,6 @@ def evaluate(
      'T-Recall full': 0.6523334654992341,
      'T-Recall reduced': 0.60799919710921635}
 
-
     Parameters
     ----------
     ref_intervals_hier : list of list-like
@@ -705,13 +684,12 @@ def evaluate(
         of segmentations.  Each segmentation itself is a list (or list-like)
         of intervals (\*_intervals_hier) and a list of lists of labels
         (\*_labels_hier).
-
-    kwargs
+    **kwargs
         additional keyword arguments to the evaluation metrics.
 
     Returns
     -------
-    scores :  OrderedDict
+    scores : OrderedDict
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
 

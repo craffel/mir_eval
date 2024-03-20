@@ -48,10 +48,10 @@ def validate_key(key):
     The Key can be 'X' if it is not possible to categorize the Key and mode
     can be 'other' if it can't be categorized as major or minor.
 
-     Parameters
-     ----------
-     key : str
-         Key to verify
+    Parameters
+    ----------
+    key : str
+        Key to verify
     """
     if len(key.split()) != 2 and not (len(key.split()) and key.lower() == "x"):
         raise ValueError("'{}' is not in the form '(key) (mode)' " "or 'X'".format(key))
@@ -194,11 +194,9 @@ def evaluate(reference_key, estimated_key, **kwargs):
     ----------
     ref_key : str
         Reference key string.
-
     ref_key : str
         Estimated key string.
-
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

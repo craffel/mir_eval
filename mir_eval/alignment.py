@@ -324,7 +324,7 @@ def evaluate(reference_timestamps, estimated_timestamps, **kwargs):
         reference timestamp locations, in seconds
     estimated_timestamps : np.ndarray
         estimated timestamp locations, in seconds
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

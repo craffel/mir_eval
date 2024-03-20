@@ -76,19 +76,25 @@ def time_frequency(
     frequencies : np.ndarray
         array of size ``gram.shape[0]`` denoting the frequency (in Hz) of
         each row of gram
+
     times : np.ndarray, shape= ``(gram.shape[1],)`` or ``(gram.shape[1], 2)``
         Either the start time (in seconds) of each column in the gram,
         or the time interval (in seconds) corresponding to each column.
+
     fs : int
         desired sampling rate of the output signal
+
     function : function
         function to use to synthesize notes, should be :math:`2\pi`-periodic
+
     length : int
         desired number of samples in the output signal,
         defaults to ``times[-1]*fs``
+
     n_dec : int
         the number of decimals used to approximate each sonfied frequency.
         Defaults to 1 decimal place. Higher precision will be slower.
+
     threshold : float
         optimizes synthesis to only occur for frequencies that have a
         linear magnitude of at least one element in gram above the given threshold.
@@ -217,25 +223,19 @@ def pitch_contour(
     ----------
     times : np.ndarray
         time indices for each frequency measurement, in seconds
-
     frequencies : np.ndarray
         frequency measurements, in Hz.
         Non-positive measurements will be interpreted as un-voiced samples.
-
     fs : int
         desired sampling rate of the output signal
-
     amplitudes : np.ndarray
         amplitude measurements, nonnegative
         defaults to ``np.ones((length,))``
-
     function : function
         function to use to synthesize notes, should be :math:`2\pi`-periodic
-
     length : int
         desired number of samples in the output signal,
         defaults to ``max(times)*fs``
-
     kind : str
         Interpolation mode for the frequency and amplitude values.
         See: ``scipy.interpolate.interp1d`` for valid settings.
@@ -295,12 +295,12 @@ def chroma(chromagram, times, fs, **kwargs):
         Chromagram matrix, where each row represents a semitone [C->Bb]
         i.e., ``chromagram[3, j]`` is the magnitude of D# from ``times[j]`` to
         ``times[j + 1]``
-    times: np.ndarray, shape=(len(chord_labels),) or (len(chord_labels), 2)
+    times : np.ndarray, shape=(len(chord_labels),) or (len(chord_labels), 2)
         Either the start time of each column in the chromagram,
         or the time interval corresponding to each column.
     fs : int
         Sampling rate to synthesize audio data at
-    kwargs
+    **kwargs
         Additional keyword arguments to pass to
         :func:`mir_eval.sonify.time_frequency`
 
@@ -344,7 +344,7 @@ def chords(chord_labels, intervals, fs, **kwargs):
         Start and end times of each chord label
     fs : int
         Sampling rate to synthesize at
-    kwargs
+    **kwargs
         Additional keyword arguments to pass to
         :func:`mir_eval.sonify.time_frequency`
 

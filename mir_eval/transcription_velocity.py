@@ -380,7 +380,7 @@ def evaluate(
         Array of estimated pitch values in Hertz
     est_velocities : np.ndarray, shape=(n,)
         Array of MIDI velocities (i.e. between 0 and 127) of estimated notes
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

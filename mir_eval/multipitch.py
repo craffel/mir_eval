@@ -372,7 +372,7 @@ def metrics(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
         Time of each estimated frequency value
     est_freqs : list of np.ndarray
         List of np.ndarrays of estimate frequency values
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 
@@ -500,7 +500,7 @@ def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
         Time of each estimated frequency value
     est_freqs : list of np.ndarray
         List of np.ndarrays of estimate frequency values
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

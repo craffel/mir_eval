@@ -66,7 +66,7 @@ def _n_onset_midi(patterns):
 
     Parameters
     ----------
-    patterns :
+    patterns
         A list of patterns using the format returned by
         :func:`mir_eval.io.load_patterns()`
 
@@ -93,6 +93,7 @@ def validate(reference_patterns, estimated_patterns):
 
     Returns
     -------
+
 
     """
     # Warn if pattern lists are empty
@@ -252,7 +253,6 @@ def establishment_FPR(
     >>> F, P, R = mir_eval.pattern.establishment_FPR(ref_patterns,
     ...                                              est_patterns)
 
-
     Parameters
     ----------
     reference_patterns : list
@@ -270,7 +270,6 @@ def establishment_FPR(
               between occurrences.
 
         (Default value = "cardinality_score")
-
 
     Returns
     -------
@@ -311,7 +310,6 @@ def occurrence_FPR(
 ):
     """Establishment F1 Score, Precision and Recall.
 
-
     Examples
     --------
     >>> ref_patterns = mir_eval.io.load_patterns("ref_pattern.txt")
@@ -319,18 +317,20 @@ def occurrence_FPR(
     >>> F, P, R = mir_eval.pattern.occurrence_FPR(ref_patterns,
     ...                                           est_patterns)
 
-
     Parameters
     ----------
     reference_patterns : list
         The reference patterns in the format returned by
         :func:`mir_eval.io.load_patterns()`
+
     estimated_patterns : list
         The estimated patterns in the same format
+
     thres : float
         How similar two occcurrences must be in order to be considered
         equal
         (Default value = .75)
+
     similarity_metric : str
         A string representing the metric to be used
         when computing the similarity matrix. Accepted values:
@@ -339,7 +339,6 @@ def occurrence_FPR(
               between occurrences.
 
         (Default value = "cardinality_score")
-
 
     Returns
     -------
@@ -424,13 +423,12 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
 
         Parameters
         ----------
-        ref_occs :
-
-        est_occs :
-
+        ref_occs
+        est_occs
 
         Returns
         -------
+
 
         """
         # Find the length of the intersection between reference and estimation
@@ -448,13 +446,12 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
 
         Parameters
         ----------
-        ref_pattern :
-
-        est_pattern :
-
+        ref_pattern
+        est_pattern
 
         Returns
         -------
+
 
         """
         # Compute the first layer scores
@@ -475,15 +472,14 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
 
         Parameters
         ----------
-        ref_elements :
-
-        est_elements :
-
-        layer :
-             (Default value = 1)
+        ref_elements
+        est_elements
+        layer
+            (Default value = 1)
 
         Returns
         -------
+
 
         """
         if layer != 1 and layer != 2:
@@ -626,7 +622,7 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
         :func:`mir_eval.io.load_patterns()`
     est_patterns : list
         The estimated patterns in the same format
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

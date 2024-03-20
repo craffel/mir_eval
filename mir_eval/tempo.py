@@ -34,7 +34,6 @@ def validate_tempi(tempi, reference=True):
     ----------
     tempi : np.ndarray
         length-2 array of tempo, in bpm
-
     reference : bool
         indicates a reference value
 
@@ -60,10 +59,8 @@ def validate(reference_tempi, reference_weight, estimated_tempi):
     ----------
     reference_tempi : np.ndarray
         reference tempo values, in bpm
-
     reference_weight : float
         perceptual weight of slow vs fast in reference
-
     estimated_tempi : np.ndarray
         estimated tempo values, in bpm
 
@@ -82,14 +79,11 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     ----------
     reference_tempi : np.ndarray, shape=(2,)
         Two non-negative reference tempi
-
     reference_weight : float > 0
         The relative strength of ``reference_tempi[0]`` vs
         ``reference_tempi[1]``.
-
     estimated_tempi : np.ndarray, shape=(2,)
         Two non-negative estimated tempi.
-
     tol : float in [0, 1]:
         The maximum allowable deviation from a reference tempo to
         count as a hit.
@@ -101,10 +95,8 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     p_score : float in [0, 1]
         Weighted average of recalls:
         ``reference_weight * hits[0] + (1 - reference_weight) * hits[1]``
-
     one_correct : bool
         True if at least one reference tempo was correctly estimated
-
     both_correct : bool
         True if both reference tempi were correctly estimated
 
@@ -153,15 +145,12 @@ def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
     ----------
     reference_tempi : np.ndarray, shape=(2,)
         Two non-negative reference tempi
-
     reference_weight : float > 0
         The relative strength of ``reference_tempi[0]`` vs
         ``reference_tempi[1]``.
-
     estimated_tempi : np.ndarray, shape=(2,)
         Two non-negative estimated tempi.
-
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

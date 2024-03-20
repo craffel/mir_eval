@@ -652,7 +652,6 @@ def onset_precision_recall_f1(
     different pitches (i.e. notes that would not match with
     :func:`match_notes`).
 
-
     Examples
     --------
     >>> ref_intervals, _ = mir_eval.io.load_valued_intervals(
@@ -720,7 +719,6 @@ def offset_precision_recall_f1(
     reference offset, even if the offsets come from notes with completely
     different pitches (i.e. notes that would not match with
     :func:`match_notes`).
-
 
     Examples
     --------
@@ -806,7 +804,7 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
         Array of estimated notes time intervals (onset and offset times)
     est_pitches : np.ndarray, shape=(m,)
         Array of estimated pitch values in Hertz
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

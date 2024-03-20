@@ -48,12 +48,15 @@ def load_delimited(filename, converters, delimiter=r"\s+", comment="#"):
     ----------
     filename : str
         Path to the annotation file
+
     converters : list of functions
         Each entry in column ``n`` of the file will be cast by the function
         ``converters[n]``.
+
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+
     comment : str or None
         Comment regular expression.
         Any lines beginning with this string or pattern will be ignored.
@@ -132,9 +135,11 @@ def load_events(filename, delimiter=r"\s+", comment="#"):
     ----------
     filename : str
         Path to the annotation file
+
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+
     comment : str or None
         Comment regular expression.
         Any lines beginning with this string or pattern will be ignored.
@@ -170,9 +175,11 @@ def load_labeled_events(filename, delimiter=r"\s+", comment="#"):
     ----------
     filename : str
         Path to the annotation file
+
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+
     comment : str or None
         Comment regular expression.
         Any lines beginning with this string or pattern will be ignored.
@@ -211,9 +218,11 @@ def load_intervals(filename, delimiter=r"\s+", comment="#"):
     ----------
     filename : str
         Path to the annotation file
+
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+
     comment : str or None
         Comment regular expression.
         Any lines beginning with this string or pattern will be ignored.
@@ -252,9 +261,11 @@ def load_labeled_intervals(filename, delimiter=r"\s+", comment="#"):
     ----------
     filename : str
         Path to the annotation file
+
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+
     comment : str or None
         Comment regular expression.
         Any lines beginning with this string or pattern will be ignored.
@@ -293,9 +304,11 @@ def load_time_series(filename, delimiter=r"\s+", comment="#"):
     ----------
     filename : str
         Path to the annotation file
+
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+
     comment : str or None
         Comment regular expression.
         Any lines beginning with this string or pattern will be ignored.
@@ -447,9 +460,11 @@ def load_valued_intervals(filename, delimiter=r"\s+", comment="#"):
     ----------
     filename : str
         Path to the annotation file
+
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+
     comment : str or None
         Comment regular expression.
         Any lines beginning with this string or pattern will be ignored.
@@ -492,9 +507,11 @@ def load_key(filename, delimiter=r"\s+", comment="#"):
     ----------
     filename : str
         Path to the annotation file
+
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+
     comment : str or None
         Comment regular expression.
         Any lines beginning with this string or pattern will be ignored.
@@ -536,9 +553,11 @@ def load_tempo(filename, delimiter=r"\s+", comment="#"):
     ----------
     filename : str
         Path to the annotation file
+
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+
     comment : str or None
         Comment regular expression.
         Any lines beginning with this string or pattern will be ignored.
@@ -549,7 +568,6 @@ def load_tempo(filename, delimiter=r"\s+", comment="#"):
     -------
     tempi : np.ndarray, non-negative
         The two tempo estimates
-
     weight : float [0, 1]
         The relative importance of ``tempi[0]`` compared to ``tempi[1]``
     """
@@ -597,14 +615,18 @@ def load_ragged_time_series(
     ----------
     filename : str
         Path to the annotation file
+
     dtype : function
         Data type to apply to values columns.
+
     delimiter : str
         Separator regular expression.
         By default, lines will be split by any amount of whitespace.
+
     header : bool
         Indicates whether a header row is present or not.
         By default, assumes no header is present.
+
     comment : str or None
         Comment regular expression.
         Any lines beginning with this string or pattern will be ignored.

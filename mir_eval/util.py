@@ -17,7 +17,6 @@ def index_labels(labels, case_sensitive=False):
     labels : list of strings, shape=(n,)
         A list of annotations, e.g., segment or chord labels from an
         annotation file.
-
     case_sensitive : bool
         Set to True to enable case-sensitive label indexing
         (Default value = False)
@@ -83,18 +82,14 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1, fill_valu
         :func:`mir_eval.io.load_labeled_intervals()`.
         The ``i`` th interval spans time ``intervals[i, 0]`` to
         ``intervals[i, 1]``.
-
     labels : list, shape=(n,)
         The annotation for each interval
-
     offset : float > 0
         Phase offset of the sampled time grid (in seconds)
         (Default value = 0)
-
     sample_size : float > 0
         duration of each sample to be generated (in seconds)
         (Default value = 0.1)
-
     fill_value : type(labels[0])
         Object to use for the label with out-of-range time points.
         (Default value = None)
@@ -103,7 +98,6 @@ def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1, fill_valu
     -------
     sample_times : list
         list of sample times
-
     sample_labels : list
         array of labels for each generated sample
 
@@ -185,7 +179,6 @@ def sort_labeled_intervals(intervals, labels=None):
     ----------
     intervals : np.ndarray, shape=(n, 2)
         The input intervals
-
     labels : list, optional
         Labels for each interval
 
@@ -477,11 +470,11 @@ def intersect_files(flist1, flist2):
 
         Parameters
         ----------
-        abs_path :
-
+        abs_path
 
         Returns
         -------
+
 
         """
         return os.path.splitext(os.path.split(abs_path)[-1])[0]

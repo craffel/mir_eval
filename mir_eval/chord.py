@@ -177,7 +177,7 @@ def scale_degree_to_semitone(scale_degree):
 
     Parameters
     ----------
-    scale degree : str
+    scale_degree : str
         Spelling of a relative scale degree, e.g. 'b3', '7', '#5'
 
     Returns
@@ -345,7 +345,7 @@ def validate_chord_label(chord_label):
 
     Parameters
     ----------
-    chord : str
+    chord_label : str
         Chord label to validate.
 
     """
@@ -1551,20 +1551,16 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     ref_intervals : np.ndarray, shape=(n, 2)
         Reference chord intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-
     ref_labels : list, shape=(n,)
         reference chord labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-
     est_intervals : np.ndarray, shape=(m, 2)
         estimated chord intervals, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-
     est_labels : list, shape=(m,)
         estimated chord labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
-
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

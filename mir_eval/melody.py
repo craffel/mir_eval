@@ -142,10 +142,6 @@ def hz2cents(freq_hz, base_frequency=10.0):
     base_frequency : float
         Base frequency for conversion.
         (Default value = 10.0)
-    Returns
-    -------
-    freq_cent : np.ndarray
-        Array of frequencies in cents, relative to base_frequency
     """
     freq_cent = np.zeros(freq_hz.shape[0])
     freq_nonz_ind = np.flatnonzero(freq_hz)
@@ -619,7 +615,6 @@ def raw_chroma_accuracy(
     >>> raw_chroma = mir_eval.melody.raw_chroma_accuracy(ref_v, ref_c,
     ...                                                  est_v, est_c)
 
-
     Parameters
     ----------
     ref_voicing : np.ndarray
@@ -780,7 +775,7 @@ def evaluate(
     ref_reward : np.ndarray
         Reference pitch estimation reward.
         Default None, which means all frames are weighted equally.
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 
@@ -790,14 +785,12 @@ def evaluate(
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
 
-
     References
     ----------
     .. [#] J. Salamon, E. Gomez, D. P. W. Ellis and G. Richard, "Melody
         Extraction from Polyphonic Music Signals: Approaches, Applications
         and Challenges", IEEE Signal Processing Magazine, 31(2):118-134,
         Mar. 2014.
-
 
     .. [#] G. E. Poliner, D. P. W. Ellis, A. F. Ehmann, E. Gomez, S.
         Streich, and B. Ong. "Melody transcription from music audio:
