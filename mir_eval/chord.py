@@ -129,7 +129,7 @@ def _pitch_classes():
 
 
 def _scale_degrees():
-    r"""Mapping from scale degrees (str) to semitones (int)."""
+    r"""Map scale degrees (str) to semitones (int)."""
     degrees = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
     semitones = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21]
     return dict([(d, s) for d, s in zip(degrees, semitones)])
@@ -347,9 +347,7 @@ def validate_chord_label(chord_label):
     ----------
     chord_label : str
         Chord label to validate.
-
     """
-
     # This monster regexp is pulled from the JAMS chord namespace,
     # which is in turn derived from the context-free grammar of
     # Harte et al., 2005.
@@ -496,9 +494,7 @@ def encode(chord_label, reduce_extended_chords=False, strict_bass_intervals=Fals
         12-dim vector of relative semitones in the chord spelling.
     bass_number : int
         Relative semitone of the chord's bass note, e.g. 0=root, 7=fifth, etc.
-
     """
-
     if chord_label == NO_CHORD:
         return NO_CHORD_ENCODED
     if chord_label == X_CHORD:
@@ -624,7 +620,7 @@ def rotate_bitmaps_to_roots(bitmaps, roots):
 
 # --- Comparison Routines ---
 def validate(reference_labels, estimated_labels):
-    """Checks that the input annotations to a comparison function look like
+    """Check that the input annotations to a comparison function look like
     valid chord labels.
 
     Parameters
@@ -633,7 +629,6 @@ def validate(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
-
     """
     N = len(reference_labels)
     M = len(estimated_labels)
@@ -1038,9 +1033,7 @@ def root(reference_labels, estimated_labels):
     comparison_scores : np.ndarray, shape=(n,), dtype=float
         Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
         gamut.
-
     """
-
     validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots = encode_many(estimated_labels, False)[0]
@@ -1491,7 +1484,6 @@ def seg(reference_intervals, estimated_intervals):
     segmentation score : float
         Comparison score, in [0.0, 1.0], where 1.0 means perfect segmentation.
     """
-
     return min(
         underseg(reference_intervals, estimated_intervals),
         overseg(reference_intervals, estimated_intervals),
@@ -1534,7 +1526,7 @@ def merge_chord_intervals(intervals, labels):
 
 
 def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
-    """Computes weighted accuracy for all comparison functions for the given
+    """Compute weighted accuracy for all comparison functions for the given
     reference and estimated annotations.
 
     Examples
