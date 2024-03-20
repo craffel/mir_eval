@@ -442,7 +442,7 @@ def voicing_recall(ref_voicing, est_voicing):
         Reference boolean voicing array
     est_voicing : np.ndarray
         Estimated boolean voicing array
-    
+
     Returns
     -------
     vx_recall : float
@@ -472,14 +472,14 @@ def voicing_false_alarm(ref_voicing, est_voicing):
     ...                                                  est_time,
     ...                                                  est_freq)
     >>> false_alarm = mir_eval.melody.voicing_false_alarm(ref_v, est_v)
-    
+
     Parameters
     ----------
     ref_voicing : np.ndarray
         Reference boolean voicing array
     est_voicing : np.ndarray
         Estimated boolean voicing array
-    
+
     Returns
     -------
     vx_false_alarm : float
@@ -498,7 +498,7 @@ def voicing_measures(ref_voicing, est_voicing):
     """Compute the voicing recall and false alarm rates given two voicing
     indicator sequences, one as reference (truth) and the other as the estimate
     (prediction).  The sequences must be of the same length.
-    
+
     Examples
     --------
     >>> ref_time, ref_freq = mir_eval.io.load_time_series('ref.txt')
@@ -510,14 +510,14 @@ def voicing_measures(ref_voicing, est_voicing):
     ...                                                  est_freq)
     >>> recall, false_alarm = mir_eval.melody.voicing_measures(ref_v,
     ...                                                        est_v)
-    
+
     Parameters
     ----------
     ref_voicing : np.ndarray
         Reference boolean voicing array
     est_voicing : np.ndarray
         Estimated boolean voicing array
-    
+
     Returns
     -------
     vx_recall : float

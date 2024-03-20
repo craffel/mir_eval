@@ -591,7 +591,8 @@ def load_ragged_time_series(
 ):
     r"""Load data from a delimited time series annotation file with
     a variable number of columns.
-    This function assumes that column 0 contains time stamps and 
+
+    This function assumes that column 0 contains time stamps and
     columns 1 through n contain values.
     n may be variable from time stamp to time stamp.
 
