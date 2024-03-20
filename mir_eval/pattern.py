@@ -62,7 +62,7 @@ import collections
 
 
 def _n_onset_midi(patterns):
-    """Computes the number of onset_midi objects in a pattern
+    """Compute the number of onset_midi objects in a pattern
 
     Parameters
     ----------
@@ -80,7 +80,7 @@ def _n_onset_midi(patterns):
 
 
 def validate(reference_patterns, estimated_patterns):
-    """Checks that the input annotations to a metric look like valid pattern
+    """Check that the input annotations to a metric look like valid pattern
     lists, and throws helpful errors if not.
 
     Parameters
@@ -90,11 +90,6 @@ def validate(reference_patterns, estimated_patterns):
         :func:`mir_eval.io.load_patterns()`
     estimated_patterns : list
         The estimated patterns in the same format
-
-    Returns
-    -------
-
-
     """
     # Warn if pattern lists are empty
     if _n_onset_midi(reference_patterns) == 0:
@@ -117,7 +112,7 @@ def validate(reference_patterns, estimated_patterns):
 
 
 def _occurrence_intersection(occ_P, occ_Q):
-    """Computes the intersection between two occurrences.
+    """Compute the intersection between two occurrences.
 
     Parameters
     ----------
@@ -138,7 +133,7 @@ def _occurrence_intersection(occ_P, occ_Q):
 
 
 def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
-    """Computes the score matrix between the patterns P and Q.
+    """Compute the score matrix between the patterns P and Q.
 
     Parameters
     ----------
@@ -175,7 +170,7 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
 
 
 def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
-    """Standard F1 Score, Precision and Recall.
+    """Compute the standard F1 Score, Precision and Recall.
 
     This metric checks if the prototype patterns of the reference match
     possible translated patterns in the prototype patterns of the estimations.
@@ -244,7 +239,7 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
 def establishment_FPR(
     reference_patterns, estimated_patterns, similarity_metric="cardinality_score"
 ):
-    """Establishment F1 Score, Precision and Recall.
+    """Compute the establishment F1 Score, Precision and Recall.
 
     Examples
     --------
@@ -308,7 +303,7 @@ def occurrence_FPR(
     thres=0.75,
     similarity_metric="cardinality_score",
 ):
-    """Establishment F1 Score, Precision and Recall.
+    """Compute the occurrence F1 Score, Precision and Recall.
 
     Examples
     --------
@@ -327,7 +322,7 @@ def occurrence_FPR(
         The estimated patterns in the same format
 
     thres : float
-        How similar two occcurrences must be in order to be considered
+        How similar two occurrences must be in order to be considered
         equal
         (Default value = .75)
 
@@ -343,12 +338,11 @@ def occurrence_FPR(
     Returns
     -------
     f_measure : float
-        The establishment F1 Score
+        The occurrence F1 Score
     precision : float
-        The establishment Precision
+        The occurrence Precision
     recall : float
-        The establishment Recall
-
+        The occurrence Recall
     """
     validate(reference_patterns, estimated_patterns)
     # Number of elements in reference
@@ -417,7 +411,7 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
     validate(reference_patterns, estimated_patterns)
 
     def compute_first_layer_PR(ref_occs, est_occs):
-        """Computes the first layer Precision and Recall values given the
+        """Compute the first layer Precision and Recall values given the
         set of occurrences in the reference and the set of occurrences in the
         estimation.
 
@@ -428,8 +422,8 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
 
         Returns
         -------
-
-
+        precision
+        recall
         """
         # Find the length of the intersection between reference and estimation
         s = len(_occurrence_intersection(ref_occs, est_occs))
@@ -440,7 +434,7 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         return precision, recall
 
     def compute_second_layer_PR(ref_pattern, est_pattern):
-        """Computes the second layer Precision and Recall values given the
+        """Compute the second layer Precision and Recall values given the
         set of occurrences in the reference and the set of occurrences in the
         estimation.
 
@@ -451,8 +445,8 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
 
         Returns
         -------
-
-
+        precision
+        recall
         """
         # Compute the first layer scores
         F_1 = compute_layer(ref_pattern, est_pattern)
@@ -463,7 +457,7 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         return precision, recall
 
     def compute_layer(ref_elements, est_elements, layer=1):
-        """Computes the F-measure matrix for a given layer. The reference and
+        """Compute the F-measure matrix for a given layer. The reference and
         estimated elements can be either patterns or occurrences, depending
         on the layer.
 
@@ -479,8 +473,7 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
 
         Returns
         -------
-
-
+        F : F-measure for the given layer
         """
         if layer != 1 and layer != 2:
             raise ValueError("Layer (%d) must be an integer between 1 and 2" % layer)
@@ -544,9 +537,7 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
     -------
     precision : float
         The first n three-layer Precision
-
     """
-
     validate(reference_patterns, estimated_patterns)
     # If no patterns were provided, metric is zero
     if _n_onset_midi(reference_patterns) == 0 or _n_onset_midi(estimated_patterns) == 0:
@@ -591,9 +582,7 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
     -------
     recall : float
         The first n target proportion Recall.
-
     """
-
     validate(reference_patterns, estimated_patterns)
     # If no patterns were provided, metric is zero
     if _n_onset_midi(reference_patterns) == 0 or _n_onset_midi(estimated_patterns) == 0:
@@ -631,9 +620,7 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
     scores : dict
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
-
     """
-
     # Compute all the metrics
     scores = collections.OrderedDict()
 
