@@ -54,7 +54,6 @@ Metrics
   relevance.
 """
 
-
 import numpy as np
 from . import util
 import warnings
