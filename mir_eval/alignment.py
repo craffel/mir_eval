@@ -57,7 +57,7 @@ from mir_eval.util import filter_kwargs
 
 
 def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray):
-    """Checks that the input annotations to a metric look like valid onset time
+    """Check that the input annotations to a metric look like valid onset time
     arrays, and throws helpful errors if not.
 
     Parameters
@@ -175,7 +175,7 @@ def percentage_correct(reference_timestamps, estimated_timestamps, window=0.3):
 def percentage_correct_segments(
     reference_timestamps, estimated_timestamps, duration: Optional[float] = None
 ):
-    """Calculates the percentage of correct segments (PCS) metric.
+    """Calculate the percentage of correct segments (PCS) metric.
 
     It constructs segments out of predicted and estimated timestamps separately
     out of each given timestamp vector and calculates the percentage of overlap between correct
@@ -311,6 +311,7 @@ def karaoke_perceptual_metric(reference_timestamps, estimated_timestamps):
 
 def evaluate(reference_timestamps, estimated_timestamps, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
+
     Examples
     --------
     >>> reference_timestamps = mir_eval.io.load_events('reference.txt')

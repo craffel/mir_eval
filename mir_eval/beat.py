@@ -1,4 +1,4 @@
-"""
+r"""
 The aim of a beat detection algorithm is to report the times at which a typical
 human listener might tap their foot to a piece of music. As a result, most
 metrics for evaluating the performance of beat tracking systems involve
@@ -55,7 +55,7 @@ MAX_TIME = 30000.0
 
 
 def trim_beats(beats, min_beat_time=5.0):
-    """Removes beats before min_beat_time.  A common preprocessing step.
+    """Remove beats before min_beat_time.  A common preprocessing step.
 
     Parameters
     ----------
@@ -75,7 +75,7 @@ def trim_beats(beats, min_beat_time=5.0):
 
 
 def validate(reference_beats, estimated_beats):
-    """Checks that the input annotations to a metric look like valid beat time
+    """Check that the input annotations to a metric look like valid beat time
     arrays, and throws helpful errors if not.
 
     Parameters
@@ -115,9 +115,7 @@ def _get_reference_beat_variations(reference_beats):
         Half tempo, odd beats
     half_even : np.ndarray
         Half tempo, even beats
-
     """
-
     # Create annotations at twice the metric level
     interpolated_indices = np.arange(0, reference_beats.shape[0] - 0.5, 0.5)
     original_indices = np.arange(0, reference_beats.shape[0])
@@ -651,8 +649,11 @@ def information_gain(reference_beats, estimated_beats, bins=41):
 
 
 def _get_entropy(reference_beats, estimated_beats, bins):
-    """Helper function for information gain
-    (needs to be run twice - once backwards, once forwards)
+    """Compute the entropy of the beat error histogram.
+
+    This is a helper function for the information gain
+    metric, and needs to be run twice: once backwards, once
+    forwards.
 
     Parameters
     ----------
@@ -667,7 +668,6 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     -------
     entropy : float
         Entropy of beat error histogram
-
     """
     beat_error = np.zeros(estimated_beats.shape[0])
     for n in range(estimated_beats.shape[0]):
@@ -738,7 +738,6 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
         the value is the (float) score achieved.
 
     """
-
     # Trim beat times at the beginning of the annotations
     reference_beats = util.filter_kwargs(trim_beats, reference_beats, **kwargs)
     estimated_beats = util.filter_kwargs(trim_beats, estimated_beats, **kwargs)
