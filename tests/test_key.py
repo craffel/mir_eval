@@ -1,6 +1,6 @@
-'''
+"""
 Tests for mir_eval.key
-'''
+"""
 
 import mir_eval
 import pytest
@@ -11,9 +11,9 @@ import numpy as np
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'data/key/ref*.txt'
-EST_GLOB = 'data/key/est*.txt'
-SCORES_GLOB = 'data/key/output*.json'
+REF_GLOB = "data/key/ref*.txt"
+EST_GLOB = "data/key/est*.txt"
+SCORES_GLOB = "data/key/output*.json"
 
 ref_files = sorted(glob.glob(REF_GLOB))
 est_files = sorted(glob.glob(EST_GLOB))
@@ -23,12 +23,13 @@ assert len(ref_files) == len(est_files) == len(sco_files) > 0
 file_sets = list(zip(ref_files, est_files, sco_files))
 
 
-@pytest.mark.parametrize('good_key', [
-                'C major', 'c major', 'C# major', 'Bb minor',
-                'db minor', 'X', 'x', 'C other'])
-@pytest.mark.parametrize('bad_key', [
-                'C maj', 'Cb major', 'C', 'K major', 'F## minor'
-                'X other', 'x minor'])
+@pytest.mark.parametrize(
+    "good_key",
+    ["C major", "c major", "C# major", "Bb minor", "db minor", "X", "x", "C other"],
+)
+@pytest.mark.parametrize(
+    "bad_key", ["C maj", "Cb major", "C", "K major", "F## minor" "X other", "x minor"]
+)
 def test_key_function_fail(good_key, bad_key):
     score = mir_eval.key.weighted_score(good_key, good_key)
     assert score == 1.0

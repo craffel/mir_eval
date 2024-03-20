@@ -27,7 +27,9 @@ file_sets = list(zip(ref_files, est_files, sco_files))
 
 
 @pytest.mark.xfail(raises=ValueError)
-@pytest.mark.parametrize('metric', [
+@pytest.mark.parametrize(
+    "metric",
+    [
         mir_eval.alignment.absolute_error,
         mir_eval.alignment.percentage_correct,
         mir_eval.alignment.percentage_correct_segments,
@@ -36,14 +38,27 @@ file_sets = list(zip(ref_files, est_files, sco_files))
                 ref_ts, est_ts, duration=max(np.max(ref_ts), np.max(est_ts))
             )
         ),
-        mir_eval.alignment.karaoke_perceptual_metric
-        ])
-@pytest.mark.parametrize('est_alignment, pred_alignment',
-        [(np.array([[1.0, 2.0]]), np.array([[1.0, 2.0]])),  # alignments must be 1d ndarray
-         (np.array([[-1.0, 2.0]]), np.array([[1.0, 2.0]])),  # alignments must be non-negative
-         (np.array([[2.0, 1.0]]), np.array([[1.0, 2.0]])),  # alignments must be sorted
-         (np.array([[1.0, 2.0]]), np.array([[1.0]])),  # alignments must have the same length
-])
+        mir_eval.alignment.karaoke_perceptual_metric,
+    ],
+)
+@pytest.mark.parametrize(
+    "est_alignment, pred_alignment",
+    [
+        (
+            np.array([[1.0, 2.0]]),
+            np.array([[1.0, 2.0]]),
+        ),  # alignments must be 1d ndarray
+        (
+            np.array([[-1.0, 2.0]]),
+            np.array([[1.0, 2.0]]),
+        ),  # alignments must be non-negative
+        (np.array([[2.0, 1.0]]), np.array([[1.0, 2.0]])),  # alignments must be sorted
+        (
+            np.array([[1.0, 2.0]]),
+            np.array([[1.0]]),
+        ),  # alignments must have the same length
+    ],
+)
 def test_alignment_functions_fail(metric, est_alignment, pred_alignment):
     metric(est_alignment, pred_alignment)
 
@@ -61,11 +76,8 @@ def alignment_data(request):
 
 @pytest.mark.parametrize("alignment_data", file_sets, indirect=True)
 def test_alignment_functions(alignment_data):
-
     reference_alignments, estimated_alignments, expected_scores = alignment_data
-    scores = mir_eval.alignment.evaluate(
-        reference_alignments, estimated_alignments
-    )
+    scores = mir_eval.alignment.evaluate(reference_alignments, estimated_alignments)
 
     assert scores.keys() == expected_scores.keys()
     for metric in scores:

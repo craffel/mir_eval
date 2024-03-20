@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-'''
+"""
 Unit tests for mir_eval.tempo
-'''
+"""
 import numpy as np
 import mir_eval
 import json
@@ -12,9 +12,9 @@ import pytest
 A_TOL = 1e-12
 
 
-REF_GLOB = 'data/tempo/ref*.lab'
-EST_GLOB = 'data/tempo/est*.lab'
-SCORES_GLOB = 'data/tempo/output*.json'
+REF_GLOB = "data/tempo/ref*.lab"
+EST_GLOB = "data/tempo/est*.lab"
+SCORES_GLOB = "data/tempo/output*.json"
 
 ref_files = sorted(glob.glob(REF_GLOB))
 est_files = sorted(glob.glob(EST_GLOB))
@@ -47,7 +47,9 @@ def test_zero_tolerance_pass():
     good_est = np.array([120, 180])
     zero_tol = 0.0
 
-    with pytest.warns(UserWarning, match='A tolerance of 0.0 may not lead to the results you expect'):
+    with pytest.warns(
+        UserWarning, match="A tolerance of 0.0 may not lead to the results you expect"
+    ):
         mir_eval.tempo.detection(good_ref, good_weight, good_est, tol=zero_tol)
 
 
@@ -57,43 +59,46 @@ def test_tempo_pass():
     good_est = np.array([120, 180])
     good_tol = 0.08
 
-    for good_tempo in [np.array([50, 50]), np.array([0, 50]),
-                       np.array([50, 0])]:
-        mir_eval.tempo.detection(good_tempo,
-            good_weight, good_est, good_tol)
-        mir_eval.tempo.detection(good_ref,\
-            good_weight, good_tempo, good_tol)
+    for good_tempo in [np.array([50, 50]), np.array([0, 50]), np.array([50, 0])]:
+        mir_eval.tempo.detection(good_tempo, good_weight, good_est, good_tol)
+        mir_eval.tempo.detection(good_ref, good_weight, good_tempo, good_tol)
 
     # allow both estimates to be zero
-    mir_eval.tempo.detection(good_ref,
-        good_weight, np.array([0, 0]), good_tol)
+    mir_eval.tempo.detection(good_ref, good_weight, np.array([0, 0]), good_tol)
 
 
 @pytest.mark.xfail(raises=ValueError)
 def test_tempo_zero_ref():
     # Both references cannot be zero
-    mir_eval.tempo.detection(np.array([0., 0.]), 0.5, np.array([60, 120]))
+    mir_eval.tempo.detection(np.array([0.0, 0.0]), 0.5, np.array([60, 120]))
 
 
 @pytest.mark.xfail(raises=ValueError)
-@pytest.mark.parametrize('weight', [-1, 1.5])
+@pytest.mark.parametrize("weight", [-1, 1.5])
 def test_tempo_weight_range(weight):
     # Weight needs to be in the range [0, 1]
     mir_eval.tempo.detection(np.array([60, 120]), weight, np.array([120, 180]))
 
 
 @pytest.mark.xfail(raises=ValueError)
-@pytest.mark.parametrize('tol', [-1, 1.5])
+@pytest.mark.parametrize("tol", [-1, 1.5])
 def test_tempo_tol_range(tol):
     # Weight needs to be in the range [0, 1]
     mir_eval.tempo.detection(np.array([60, 120]), 0.5, np.array([120, 180]), tol=tol)
 
 
 @pytest.mark.xfail(raises=ValueError)
-@pytest.mark.parametrize('bad_tempo', [np.array([-1, -1]), np.array([-1, 0]),
-                      np.array([-1, 50]), np.array([0, 1, 2]), np.array([0])])
+@pytest.mark.parametrize(
+    "bad_tempo",
+    [
+        np.array([-1, -1]),
+        np.array([-1, 0]),
+        np.array([-1, 50]),
+        np.array([0, 1, 2]),
+        np.array([0]),
+    ],
+)
 def test_tempo_fail_bad_reftempo(bad_tempo):
-
     good_ref = np.array([60, 120])
     good_est = np.array([120, 180])
 
@@ -101,10 +106,17 @@ def test_tempo_fail_bad_reftempo(bad_tempo):
 
 
 @pytest.mark.xfail(raises=ValueError)
-@pytest.mark.parametrize('bad_tempo', [np.array([-1, -1]), np.array([-1, 0]),
-                      np.array([-1, 50]), np.array([0, 1, 2]), np.array([0])])
+@pytest.mark.parametrize(
+    "bad_tempo",
+    [
+        np.array([-1, -1]),
+        np.array([-1, 0]),
+        np.array([-1, 50]),
+        np.array([0, 1, 2]),
+        np.array([0]),
+    ],
+)
 def test_tempo_fail_bad_esttempo(bad_tempo):
-
     good_ref = np.array([60, 120])
     good_est = np.array([120, 180])
 

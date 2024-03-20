@@ -11,9 +11,9 @@ import pytest
 A_TOL = 1e-12
 
 # Path to the fixture files
-REF_GLOB = 'data/pattern/ref*.txt'
-EST_GLOB = 'data/pattern/est*.txt'
-SCORES_GLOB = 'data/pattern/output*.json'
+REF_GLOB = "data/pattern/ref*.txt"
+EST_GLOB = "data/pattern/est*.txt"
+SCORES_GLOB = "data/pattern/output*.json"
 
 ref_files = sorted(glob.glob(REF_GLOB))
 est_files = sorted(glob.glob(EST_GLOB))
@@ -35,46 +35,64 @@ def pattern_data(request):
     return reference_patterns, estimated_patterns, expected_scores
 
 
-@pytest.mark.parametrize('metric', [mir_eval.pattern.standard_FPR,
-                   mir_eval.pattern.establishment_FPR,
-                   mir_eval.pattern.occurrence_FPR,
-                   mir_eval.pattern.three_layer_FPR,
-                   mir_eval.pattern.first_n_three_layer_P,
-                   mir_eval.pattern.first_n_target_proportion_R])
+@pytest.mark.parametrize(
+    "metric",
+    [
+        mir_eval.pattern.standard_FPR,
+        mir_eval.pattern.establishment_FPR,
+        mir_eval.pattern.occurrence_FPR,
+        mir_eval.pattern.three_layer_FPR,
+        mir_eval.pattern.first_n_three_layer_P,
+        mir_eval.pattern.first_n_target_proportion_R,
+    ],
+)
 def test_pattern_empty(metric):
-        # First, test for a warning on empty pattern
-    with pytest.warns(UserWarning, match='Reference patterns are empty'):
+    # First, test for a warning on empty pattern
+    with pytest.warns(UserWarning, match="Reference patterns are empty"):
         metric([[[]]], [[[(100, 20)]]])
 
-    with pytest.warns(UserWarning, match='Estimated patterns are empty'):
+    with pytest.warns(UserWarning, match="Estimated patterns are empty"):
         metric([[[(100, 20)]]], [[[]]])
 
-    with pytest.warns(UserWarning, match='patterns are empty'):
+    with pytest.warns(UserWarning, match="patterns are empty"):
         # And that the metric is 0
         assert np.allclose(metric([[[]]], [[[]]]), 0)
 
 
-@pytest.mark.parametrize('metric', [mir_eval.pattern.standard_FPR,
-                   mir_eval.pattern.establishment_FPR,
-                   mir_eval.pattern.occurrence_FPR,
-                   mir_eval.pattern.three_layer_FPR,
-                   mir_eval.pattern.first_n_three_layer_P,
-                   mir_eval.pattern.first_n_target_proportion_R])
-@pytest.mark.parametrize('patterns', [
+@pytest.mark.parametrize(
+    "metric",
+    [
+        mir_eval.pattern.standard_FPR,
+        mir_eval.pattern.establishment_FPR,
+        mir_eval.pattern.occurrence_FPR,
+        mir_eval.pattern.three_layer_FPR,
+        mir_eval.pattern.first_n_three_layer_P,
+        mir_eval.pattern.first_n_target_proportion_R,
+    ],
+)
+@pytest.mark.parametrize(
+    "patterns",
+    [
         [[[(100, 20)]], []],  # patterns must have at least one occurrence
         [[[(100, 20, 3)]]],  # (onset, midi) tuple must contain 2 elements
-    ])
+    ],
+)
 @pytest.mark.xfail(raises=ValueError)
 def test_pattern_failure(metric, patterns):
     metric(patterns, patterns)
 
 
-@pytest.mark.parametrize('metric', [mir_eval.pattern.standard_FPR,
-                   mir_eval.pattern.establishment_FPR,
-                   mir_eval.pattern.occurrence_FPR,
-                   mir_eval.pattern.three_layer_FPR,
-                   mir_eval.pattern.first_n_three_layer_P,
-                   mir_eval.pattern.first_n_target_proportion_R])
+@pytest.mark.parametrize(
+    "metric",
+    [
+        mir_eval.pattern.standard_FPR,
+        mir_eval.pattern.establishment_FPR,
+        mir_eval.pattern.occurrence_FPR,
+        mir_eval.pattern.three_layer_FPR,
+        mir_eval.pattern.first_n_three_layer_P,
+        mir_eval.pattern.first_n_target_proportion_R,
+    ],
+)
 def test_pattern_perfect(metric):
     # Valid patterns which are the same produce a score of 1 for all metrics
     patterns = [[[(100, 20), (200, 30)]]]
