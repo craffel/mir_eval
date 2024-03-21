@@ -298,9 +298,9 @@ def goto(
             offset = estimated_beats[beats_in_window] - reference_beats[n]
             # Scale by previous or next interval
             if offset < 0:
-                beat_error[n] = offset / previous_interval
+                beat_error[n] = offset[0] / previous_interval
             else:
-                beat_error[n] = offset / next_interval
+                beat_error[n] = offset[0] / next_interval
     # Get indices of incorrect beats
     incorrect_beats = np.flatnonzero(np.abs(beat_error) > goto_threshold)
     # All beats are correct (first and last will be 0 so always correct)
