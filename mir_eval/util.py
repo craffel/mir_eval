@@ -319,9 +319,9 @@ def adjust_intervals(
         if len(first_idx) > 0:
             # If we have events below t_min, crop them out
             if labels is not None:
-                labels = labels[int(first_idx[0]) :]
+                labels = labels[first_idx[0, 0] :]
             # Clip to the range (t_min, +inf)
-            intervals = intervals[int(first_idx[0]) :]
+            intervals = intervals[first_idx[0, 0] :]
         intervals = np.maximum(t_min, intervals)
 
         if intervals.min() > t_min:
@@ -339,9 +339,9 @@ def adjust_intervals(
             # We have boundaries above t_max.
             # Trim to only boundaries <= t_max
             if labels is not None:
-                labels = labels[: int(last_idx[0])]
+                labels = labels[: last_idx[0, 0]]
             # Clip to the range (-inf, t_max)
-            intervals = intervals[: int(last_idx[0])]
+            intervals = intervals[: last_idx[0, 0]]
 
         intervals = np.minimum(t_max, intervals)
 
