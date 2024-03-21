@@ -113,10 +113,11 @@ def test_empty_input(metric):
         args = [np.array([]), np.array([]), 40, 20]
 
     with pytest.warns(UserWarning, match="estimated_sources is empty,"):
-        # First, test for a warning on empty audio data
-        metric(*args)
-        # And that the metric returns empty arrays
-        assert np.allclose(metric(*args), np.array([]))
+        with pytest.warns(UserWarning, match="reference_sources is empty,"):
+            # First, test for a warning on empty audio data
+            metric(*args)
+            # And that the metric returns empty arrays
+            assert np.allclose(metric(*args), np.array([]))
 
 
 @pytest.mark.parametrize(
