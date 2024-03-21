@@ -101,10 +101,10 @@ def test_segment_boundary_deviation_perfect():
 )
 def test_segment_structure_empty(metric):
     with pytest.warns(UserWarning, match="Reference intervals are empty"):
-        metric(np.zeros((0, 2)), [], np.zeros((0, 2)), [])
+        metric(np.zeros((0, 2)), [], np.array([[0, 1]]), ['foo'])
 
     with pytest.warns(UserWarning, match="Estimated intervals are empty"):
-        metric(np.zeros((0, 2)), [], np.zeros((0, 2)), [])
+        metric(np.array([[0, 1]]), ['foo'], np.zeros((0, 2)), [])
 
     with pytest.warns(UserWarning, match="intervals are empty"):
         empty_intervals = np.zeros((0, 2))
