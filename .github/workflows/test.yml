@@ -8,13 +8,14 @@ on:
     branches:
       - main
 
-        #concurrency:
-        #group: ${{ github.workflow }}-${{ github.ref }}
-        #cancel-in-progress: True
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: True
 
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         python-version: ["3.8", "3.10", "3.11"]
