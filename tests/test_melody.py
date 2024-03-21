@@ -185,7 +185,7 @@ def test_to_cent_voicing():
 
 
 # We can ignore this warning, which occurs when testing with all-zeros reward
-@pytest.mark.filterwarnings("ignore:Reference melody has no voiced frames")  
+@pytest.mark.filterwarnings("ignore:Reference melody has no voiced frames")
 def test_continuous_voicing_metrics():
     ref_time = np.array([0.0, 0.1, 0.2, 0.3])
     ref_freq = np.array([440.0, 0.0, 220.0, 220.0])
@@ -334,6 +334,7 @@ def test_continuous_voicing_metrics():
         )
         for metric in actual_scores:
             assert np.isclose(actual_scores[metric], expected_scores[metric])
+
 
 def test_voicing_measures_empty():
     # We need a special test for voicing_measures because it only takes 2 args
