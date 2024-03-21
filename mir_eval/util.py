@@ -393,8 +393,8 @@ def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix="__")
             # We have events below t_min
             # Crop them out
             if labels is not None:
-                labels = labels[int(first_idx[0]) :]
-            events = events[int(first_idx[0]) :]
+                labels = labels[first_idx[0, 0] :]
+            events = events[first_idx[0, 0] :]
 
         if events[0] > t_min:
             # Lowest boundary is higher than t_min:
@@ -410,8 +410,8 @@ def adjust_events(events, labels=None, t_min=0.0, t_max=None, label_prefix="__")
             # We have boundaries above t_max.
             # Trim to only boundaries <= t_max
             if labels is not None:
-                labels = labels[: int(last_idx[0])]
-            events = events[: int(last_idx[0])]
+                labels = labels[: last_idx[0, 0]]
+            events = events[: last_idx[0, 0]]
 
         if events[-1] < t_max:
             # Last boundary is below t_max: add a new boundary and label
