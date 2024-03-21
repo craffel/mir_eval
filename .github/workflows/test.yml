@@ -8,9 +8,9 @@ on:
     branches:
       - main
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: False
+        #concurrency:
+        #group: ${{ github.workflow }}-${{ github.ref }}
+        #cancel-in-progress: True
 
 jobs:
   test:
