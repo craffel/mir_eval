@@ -16,6 +16,26 @@ REF_GLOB = "data/multipitch/ref*.txt"
 EST_GLOB = "data/multipitch/est*.txt"
 SCORES_GLOB = "data/multipitch/output*.json"
 
+ref_files = sorted(glob.glob(REF_GLOB))
+est_files = sorted(glob.glob(EST_GLOB))
+sco_files = sorted(glob.glob(SCORES_GLOB))
+
+assert len(ref_files) == len(est_files) == len(sco_files) > 0
+file_sets = list(zip(ref_files, est_files, sco_files))
+
+
+@pytest.fixture
+def multipitch_data(request):
+    ref_f, est_f, sco_f = request.param
+
+    with open(sco_f, "r") as f_handle:
+        expected_score = json.load(f_handle)
+
+    ref_times, ref_freqs = mir_eval.io.load_ragged_time_series(ref_f)
+    est_times, est_freqs = mir_eval.io.load_ragged_time_series(est_f)
+
+    return ref_times, ref_freqs, est_times, est_freqs, expected_score
+
 
 def __frequencies_equal(freqs_a, freqs_b):
     if len(freqs_a) != len(freqs_b):
@@ -302,22 +322,12 @@ def unit_test_metrics():
     assert np.allclose(actual_score, expected_score)
 
 
-def regression_test_evaluate():
-    ref_files = sorted(glob.glob(REF_GLOB))
-    est_files = sorted(glob.glob(EST_GLOB))
-    score_files = sorted(glob.glob(SCORES_GLOB))
+@pytest.mark.parametrize("multipitch_data", file_sets, indirect=True)
+def test_evaluate_regression(multipitch_data):
+    ref_times, ref_freqs, est_times, est_freqs, expected_score = multipitch_data
 
-    assert len(ref_files) == len(est_files) == len(score_files) > 0
+    actual_score = mir_eval.multipitch.evaluate(
+        ref_times, ref_freqs, est_times, est_freqs
+    )
 
-    for ref_f, est_f, score_f in zip(ref_files, est_files, score_files):
-        with open(score_f, "r") as f_handle:
-            expected_score = json.load(f_handle)
-
-        ref_times, ref_freqs = mir_eval.io.load_ragged_time_series(ref_f)
-        est_times, est_freqs = mir_eval.io.load_ragged_time_series(est_f)
-
-        actual_score = mir_eval.multipitch.evaluate(
-            ref_times, ref_freqs, est_times, est_freqs
-        )
-
-        assert __scores_equal(actual_score, expected_score)
+    assert __scores_equal(actual_score, expected_score)
