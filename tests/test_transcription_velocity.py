@@ -91,6 +91,8 @@ def test_precision_recall_f1_overlap():
     assert np.allclose((p, r, f, o), (1.0, 1.0, 1.0, 1.0))
 
 
+# Suppressing this warning. We know the notes are empty, that's not the point.
+@pytest.mark.filterwarnings("ignore:.*notes are empty")
 def test_precision_recall_f1_overlap_empty():
     good_i, good_p, good_v = np.array([[0, 1]]), np.array([100]), np.array([1])
     bad_i, bad_p, bad_v = np.empty((0, 2)), np.array([]), np.array([])

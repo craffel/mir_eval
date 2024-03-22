@@ -210,6 +210,7 @@ def match_notes(
     slope, intercept = np.linalg.lstsq(
         np.vstack([est_matched_velocities, np.ones(len(est_matched_velocities))]).T,
         ref_matched_velocities,
+        rcond=None
     )[0]
     # Re-scale est velocities to match ref
     est_matched_velocities = slope * est_matched_velocities + intercept
