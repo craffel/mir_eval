@@ -203,7 +203,7 @@ def time_frequency(
         t_in = max(sample_intervals[0][0], 0)
         t_out = min(sample_intervals[-1][-1], length)
         signal = gram_interpolator(np.arange(t_in, t_out))
-        output[:len(signal)] += wave[:len(signal)] * signal
+        output[t_in:t_out] += wave[:len(signal)] * signal
 
     # Normalize, but only if there's non-zero values
     norm = np.abs(output).max()
