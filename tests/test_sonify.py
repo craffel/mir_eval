@@ -54,8 +54,6 @@ def test_chroma(fs):
 
 
 @pytest.mark.parametrize("fs", [8000, 44100])
-# FIXME: #371
-@pytest.mark.skip(reason="Skipped until #371 is fixed")
 def test_chords(fs):
     intervals = np.array([np.arange(10), np.arange(1, 11)]).T
     signal = mir_eval.sonify.chords(
