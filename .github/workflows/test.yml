@@ -3,48 +3,58 @@ name: Test Python code
 on:
   pull_request:
     branches:
-      - master
+      - main
   push:
     branches:
-      - master
+      - main
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: True
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: True
 
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.10", "3.11"]
         channel-priority: [strict]
+        envfile: [".github/environment.yml"]
         include:
-          - python-version: "3.10"
+          - python-version: "3.12"
             os: macos-latest
-          - python-version: "3.10"
+          - python-version: "3.12"
             os: windows-latest
-          - python-version: "3.10"
+          - python-version: "3.12"
             os: ubuntu-latest
             channel-priority: flexible
+          - os: ubuntu-latest
+            python-version: "3.7"
+            envfile: ".github/environment-minimal.yml"
+            channel-priority: "flexible"
+            name: "Minimal dependencies"
+          
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Cache conda packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('.github/environment.yml') }}
+          key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles( matrix.envfile ) }}
 
       - name: Create conda environment
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           python-version: ${{ matrix.python-version }}
           auto-activate-base: false
           channel-priority: ${{ matrix.channel-priority }}
-          environment-file: .github/environment.yml
-          use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+          environment-file: ${{ matrix.envfile }}
+          # Disabling bz2 to get more recent dependencies.
+          # NOTE: this breaks cache support, so CI will be slower.
+          use-only-tar-bz2: False # IMPORTANT: This needs to be set for caching to work properly!
 
       - name: Install package in development mode
         shell: bash -l {0}
@@ -60,7 +70,22 @@ jobs:
         shell: bash -l {0}
         run: python -c "import numpy; numpy.show_config()"
 
+      - name: Show libraries in the system on which SciPy was built
+        shell: bash -l {0}
+        run: python -c "import scipy; scipy.show_config()"
+
       - name: Run unit tests
         shell: bash -l {0}
-        run: pytest --cov=mir_eval
+        run: pytest
         working-directory: tests
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          verbose: true

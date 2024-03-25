@@ -56,10 +56,8 @@ from scipy.stats import skewnorm
 from mir_eval.util import filter_kwargs
 
 
-def validate(
-    reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray
-):
-    """Checks that the input annotations to a metric look like valid onset time
+def validate(reference_timestamps: np.ndarray, estimated_timestamps: np.ndarray):
+    """Check that the input annotations to a metric look like valid onset time
     arrays, and throws helpful errors if not.
 
     Parameters
@@ -103,13 +101,9 @@ def validate(
 
     # Check monotonicity
     if not np.all(reference_timestamps[1:] - reference_timestamps[:-1] >= 0):
-        raise ValueError(
-            "Reference timestamps are not monotonically increasing!"
-        )
+        raise ValueError("Reference timestamps are not monotonically increasing!")
     if not np.all(estimated_timestamps[1:] - estimated_timestamps[:-1] >= 0):
-        raise ValueError(
-            "Estimated timestamps are not monotonically increasing!"
-        )
+        raise ValueError("Estimated timestamps are not monotonically increasing!")
 
     # Check positivity (need for correct PCS metric calculation)
     if not np.all(reference_timestamps >= 0):
@@ -181,7 +175,7 @@ def percentage_correct(reference_timestamps, estimated_timestamps, window=0.3):
 def percentage_correct_segments(
     reference_timestamps, estimated_timestamps, duration: Optional[float] = None
 ):
-    """Calculates the percentage of correct segments (PCS) metric.
+    """Calculate the percentage of correct segments (PCS) metric.
 
     It constructs segments out of predicted and estimated timestamps separately
     out of each given timestamp vector and calculates the percentage of overlap between correct
@@ -317,6 +311,7 @@ def karaoke_perceptual_metric(reference_timestamps, estimated_timestamps):
 
 def evaluate(reference_timestamps, estimated_timestamps, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
+
     Examples
     --------
     >>> reference_timestamps = mir_eval.io.load_events('reference.txt')
@@ -330,7 +325,7 @@ def evaluate(reference_timestamps, estimated_timestamps, **kwargs):
         reference timestamp locations, in seconds
     estimated_timestamps : np.ndarray
         estimated timestamp locations, in seconds
-    kwargs
+    **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
 

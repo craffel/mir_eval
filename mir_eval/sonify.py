@@ -1,7 +1,7 @@
-'''
+"""
 Methods which sonify annotations for "evaluation by ear".
 All functions return a raw signal at the specified sampling rate.
-'''
+"""
 
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
@@ -12,7 +12,7 @@ from . import chord
 
 
 def clicks(times, fs, click=None, length=None):
-    """Returns a signal with the signal 'click' placed at each specified time
+    """Return a signal with the signal 'click' placed at each specified time
 
     Parameters
     ----------
@@ -35,34 +35,35 @@ def clicks(times, fs, click=None, length=None):
     # Create default click signal
     if click is None:
         # 1 kHz tone, 100ms
-        click = np.sin(2*np.pi*np.arange(fs*.1)*1000/(1.*fs))
+        click = np.sin(2 * np.pi * np.arange(fs * 0.1) * 1000 / (1.0 * fs))
         # Exponential decay
-        click *= np.exp(-np.arange(fs*.1)/(fs*.01))
+        click *= np.exp(-np.arange(fs * 0.1) / (fs * 0.01))
     # Set default length
     if length is None:
-        length = int(times.max()*fs + click.shape[0] + 1)
+        length = int(times.max() * fs + click.shape[0] + 1)
 
     # Pre-allocate click signal
     click_signal = np.zeros(length)
     # Place clicks
     for time in times:
         # Compute the boundaries of the click
-        start = int(time*fs)
+        start = int(time * fs)
         end = start + click.shape[0]
         # Make sure we don't try to output past the end of the signal
         if start >= length:
             break
         if end >= length:
-            click_signal[start:] = click[:length - start]
+            click_signal[start:] = click[: length - start]
             break
         # Normally, just add a click here
         click_signal[start:end] = click
     return click_signal
 
 
-def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
-                   n_dec=1, threshold=0.01):
-    """Reverse synthesis of a time-frequency representation of a signal
+def time_frequency(
+    gram, frequencies, times, fs, function=np.sin, length=None, n_dec=1, threshold=0.01
+):
+    r"""Reverse synthesis of a time-frequency representation of a signal
 
     Parameters
     ----------
@@ -75,19 +76,25 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     frequencies : np.ndarray
         array of size ``gram.shape[0]`` denoting the frequency (in Hz) of
         each row of gram
+
     times : np.ndarray, shape= ``(gram.shape[1],)`` or ``(gram.shape[1], 2)``
         Either the start time (in seconds) of each column in the gram,
         or the time interval (in seconds) corresponding to each column.
+
     fs : int
         desired sampling rate of the output signal
+
     function : function
         function to use to synthesize notes, should be :math:`2\pi`-periodic
+
     length : int
         desired number of samples in the output signal,
         defaults to ``times[-1]*fs``
+
     n_dec : int
         the number of decimals used to approximate each sonfied frequency.
         Defaults to 1 decimal place. Higher precision will be slower.
+
     threshold : float
         optimizes synthesis to only occur for frequencies that have a
         linear magnitude of at least one element in gram above the given threshold.
@@ -119,9 +126,9 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     sample_intervals = np.round(times * fs).astype(int)
 
     def _fast_synthesize(frequency):
-        """A faster way to synthesize a signal.
-            Generate one cycle, and simulate arbitrary repetitions
-            using array indexing tricks.
+        """Efficiently synthesize a signal.
+        Generate one cycle, and simulate arbitrary repetitions
+        using array indexing tricks.
         """
         # hack so that we can ensure an integer number of periods and samples
         # rounds frequency to 1st decimal, s.t. 10 * frequency will be an int
@@ -134,26 +141,29 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
         # is an integer
         n_samples = int(10.0**n_dec * fs)
 
-        short_signal = function(2.0 * np.pi * np.arange(n_samples) *
-                                frequency / fs)
+        short_signal = function(2.0 * np.pi * np.arange(n_samples) * frequency / fs)
 
         # Calculate the number of loops we need to fill the duration
-        n_repeats = int(np.ceil(length/float(short_signal.shape[0])))
+        n_repeats = int(np.ceil(length / float(short_signal.shape[0])))
 
         # Simulate tiling the short buffer by using stride tricks
-        long_signal = as_strided(short_signal,
-                                 shape=(n_repeats, len(short_signal)),
-                                 strides=(0, short_signal.itemsize))
+        long_signal = as_strided(
+            short_signal,
+            shape=(n_repeats, len(short_signal)),
+            strides=(0, short_signal.itemsize),
+        )
 
         # Use a flatiter to simulate a long 1D buffer
         return long_signal.flat
 
     def _const_interpolator(value):
         """Return a function that returns `value`
-            no matter the input.
+        no matter the input.
         """
+
         def __interpolator(x):
             return value
+
         return __interpolator
 
     # Threshold the tfgram to remove non-positive values
@@ -165,7 +175,7 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
 
     # Check if there is at least one element on each frequency that has a value above the threshold
     # to justify processing, for optimisation.
-    spectral_max_magnitudes = np.max(gram, axis = 1)
+    spectral_max_magnitudes = np.max(gram, axis=1)
     for n, frequency in enumerate(frequencies):
         if spectral_max_magnitudes[n] < threshold:
             continue
@@ -178,17 +188,25 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
             # (len, 1) to (len-1, 2), and hence differ from the length of gram (i.e one less),
             # so we ensure gram is reduced appropriately.
             gram_interpolator = interp1d(
-                time_centers, gram[n, :n_times],
-                kind='linear', bounds_error=False,
-                fill_value=(gram[n, 0], gram[n, -1]))
+                time_centers,
+                gram[n, :n_times],
+                kind="linear",
+                bounds_error=False,
+                fill_value=(gram[n, 0], gram[n, -1]),
+            )
         # If only one time point, create constant interpolator
         else:
             gram_interpolator = _const_interpolator(gram[n, 0])
 
         # Create the time-varying scaling for the entire time interval by the piano roll
         # magnitude and add to the accumulating waveform.
-        output += wave[:length] * gram_interpolator(np.arange(max(sample_intervals[0][0], 0),
-                                                              min(sample_intervals[-1][-1], length)))
+        # FIXME: this logic is broken when length
+        # does not match the final sample interval
+        output += wave[:length] * gram_interpolator(
+            np.arange(
+                max(sample_intervals[0][0], 0), min(sample_intervals[-1][-1], length)
+            )
+        )
 
     # Normalize, but only if there's non-zero values
     norm = np.abs(output).max()
@@ -198,33 +216,28 @@ def time_frequency(gram, frequencies, times, fs, function=np.sin, length=None,
     return output
 
 
-def pitch_contour(times, frequencies, fs, amplitudes=None, function=np.sin,
-                  length=None, kind='linear'):
-    '''Sonify a pitch contour.
+def pitch_contour(
+    times, frequencies, fs, amplitudes=None, function=np.sin, length=None, kind="linear"
+):
+    r"""Sonify a pitch contour.
 
     Parameters
     ----------
     times : np.ndarray
         time indices for each frequency measurement, in seconds
-
     frequencies : np.ndarray
         frequency measurements, in Hz.
         Non-positive measurements will be interpreted as un-voiced samples.
-
     fs : int
         desired sampling rate of the output signal
-
     amplitudes : np.ndarray
-        amplitude measurments, nonnegative
+        amplitude measurements, nonnegative
         defaults to ``np.ones((length,))``
-
     function : function
         function to use to synthesize notes, should be :math:`2\pi`-periodic
-
     length : int
         desired number of samples in the output signal,
         defaults to ``max(times)*fs``
-
     kind : str
         Interpolation mode for the frequency and amplitude values.
         See: ``scipy.interpolate.interp1d`` for valid settings.
@@ -233,8 +246,7 @@ def pitch_contour(times, frequencies, fs, amplitudes=None, function=np.sin,
     -------
     output : np.ndarray
         synthesized version of the pitch contour
-    '''
-
+    """
     fs = float(fs)
 
     if length is None:
@@ -245,19 +257,30 @@ def pitch_contour(times, frequencies, fs, amplitudes=None, function=np.sin,
     frequencies = np.maximum(frequencies, 0.0)
 
     # Build a frequency interpolator
-    f_interp = interp1d(times * fs, 2 * np.pi * frequencies / fs, kind=kind,
-                        fill_value=0.0, bounds_error=False, copy=False)
+    f_interp = interp1d(
+        times * fs,
+        2 * np.pi * frequencies / fs,
+        kind=kind,
+        fill_value=0.0,
+        bounds_error=False,
+        copy=False,
+    )
 
     # Estimate frequency at sample points
     f_est = f_interp(np.arange(length))
 
     if amplitudes is None:
-        a_est = np.ones((length, ))
+        a_est = np.ones((length,))
     else:
         # build an amplitude interpolator
         a_interp = interp1d(
-            times * fs, amplitudes, kind=kind,
-            fill_value=0.0, bounds_error=False, copy=False)
+            times * fs,
+            amplitudes,
+            kind=kind,
+            fill_value=0.0,
+            bounds_error=False,
+            copy=False,
+        )
         a_est = a_interp(np.arange(length))
 
     # Sonify the waveform
@@ -273,12 +296,12 @@ def chroma(chromagram, times, fs, **kwargs):
         Chromagram matrix, where each row represents a semitone [C->Bb]
         i.e., ``chromagram[3, j]`` is the magnitude of D# from ``times[j]`` to
         ``times[j + 1]``
-    times: np.ndarray, shape=(len(chord_labels),) or (len(chord_labels), 2)
+    times : np.ndarray, shape=(len(chord_labels),) or (len(chord_labels), 2)
         Either the start time of each column in the chromagram,
         or the time interval corresponding to each column.
     fs : int
         Sampling rate to synthesize audio data at
-    kwargs
+    **kwargs
         Additional keyword arguments to pass to
         :func:`mir_eval.sonify.time_frequency`
 
@@ -298,8 +321,8 @@ def chroma(chromagram, times, fs, **kwargs):
     # and std 6 (one half octave)
     mean = 72
     std = 6
-    notes = np.arange(12*n_octaves) + base_note
-    shepard_weight = np.exp(-(notes - mean)**2./(2.*std**2.))
+    notes = np.arange(12 * n_octaves) + base_note
+    shepard_weight = np.exp(-((notes - mean) ** 2.0) / (2.0 * std**2.0))
     # Copy the chromagram matrix vertically n_octaves times
     gram = np.tile(chromagram.T, n_octaves).T
     # This fixes issues if the supplied chromagram is int type
@@ -307,7 +330,7 @@ def chroma(chromagram, times, fs, **kwargs):
     # Apply Sheppard weighting
     gram *= shepard_weight.reshape(-1, 1)
     # Compute frequencies
-    frequencies = 440.0*(2.0**((notes - 69)/12.0))
+    frequencies = 440.0 * (2.0 ** ((notes - 69) / 12.0))
     return time_frequency(gram, frequencies, times, fs, **kwargs)
 
 
@@ -322,7 +345,7 @@ def chords(chord_labels, intervals, fs, **kwargs):
         Start and end times of each chord label
     fs : int
         Sampling rate to synthesize at
-    kwargs
+    **kwargs
         Additional keyword arguments to pass to
         :func:`mir_eval.sonify.time_frequency`
 
@@ -336,8 +359,11 @@ def chords(chord_labels, intervals, fs, **kwargs):
 
     # Convert from labels to chroma
     roots, interval_bitmaps, _ = chord.encode_many(chord_labels)
-    chromagram = np.array([np.roll(interval_bitmap, root)
-                           for (interval_bitmap, root)
-                           in zip(interval_bitmaps, roots)]).T
+    chromagram = np.array(
+        [
+            np.roll(interval_bitmap, root)
+            for (interval_bitmap, root) in zip(interval_bitmaps, roots)
+        ]
+    ).T
 
     return chroma(chromagram, intervals, fs, **kwargs)

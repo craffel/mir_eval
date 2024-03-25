@@ -5,7 +5,7 @@ Unit tests for mir_eval.alignment
 import glob
 import json
 
-import nose.tools
+import pytest
 import numpy as np
 
 import mir_eval
@@ -17,40 +17,19 @@ REF_GLOB = "data/alignment/ref*.txt"
 EST_GLOB = "data/alignment/est*.txt"
 SCORES_GLOB = "data/alignment/output*.json"
 
+ref_files = sorted(glob.glob(REF_GLOB))
+est_files = sorted(glob.glob(EST_GLOB))
+sco_files = sorted(glob.glob(SCORES_GLOB))
 
-def __unit_test_alignment_function(metric):
-    # Now test validation function
-    # alignments must be 1d ndarray
-    alignments = np.array([[1.0, 2.0]])
-    nose.tools.assert_raises(ValueError, metric, alignments, alignments)
-    # alignments must be in seconds, and therefore not negative
-    alignments = np.array([-1.0, 2.0])
-    nose.tools.assert_raises(ValueError, metric, alignments, alignments)
-    # alignments must be sorted
-    alignments = np.array([2.0, 1.0])
-    nose.tools.assert_raises(ValueError, metric, alignments, alignments)
-    # predicted and estimated alignments must have same length
-    pred_alignments = np.array([[1.0, 2.0]])
-    est_alignments = np.array([[1.0]])
-    nose.tools.assert_raises(
-        ValueError, metric, est_alignments, pred_alignments
-    )
+assert len(ref_files) == len(est_files) == len(sco_files) > 0
+
+file_sets = list(zip(ref_files, est_files, sco_files))
 
 
-def __check_score(sco_f, metric, score, expected_score):
-    assert np.allclose(score, expected_score, atol=A_TOL)
-
-
-def test_alignment_functions():
-    # Load in all files in the same order
-    ref_files = sorted(glob.glob(REF_GLOB))
-    est_files = sorted(glob.glob(EST_GLOB))
-    sco_files = sorted(glob.glob(SCORES_GLOB))
-
-    assert len(ref_files) == len(est_files) == len(sco_files) > 0
-
-    # Unit tests
-    for metric in [
+@pytest.mark.xfail(raises=ValueError)
+@pytest.mark.parametrize(
+    "metric",
+    [
         mir_eval.alignment.absolute_error,
         mir_eval.alignment.percentage_correct,
         mir_eval.alignment.percentage_correct_segments,
@@ -60,27 +39,46 @@ def test_alignment_functions():
             )
         ),
         mir_eval.alignment.karaoke_perceptual_metric,
-    ]:
-        yield (__unit_test_alignment_function, metric)
-    # Regression tests
-    for ref_f, est_f, sco_f in zip(ref_files, est_files, sco_files):
-        with open(sco_f, "r") as f:
-            expected_scores = json.load(f)
-        # Load in an example alignment annotation
-        reference_alignments = mir_eval.io.load_events(ref_f)
-        # Load in an example alignment tracker output
-        estimated_alignments = mir_eval.io.load_events(est_f)
-        # Compute scores
-        scores = mir_eval.alignment.evaluate(
-            reference_alignments, estimated_alignments
-        )
-        # Compare them
-        for metric in scores:
-            # This is a simple hack to make nosetest's messages more useful
-            yield (
-                __check_score,
-                sco_f,
-                metric,
-                scores[metric],
-                expected_scores[metric],
-            )
+    ],
+)
+@pytest.mark.parametrize(
+    "est_alignment, pred_alignment",
+    [
+        (
+            np.array([[1.0, 2.0]]),
+            np.array([[1.0, 2.0]]),
+        ),  # alignments must be 1d ndarray
+        (
+            np.array([[-1.0, 2.0]]),
+            np.array([[1.0, 2.0]]),
+        ),  # alignments must be non-negative
+        (np.array([[2.0, 1.0]]), np.array([[1.0, 2.0]])),  # alignments must be sorted
+        (
+            np.array([[1.0, 2.0]]),
+            np.array([[1.0]]),
+        ),  # alignments must have the same length
+    ],
+)
+def test_alignment_functions_fail(metric, est_alignment, pred_alignment):
+    metric(est_alignment, pred_alignment)
+
+
+@pytest.fixture
+def alignment_data(request):
+    ref_f, est_f, sco_f = request.param
+    with open(sco_f, "r") as f:
+        expected_scores = json.load(f)
+    reference_alignments = mir_eval.io.load_events(ref_f)
+    estimated_alignments = mir_eval.io.load_events(est_f)
+
+    return reference_alignments, estimated_alignments, expected_scores
+
+
+@pytest.mark.parametrize("alignment_data", file_sets, indirect=True)
+def test_alignment_functions(alignment_data):
+    reference_alignments, estimated_alignments, expected_scores = alignment_data
+    scores = mir_eval.alignment.evaluate(reference_alignments, estimated_alignments)
+
+    assert scores.keys() == expected_scores.keys()
+    for metric in scores:
+        assert np.allclose(scores[metric], expected_scores[metric], atol=A_TOL)
