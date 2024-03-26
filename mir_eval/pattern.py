@@ -168,7 +168,7 @@ def _compute_score_matrix(P, Q, similarity_metric="cardinality_score"):
     return sm
 
 
-def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
+def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5, safe=True):
     """Compute the standard F1 Score, Precision and Recall.
 
     This metric checks if the prototype patterns of the reference match
@@ -194,6 +194,9 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
         Default parameter is the one found in the original matlab code by
         Tom Collins used for MIREX 2013.
         (Default value = 1e-5)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -205,7 +208,8 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
         The standard Recall
 
     """
-    validate(reference_patterns, estimated_patterns)
+    if safe:
+        validate(reference_patterns, estimated_patterns)
     nP = len(reference_patterns)  # Number of patterns in the reference
     nQ = len(estimated_patterns)  # Number of patterns in the estimation
     k = 0  # Number of patterns that match
@@ -236,7 +240,10 @@ def standard_FPR(reference_patterns, estimated_patterns, tol=1e-5):
 
 
 def establishment_FPR(
-    reference_patterns, estimated_patterns, similarity_metric="cardinality_score"
+    reference_patterns,
+    estimated_patterns,
+    similarity_metric="cardinality_score",
+    safe=True,
 ):
     """Compute the establishment F1 Score, Precision and Recall.
 
@@ -265,6 +272,10 @@ def establishment_FPR(
 
         (Default value = "cardinality_score")
 
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
+
     Returns
     -------
     f_measure : float
@@ -275,7 +286,8 @@ def establishment_FPR(
         The establishment Recall
 
     """
-    validate(reference_patterns, estimated_patterns)
+    if safe:
+        validate(reference_patterns, estimated_patterns)
     nP = len(reference_patterns)  # Number of elements in reference
     nQ = len(estimated_patterns)  # Number of elements in estimation
     S = np.zeros((nP, nQ))  # Establishment matrix
@@ -301,6 +313,7 @@ def occurrence_FPR(
     estimated_patterns,
     thres=0.75,
     similarity_metric="cardinality_score",
+    safe=True,
 ):
     """Compute the occurrence F1 Score, Precision and Recall.
 
@@ -334,6 +347,10 @@ def occurrence_FPR(
 
         (Default value = "cardinality_score")
 
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
+
     Returns
     -------
     f_measure : float
@@ -343,7 +360,8 @@ def occurrence_FPR(
     recall : float
         The occurrence Recall
     """
-    validate(reference_patterns, estimated_patterns)
+    if safe:
+        validate(reference_patterns, estimated_patterns)
     # Number of elements in reference
     nP = len(reference_patterns)
     # Number of elements in estimation
@@ -379,7 +397,7 @@ def occurrence_FPR(
     return f_measure, precision, recall
 
 
-def three_layer_FPR(reference_patterns, estimated_patterns):
+def three_layer_FPR(reference_patterns, estimated_patterns, safe=True):
     """Three Layer F1 Score, Precision and Recall. As described by Meridith.
 
     Examples
@@ -396,6 +414,9 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         :func:`mir_eval.io.load_patterns()`
     estimated_patterns : list
         The estimated patterns in the same format
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -407,7 +428,8 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
         The three-layer Recall
 
     """
-    validate(reference_patterns, estimated_patterns)
+    if safe:
+        validate(reference_patterns, estimated_patterns)
 
     def compute_first_layer_PR(ref_occs, est_occs):
         """Compute the first layer Precision and Recall values given the
@@ -506,7 +528,7 @@ def three_layer_FPR(reference_patterns, estimated_patterns):
     return f_measure_3, precision_3, recall_3
 
 
-def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
+def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5, safe=True):
     """First n three-layer precision.
 
     This metric is basically the same as the three-layer FPR but it is only
@@ -531,13 +553,17 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
         Number of patterns to consider from the estimated results, in
         the order they appear in the matrix
         (Default value = 5)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     precision : float
         The first n three-layer Precision
     """
-    validate(reference_patterns, estimated_patterns)
+    if safe:
+        validate(reference_patterns, estimated_patterns)
     # If no patterns were provided, metric is zero
     if _n_onset_midi(reference_patterns) == 0 or _n_onset_midi(estimated_patterns) == 0:
         return 0.0, 0.0, 0.0
@@ -551,7 +577,7 @@ def first_n_three_layer_P(reference_patterns, estimated_patterns, n=5):
     return P  # Return the precision only
 
 
-def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
+def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5, safe=True):
     """First n target proportion establishment recall metric.
 
     This metric is similar is similar to the establishment FPR score, but it
@@ -576,13 +602,17 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
         Number of patterns to consider from the estimated results, in
         the order they appear in the matrix.
         (Default value = 5)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     recall : float
         The first n target proportion Recall.
     """
-    validate(reference_patterns, estimated_patterns)
+    if safe:
+        validate(reference_patterns, estimated_patterns)
     # If no patterns were provided, metric is zero
     if _n_onset_midi(reference_patterns) == 0 or _n_onset_midi(estimated_patterns) == 0:
         return 0.0, 0.0, 0.0
@@ -594,7 +624,7 @@ def first_n_target_proportion_R(reference_patterns, estimated_patterns, n=5):
     return R
 
 
-def evaluate(ref_patterns, est_patterns, **kwargs):
+def evaluate(ref_patterns, est_patterns, safe=True, **kwargs):
     """Load data and perform the evaluation.
 
     Examples
@@ -610,6 +640,9 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
         :func:`mir_eval.io.load_patterns()`
     est_patterns : list
         The estimated patterns in the same format
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -620,6 +653,11 @@ def evaluate(ref_patterns, est_patterns, **kwargs):
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
     """
+    if safe:
+        validate(ref_patterns, est_patterns)
+
+    kwargs["safe"] = False
+
     # Compute all the metrics
     scores = collections.OrderedDict()
 
