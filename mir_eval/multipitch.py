@@ -72,17 +72,17 @@ def validate(ref_time, ref_freqs, est_time, est_freqs):
     util.validate_events(est_time, max_time=MAX_TIME)
 
     if ref_time.size == 0:
-        warnings.warn("Reference times are empty.")
+        warnings.warn("Reference times are empty.", stacklevel=2)
     if ref_time.ndim != 1:
         raise ValueError("Reference times have invalid dimension")
     if len(ref_freqs) == 0:
-        warnings.warn("Reference frequencies are empty.")
+        warnings.warn("Reference frequencies are empty.", stacklevel=2)
     if est_time.size == 0:
-        warnings.warn("Estimated times are empty.")
+        warnings.warn("Estimated times are empty.", stacklevel=2)
     if est_time.ndim != 1:
         raise ValueError("Estimated times have invalid dimension")
     if len(est_freqs) == 0:
-        warnings.warn("Estimated frequencies are empty.")
+        warnings.warn("Estimated frequencies are empty.", stacklevel=2)
     if ref_time.size != len(ref_freqs):
         raise ValueError("Reference times and frequencies have unequal " "lengths.")
     if est_time.size != len(est_freqs):

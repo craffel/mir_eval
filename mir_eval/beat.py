@@ -88,9 +88,9 @@ def validate(reference_beats, estimated_beats):
     # If reference or estimated beats are empty,
     # warn because metric will be 0
     if reference_beats.size == 0:
-        warnings.warn("Reference beats are empty.")
+        warnings.warn("Reference beats are empty.", stacklevel=2)
     if estimated_beats.size == 0:
-        warnings.warn("Estimated beats are empty.")
+        warnings.warn("Estimated beats are empty.", stacklevel=2)
     for beats in [reference_beats, estimated_beats]:
         util.validate_events(beats, MAX_TIME)
 

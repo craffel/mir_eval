@@ -642,9 +642,9 @@ def validate(reference_labels, estimated_labels):
             validate_chord_label(chord_label)
     # When either label list is empty, warn the user
     if len(reference_labels) == 0:
-        warnings.warn("Reference labels are empty")
+        warnings.warn("Reference labels are empty", stacklevel=2)
     if len(estimated_labels) == 0:
-        warnings.warn("Estimated labels are empty")
+        warnings.warn("Estimated labels are empty", stacklevel=2)
 
 
 def weighted_accuracy(comparisons, weights):

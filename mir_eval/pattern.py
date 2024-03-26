@@ -92,9 +92,9 @@ def validate(reference_patterns, estimated_patterns):
     """
     # Warn if pattern lists are empty
     if _n_onset_midi(reference_patterns) == 0:
-        warnings.warn("Reference patterns are empty.")
+        warnings.warn("Reference patterns are empty.", stacklevel=2)
     if _n_onset_midi(estimated_patterns) == 0:
-        warnings.warn("Estimated patterns are empty.")
+        warnings.warn("Estimated patterns are empty.", stacklevel=2)
     for patterns in [reference_patterns, estimated_patterns]:
         for pattern in patterns:
             if len(pattern) <= 0:

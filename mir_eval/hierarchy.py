@@ -459,7 +459,7 @@ def validate_hier_intervals(intervals_hier):
 
         if boundaries - new_bounds:
             warnings.warn(
-                "Segment hierarchy is inconsistent " "at level {:d}".format(level)
+                "Segment hierarchy is inconsistent " "at level {:d}".format(level), stacklevel=2
             )
         boundaries |= new_bounds
 

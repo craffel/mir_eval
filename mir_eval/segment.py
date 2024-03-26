@@ -110,10 +110,10 @@ def validate_boundary(reference_intervals, estimated_intervals, trim):
         min_size = 1
 
     if len(reference_intervals) < min_size:
-        warnings.warn("Reference intervals are empty.")
+        warnings.warn("Reference intervals are empty.", stacklevel=2)
 
     if len(estimated_intervals) < min_size:
-        warnings.warn("Estimated intervals are empty.")
+        warnings.warn("Estimated intervals are empty.", stacklevel=2)
 
     for intervals in [reference_intervals, estimated_intervals]:
         util.validate_intervals(intervals)
@@ -157,9 +157,9 @@ def validate_structure(
                 raise ValueError("Segment intervals do not start at 0")
 
     if reference_intervals.size == 0:
-        warnings.warn("Reference intervals are empty.")
+        warnings.warn("Reference intervals are empty.", stacklevel=2)
     if estimated_intervals.size == 0:
-        warnings.warn("Estimated intervals are empty.")
+        warnings.warn("Estimated intervals are empty.", stacklevel=2)
     # Check only when intervals are non-empty
     if reference_intervals.size > 0 and estimated_intervals.size > 0:
         if not np.allclose(reference_intervals.max(), estimated_intervals.max()):

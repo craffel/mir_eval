@@ -82,13 +82,13 @@ def validate_voicing(ref_voicing, est_voicing):
 
     """
     if ref_voicing.size == 0:
-        warnings.warn("Reference voicing array is empty.")
+        warnings.warn("Reference voicing array is empty.", stacklevel=2)
     if est_voicing.size == 0:
-        warnings.warn("Estimated voicing array is empty.")
+        warnings.warn("Estimated voicing array is empty.", stacklevel=2)
     if ref_voicing.sum() == 0:
-        warnings.warn("Reference melody has no voiced frames.")
+        warnings.warn("Reference melody has no voiced frames.", stacklevel=2)
     if est_voicing.sum() == 0:
-        warnings.warn("Estimated melody has no voiced frames.")
+        warnings.warn("Estimated melody has no voiced frames.", stacklevel=2)
     # Make sure they're the same length
     if ref_voicing.shape[0] != est_voicing.shape[0]:
         raise ValueError(
@@ -117,9 +117,9 @@ def validate(ref_voicing, ref_cent, est_voicing, est_cent):
 
     """
     if ref_cent.size == 0:
-        warnings.warn("Reference frequency array is empty.")
+        warnings.warn("Reference frequency array is empty.", stacklevel=2)
     if est_cent.size == 0:
-        warnings.warn("Estimated frequency array is empty.")
+        warnings.warn("Estimated frequency array is empty.", stacklevel=2)
     # Make sure they're the same length
     if (
         ref_voicing.shape[0] != ref_cent.shape[0]

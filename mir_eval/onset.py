@@ -46,9 +46,9 @@ def validate(reference_onsets, estimated_onsets):
     """
     # If reference or estimated onsets are empty, warn because metric will be 0
     if reference_onsets.size == 0:
-        warnings.warn("Reference onsets are empty.")
+        warnings.warn("Reference onsets are empty.", stacklevel=2)
     if estimated_onsets.size == 0:
-        warnings.warn("Estimated onsets are empty.")
+        warnings.warn("Estimated onsets are empty.", stacklevel=2)
     for onsets in [reference_onsets, estimated_onsets]:
         util.validate_events(onsets, MAX_TIME)
 

@@ -158,9 +158,9 @@ def validate_intervals(ref_intervals, est_intervals):
     """
     # If reference or estimated notes are empty, warn
     if ref_intervals.size == 0:
-        warnings.warn("Reference notes are empty.")
+        warnings.warn("Reference notes are empty.", stacklevel=2)
     if est_intervals.size == 0:
-        warnings.warn("Estimated notes are empty.")
+        warnings.warn("Estimated notes are empty.", stacklevel=2)
 
     # Validate intervals
     util.validate_intervals(ref_intervals)

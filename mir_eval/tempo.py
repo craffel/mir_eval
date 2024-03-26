@@ -114,7 +114,7 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
             "invalid tolerance {}: must lie in the range " "[0, 1]".format(tol)
         )
     if tol == 0.0:
-        warnings.warn("A tolerance of 0.0 may not " "lead to the results you expect.")
+        warnings.warn("A tolerance of 0.0 may not " "lead to the results you expect.", stacklevel=2)
 
     hits = [False, False]
 
