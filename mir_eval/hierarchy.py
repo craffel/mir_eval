@@ -472,6 +472,7 @@ def tmeasure(
     window=15.0,
     frame_size=0.1,
     beta=1.0,
+    safe=True,
 ):
     """Compute the tree measures for hierarchical segment annotations.
 
@@ -494,6 +495,9 @@ def tmeasure(
         the window.
     beta : float > 0
         beta parameter for the F-measure.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -531,8 +535,9 @@ def tmeasure(
         window_frames = int(_round(window, frame_size) / frame_size)
 
     # Validate the hierarchical segmentations
-    validate_hier_intervals(reference_intervals_hier)
-    validate_hier_intervals(estimated_intervals_hier)
+    if safe:
+        validate_hier_intervals(reference_intervals_hier)
+        validate_hier_intervals(estimated_intervals_hier)
 
     # Build the least common ancestor matrices
     ref_lca = _lca(reference_intervals_hier, frame_size)
@@ -554,6 +559,7 @@ def lmeasure(
     estimated_labels_hier,
     frame_size=0.1,
     beta=1.0,
+    safe=True,
 ):
     """Compute the tree measures for hierarchical segment annotations.
 
@@ -576,6 +582,9 @@ def lmeasure(
         the window.
     beta : float > 0
         beta parameter for the F-measure.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -602,8 +611,9 @@ def lmeasure(
         )
 
     # Validate the hierarchical segmentations
-    validate_hier_intervals(reference_intervals_hier)
-    validate_hier_intervals(estimated_intervals_hier)
+    if safe:
+        validate_hier_intervals(reference_intervals_hier)
+        validate_hier_intervals(estimated_intervals_hier)
 
     # Build the least common ancestor matrices
     ref_meet = _meet(reference_intervals_hier, reference_labels_hier, frame_size)
@@ -619,7 +629,12 @@ def lmeasure(
 
 
 def evaluate(
-    ref_intervals_hier, ref_labels_hier, est_intervals_hier, est_labels_hier, **kwargs
+    ref_intervals_hier,
+    ref_labels_hier,
+    est_intervals_hier,
+    est_labels_hier,
+    safe=True,
+    **kwargs
 ):
     r"""Compute all hierarchical structure metrics for the given reference and
     estimated annotations.
@@ -678,6 +693,9 @@ def evaluate(
         of segmentations.  Each segmentation itself is a list (or list-like)
         of intervals (\*_intervals_hier) and a list of lists of labels
         (\*_labels_hier).
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         additional keyword arguments to the evaluation metrics.
 
@@ -707,6 +725,12 @@ def evaluate(
     est_intervals_hier, est_labels_hier = _align_intervals(
         est_intervals_hier, est_labels_hier, t_min=0.0, t_max=t_end
     )
+    if safe:
+        validate_hier_intervals(ref_intervals_hier)
+        validate_hier_intervals(est_intervals_hier)
+
+    # We can now bypass further validation checks
+    kwargs["safe"] = False
 
     scores = collections.OrderedDict()
 
