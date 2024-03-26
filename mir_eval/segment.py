@@ -167,7 +167,12 @@ def validate_structure(
 
 
 def detection(
-    reference_intervals, estimated_intervals, window=0.5, beta=1.0, trim=False
+    reference_intervals,
+    estimated_intervals,
+    window=0.5,
+    beta=1.0,
+    trim=False,
+    safe=True,
 ):
     """Boundary detection hit-rate.
 
@@ -215,6 +220,9 @@ def detection(
         if ``True``, the first and last boundary times are ignored.
         Typically, these denote start (0) and end-markers.
         (Default value = False)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -225,7 +233,8 @@ def detection(
     f_measure : float
         F-measure (weighted harmonic mean of ``precision`` and ``recall``)
     """
-    validate_boundary(reference_intervals, estimated_intervals, trim)
+    if safe:
+        validate_boundary(reference_intervals, estimated_intervals, trim)
 
     # Convert intervals to boundaries
     reference_boundaries = util.intervals_to_boundaries(reference_intervals)
@@ -250,7 +259,7 @@ def detection(
     return precision, recall, f_measure
 
 
-def deviation(reference_intervals, estimated_intervals, trim=False):
+def deviation(reference_intervals, estimated_intervals, trim=False, safe=True):
     """Compute the median deviations between reference
     and estimated boundary times.
 
@@ -275,6 +284,9 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
         if ``True``, the first and last intervals are ignored.
         Typically, these denote start (0.0) and end-of-track markers.
         (Default value = False)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -285,7 +297,8 @@ def deviation(reference_intervals, estimated_intervals, trim=False):
         median time from each estimated boundary to the
         closest reference boundary
     """
-    validate_boundary(reference_intervals, estimated_intervals, trim)
+    if safe:
+        validate_boundary(reference_intervals, estimated_intervals, trim)
 
     # Convert intervals to boundaries
     reference_boundaries = util.intervals_to_boundaries(reference_intervals)
@@ -315,6 +328,7 @@ def pairwise(
     estimated_labels,
     frame_size=0.1,
     beta=1.0,
+    safe=True,
 ):
     """Frame-clustering segmentation evaluation by pair-wise agreement.
 
@@ -357,6 +371,9 @@ def pairwise(
     beta : float > 0
         beta value for F-measure
         (Default value = 1.0)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -368,9 +385,10 @@ def pairwise(
         F-measure of detecting whether frames belong in the same cluster
 
     """
-    validate_structure(
-        reference_intervals, reference_labels, estimated_intervals, estimated_labels
-    )
+    if safe:
+        validate_structure(
+            reference_intervals, reference_labels, estimated_intervals, estimated_labels
+        )
 
     # Check for empty annotations.  Don't need to check labels because
     # validate_structure makes sure they're the same size as intervals
@@ -418,6 +436,7 @@ def rand_index(
     estimated_labels,
     frame_size=0.1,
     beta=1.0,
+    safe=True,
 ):
     """(Non-adjusted) Rand index.
 
@@ -460,15 +479,19 @@ def rand_index(
     beta : float > 0
         beta value for F-measure
         (Default value = 1.0)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     rand_index : float > 0
         Rand index
     """
-    validate_structure(
-        reference_intervals, reference_labels, estimated_intervals, estimated_labels
-    )
+    if safe:
+        validate_structure(
+            reference_intervals, reference_labels, estimated_intervals, estimated_labels
+        )
 
     # Check for empty annotations.  Don't need to check labels because
     # validate_structure makes sure they're the same size as intervals
@@ -593,6 +616,7 @@ def ari(
     estimated_intervals,
     estimated_labels,
     frame_size=0.1,
+    safe=True,
 ):
     """Compute the Adjusted Rand Index (ARI) for frame clustering segmentation evaluation.
 
@@ -630,6 +654,9 @@ def ari(
     frame_size : float > 0
         length (in seconds) of frames for clustering
         (Default value = 0.1)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -637,9 +664,10 @@ def ari(
         Adjusted Rand index between segmentations.
 
     """
-    validate_structure(
-        reference_intervals, reference_labels, estimated_intervals, estimated_labels
-    )
+    if safe:
+        validate_structure(
+            reference_intervals, reference_labels, estimated_intervals, estimated_labels
+        )
 
     # Check for empty annotations.  Don't need to check labels because
     # validate_structure makes sure they're the same size as intervals
@@ -873,6 +901,7 @@ def mutual_information(
     estimated_intervals,
     estimated_labels,
     frame_size=0.1,
+    safe=True,
 ):
     """Frame-clustering segmentation: mutual information metrics.
 
@@ -912,6 +941,9 @@ def mutual_information(
     frame_size : float > 0
         length (in seconds) of frames for clustering
         (Default value = 0.1)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -923,9 +955,10 @@ def mutual_information(
         Normalize mutual information between segmentations
 
     """
-    validate_structure(
-        reference_intervals, reference_labels, estimated_intervals, estimated_labels
-    )
+    if safe:
+        validate_structure(
+            reference_intervals, reference_labels, estimated_intervals, estimated_labels
+        )
 
     # Check for empty annotations.  Don't need to check labels because
     # validate_structure makes sure they're the same size as intervals
@@ -966,6 +999,7 @@ def nce(
     frame_size=0.1,
     beta=1.0,
     marginal=False,
+    safe=True,
 ):
     """Frame-clustering segmentation: normalized conditional entropy
 
@@ -1015,6 +1049,9 @@ def nce(
         If `False`, normalize conditional entropy by uniform entropy.
         If `True`, normalize conditional entropy by the marginal entropy.
         (Default value = False)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -1037,9 +1074,10 @@ def nce(
     S_F
         F-measure for (S_over, S_under)
     """
-    validate_structure(
-        reference_intervals, reference_labels, estimated_intervals, estimated_labels
-    )
+    if safe:
+        validate_structure(
+            reference_intervals, reference_labels, estimated_intervals, estimated_labels
+        )
 
     # Check for empty annotations.  Don't need to check labels because
     # validate_structure makes sure they're the same size as intervals
@@ -1105,6 +1143,7 @@ def vmeasure(
     estimated_labels,
     frame_size=0.1,
     beta=1.0,
+    safe=True,
 ):
     """Frame-clustering segmentation: v-measure
 
@@ -1152,6 +1191,9 @@ def vmeasure(
     beta : float > 0
         beta for F-measure
         (Default value = 1.0)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -1176,10 +1218,11 @@ def vmeasure(
         frame_size=frame_size,
         beta=beta,
         marginal=True,
+        safe=safe,
     )
 
 
-def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
+def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, safe=True, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -1205,6 +1248,9 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     est_labels : list, shape=(m,)
         estimated segment labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -1223,6 +1269,10 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     est_intervals, est_labels = util.adjust_intervals(
         est_intervals, labels=est_labels, t_min=0.0, t_max=ref_intervals.max()
     )
+
+    if safe:
+        validate_boundary(ref_intervals, est_intervals, trim=kwargs.get("trim", False))
+        validate_structure(ref_intervals, ref_labels, est_intervals, est_labels)
 
     # Now compute all the metrics
     scores = collections.OrderedDict()
