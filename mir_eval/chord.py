@@ -340,6 +340,15 @@ def reduce_extended_quality(quality):
 
 
 # --- Chord Label Parsing ---
+# This monster regexp is pulled from the JAMS chord namespace,
+# which is in turn derived from the context-free grammar of
+# Harte et al., 2005.
+# Just compile this regexp once
+CHORD_PATTERN = re.compile(
+    r"""^((N|X)|(([A-G](b*|#*))((:(maj|min|dim|aug|1|5|sus2|sus4|maj6|min6|7|maj7|min7|dim7|hdim7|minmaj7|aug7|9|maj9|min9|11|maj11|min11|13|maj13|min13)(\((\*?((b*|#*)([1-9]|1[0-3]?))(,\*?((b*|#*)([1-9]|1[0-3]?)))*)\))?)|(:\((\*?((b*|#*)([1-9]|1[0-3]?))(,\*?((b*|#*)([1-9]|1[0-3]?)))*)\)))?((/((b*|#*)([1-9]|1[0-3]?)))?)?))$"""
+)  # nopep8
+
+
 def validate_chord_label(chord_label):
     """Test for well-formedness of a chord label.
 
@@ -348,17 +357,8 @@ def validate_chord_label(chord_label):
     chord_label : str
         Chord label to validate.
     """
-    # This monster regexp is pulled from the JAMS chord namespace,
-    # which is in turn derived from the context-free grammar of
-    # Harte et al., 2005.
-
-    pattern = re.compile(
-        r"""^((N|X)|(([A-G](b*|#*))((:(maj|min|dim|aug|1|5|sus2|sus4|maj6|min6|7|maj7|min7|dim7|hdim7|minmaj7|aug7|9|maj9|min9|11|maj11|min11|13|maj13|min13)(\((\*?((b*|#*)([1-9]|1[0-3]?))(,\*?((b*|#*)([1-9]|1[0-3]?)))*)\))?)|(:\((\*?((b*|#*)([1-9]|1[0-3]?))(,\*?((b*|#*)([1-9]|1[0-3]?)))*)\)))?((/((b*|#*)([1-9]|1[0-3]?)))?)?))$"""
-    )  # nopep8
-
-    if not pattern.match(chord_label):
+    if not CHORD_PATTERN.match(chord_label):
         raise InvalidChordException("Invalid chord label: " "{}".format(chord_label))
-    pass
 
 
 def split(chord_label, reduce_extended_chords=False):
@@ -715,7 +715,7 @@ def weighted_accuracy(comparisons, weights):
     return np.sum(comparisons * normalized_weights)
 
 
-def thirds(reference_labels, estimated_labels):
+def thirds(reference_labels, estimated_labels, safe=True):
     """Compare chords along root & third relationships.
 
     Examples
@@ -742,6 +742,9 @@ def thirds(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -749,7 +752,8 @@ def thirds(reference_labels, estimated_labels):
         Comparison scores, in [0.0, 1.0]
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
 
@@ -762,7 +766,7 @@ def thirds(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def thirds_inv(reference_labels, estimated_labels):
+def thirds_inv(reference_labels, estimated_labels, safe=True):
     """Score chords along root, third, & bass relationships.
 
     Examples
@@ -789,6 +793,9 @@ def thirds_inv(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -796,7 +803,8 @@ def thirds_inv(reference_labels, estimated_labels):
         Comparison scores, in [0.0, 1.0]
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
     est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
@@ -810,7 +818,7 @@ def thirds_inv(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def triads(reference_labels, estimated_labels):
+def triads(reference_labels, estimated_labels, safe=True):
     """Compare chords along triad (root & quality to #5) relationships.
 
     Examples
@@ -837,6 +845,9 @@ def triads(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -844,7 +855,8 @@ def triads(reference_labels, estimated_labels):
         Comparison scores, in [0.0, 1.0]
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
 
@@ -857,7 +869,7 @@ def triads(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def triads_inv(reference_labels, estimated_labels):
+def triads_inv(reference_labels, estimated_labels, safe=True):
     """Score chords along triad (root, quality to #5, & bass) relationships.
 
     Examples
@@ -884,6 +896,9 @@ def triads_inv(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -891,7 +906,8 @@ def triads_inv(reference_labels, estimated_labels):
         Comparison scores, in [0.0, 1.0]
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
     est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
@@ -905,7 +921,7 @@ def triads_inv(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def tetrads(reference_labels, estimated_labels):
+def tetrads(reference_labels, estimated_labels, safe=True):
     """Compare chords along tetrad (root & full quality) relationships.
 
     Examples
@@ -932,6 +948,9 @@ def tetrads(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -939,7 +958,8 @@ def tetrads(reference_labels, estimated_labels):
         Comparison scores, in [0.0, 1.0]
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots, est_semitones = encode_many(estimated_labels, False)[:2]
 
@@ -952,7 +972,7 @@ def tetrads(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def tetrads_inv(reference_labels, estimated_labels):
+def tetrads_inv(reference_labels, estimated_labels, safe=True):
     """Compare chords along tetrad (root, full quality, & bass) relationships.
 
     Examples
@@ -979,6 +999,9 @@ def tetrads_inv(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -986,7 +1009,8 @@ def tetrads_inv(reference_labels, estimated_labels):
         Comparison scores, in [0.0, 1.0]
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones, ref_bass = encode_many(reference_labels, False)
     est_roots, est_semitones, est_bass = encode_many(estimated_labels, False)
 
@@ -1000,7 +1024,7 @@ def tetrads_inv(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def root(reference_labels, estimated_labels):
+def root(reference_labels, estimated_labels, safe=True):
     """Compare chords according to roots.
 
     Examples
@@ -1027,6 +1051,9 @@ def root(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -1034,7 +1061,8 @@ def root(reference_labels, estimated_labels):
         Comparison scores, in [0.0, 1.0], or -1 if the comparison is out of
         gamut.
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     ref_roots, ref_semitones = encode_many(reference_labels, False)[:2]
     est_roots = encode_many(estimated_labels, False)[0]
     comparison_scores = (ref_roots == est_roots).astype(np.float64)
@@ -1044,7 +1072,7 @@ def root(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def mirex(reference_labels, estimated_labels):
+def mirex(reference_labels, estimated_labels, safe=True):
     """Compare chords along MIREX rules.
 
     Examples
@@ -1071,6 +1099,9 @@ def mirex(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -1078,7 +1109,8 @@ def mirex(reference_labels, estimated_labels):
         Comparison scores, in [0.0, 1.0]
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     # TODO(?): Should this be an argument?
     min_intersection = 3
     ref_data = encode_many(reference_labels, False)
@@ -1107,7 +1139,7 @@ def mirex(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def majmin(reference_labels, estimated_labels):
+def majmin(reference_labels, estimated_labels, safe=True):
     """Compare chords along major-minor rules. Chords with qualities outside
     Major/minor/no-chord are ignored.
 
@@ -1135,6 +1167,9 @@ def majmin(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -1143,7 +1178,8 @@ def majmin(reference_labels, estimated_labels):
         gamut.
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     maj_semitones = np.array(QUALITIES["maj"][:8])
     min_semitones = np.array(QUALITIES["min"][:8])
 
@@ -1172,7 +1208,7 @@ def majmin(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def majmin_inv(reference_labels, estimated_labels):
+def majmin_inv(reference_labels, estimated_labels, safe=True):
     """Compare chords along major-minor rules, with inversions. Chords with
     qualities outside Major/minor/no-chord are ignored, and the bass note must
     exist in the triad (bass in [1, 3, 5]).
@@ -1201,6 +1237,9 @@ def majmin_inv(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -1209,7 +1248,8 @@ def majmin_inv(reference_labels, estimated_labels):
         gamut.
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     maj_semitones = np.array(QUALITIES["maj"][:8])
     min_semitones = np.array(QUALITIES["min"][:8])
 
@@ -1236,7 +1276,7 @@ def majmin_inv(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def sevenths(reference_labels, estimated_labels):
+def sevenths(reference_labels, estimated_labels, safe=True):
     """Compare chords along MIREX 'sevenths' rules. Chords with qualities
     outside [maj, maj7, 7, min, min7, N] are ignored.
 
@@ -1264,6 +1304,9 @@ def sevenths(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -1272,7 +1315,8 @@ def sevenths(reference_labels, estimated_labels):
         gamut.
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     seventh_qualities = ["maj", "min", "maj7", "7", "min7", ""]
     valid_semitones = np.array([QUALITIES[name] for name in seventh_qualities])
 
@@ -1295,7 +1339,7 @@ def sevenths(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def sevenths_inv(reference_labels, estimated_labels):
+def sevenths_inv(reference_labels, estimated_labels, safe=True):
     """Compare chords along MIREX 'sevenths' rules. Chords with qualities
     outside [maj, maj7, 7, min, min7, N] are ignored.
 
@@ -1323,6 +1367,9 @@ def sevenths_inv(reference_labels, estimated_labels):
         Reference chord labels to score against.
     estimated_labels : list, len=n
         Estimated chord labels to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -1331,7 +1378,8 @@ def sevenths_inv(reference_labels, estimated_labels):
         gamut.
 
     """
-    validate(reference_labels, estimated_labels)
+    if safe:
+        validate(reference_labels, estimated_labels)
     seventh_qualities = ["maj", "min", "maj7", "7", "min7", ""]
     valid_semitones = np.array([QUALITIES[name] for name in seventh_qualities])
 
@@ -1359,7 +1407,7 @@ def sevenths_inv(reference_labels, estimated_labels):
     return comparison_scores
 
 
-def directional_hamming_distance(reference_intervals, estimated_intervals):
+def directional_hamming_distance(reference_intervals, estimated_intervals, safe=True):
     """Compute the directional hamming distance between reference and
     estimated intervals as defined by [#harte2010towards]_ and used for MIREX
     'OverSeg', 'UnderSeg' and 'MeanSeg' measures.
@@ -1382,6 +1430,9 @@ def directional_hamming_distance(reference_intervals, estimated_intervals):
         Reference chord intervals to score against.
     estimated_intervals : np.ndarray, shape=(m, 2), dtype=float
         Estimated chord intervals to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -1389,8 +1440,9 @@ def directional_hamming_distance(reference_intervals, estimated_intervals):
         directional hamming distance between reference intervals and
         estimated intervals.
     """
-    util.validate_intervals(estimated_intervals)
-    util.validate_intervals(reference_intervals)
+    if safe:
+        util.validate_intervals(estimated_intervals)
+        util.validate_intervals(reference_intervals)
 
     # make sure chord intervals do not overlap
     if (
@@ -1409,7 +1461,7 @@ def directional_hamming_distance(reference_intervals, estimated_intervals):
     return seg / (reference_intervals[-1, 1] - reference_intervals[0, 0])
 
 
-def overseg(reference_intervals, estimated_intervals):
+def overseg(reference_intervals, estimated_intervals, safe=True):
     """Compute the MIREX 'OverSeg' score.
 
     Examples
@@ -1426,16 +1478,21 @@ def overseg(reference_intervals, estimated_intervals):
         Reference chord intervals to score against.
     estimated_intervals : np.ndarray, shape=(m, 2), dtype=float
         Estimated chord intervals to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     oversegmentation score : float
         Comparison score, in [0.0, 1.0], where 1.0 means no oversegmentation.
     """
-    return 1 - directional_hamming_distance(reference_intervals, estimated_intervals)
+    return 1 - directional_hamming_distance(
+        reference_intervals, estimated_intervals, safe=safe
+    )
 
 
-def underseg(reference_intervals, estimated_intervals):
+def underseg(reference_intervals, estimated_intervals, safe=True):
     """Compute the MIREX 'UnderSeg' score.
 
     Examples
@@ -1452,16 +1509,21 @@ def underseg(reference_intervals, estimated_intervals):
         Reference chord intervals to score against.
     estimated_intervals : np.ndarray, shape=(m, 2), dtype=float
         Estimated chord intervals to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     undersegmentation score : float
         Comparison score, in [0.0, 1.0], where 1.0 means no undersegmentation.
     """
-    return 1 - directional_hamming_distance(estimated_intervals, reference_intervals)
+    return 1 - directional_hamming_distance(
+        estimated_intervals, reference_intervals, safe=safe
+    )
 
 
-def seg(reference_intervals, estimated_intervals):
+def seg(reference_intervals, estimated_intervals, safe=True):
     """Compute the MIREX 'MeanSeg' score.
 
     Examples
@@ -1478,6 +1540,9 @@ def seg(reference_intervals, estimated_intervals):
         Reference chord intervals to score against.
     estimated_intervals : np.ndarray, shape=(m, 2), dtype=float
         Estimated chord intervals to score against.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -1485,8 +1550,8 @@ def seg(reference_intervals, estimated_intervals):
         Comparison score, in [0.0, 1.0], where 1.0 means perfect segmentation.
     """
     return min(
-        underseg(reference_intervals, estimated_intervals),
-        overseg(reference_intervals, estimated_intervals),
+        underseg(reference_intervals, estimated_intervals, safe=safe),
+        overseg(reference_intervals, estimated_intervals, safe=safe),
     )
 
 
@@ -1525,7 +1590,7 @@ def merge_chord_intervals(intervals, labels):
     return np.array(merged_ivs)
 
 
-def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
+def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, safe=True, **kwargs):
     """Compute weighted accuracy for all comparison functions for the given
     reference and estimated annotations.
 
@@ -1552,6 +1617,9 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     est_labels : list, shape=(m,)
         estimated chord labels, in the format returned by
         :func:`mir_eval.io.load_labeled_intervals`.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -1582,33 +1650,55 @@ def evaluate(ref_intervals, ref_labels, est_intervals, est_labels, **kwargs):
     # Convert intervals to durations (used as weights)
     durations = util.intervals_to_durations(intervals)
 
+    # Validate the data up front
+    if safe:
+        validate(ref_labels, est_labels)
+        util.validate_intervals(ref_intervals)
+        util.validate_intervals(est_intervals)
+
     # Store scores for each comparison function
     scores = collections.OrderedDict()
 
-    scores["thirds"] = weighted_accuracy(thirds(ref_labels, est_labels), durations)
+    scores["thirds"] = weighted_accuracy(
+        thirds(ref_labels, est_labels, safe=False), durations
+    )
     scores["thirds_inv"] = weighted_accuracy(
-        thirds_inv(ref_labels, est_labels), durations
+        thirds_inv(ref_labels, est_labels, safe=False), durations
     )
-    scores["triads"] = weighted_accuracy(triads(ref_labels, est_labels), durations)
+    scores["triads"] = weighted_accuracy(
+        triads(ref_labels, est_labels, safe=False), durations
+    )
     scores["triads_inv"] = weighted_accuracy(
-        triads_inv(ref_labels, est_labels), durations
+        triads_inv(ref_labels, est_labels, safe=False), durations
     )
-    scores["tetrads"] = weighted_accuracy(tetrads(ref_labels, est_labels), durations)
+    scores["tetrads"] = weighted_accuracy(
+        tetrads(ref_labels, est_labels, safe=False), durations
+    )
     scores["tetrads_inv"] = weighted_accuracy(
-        tetrads_inv(ref_labels, est_labels), durations
+        tetrads_inv(ref_labels, est_labels, safe=False), durations
     )
-    scores["root"] = weighted_accuracy(root(ref_labels, est_labels), durations)
-    scores["mirex"] = weighted_accuracy(mirex(ref_labels, est_labels), durations)
-    scores["majmin"] = weighted_accuracy(majmin(ref_labels, est_labels), durations)
+    scores["root"] = weighted_accuracy(
+        root(ref_labels, est_labels, safe=False), durations
+    )
+    scores["mirex"] = weighted_accuracy(
+        mirex(ref_labels, est_labels, safe=False), durations
+    )
+    scores["majmin"] = weighted_accuracy(
+        majmin(ref_labels, est_labels, safe=False), durations
+    )
     scores["majmin_inv"] = weighted_accuracy(
-        majmin_inv(ref_labels, est_labels), durations
+        majmin_inv(ref_labels, est_labels, safe=False), durations
     )
-    scores["sevenths"] = weighted_accuracy(sevenths(ref_labels, est_labels), durations)
+    scores["sevenths"] = weighted_accuracy(
+        sevenths(ref_labels, est_labels, safe=False), durations
+    )
     scores["sevenths_inv"] = weighted_accuracy(
-        sevenths_inv(ref_labels, est_labels), durations
+        sevenths_inv(ref_labels, est_labels, safe=False), durations
     )
-    scores["underseg"] = underseg(merged_ref_intervals, merged_est_intervals)
-    scores["overseg"] = overseg(merged_ref_intervals, merged_est_intervals)
+    scores["underseg"] = underseg(
+        merged_ref_intervals, merged_est_intervals, safe=False
+    )
+    scores["overseg"] = overseg(merged_ref_intervals, merged_est_intervals, safe=False)
     scores["seg"] = min(scores["overseg"], scores["underseg"])
 
     return scores

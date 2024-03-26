@@ -133,7 +133,7 @@ def _get_reference_beat_variations(reference_beats):
     )
 
 
-def f_measure(reference_beats, estimated_beats, f_measure_threshold=0.07):
+def f_measure(reference_beats, estimated_beats, f_measure_threshold=0.07, safe=True):
     """Compute the F-measure of correct vs incorrectly predicted beats.
     "Correctness" is determined over a small window.
 
@@ -144,7 +144,7 @@ def f_measure(reference_beats, estimated_beats, f_measure_threshold=0.07):
     >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
     >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
     >>> f_measure = mir_eval.beat.f_measure(reference_beats,
-                                            estimated_beats)
+    ...                                     estimated_beats)
 
     Parameters
     ----------
@@ -155,6 +155,9 @@ def f_measure(reference_beats, estimated_beats, f_measure_threshold=0.07):
     f_measure_threshold : float
         Window size, in seconds
         (Default value = 0.07)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -162,7 +165,8 @@ def f_measure(reference_beats, estimated_beats, f_measure_threshold=0.07):
         The computed F-measure score
 
     """
-    validate(reference_beats, estimated_beats)
+    if safe:
+        validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0.0
@@ -174,7 +178,7 @@ def f_measure(reference_beats, estimated_beats, f_measure_threshold=0.07):
     return util.f_measure(precision, recall)
 
 
-def cemgil(reference_beats, estimated_beats, cemgil_sigma=0.04):
+def cemgil(reference_beats, estimated_beats, cemgil_sigma=0.04, safe=True):
     """Cemgil's score, computes a gaussian error of each estimated beat.
     Compares against the original beat times and all metrical variations.
 
@@ -185,7 +189,7 @@ def cemgil(reference_beats, estimated_beats, cemgil_sigma=0.04):
     >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
     >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
     >>> cemgil_score, cemgil_max = mir_eval.beat.cemgil(reference_beats,
-                                                        estimated_beats)
+    ...                                                 estimated_beats)
 
     Parameters
     ----------
@@ -196,6 +200,9 @@ def cemgil(reference_beats, estimated_beats, cemgil_sigma=0.04):
     cemgil_sigma : float
         Sigma parameter of gaussian error windows
         (Default value = 0.04)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -204,7 +211,8 @@ def cemgil(reference_beats, estimated_beats, cemgil_sigma=0.04):
     cemgil_max : float
         The best Cemgil score for all metrical variations
     """
-    validate(reference_beats, estimated_beats)
+    if safe:
+        validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0.0, 0.0
@@ -228,7 +236,12 @@ def cemgil(reference_beats, estimated_beats, cemgil_sigma=0.04):
 
 
 def goto(
-    reference_beats, estimated_beats, goto_threshold=0.35, goto_mu=0.2, goto_sigma=0.2
+    reference_beats,
+    estimated_beats,
+    goto_threshold=0.35,
+    goto_mu=0.2,
+    goto_sigma=0.2,
+    safe=True,
 ):
     """Calculate Goto's score, a binary 1 or 0 depending on some specific
     heuristic criteria
@@ -258,13 +271,17 @@ def goto(
         The std of the beat errors in the continuously correct track must
         be less than this
         (Default value = 0.2)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     goto_score : float
         Either 1.0 or 0.0 if some specific criteria are met
     """
-    validate(reference_beats, estimated_beats)
+    if safe:
+        validate(reference_beats, estimated_beats)
     # When estimated beats are empty, no beats are correct; metric is 0
     if estimated_beats.size == 0 or reference_beats.size == 0:
         return 0.0
@@ -327,7 +344,7 @@ def goto(
     return 1.0 * (goto_criteria == 3)
 
 
-def p_score(reference_beats, estimated_beats, p_score_threshold=0.2):
+def p_score(reference_beats, estimated_beats, p_score_threshold=0.2, safe=True):
     """Get McKinney's P-score.
     Based on the autocorrelation of the reference and estimated beats
 
@@ -349,6 +366,9 @@ def p_score(reference_beats, estimated_beats, p_score_threshold=0.2):
         Window size will be
         ``p_score_threshold*np.median(inter_annotation_intervals)``,
         (Default value = 0.2)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -356,7 +376,8 @@ def p_score(reference_beats, estimated_beats, p_score_threshold=0.2):
         McKinney's P-score
 
     """
-    validate(reference_beats, estimated_beats)
+    if safe:
+        validate(reference_beats, estimated_beats)
     # Warn when only one beat is provided for either estimated or reference,
     # report a warning
     if reference_beats.size == 1:
@@ -412,6 +433,7 @@ def continuity(
     estimated_beats,
     continuity_phase_threshold=0.175,
     continuity_period_threshold=0.175,
+    safe=True,
 ):
     """Get metrics based on how much of the estimated beat sequence is
     continually correct.
@@ -439,6 +461,9 @@ def continuity(
         Allowable distance between the inter-beat-interval
         and the inter-annotation-interval
         (Default value = 0.175)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -451,7 +476,8 @@ def continuity(
     AMLt : float
         Any metric level, total accuracy (continuity not required)
     """
-    validate(reference_beats, estimated_beats)
+    if safe:
+        validate(reference_beats, estimated_beats)
     # Warn when only one beat is provided for either estimated or reference,
     # report a warning
     if reference_beats.size == 1:
@@ -583,7 +609,7 @@ def continuity(
     )
 
 
-def information_gain(reference_beats, estimated_beats, bins=41):
+def information_gain(reference_beats, estimated_beats, bins=41, safe=True):
     """Get the information gain - K-L divergence of the beat error histogram
     to a uniform histogram
 
@@ -594,7 +620,7 @@ def information_gain(reference_beats, estimated_beats, bins=41):
     >>> estimated_beats = mir_eval.io.load_events('estimated.txt')
     >>> estimated_beats = mir_eval.beat.trim_beats(estimated_beats)
     >>> information_gain = mir_eval.beat.information_gain(reference_beats,
-                                                          estimated_beats)
+    ...                                                   estimated_beats)
 
     Parameters
     ----------
@@ -605,13 +631,17 @@ def information_gain(reference_beats, estimated_beats, bins=41):
     bins : int
         Number of bins in the beat error histogram
         (Default value = 41)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     information_gain_score : float
         Entropy of beat error histogram
     """
-    validate(reference_beats, estimated_beats)
+    if safe:
+        validate(reference_beats, estimated_beats)
     # If an even number of bins is provided,
     # there will be no bin centered at zero, so warn the user.
     if not bins % 2:
@@ -712,7 +742,7 @@ def _get_entropy(reference_beats, estimated_beats, bins):
     return -np.sum(raw_bin_values * np.log2(raw_bin_values))
 
 
-def evaluate(reference_beats, estimated_beats, **kwargs):
+def evaluate(reference_beats, estimated_beats, safe=True, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -727,6 +757,9 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
         Reference beat times, in seconds
     estimated_beats : np.ndarray
         Query beat times, in seconds
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -742,8 +775,14 @@ def evaluate(reference_beats, estimated_beats, **kwargs):
     reference_beats = util.filter_kwargs(trim_beats, reference_beats, **kwargs)
     estimated_beats = util.filter_kwargs(trim_beats, estimated_beats, **kwargs)
 
-    # Now compute all the metrics
+    # Validate inputs
+    if safe:
+        validate(reference_beats, estimated_beats)
 
+    # We can now bypass validation
+    kwargs["safe"] = False
+
+    # Now compute all the metrics
     scores = collections.OrderedDict()
 
     # F-Measure
