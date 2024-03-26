@@ -200,13 +200,10 @@ def time_frequency(
 
         # Create the time-varying scaling for the entire time interval by the piano roll
         # magnitude and add to the accumulating waveform.
-        # FIXME: this logic is broken when length
-        # does not match the final sample interval
-        output += wave[:length] * gram_interpolator(
-            np.arange(
-                max(sample_intervals[0][0], 0), min(sample_intervals[-1][-1], length)
-            )
-        )
+        t_in = max(sample_intervals[0][0], 0)
+        t_out = min(sample_intervals[-1][-1], length)
+        signal = gram_interpolator(np.arange(t_in, t_out))
+        output[t_in:t_out] += wave[: len(signal)] * signal
 
     # Normalize, but only if there's non-zero values
     norm = np.abs(output).max()
