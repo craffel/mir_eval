@@ -53,7 +53,7 @@ def validate(reference_onsets, estimated_onsets):
         util.validate_events(onsets, MAX_TIME)
 
 
-def f_measure(reference_onsets, estimated_onsets, window=0.05):
+def f_measure(reference_onsets, estimated_onsets, window=0.05, safe=True):
     """Compute the F-measure of correct vs incorrectly predicted onsets.
     "Correctness" is determined over a small window.
 
@@ -73,6 +73,9 @@ def f_measure(reference_onsets, estimated_onsets, window=0.05):
     window : float
         Window size, in seconds
         (Default value = .05)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -84,7 +87,8 @@ def f_measure(reference_onsets, estimated_onsets, window=0.05):
         (# true positives)/(# true positives + # false negatives)
 
     """
-    validate(reference_onsets, estimated_onsets)
+    if safe:
+        validate(reference_onsets, estimated_onsets)
     # If either list is empty, return 0s
     if reference_onsets.size == 0 or estimated_onsets.size == 0:
         return 0.0, 0.0, 0.0
@@ -98,7 +102,7 @@ def f_measure(reference_onsets, estimated_onsets, window=0.05):
     return util.f_measure(precision, recall), precision, recall
 
 
-def evaluate(reference_onsets, estimated_onsets, **kwargs):
+def evaluate(reference_onsets, estimated_onsets, safe=True, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -114,6 +118,9 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
         reference onset locations, in seconds
     estimated_onsets : np.ndarray
         estimated onset locations, in seconds
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -125,6 +132,11 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
         the value is the (float) score achieved.
 
     """
+    if safe:
+        validate(reference_onsets, estimated_onsets)
+
+    kwargs["safe"] = False
+
     # Compute all metrics
     scores = collections.OrderedDict()
 

@@ -346,7 +346,7 @@ def compute_err_score(true_positives, n_ref, n_est):
     return e_sub, e_miss, e_fa, e_tot
 
 
-def metrics(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
+def metrics(ref_time, ref_freqs, est_time, est_freqs, safe=True, **kwargs):
     """Compute multipitch metrics. All metrics are computed at the 'macro' level
     such that the frame true positive/false positive/false negative rates are
     summed across time and the metrics are computed on the combined values.
@@ -370,6 +370,9 @@ def metrics(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
         Time of each estimated frequency value
     est_freqs : list of np.ndarray
         List of np.ndarrays of estimate frequency values
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -406,7 +409,8 @@ def metrics(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
         Chroma total error
 
     """
-    validate(ref_time, ref_freqs, est_time, est_freqs)
+    if safe:
+        validate(ref_time, ref_freqs, est_time, est_freqs)
 
     # resample est_freqs if est_times is different from ref_times
     if est_time.size != ref_time.size or not np.allclose(est_time, ref_time):
@@ -476,7 +480,7 @@ def metrics(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
     )
 
 
-def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
+def evaluate(ref_time, ref_freqs, est_time, est_freqs, safe=True, **kwargs):
     """Evaluate two multipitch (multi-f0) transcriptions, where the first is
     treated as the reference (ground truth) and the second as the estimate to
     be evaluated (prediction).
@@ -498,6 +502,9 @@ def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
         Time of each estimated frequency value
     est_freqs : list of np.ndarray
         List of np.ndarrays of estimate frequency values
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -526,6 +533,8 @@ def evaluate(ref_time, ref_freqs, est_time, est_freqs, **kwargs):
         scores["Chroma Miss Error"],
         scores["Chroma False Alarm Error"],
         scores["Chroma Total Error"],
-    ) = util.filter_kwargs(metrics, ref_time, ref_freqs, est_time, est_freqs, **kwargs)
+    ) = util.filter_kwargs(
+        metrics, ref_time, ref_freqs, est_time, est_freqs, safe=safe, **kwargs
+    )
 
     return scores
