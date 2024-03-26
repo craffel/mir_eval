@@ -494,7 +494,7 @@ def voicing_false_alarm(ref_voicing, est_voicing):
     return np.sum(est_voicing * ref_indicator) / np.sum(ref_indicator)
 
 
-def voicing_measures(ref_voicing, est_voicing):
+def voicing_measures(ref_voicing, est_voicing, safe=True):
     """Compute the voicing recall and false alarm rates given two voicing
     indicator sequences, one as reference (truth) and the other as the estimate
     (prediction).  The sequences must be of the same length.
@@ -517,6 +517,9 @@ def voicing_measures(ref_voicing, est_voicing):
         Reference boolean voicing array
     est_voicing : np.ndarray
         Estimated boolean voicing array
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -527,13 +530,16 @@ def voicing_measures(ref_voicing, est_voicing):
         Voicing false alarm rate, the fraction of unvoiced frames in ref
         indicated as voiced in est
     """
-    validate_voicing(ref_voicing, est_voicing)
+    if safe:
+        validate_voicing(ref_voicing, est_voicing)
     vx_recall = voicing_recall(ref_voicing, est_voicing)
     vx_false_alm = voicing_false_alarm(ref_voicing, est_voicing)
     return vx_recall, vx_false_alm
 
 
-def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50):
+def raw_pitch_accuracy(
+    ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50, safe=True
+):
     """Compute the raw pitch accuracy given two pitch (frequency) sequences in
     cents and matching voicing indicator sequences. The first pitch and voicing
     arrays are treated as the reference (truth), and the second two as the
@@ -566,6 +572,9 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolera
         Maximum absolute deviation in cents for a frequency value to be
         considered correct
         (Default value = 50)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -574,8 +583,9 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolera
         which est_cent provides a correct frequency values
         (within cent_tolerance cents).
     """
-    validate_voicing(ref_voicing, est_voicing)
-    validate(ref_voicing, ref_cent, est_voicing, est_cent)
+    if safe:
+        validate_voicing(ref_voicing, est_voicing)
+        validate(ref_voicing, ref_cent, est_voicing, est_cent)
     # When input arrays are empty, return 0 by special case
     # If there are no voiced frames in reference, metric is 0
     if (
@@ -602,7 +612,7 @@ def raw_pitch_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolera
 
 
 def raw_chroma_accuracy(
-    ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50
+    ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50, safe=True
 ):
     """Compute the raw chroma accuracy given two pitch (frequency) sequences
     in cents and matching voicing indicator sequences. The first pitch and
@@ -636,6 +646,9 @@ def raw_chroma_accuracy(
         Maximum absolute deviation in cents for a frequency value to be
         considered correct
         (Default value = 50)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -645,8 +658,9 @@ def raw_chroma_accuracy(
         cent_tolerance cents), ignoring octave errors
 
     """
-    validate_voicing(ref_voicing, est_voicing)
-    validate(ref_voicing, ref_cent, est_voicing, est_cent)
+    if safe:
+        validate_voicing(ref_voicing, est_voicing)
+        validate(ref_voicing, ref_cent, est_voicing, est_cent)
     # When input arrays are empty, return 0 by special case
     # If there are no voiced frames in reference, metric is 0
     if (
@@ -670,7 +684,9 @@ def raw_chroma_accuracy(
     return rca
 
 
-def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50):
+def overall_accuracy(
+    ref_voicing, ref_cent, est_voicing, est_cent, cent_tolerance=50, safe=True
+):
     """Compute the overall accuracy given two pitch (frequency) sequences
     in cents and matching voicing indicator sequences. The first pitch and
     voicing arrays are treated as the reference (truth), and the second two
@@ -703,6 +719,9 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_toleranc
         Maximum absolute deviation in cents for a frequency value to be
         considered correct
         (Default value = 50)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -711,8 +730,9 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_toleranc
         where provides a correct frequency values (within cent_tolerance).
 
     """
-    validate_voicing(ref_voicing, est_voicing)
-    validate(ref_voicing, ref_cent, est_voicing, est_cent)
+    if safe:
+        validate_voicing(ref_voicing, est_voicing)
+        validate(ref_voicing, ref_cent, est_voicing, est_cent)
 
     # When input arrays are empty, return 0 by special case
     if (
@@ -750,7 +770,14 @@ def overall_accuracy(ref_voicing, ref_cent, est_voicing, est_cent, cent_toleranc
 
 
 def evaluate(
-    ref_time, ref_freq, est_time, est_freq, est_voicing=None, ref_reward=None, **kwargs
+    ref_time,
+    ref_freq,
+    est_time,
+    est_freq,
+    est_voicing=None,
+    ref_reward=None,
+    safe=True,
+    **kwargs
 ):
     """Evaluate two melody (predominant f0) transcriptions, where the first is
     treated as the reference (ground truth) and the second as the estimate to
@@ -781,6 +808,9 @@ def evaluate(
     ref_reward : np.ndarray
         Reference pitch estimation reward.
         Default None, which means all frames are weighted equally.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -819,6 +849,11 @@ def evaluate(
         ref_reward,
         **kwargs
     )
+    if safe:
+        validate_voicing(ref_voicing, est_voicing)
+        validate(ref_voicing, ref_cent, est_voicing, est_cent)
+
+    kwargs["safe"] = False
 
     # Compute metrics
     scores = collections.OrderedDict()
