@@ -91,7 +91,8 @@ def validate(reference_sources, estimated_sources):
         warnings.warn(
             "reference_sources is empty, should be of size "
             "(nsrc, nsample).  sdr, sir, sar, and perm will all "
-            "be empty np.ndarrays", stacklevel=2
+            "be empty np.ndarrays",
+            stacklevel=2,
         )
     elif _any_source_silent(reference_sources):
         raise ValueError(
@@ -106,7 +107,8 @@ def validate(reference_sources, estimated_sources):
         warnings.warn(
             "estimated_sources is empty, should be of size "
             "(nsrc, nsample).  sdr, sir, sar, and perm will all "
-            "be empty np.ndarrays", stacklevel=2
+            "be empty np.ndarrays",
+            stacklevel=2,
         )
     elif _any_source_silent(estimated_sources):
         raise ValueError(
