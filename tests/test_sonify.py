@@ -28,6 +28,8 @@ def test_time_frequency(fs):
         fs,
     )
     assert len(signal) == 10 * fs
+
+    # Make one longer
     signal = mir_eval.sonify.time_frequency(
         np.random.standard_normal((100, 1000)),
         np.arange(1, 101),
@@ -36,6 +38,16 @@ def test_time_frequency(fs):
         length=fs * 11,
     )
     assert len(signal) == 11 * fs
+
+    # Make one shorter
+    signal = mir_eval.sonify.time_frequency(
+        np.random.standard_normal((100, 1000)),
+        np.arange(1, 101),
+        np.linspace(0, 10, 1000),
+        fs,
+        length=fs * 5,
+    )
+    assert len(signal) == 5 * fs
 
 
 @pytest.mark.parametrize("fs", [8000, 44100])
