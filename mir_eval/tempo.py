@@ -70,7 +70,7 @@ def validate(reference_tempi, reference_weight, estimated_tempi):
         raise ValueError("Reference weight must lie in range [0, 1]")
 
 
-def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
+def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08, safe=True):
     """Compute the tempo detection accuracy metric.
 
     Parameters
@@ -87,6 +87,9 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
         count as a hit.
         ``|est_t - ref_t| <= tol * ref_t``
         (Default value = 0.08)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -107,14 +110,18 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
 
         If ``tol < 0`` or ``tol > 1``.
     """
-    validate(reference_tempi, reference_weight, estimated_tempi)
+    if safe:
+        validate(reference_tempi, reference_weight, estimated_tempi)
 
     if tol < 0 or tol > 1:
         raise ValueError(
             "invalid tolerance {}: must lie in the range " "[0, 1]".format(tol)
         )
     if tol == 0.0:
-        warnings.warn("A tolerance of 0.0 may not " "lead to the results you expect.")
+        warnings.warn(
+            "A tolerance of 0.0 may not " "lead to the results you expect.",
+            stacklevel=2,
+        )
 
     hits = [False, False]
 
@@ -135,7 +142,7 @@ def detection(reference_tempi, reference_weight, estimated_tempi, tol=0.08):
     return p_score, one_correct, both_correct
 
 
-def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
+def evaluate(reference_tempi, reference_weight, estimated_tempi, safe=True, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Parameters
@@ -147,6 +154,9 @@ def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
         ``reference_tempi[1]``.
     estimated_tempi : np.ndarray, shape=(2,)
         Two non-negative estimated tempi.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -165,7 +175,12 @@ def evaluate(reference_tempi, reference_weight, estimated_tempi, **kwargs):
         scores["One-correct"],
         scores["Both-correct"],
     ) = util.filter_kwargs(
-        detection, reference_tempi, reference_weight, estimated_tempi, **kwargs
+        detection,
+        reference_tempi,
+        reference_weight,
+        estimated_tempi,
+        safe=safe,
+        **kwargs
     )
 
     return scores

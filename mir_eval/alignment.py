@@ -141,7 +141,9 @@ def absolute_error(reference_timestamps, estimated_timestamps):
     return np.median(deviations), np.mean(deviations)
 
 
-def percentage_correct(reference_timestamps, estimated_timestamps, window=0.3):
+def percentage_correct(
+    reference_timestamps, estimated_timestamps, window=0.3, safe=True
+):
     """Compute the percentage of correctly predicted timestamps. A timestamp is predicted
     correctly if its position doesn't deviate more than the window parameter from the ground
     truth timestamp.
@@ -161,19 +163,27 @@ def percentage_correct(reference_timestamps, estimated_timestamps, window=0.3):
     window : float
         Window size, in seconds
         (Default value = .3)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     pc : float
         Percentage of correct timestamps
     """
-    validate(reference_timestamps, estimated_timestamps)
+    if safe:
+        validate(reference_timestamps, estimated_timestamps)
+
     deviations = np.abs(reference_timestamps - estimated_timestamps)
     return np.mean(deviations <= window)
 
 
 def percentage_correct_segments(
-    reference_timestamps, estimated_timestamps, duration: Optional[float] = None
+    reference_timestamps,
+    estimated_timestamps,
+    duration: Optional[float] = None,
+    safe=True,
 ):
     """Calculate the percentage of correct segments (PCS) metric.
 
@@ -215,13 +225,17 @@ def percentage_correct_segments(
     duration : float
         Optional. Total duration of audio (seconds). WARNING: Metric is computed differently
         depending on whether this is provided or not - see documentation above!
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     pcs : float
         Percentage of time where ground truth and predicted segments overlap
     """
-    validate(reference_timestamps, estimated_timestamps)
+    if safe:
+        validate(reference_timestamps, estimated_timestamps)
     if duration is not None:
         duration = float(duration)
         if duration <= 0:
@@ -266,7 +280,7 @@ def percentage_correct_segments(
     return overlap_duration / duration
 
 
-def karaoke_perceptual_metric(reference_timestamps, estimated_timestamps):
+def karaoke_perceptual_metric(reference_timestamps, estimated_timestamps, safe=True):
     """Metric based on human synchronicity perception as measured in the paper
     "User-centered evaluation of lyrics to audio alignment" [#lizemasclef2021]
 
@@ -288,13 +302,17 @@ def karaoke_perceptual_metric(reference_timestamps, estimated_timestamps):
         reference timestamps, in seconds
     estimated_timestamps : np.ndarray
         estimated timestamps, in seconds
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     perceptual_score : float
         Perceptual score, averaged over all timestamps
     """
-    validate(reference_timestamps, estimated_timestamps)
+    if safe:
+        validate(reference_timestamps, estimated_timestamps)
     offsets = estimated_timestamps - reference_timestamps
 
     # Score offsets using a certain skewed normal distribution
@@ -309,7 +327,7 @@ def karaoke_perceptual_metric(reference_timestamps, estimated_timestamps):
     return np.mean(perceptual_scores)
 
 
-def evaluate(reference_timestamps, estimated_timestamps, **kwargs):
+def evaluate(reference_timestamps, estimated_timestamps, safe=True, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -328,6 +346,9 @@ def evaluate(reference_timestamps, estimated_timestamps, **kwargs):
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -335,6 +356,12 @@ def evaluate(reference_timestamps, estimated_timestamps, **kwargs):
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
     """
+    if safe:
+        validate(reference_timestamps, estimated_timestamps)
+
+    # We can now bypass validation
+    kwargs["safe"] = False
+
     # Compute all metrics
     scores = collections.OrderedDict()
 

@@ -113,7 +113,7 @@ def split_key_string(key):
     return KEY_TO_SEMITONE[key.lower()], mode
 
 
-def weighted_score(reference_key, estimated_key):
+def weighted_score(reference_key, estimated_key, safe=True):
     """Compute a heuristic score which is weighted according to the
     relationship of the reference and estimated key, as follows:
 
@@ -143,13 +143,17 @@ def weighted_score(reference_key, estimated_key):
         Reference key string.
     estimated_key : str
         Estimated key string.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
     score : float
         Score representing how closely related the keys are.
     """
-    validate(reference_key, estimated_key)
+    if safe:
+        validate(reference_key, estimated_key)
     reference_key, reference_mode = split_key_string(reference_key)
     estimated_key, estimated_mode = split_key_string(estimated_key)
     # If keys are the same, return 1.
@@ -181,7 +185,7 @@ def weighted_score(reference_key, estimated_key):
     return 0.0
 
 
-def evaluate(reference_key, estimated_key, **kwargs):
+def evaluate(reference_key, estimated_key, safe=True, **kwargs):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -196,6 +200,9 @@ def evaluate(reference_key, estimated_key, **kwargs):
         Reference key string.
     estimated_key : str
         Estimated key string.
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -206,6 +213,10 @@ def evaluate(reference_key, estimated_key, **kwargs):
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
     """
+    if safe:
+        validate(reference_key, estimated_key)
+
+    kwargs["safe"] = False
     # Compute all metrics
     scores = collections.OrderedDict()
 
