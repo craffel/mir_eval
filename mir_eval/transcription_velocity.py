@@ -241,6 +241,7 @@ def precision_recall_f1_overlap(
     strict=False,
     velocity_tolerance=0.1,
     beta=1.0,
+    safe=True,
 ):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes, and the Average Overlap Ratio for correctly transcribed
@@ -306,6 +307,9 @@ def precision_recall_f1_overlap(
         matched reference note.
     beta : float > 0
         Weighting factor for f-measure (default value = 1.0).
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -318,14 +322,15 @@ def precision_recall_f1_overlap(
     avg_overlap_ratio : float
         The computed Average Overlap Ratio score
     """
-    validate(
-        ref_intervals,
-        ref_pitches,
-        ref_velocities,
-        est_intervals,
-        est_pitches,
-        est_velocities,
-    )
+    if safe:
+        validate(
+            ref_intervals,
+            ref_pitches,
+            ref_velocities,
+            est_intervals,
+            est_pitches,
+            est_velocities,
+        )
     # When reference notes are empty, metrics are undefined, return 0's
     if len(ref_pitches) == 0 or len(est_pitches) == 0:
         return 0.0, 0.0, 0.0, 0.0
@@ -363,6 +368,7 @@ def evaluate(
     est_intervals,
     est_pitches,
     est_velocities,
+    safe=True,
     **kwargs
 ):
     """Compute all metrics for the given reference and estimated annotations.
@@ -381,6 +387,9 @@ def evaluate(
         Array of estimated pitch values in Hertz
     est_velocities : np.ndarray, shape=(n,)
         Array of MIDI velocities (i.e. between 0 and 127) of estimated notes
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -391,6 +400,18 @@ def evaluate(
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
     """
+    if safe:
+        validate(
+            ref_intervals,
+            ref_pitches,
+            ref_velocities,
+            est_intervals,
+            est_pitches,
+            est_velocities,
+        )
+
+    kwargs["safe"] = False
+
     # Compute all the metrics
     scores = collections.OrderedDict()
 

@@ -485,6 +485,7 @@ def precision_recall_f1_overlap(
     offset_min_tolerance=0.05,
     strict=False,
     beta=1.0,
+    safe=True,
 ):
     """Compute the Precision, Recall and F-measure of correct vs incorrectly
     transcribed notes, and the Average Overlap Ratio for correctly transcribed
@@ -551,6 +552,9 @@ def precision_recall_f1_overlap(
         than).
     beta : float > 0
         Weighting factor for f-measure (default value = 1.0).
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -563,7 +567,8 @@ def precision_recall_f1_overlap(
     avg_overlap_ratio : float
         The computed Average Overlap Ratio score
     """
-    validate(ref_intervals, ref_pitches, est_intervals, est_pitches)
+    if safe:
+        validate(ref_intervals, ref_pitches, est_intervals, est_pitches)
     # When reference notes are empty, metrics are undefined, return 0's
     if len(ref_pitches) == 0 or len(est_pitches) == 0:
         return 0.0, 0.0, 0.0, 0.0
@@ -782,7 +787,9 @@ def offset_precision_recall_f1(
     return offset_precision, offset_recall, offset_f_measure
 
 
-def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
+def evaluate(
+    ref_intervals, ref_pitches, est_intervals, est_pitches, safe=True, **kwargs
+):
     """Compute all metrics for the given reference and estimated annotations.
 
     Examples
@@ -804,6 +811,9 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
         Array of estimated notes time intervals (onset and offset times)
     est_pitches : np.ndarray, shape=(m,)
         Array of estimated pitch values in Hertz
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -814,6 +824,11 @@ def evaluate(ref_intervals, ref_pitches, est_intervals, est_pitches, **kwargs):
         Dictionary of scores, where the key is the metric name (str) and
         the value is the (float) score achieved.
     """
+    if safe:
+        validate(ref_intervals, ref_pitches, est_intervals, est_pitches)
+
+    kwargs["safe"] = False
+
     # Compute all the metrics
     scores = collections.OrderedDict()
 
