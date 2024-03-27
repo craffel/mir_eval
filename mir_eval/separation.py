@@ -143,7 +143,9 @@ def _any_source_silent(sources):
     )
 
 
-def bss_eval_sources(reference_sources, estimated_sources, compute_permutation=True):
+def bss_eval_sources(
+    reference_sources, estimated_sources, compute_permutation=True, safe=True
+):
     """
     Ordering and measurement of the separation quality for estimated source
     signals in terms of filtered true source, interference and artifacts.
@@ -175,6 +177,9 @@ def bss_eval_sources(reference_sources, estimated_sources, compute_permutation=T
         reference_sources)
     compute_permutation : bool, optional
         compute permutation of estimate/source combinations (True by default)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -205,7 +210,8 @@ def bss_eval_sources(reference_sources, estimated_sources, compute_permutation=T
     if reference_sources.ndim == 1:
         reference_sources = reference_sources[np.newaxis, :]
 
-    validate(reference_sources, estimated_sources)
+    if safe:
+        validate(reference_sources, estimated_sources)
     # If empty matrices were supplied, return empty lists (special case)
     if reference_sources.size == 0 or estimated_sources.size == 0:
         return np.array([]), np.array([]), np.array([]), np.array([])
@@ -259,6 +265,7 @@ def bss_eval_sources_framewise(
     window=30 * 44100,
     hop=15 * 44100,
     compute_permutation=False,
+    safe=True,
 ):
     """Framewise computation of bss_eval_sources
 
@@ -305,6 +312,9 @@ def bss_eval_sources_framewise(
     compute_permutation : bool, optional
         compute permutation of estimate/source combinations for all windows
         (False by default)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -326,7 +336,8 @@ def bss_eval_sources_framewise(
     if reference_sources.ndim == 1:
         reference_sources = reference_sources[np.newaxis, :]
 
-    validate(reference_sources, estimated_sources)
+    if safe:
+        validate(reference_sources, estimated_sources)
     # If empty matrices were supplied, return empty lists (special case)
     if reference_sources.size == 0 or estimated_sources.size == 0:
         return np.array([]), np.array([]), np.array([]), np.array([])
@@ -364,7 +375,9 @@ def bss_eval_sources_framewise(
     return sdr, sir, sar, perm
 
 
-def bss_eval_images(reference_sources, estimated_sources, compute_permutation=True):
+def bss_eval_images(
+    reference_sources, estimated_sources, compute_permutation=True, safe=True
+):
     """Compute the bss_eval_images function from the
     BSS_EVAL Matlab toolbox.
 
@@ -397,6 +410,9 @@ def bss_eval_images(reference_sources, estimated_sources, compute_permutation=Tr
         matrix containing estimated sources
     compute_permutation : bool, optional
         compute permutation of estimate/source combinations (True by default)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -428,7 +444,8 @@ def bss_eval_images(reference_sources, estimated_sources, compute_permutation=Tr
     reference_sources = np.atleast_3d(reference_sources)
     # we will ensure input doesn't have more than 3 dimensions in validate
 
-    validate(reference_sources, estimated_sources)
+    if safe:
+        validate(reference_sources, estimated_sources)
     # If empty matrices were supplied, return empty lists (special case)
     if reference_sources.size == 0 or estimated_sources.size == 0:
         return np.array([]), np.array([]), np.array([]), np.array([]), np.array([])
@@ -504,6 +521,7 @@ def bss_eval_images_framewise(
     window=30 * 44100,
     hop=15 * 44100,
     compute_permutation=False,
+    safe=True,
 ):
     """Framewise computation of bss_eval_images
 
@@ -549,6 +567,9 @@ def bss_eval_images_framewise(
     compute_permutation : bool, optional
         compute permutation of estimate/source combinations for all windows
         (False by default)
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
 
     Returns
     -------
@@ -573,7 +594,8 @@ def bss_eval_images_framewise(
     reference_sources = np.atleast_3d(reference_sources)
     # we will ensure input doesn't have more than 3 dimensions in validate
 
-    validate(reference_sources, estimated_sources)
+    if safe:
+        validate(reference_sources, estimated_sources)
     # If empty matrices were supplied, return empty lists (special case)
     if reference_sources.size == 0 or estimated_sources.size == 0:
         return np.array([]), np.array([]), np.array([]), np.array([])
@@ -843,7 +865,7 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
-def evaluate(reference_sources, estimated_sources, **kwargs):
+def evaluate(reference_sources, estimated_sources, safe=True, **kwargs):
     """Compute all metrics for the given reference and estimated signals.
 
     NOTE: This will always compute :func:`mir_eval.separation.bss_eval_images`
@@ -865,6 +887,9 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
         matrix containing true sources
     estimated_sources : np.ndarray, shape=(nsrc, nsampl[, nchan])
         matrix containing estimated sources
+    safe : bool
+        If True, validate inputs.
+        If False, skip validation of inputs.
     **kwargs
         Additional keyword arguments which will be passed to the
         appropriate metric or preprocessing functions.
@@ -876,6 +901,15 @@ def evaluate(reference_sources, estimated_sources, **kwargs):
         the value is the (float) score achieved.
 
     """
+    if estimated_sources.ndim == 1:
+        estimated_sources = estimated_sources[np.newaxis, :]
+    if reference_sources.ndim == 1:
+        reference_sources = reference_sources[np.newaxis, :]
+    if safe:
+        validate(reference_sources, estimated_sources)
+
+    kwargs["safe"] = False
+
     # Compute all the metrics
     scores = collections.OrderedDict()
 
