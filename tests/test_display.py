@@ -24,9 +24,9 @@ from mir_eval.io import load_ragged_time_series
 from mir_eval.io import load_wav
 
 
-pytestmark = pytest.mark.skip(
-    reason="disabling display tests until after merger of #370"
-)
+#pytestmark = pytest.mark.skip(
+#    reason="disabling display tests until after merger of #370"
+#)
 
 
 @decorator

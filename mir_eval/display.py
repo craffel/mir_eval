@@ -145,7 +145,7 @@ def segments(
     if height is None:
         height = ax.get_ylim()[1]
 
-    cycler = ax._get_patches_for_fill.prop_cycler
+    #cycler = ax._get_patches_for_fill.prop_cycler
 
     seg_map = dict()
 
@@ -153,11 +153,13 @@ def segments(
         if lab in seg_map:
             continue
 
-        style = next(cycler)
+        #style = next(cycler)
+        _bar = ax.bar([0], [0], visible=False)
+        style = {k: v for k, v in _bar[0].properties().items() if k in ["facecolor", "edgecolor", "linewidth"]}
+        _bar.remove()
         seg_map[lab] = seg_def_style.copy()
         seg_map[lab].update(style)
         # Swap color -> facecolor here so we preserve edgecolor on rects
-        seg_map[lab]["facecolor"] = seg_map[lab].pop("color")
         seg_map[lab].update(kwargs)
         seg_map[lab]["label"] = lab
 
@@ -278,9 +280,10 @@ def labeled_intervals(
 
     style = dict(linewidth=1)
 
-    style.update(next(ax._get_patches_for_fill.prop_cycler))
     # Swap color -> facecolor here so we preserve edgecolor on rects
-    style["facecolor"] = style.pop("color")
+    _bar = ax.bar([0], [0], visible=False)
+    style.update(facecolor=_bar.patches[0].get_facecolor())
+    _bar.remove()
     style.update(kwargs)
 
     if base is None:
@@ -391,7 +394,8 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
 
     # Reverse the patch ordering for anything we've added.
     # This way, intervals are listed in the legend from top to bottom
-    ax.patches[n_patches:] = ax.patches[n_patches:][::-1]
+    # FIXME: this no longer works
+    #ax.patches[n_patches:] = ax.patches[n_patches:][::-1]
     return ax
 
 
@@ -458,10 +462,11 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, **
         if height is None:
             height = ax.get_ylim()[1]
 
-    cycler = ax._get_patches_for_fill.prop_cycler
-
-    style = next(cycler).copy()
+    _plot = ax.plot([], [], visible=False)[0]
+    style = {k: v for k, v in _plot.properties().items() if k in ["color", "linestyle", "linewidth"]}
+    _plot.remove()
     style.update(kwargs)
+
     # If the user provided 'colors', don't override it with 'color'
     if "colors" in style:
         style.pop("color", None)
@@ -772,7 +777,12 @@ def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
         # For each source, grab a new color from the cycler
         # Then construct a colormap that interpolates from
         # [transparent white -> new color]
-        color = next(ax._get_lines.prop_cycler)["color"]
+        # 
+        # To access the cycler, we'll create a temporary bar plot,
+        # pull its facecolor, and then remove it from the axes.
+        _bar = ax.bar([0], [0], visible=False)
+        color = _bar.patches[0].get_facecolor()
+        _bar.remove()
         color = color_conv.to_rgba(color, alpha=alpha)
         cmap = LinearSegmentedColormap.from_list(
             labels[i], [(1.0, 1.0, 1.0, 0.0), color]
@@ -787,10 +797,6 @@ def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
             shading="gouraud",
             label=labels[i],
         )
-
-        # Attach a 0x0 rect to the axis with the corresponding label
-        # This way, it will show up in the legend
-        ax.add_patch(Rectangle((0, 0), 0, 0, color=color, label=labels[i]))
 
     if new_axes:
         ax.axis("tight")
