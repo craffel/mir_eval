@@ -417,6 +417,7 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, **
     height : number
         The height of the lines.
         By default, this will be the top of the plot (minus `base`).
+        .. note:: If either `base` or `height` are provided, both must be provided.
     ax : matplotlib.pyplot.axes
         An axis handle on which to draw the segmentation.
         If none is provided, a new set of axes is created.
@@ -445,22 +446,16 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, **
     # Get the axes handle
     ax, new_axes = __get_axes(ax=ax)
 
-    # If we have fresh axes, set the limits
+    if base is None and height is None:
+        # If neither are provided, we'll use axes coordinates to span the figure
+        base, height = 0, 1
+        transform = ax.get_xaxis_transform()
 
-    if new_axes:
-        # Infer base and height
-        if base is None:
-            base = 0
-        if height is None:
-            height = 1
-
-        ax.set_ylim([base, height])
+    elif base is not None and height is not None:
+        # If both are provided, we'll use data coordinates
+        transform = None
     else:
-        if base is None:
-            base = ax.get_ylim()[0]
-
-        if height is None:
-            height = ax.get_ylim()[1]
+        raise ValueError("When specifying base or height, both must be provided.")
 
     _plot = ax.plot([], [], visible=False)[0]
     style = {k: v for k, v in _plot.properties().items() if k in ["color", "linestyle", "linewidth"]}
@@ -471,7 +466,7 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, **
     if "colors" in style:
         style.pop("color", None)
 
-    lines = ax.vlines(times, base, base + height, **style)
+    lines = ax.vlines(times, base, base + height, transform=transform, **style)
 
     if labels:
         for path, lab in zip(lines.get_paths(), labels):
@@ -797,9 +792,6 @@ def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
             shading="gouraud",
             label=labels[i],
         )
-
-    if new_axes:
-        ax.axis("tight")
 
     return ax
 
