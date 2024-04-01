@@ -340,6 +340,14 @@ def reduce_extended_quality(quality):
 
 
 # --- Chord Label Parsing ---
+# This monster regexp is pulled from the JAMS chord namespace,
+# which is in turn derived from the context-free grammar of
+# Harte et al., 2005.
+CHORD_RE = re.compile(
+    r"""^((N|X)|(([A-G](b*|#*))((:(maj|min|dim|aug|1|5|sus2|sus4|maj6|min6|7|maj7|min7|dim7|hdim7|minmaj7|aug7|9|maj9|min9|11|maj11|min11|13|maj13|min13)(\((\*?((b*|#*)([1-9]|1[0-3]?))(,\*?((b*|#*)([1-9]|1[0-3]?)))*)\))?)|(:\((\*?((b*|#*)([1-9]|1[0-3]?))(,\*?((b*|#*)([1-9]|1[0-3]?)))*)\)))?((/((b*|#*)([1-9]|1[0-3]?)))?)?))$"""
+)  # nopep8
+
+
 def validate_chord_label(chord_label):
     """Test for well-formedness of a chord label.
 
@@ -348,15 +356,7 @@ def validate_chord_label(chord_label):
     chord_label : str
         Chord label to validate.
     """
-    # This monster regexp is pulled from the JAMS chord namespace,
-    # which is in turn derived from the context-free grammar of
-    # Harte et al., 2005.
-
-    pattern = re.compile(
-        r"""^((N|X)|(([A-G](b*|#*))((:(maj|min|dim|aug|1|5|sus2|sus4|maj6|min6|7|maj7|min7|dim7|hdim7|minmaj7|aug7|9|maj9|min9|11|maj11|min11|13|maj13|min13)(\((\*?((b*|#*)([1-9]|1[0-3]?))(,\*?((b*|#*)([1-9]|1[0-3]?)))*)\))?)|(:\((\*?((b*|#*)([1-9]|1[0-3]?))(,\*?((b*|#*)([1-9]|1[0-3]?)))*)\)))?((/((b*|#*)([1-9]|1[0-3]?)))?)?))$"""
-    )  # nopep8
-
-    if not pattern.match(chord_label):
+    if not CHORD_RE.match(chord_label):
         raise InvalidChordException("Invalid chord label: " "{}".format(chord_label))
     pass
 
