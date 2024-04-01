@@ -224,7 +224,7 @@ def pitch_contour(
         time indices for each frequency measurement, in seconds
     frequencies : np.ndarray
         frequency measurements, in Hz.
-        Non-positive measurements will be interpreted as un-voiced samples.
+        Non-positive measurements or NaNs will be interpreted as un-voiced samples.
     fs : int
         desired sampling rate of the output signal
     amplitudes : np.ndarray
@@ -252,6 +252,8 @@ def pitch_contour(
     # Squash the negative frequencies.
     # wave(0) = 0, so clipping here will un-voice the corresponding instants
     frequencies = np.maximum(frequencies, 0.0)
+    # Convert nans to zeros to unvoice
+    frequencies = np.nan_to_num(frequencies, copy=False)
 
     # Build a frequency interpolator
     f_interp = interp1d(
