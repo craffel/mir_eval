@@ -256,22 +256,25 @@ def labeled_intervals(
         A handle to the (possibly constructed) plot axes
     """
     # Get the axes handle
-    ax, _ = __get_axes(ax=ax)
+    ax, new_axes = __get_axes(ax=ax)
 
     # Make sure we have a numpy array
     intervals = np.atleast_2d(intervals)
 
-    if label_set is None:
-        # If we have non-empty pre-existing tick labels, use them
-        label_set = [_.get_text() for _ in ax.get_yticklabels()]
-        # If none of the label strings have content, treat it as empty
-        if not any(label_set):
-            label_set = []
+    if not new_axes:
+        if label_set is None:
+            # If we have non-empty pre-existing tick labels, use them
+            label_set = [_.get_text() for _ in ax.get_yticklabels()]
+            # If none of the label strings have content, treat it as empty
+            if not any(label_set):
+                label_set = []
+        else:
+            label_set = list(label_set)
     else:
-        label_set = list(label_set)
+        label_set = []
 
     # Put additional labels at the end, in order
-    if extend_labels:
+    if extend_labels and not new_axes:
         ticks = label_set + sorted(set(labels) - set(label_set))
     elif label_set:
         ticks = label_set
@@ -281,7 +284,7 @@ def labeled_intervals(
     style = dict(linewidth=1)
 
     # Swap color -> facecolor here so we preserve edgecolor on rects
-    _bar = ax.bar([0], [0], visible=False)
+    _bar = ax.barh([0], [0], visible=False)
     style.update(facecolor=_bar.patches[0].get_facecolor())
     _bar.remove()
     style.update(kwargs)
@@ -790,8 +793,14 @@ def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
             cmap=cmap,
             norm=LogNorm(vmin=ref_min, vmax=ref_max),
             shading="gouraud",
-            label=labels[i],
         )
+
+        # Attach a 0x0 rect to the axis with the corresponding label
+        # This way, it will show up in the legend
+        ax.add_patch(Rectangle((0, 0), 0, 0, color=color, label=labels[i]))
+
+    if new_axes:
+        ax.axis("tight")
 
     return ax
 

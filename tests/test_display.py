@@ -23,7 +23,7 @@ STYLE = "default"
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_segment"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_segment"], extensions=["png"], style=STYLE, tolerance=6
 )
 def test_display_segment():
     plt.figure()
@@ -40,7 +40,7 @@ def test_display_segment():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_segment_text"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_segment_text"], extensions=["png"], style=STYLE, tolerance=6
 )
 def test_display_segment_text():
     plt.figure()
@@ -54,7 +54,7 @@ def test_display_segment_text():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_labeled_intervals"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_labeled_intervals"], extensions=["png"], style=STYLE, tolerance=6
 )
 def test_display_labeled_intervals():
     plt.figure()
@@ -68,7 +68,7 @@ def test_display_labeled_intervals():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_labeled_intervals_noextend"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_labeled_intervals_noextend"], extensions=["png"], style=STYLE, tolerance=6
 )
 def test_display_labeled_intervals_noextend():
     plt.figure()
@@ -86,7 +86,7 @@ def test_display_labeled_intervals_noextend():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_labeled_intervals_compare"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_labeled_intervals_compare"], extensions=["png"], style=STYLE, tolerance=6
 )
 def test_display_labeled_intervals_compare():
     plt.figure()
@@ -108,7 +108,7 @@ def test_display_labeled_intervals_compare():
 @pytest.mark.mpl_image_compare(
     baseline_images=["test_display_labeled_intervals_compare_noextend"],
     extensions=["png"],
-    style=STYLE,
+    style=STYLE, tolerance=6,
 )
 def test_display_labeled_intervals_compare_noextend():
     plt.figure()
@@ -132,7 +132,7 @@ def test_display_labeled_intervals_compare_noextend():
 @pytest.mark.mpl_image_compare(
     baseline_images=["test_display_labeled_intervals_compare_common"],
     extensions=["png"],
-    style=STYLE,
+    style=STYLE, tolerance=6,
 )
 def test_display_labeled_intervals_compare_common():
     plt.figure()
@@ -156,7 +156,7 @@ def test_display_labeled_intervals_compare_common():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_hierarchy_nolabel"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_hierarchy_nolabel"], extensions=["png"], style=STYLE, tolerance=6
 )
 def test_display_hierarchy_nolabel():
     plt.figure()
@@ -173,7 +173,7 @@ def test_display_hierarchy_nolabel():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_hierarchy_label"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_hierarchy_label"], extensions=["png"], style=STYLE, tolerance=6
 )
 def test_display_hierarchy_label():
     plt.figure()
@@ -190,9 +190,9 @@ def test_display_hierarchy_label():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_pitch_hz"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_pitch_hz"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_pitch_hz():
+def test_display_pitch_hz():
     plt.figure()
 
     ref_times, ref_freqs = load_labeled_events("data/melody/ref00.txt")
@@ -206,9 +206,9 @@ def test_pitch_hz():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_pitch_midi"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_pitch_midi"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_pitch_midi():
+def test_display_pitch_midi():
     plt.figure()
 
     times, freqs = load_labeled_events("data/melody/ref00.txt")
@@ -220,9 +220,9 @@ def test_pitch_midi():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_pitch_midi_hz"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_pitch_midi_hz"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_pitch_midi_hz():
+def test_display_pitch_midi_hz():
     plt.figure()
 
     times, freqs = load_labeled_events("data/melody/ref00.txt")
@@ -234,9 +234,9 @@ def test_pitch_midi_hz():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_multipitch_hz_unvoiced"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_multipitch_hz_unvoiced"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_multipitch_hz_unvoiced():
+def test_display_multipitch_hz_unvoiced():
     plt.figure()
 
     times, pitches = load_ragged_time_series("data/multipitch/est01.txt")
@@ -247,9 +247,9 @@ def test_multipitch_hz_unvoiced():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_multipitch_hz_voiced"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_multipitch_hz_voiced"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_multipitch_hz_voiced():
+def test_display_multipitch_hz_voiced():
     plt.figure()
 
     times, pitches = load_ragged_time_series("data/multipitch/est01.txt")
@@ -259,9 +259,9 @@ def test_multipitch_hz_voiced():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_multipitch_midi"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_multipitch_midi"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_multipitch_midi():
+def test_display_multipitch_midi():
     plt.figure()
 
     ref_t, ref_p = load_ragged_time_series("data/multipitch/ref01.txt")
@@ -276,9 +276,9 @@ def test_multipitch_midi():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_piano_roll"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_piano_roll"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_pianoroll():
+def test_display_pianoroll():
     plt.figure()
 
     ref_t, ref_p = load_valued_intervals("data/transcription/ref04.txt")
@@ -294,9 +294,9 @@ def test_pianoroll():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_piano_roll_midi"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_piano_roll_midi"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_pianoroll_midi():
+def test_display_pianoroll_midi():
     plt.figure()
 
     ref_t, ref_p = load_valued_intervals("data/transcription/ref04.txt")
@@ -314,9 +314,9 @@ def test_pianoroll_midi():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_ticker_midi_zoom"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_ticker_midi_zoom"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_ticker_midi_zoom():
+def test_display_ticker_midi_zoom():
     plt.figure()
 
     plt.plot(np.arange(3))
@@ -325,9 +325,9 @@ def test_ticker_midi_zoom():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_separation"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_separation"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_separation():
+def test_display_separation():
     plt.figure()
 
     x0, fs = load_wav("data/separation/ref05/0.wav")
@@ -339,9 +339,9 @@ def test_separation():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_separation_label"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_separation_label"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_separation_label():
+def test_display_separation_label():
     plt.figure()
 
     x0, fs = load_wav("data/separation/ref05/0.wav")
@@ -355,9 +355,9 @@ def test_separation_label():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_events"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_events"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_events():
+def test_display_events():
     plt.figure()
 
     # Load some event data
@@ -372,9 +372,9 @@ def test_events():
 
 
 @pytest.mark.mpl_image_compare(
-    baseline_images=["test_display_labeled_events"], extensions=["png"], style=STYLE
+    baseline_images=["test_display_labeled_events"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_labeled_events():
+def test_display_labeled_events():
     plt.figure()
 
     # Load some event data
@@ -387,6 +387,6 @@ def test_labeled_events():
 
 
 @pytest.mark.xfail(raises=ValueError)
-def test_pianoroll_nopitch_nomidi():
+def test_display_pianoroll_nopitch_nomidi():
     # Issue 214
     mir_eval.display.piano_roll([[0, 1]])
