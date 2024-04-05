@@ -181,6 +181,7 @@ def segments(
 
     if new_axes:
         ax.set_yticks([])
+        ax.set_xlim(intervals.min(), intervals.max())
 
     # Only expand if we have data
     if intervals.size:
@@ -717,7 +718,8 @@ def piano_roll(intervals, pitches=None, midi=None, ax=None, **kwargs):
     return ax
 
 
-def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
+def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, rasterized=True,
+        edgecolors="None", shading="gouraud", **kwargs):
     """Source-separation visualization
 
     Parameters
@@ -733,6 +735,14 @@ def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
     ax : matplotlib.pyplot.axes
         An axis handle on which to draw the spectrograms.
         If none is provided, a new set of axes is created.
+    rasterized : bool
+        If `True`, the spectrogram is rasterized.
+    edgecolors : str or None
+        The color of the edges of the spectrogram patches.
+        Set to "None" (default) to disable edge coloring.
+    shading : str
+        The shading method to use for the spectrogram.
+        See `matplotlib.pyplot.pcolormesh` for valid options.
     **kwargs
         Additional keyword arguments to ``scipy.signal.spectrogram``
 
@@ -778,7 +788,7 @@ def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
         # 
         # To access the cycler, we'll create a temporary bar plot,
         # pull its facecolor, and then remove it from the axes.
-        _bar = ax.bar([0], [0], visible=False)
+        _bar = ax.bar([times.min()], [freqs.min()], visible=False)
         color = _bar.patches[0].get_facecolor()
         _bar.remove()
         color = color_conv.to_rgba(color, alpha=alpha)
@@ -792,15 +802,19 @@ def separation(sources, fs=22050, labels=None, alpha=0.75, ax=None, **kwargs):
             spec,
             cmap=cmap,
             norm=LogNorm(vmin=ref_min, vmax=ref_max),
-            shading="gouraud",
+            rasterized=rasterized,
+            edgecolors=edgecolors,
+            shading=shading,
         )
 
         # Attach a 0x0 rect to the axis with the corresponding label
         # This way, it will show up in the legend
-        ax.add_patch(Rectangle((0, 0), 0, 0, color=color, label=labels[i]))
+        ax.add_patch(Rectangle((times.min(), freqs.min()), 0, 0, color=color, label=labels[i]))
 
     if new_axes:
-        ax.axis("tight")
+        # Set the axis limits to match the spectrogram parameters
+        ax.set_xlim(times.min(), times.max())
+        ax.set_ylim(freqs.min(), freqs.max())
 
     return ax
 
