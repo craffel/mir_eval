@@ -751,7 +751,7 @@ def _project_images(reference_sources, estimated_source, flen, G=None):
     #)
     n_fft = scipy.fft.next_fast_len(nsampl + flen - 1, True)
     sf = scipy.fft.rfft(reference_sources, n=n_fft, axis=1)
-    sef = scipy.fft.rfft(estimated_source, n=n_fft)
+    sef = scipy.fft.rfft(estimated_source.T, n=n_fft)
 
     # inner products between delayed versions of reference_sources
     if G is None:
