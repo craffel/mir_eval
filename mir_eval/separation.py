@@ -702,7 +702,7 @@ def _project(reference_sources, estimated_source, flen):
     for i in range(nsrc):
         for j in range(nsrc):
             ssf = sf[i] * np.conj(sf[j])
-            ssf = scipy.fft.irfft(ssf)
+            ssf = scipy.fft.irfft(ssf, n=n_fft)
             ss = toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])), r=ssf[:flen])
             G[i * flen : (i + 1) * flen, j * flen : (j + 1) * flen] = ss
             G[j * flen : (j + 1) * flen, i * flen : (i + 1) * flen] = ss.T
@@ -711,7 +711,7 @@ def _project(reference_sources, estimated_source, flen):
     D = np.zeros(nsrc * flen)
     for i in range(nsrc):
         ssef = sf[i] * np.conj(sef)
-        ssef = scipy.fft.irfft(ssef)
+        ssef = scipy.fft.irfft(ssef, n=n_fft)
         D[i * flen : (i + 1) * flen] = np.hstack((ssef[0], ssef[-1:-flen:-1]))
 
     # Computing projection
@@ -760,7 +760,7 @@ def _project_images(reference_sources, estimated_source, flen, G=None):
         for i in range(nchan * nsrc):
             for j in range(i + 1):
                 ssf = sf[i] * np.conj(sf[j])
-                ssf = scipy.fft.irfft(ssf)
+                ssf = scipy.fft.irfft(ssf, n=n_fft)
                 ss = toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])), r=ssf[:flen])
                 G[i * flen : (i + 1) * flen, j * flen : (j + 1) * flen] = ss
                 G[j * flen : (j + 1) * flen, i * flen : (i + 1) * flen] = ss.T
@@ -771,7 +771,7 @@ def _project_images(reference_sources, estimated_source, flen, G=None):
             for i in range(nchan * nsrc):
                 for j in range(i + 1):
                     ssf = sf[i] * np.conj(sf[j])
-                    ssf = scipy.fft.irfft(ssf)
+                    ssf = scipy.fft.irfft(ssf, n=n_fft)
                     ss = toeplitz(np.hstack((ssf[0], ssf[-1:-flen:-1])), r=ssf[:flen])
                     G[i * flen : (i + 1) * flen, j * flen : (j + 1) * flen] = ss
                     G[j * flen : (j + 1) * flen, i * flen : (i + 1) * flen] = ss.T
@@ -782,7 +782,7 @@ def _project_images(reference_sources, estimated_source, flen, G=None):
     for k in range(nchan * nsrc):
         for i in range(nchan):
             ssef = sf[k] * np.conj(sef[i])
-            ssef = scipy.fft.irfft(ssef)
+            ssef = scipy.fft.irfft(ssef, n=n_fft)
             D[k * flen : (k + 1) * flen, i] = np.hstack(
                 (ssef[0], ssef[-1:-flen:-1])
             ).transpose()
