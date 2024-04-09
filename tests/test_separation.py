@@ -435,7 +435,7 @@ def test_separation_images_framewise(separation_data):
                 expected_image_frames[test_data_name],
                 atol=A_TOL,
             ), np.max(
-                np.abs(imageframe_scores[key] - expected_image_frames[test_data_name])
+                np.abs(np.array(imageframe_scores[key]) - np.array(expected_image_frames[test_data_name]))
             )
 
     # Catch a few exceptions in the evaluate function
