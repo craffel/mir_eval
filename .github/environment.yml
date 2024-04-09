@@ -5,7 +5,7 @@ channels:
 dependencies:
   - pip
   - numpy >=1.15.4
-  - scipy >=1.4.0
+  - scipy >=1.5.4
   - matplotlib-base>=3.3.0
   - pytest
   - pytest-cov
