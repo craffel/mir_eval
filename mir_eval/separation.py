@@ -694,7 +694,7 @@ def _project(reference_sources, estimated_source, flen):
     # zero padding and FFT of input data
     # reference_sources = np.hstack((reference_sources, np.zeros((nsrc, flen - 1))))
     # estimated_source = np.hstack((estimated_source, np.zeros(flen - 1)))
-    n_fft = scipy.fft.next_fast_len(nsampl + flen - 1, real=True)
+    n_fft = scipy.fft.next_fast_len(nsampl + flen - 1, True)
     sf = scipy.fft.rfft(reference_sources, n=n_fft, axis=1)
     sef = scipy.fft.rfft(estimated_source, n=n_fft)
     # inner products between delayed versions of reference_sources
@@ -743,13 +743,13 @@ def _project_images(reference_sources, estimated_source, flen, G=None):
 
     # computing coefficients of least squares problem via FFT ##
     # zero padding and FFT of input data
-    reference_sources = np.hstack(
-        (reference_sources, np.zeros((nchan * nsrc, flen - 1)))
-    )
-    estimated_source = np.hstack(
-        (estimated_source.transpose(), np.zeros((nchan, flen - 1)))
-    )
-    n_fft = scipy.fft.next_fast_len(nsampl + flen - 1, real=True)
+    #reference_sources = np.hstack(
+    #    (reference_sources, np.zeros((nchan * nsrc, flen - 1)))
+    #)
+    #estimated_source = np.hstack(
+    #    (estimated_source.transpose(), np.zeros((nchan, flen - 1)))
+    #)
+    n_fft = scipy.fft.next_fast_len(nsampl + flen - 1, True)
     sf = scipy.fft.rfft(reference_sources, n=n_fft, axis=1)
     sef = scipy.fft.rfft(estimated_source, n=n_fft)
 
