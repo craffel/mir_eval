@@ -716,10 +716,16 @@ def _project(reference_sources, estimated_source, flen):
 
     # Computing projection
     # Distortion filters
-    try:
-        C = np.linalg.solve(G, D).reshape(flen, nsrc, order="F")
-    except np.linalg.linalg.LinAlgError:
-        C = np.linalg.lstsq(G, D)[0].reshape(flen, nsrc, order="F")
+    with warnings.catch_warnings():
+        warnings.filterwarnings("error", category=scipy.linalg.LinAlgWarning)
+        try:
+            C = scipy.linalg.solve(G, D).reshape(flen, nsrc, order="F")
+        except (
+            np.linalg.linalg.LinAlgError,
+            scipy.linalg.LinAlgError,
+            scipy.linalg.LinAlgWarning,
+        ):
+            C = scipy.linalg.lstsq(G, D, cond=None)[0].reshape(flen, nsrc, order="F")
     # Filtering
     sproj = np.zeros(nsampl + flen - 1)
     for i in range(nsrc):
@@ -789,10 +795,19 @@ def _project_images(reference_sources, estimated_source, flen, G=None):
 
     # Computing projection
     # Distortion filters
-    try:
-        C = np.linalg.solve(G, D).reshape(flen, nchan * nsrc, nchan, order="F")
-    except np.linalg.linalg.LinAlgError:
-        C = np.linalg.lstsq(G, D)[0].reshape(flen, nchan * nsrc, nchan, order="F")
+    with warnings.catch_warnings():
+        warnings.filterwarnings("error", category=scipy.linalg.LinAlgWarning)
+
+        try:
+            C = scipy.linalg.solve(G, D).reshape(flen, nchan * nsrc, nchan, order="F")
+        except (
+            np.linalg.linalg.LinAlgError,
+            scipy.linalg.LinAlgError,
+            scipy.linalg.LinAlgWarning,
+        ):
+            C = scipy.linalg.lstsq(G, D, cond=None)[0].reshape(
+                flen, nchan * nsrc, nchan, order="F"
+            )
     # Filtering
     sproj = np.zeros((nchan, nsampl + flen - 1))
     for k in range(nchan * nsrc):
