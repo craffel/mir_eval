@@ -145,6 +145,9 @@ def segments(
 
     if new_axes:
         ax.set_ylim([0, 1])
+        ax.set_yticks([])
+        # Very small positive number here to preserve ticks
+        ax.margins(x=1e-3, y=0, tight=None)
 
     # Infer height
     if base is None:
@@ -162,7 +165,7 @@ def segments(
             continue
 
         # style = next(cycler)
-        _bar = ax.bar([0], [0], visible=False)
+        _bar = ax.bar([0.5], [0.5], visible=False)
         style = {
             k: v
             for k, v in _bar[0].properties().items()
@@ -190,14 +193,6 @@ def segments(
                 **text_kw
             )
             ann.set_clip_path(rect)
-
-    if new_axes:
-        ax.set_yticks([])
-        ax.set_xlim(intervals.min(), intervals.max())
-
-    # Only expand if we have data
-    if intervals.size:
-        __expand_limits(ax, [intervals.min(), intervals.max()], which="x")
 
     return ax
 
@@ -341,6 +336,10 @@ def labeled_intervals(
         ax.set_yticks(base)
         ax.set_yticklabels(ticks, va="bottom")
         ax.yaxis.set_major_formatter(IntervalFormatter(base, ticks))
+
+    if new_axes:
+        # Very small positive number here to preserve ticks
+        ax.margins(x=1e-3, y=0, tight=None)
 
     if base.size:
         __expand_limits(ax, [base.min(), (base + height).max()], which="y")
