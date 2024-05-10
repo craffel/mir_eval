@@ -13,6 +13,7 @@ from matplotlib.ticker import FuncFormatter, MultipleLocator
 from matplotlib.ticker import Formatter
 from matplotlib.colors import LinearSegmentedColormap, LogNorm, ColorConverter
 from matplotlib.collections import BrokenBarHCollection
+from matplotlib.transforms import Bbox, TransformedBbox
 
 from .melody import freq_to_voicing
 from .util import midi_to_hz, hz_to_midi
@@ -92,6 +93,7 @@ def segments(
     height : number
         The height of the rectangles.
         By default, this will be the top of the plot (minus ``base``).
+        .. note:: If either `base` or `height` are provided, both must be provided.
     text : bool
         If true, each segment's label is displayed in its
         upper-left corner
@@ -138,18 +140,18 @@ def segments(
     prop_iter = __AXMAP[ax]["prop_iter"]
 
     if new_axes:
-        ax.set_ylim([0, 1])
         ax.set_yticks([])
-        # Very small positive number here to preserve ticks
-        # FIXME: maybe unnecessary if we move to vspan
-        ax.margins(x=1e-3, y=0, tight=False)
 
-    # Infer height
-    if base is None:
-        base = ax.get_ylim()[0]
+    if base is None and height is None:
+        # If neither are provided, we'll use axes coordinates to span the figure
+        base, height = 0, 1
+        transform = ax.get_xaxis_transform()
 
-    if height is None:
-        height = ax.get_ylim()[1]
+    elif base is not None and height is not None:
+        # If both are provided, we'll use data coordinates
+        transform = None
+    else:
+        raise ValueError("When specifying base or height, both must be provided.")
 
     seg_map = dict()
 
@@ -178,29 +180,22 @@ def segments(
         seg_map[lab]["label"] = lab
 
     for ival, lab in zip(intervals, labels):
-        # FIXME:
-        # Can we redo this so that the rect is counted into limit calculations?
-        # We should try to remove this expand_limits function
-        # ax.autoscale_view() should do the trick...
-        rect = Rectangle((ival[0], base), ival[1] - ival[0], height, **seg_map[lab])
-        ax.add_patch(rect)
+        rect = ax.axvspan(ival[0], ival[1], ymin=base, ymax=height, **seg_map[lab])
         seg_map[lab].pop("label", None)
 
         if text:
+            bbox = Bbox.from_extents(ival[0], base, ival[1], height)
+            tbbox = TransformedBbox(bbox, transform)
             ann = ax.annotate(
                 lab,
                 xy=(ival[0], height),
-                xycoords="data",
+                xycoords=transform,
                 xytext=(8, -10),
                 textcoords="offset points",
+                clip_path=rect,
+                clip_box=tbbox,
                 **text_kw
             )
-            ann.set_clip_path(rect)
-
-    # Only expand if we have data
-    # FIXME: this is only needed because of direct rectangle creation
-    # moving to axvspan would eliminate this call
-    ax.autoscale()
 
     return ax
 
@@ -433,10 +428,6 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
     for ints, labs, key in zip(intervals_hier[::-1], labels_hier[::-1], levels[::-1]):
         labeled_intervals(ints, labs, label=key, ax=ax, **kwargs)
 
-    # Reverse the patch ordering for anything we've added.
-    # This way, intervals are listed in the legend from top to bottom
-    # FIXME: this no longer works
-    # ax.patches[n_patches:] = ax.patches[n_patches:][::-1]
     return ax
 
 
