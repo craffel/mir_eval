@@ -159,7 +159,7 @@ def segments(
         ax.set_ylim([0, 1])
         ax.set_yticks([])
         # Very small positive number here to preserve ticks
-        ax.margins(x=1e-3, y=0, tight=None)
+        ax.margins(x=1e-3, y=0, tight=False)
 
     # Infer height
     if base is None:
@@ -195,6 +195,10 @@ def segments(
         seg_map[lab]["label"] = lab
 
     for ival, lab in zip(intervals, labels):
+        # FIXME:
+        # Can we redo this so that the rect is counted into limit calculations?
+        # We should try to remove this expand_limits function
+        # ax.autoscale_view() should do the trick...
         rect = Rectangle((ival[0], base), ival[1] - ival[0], height, **seg_map[lab])
         ax.add_patch(rect)
         seg_map[lab].pop("label", None)
@@ -211,6 +215,7 @@ def segments(
             ann.set_clip_path(rect)
 
     # Only expand if we have data
+    # ax.autoscale_view()
     if intervals.size:
         __expand_limits(ax, [intervals.min(), intervals.max()], which="x")
 
@@ -226,6 +231,7 @@ def labeled_intervals(
     extend_labels=True,
     ax=None,
     tick=True,
+    prop_cycle=None,
     **kwargs
 ):
     """Plot labeled intervals with each label on its own row.
@@ -286,6 +292,16 @@ def labeled_intervals(
     # Get the axes handle
     ax, new_axes = __get_axes(ax=ax)
 
+    if prop_cycle is None:
+        __AXMAP[ax].setdefault("prop_cycle", mpl.rcParams["axes.prop_cycle"])
+        __AXMAP[ax].setdefault("prop_iter", iter(mpl.rcParams["axes.prop_cycle"]))
+    elif "prop_iter" not in __AXMAP[ax]:
+        __AXMAP[ax]["prop_cycle"] = prop_cycle
+        __AXMAP[ax]["prop_iter"] = iter(prop_cycle)
+
+    prop_cycle = __AXMAP[ax]["prop_cycle"]
+    prop_iter = __AXMAP[ax]["prop_iter"]
+
     # Make sure we have a numpy array
     intervals = np.atleast_2d(intervals)
 
@@ -316,9 +332,23 @@ def labeled_intervals(
     # Swap color -> facecolor here so we preserve edgecolor on rects
     # XXX: phony bar plot here is located at 0.5, 0.5 to avoid triggering limit changes
     # this is a kludge.
-    _bar = ax.barh([0.5], [0.5], visible=False)
-    style.update(facecolor=_bar.patches[0].get_facecolor())
-    _bar.remove()
+    #_bar = ax.barh([0.5], [0.5], visible=False)
+    #style.update(facecolor=_bar.patches[0].get_facecolor())
+    #_bar.remove()
+    try: 
+        properties = next(prop_iter)
+    except StopIteration:
+        prop_iter = iter(prop_cycle)
+        __AXMAP[ax]["prop_iter"] = prop_iter
+        properties = next(prop_iter)
+
+    style = {
+        k: v
+        for k, v in properties.items()
+        if k in ["color", "facecolor", "edgecolor", "linewidth"]
+    }
+    style.setdefault("facecolor", style["color"])
+    style.pop("color", None)
     style.update(kwargs)
 
     if base is None:
@@ -341,6 +371,8 @@ def labeled_intervals(
         xvals[lab].append((ival[0], ival[1] - ival[0]))
 
     for lab in seg_y:
+        # TODO: replace this collection by rects
+        # TODO: make this factor into limit calculations
         ax.add_collection(BrokenBarHCollection(xvals[lab], seg_y[lab], **style))
         # Pop the label after the first time we see it, so we only get
         # one legend entry
@@ -544,7 +576,7 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, pr
     return ax
 
 
-def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
+def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, prop_cycle=None, **kwargs):
     """Visualize pitch contours
 
     Parameters
@@ -581,6 +613,16 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
     """
     ax, _ = __get_axes(ax=ax)
 
+    if prop_cycle is None:
+        __AXMAP[ax].setdefault("prop_cycle", mpl.rcParams["axes.prop_cycle"])
+        __AXMAP[ax].setdefault("prop_iter", iter(mpl.rcParams["axes.prop_cycle"]))
+    elif "prop_iter" not in __AXMAP[ax]:
+        __AXMAP[ax]["prop_cycle"] = prop_cycle
+        __AXMAP[ax]["prop_iter"] = iter(prop_cycle)
+
+    prop_cycle = __AXMAP[ax]["prop_cycle"]
+    prop_iter = __AXMAP[ax]["prop_iter"]
+
     times = np.asarray(times)
 
     # First, segment into contiguously voiced contours
@@ -603,8 +645,12 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
             u_slices.append(idx)
 
     # Now we just need to plot the contour
-    style = dict()
-    style.update(next(ax._get_lines.prop_cycler))
+    try: 
+        style = next(prop_iter)
+    except StopIteration:
+        prop_iter = iter(prop_cycle)
+        __AXMAP[ax]["prop_iter"] = prop_iter
+        style = next(prop_iter)
     style.update(kwargs)
 
     if midi:
@@ -627,7 +673,7 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
     return ax
 
 
-def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs):
+def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None, prop_cycle=None, **kwargs):
     """Visualize multiple f0 measurements
 
     Parameters
@@ -668,9 +714,24 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None, **kwargs
     # Get the axes handle
     ax, _ = __get_axes(ax=ax)
 
+    if prop_cycle is None:
+        __AXMAP[ax].setdefault("prop_cycle", mpl.rcParams["axes.prop_cycle"])
+        __AXMAP[ax].setdefault("prop_iter", iter(mpl.rcParams["axes.prop_cycle"]))
+    elif "prop_iter" not in __AXMAP[ax]:
+        __AXMAP[ax]["prop_cycle"] = prop_cycle
+        __AXMAP[ax]["prop_iter"] = iter(prop_cycle)
+
+    prop_cycle = __AXMAP[ax]["prop_cycle"]
+    prop_iter = __AXMAP[ax]["prop_iter"]
+
     # Set up a style for the plot
-    style_voiced = dict()
-    style_voiced.update(next(ax._get_lines.prop_cycler))
+    try: 
+        style_voiced = next(prop_iter)
+    except StopIteration:
+        prop_iter = iter(prop_cycle)
+        __AXMAP[ax]["prop_iter"] = prop_iter
+        style_voiced = next(prop_iter)
+
     style_voiced.update(kwargs)
 
     style_unvoiced = style_voiced.copy()
@@ -764,7 +825,7 @@ def piano_roll(intervals, pitches=None, midi=None, ax=None, **kwargs):
     # Minor tick at each semitone
     ax.yaxis.set_minor_locator(MultipleLocator(1))
 
-    #ax.axis("auto")
+    ax.axis("auto")
     return ax
 
 
