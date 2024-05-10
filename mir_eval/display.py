@@ -23,27 +23,6 @@ from .util import midi_to_hz, hz_to_midi
 __AXMAP = WeakKeyDictionary()
 
 
-def __expand_limits(ax, limits, which="x"):
-    """Expand axis limits"""
-    if which == "x":
-        getter, setter = ax.get_xlim, ax.set_xlim
-    elif which == "y":
-        getter, setter = ax.get_ylim, ax.set_ylim
-    else:
-        raise ValueError("invalid axis: {}".format(which))
-
-    old_lims = getter()
-    new_lims = list(limits)
-    # infinite limits occur on new axis objects with no data
-    if np.isfinite(old_lims[0]):
-        new_lims[0] = min(old_lims[0], limits[0])
-
-    if np.isfinite(old_lims[1]):
-        new_lims[1] = max(old_lims[1], limits[1])
-
-    setter(new_lims)
-
-
 def __get_axes(ax=None, fig=None):
     """Get or construct the target axes object for a new plot.
 
@@ -159,6 +138,7 @@ def segments(
         ax.set_ylim([0, 1])
         ax.set_yticks([])
         # Very small positive number here to preserve ticks
+        # FIXME: maybe unnecessary if we move to vspan
         ax.margins(x=1e-3, y=0, tight=False)
 
     # Infer height
@@ -215,9 +195,9 @@ def segments(
             ann.set_clip_path(rect)
 
     # Only expand if we have data
-    # ax.autoscale_view()
-    if intervals.size:
-        __expand_limits(ax, [intervals.min(), intervals.max()], which="x")
+    # FIXME: this is only needed because of direct rectangle creation
+    # moving to axvspan would eliminate this call
+    ax.autoscale()
 
     return ax
 
@@ -328,13 +308,6 @@ def labeled_intervals(
 
     style = dict(linewidth=1)
 
-    # TODO: now that we have axmap, could use an alternative cycler handle
-    # Swap color -> facecolor here so we preserve edgecolor on rects
-    # XXX: phony bar plot here is located at 0.5, 0.5 to avoid triggering limit changes
-    # this is a kludge.
-    #_bar = ax.barh([0.5], [0.5], visible=False)
-    #style.update(facecolor=_bar.patches[0].get_facecolor())
-    #_bar.remove()
     try: 
         properties = next(prop_iter)
     except StopIteration:
@@ -347,6 +320,7 @@ def labeled_intervals(
         for k, v in properties.items()
         if k in ["color", "facecolor", "edgecolor", "linewidth"]
     }
+    # Swap color -> facecolor here so we preserve edgecolor on rects
     style.setdefault("facecolor", style["color"])
     style.pop("color", None)
     style.update(kwargs)
@@ -371,9 +345,7 @@ def labeled_intervals(
         xvals[lab].append((ival[0], ival[1] - ival[0]))
 
     for lab in seg_y:
-        # TODO: replace this collection by rects
-        # TODO: make this factor into limit calculations
-        ax.add_collection(BrokenBarHCollection(xvals[lab], seg_y[lab], **style))
+        ax.broken_barh(xvals[lab], seg_y[lab], **style)
         # Pop the label after the first time we see it, so we only get
         # one legend entry
         style.pop("label", None)
@@ -388,15 +360,6 @@ def labeled_intervals(
         ax.set_yticks(base)
         ax.set_yticklabels(ticks, va="bottom")
         ax.yaxis.set_major_formatter(IntervalFormatter(base, ticks))
-
-    if new_axes:
-        # Very small positive number here to preserve ticks
-        ax.margins(x=1e-3, y=0, tight=None)
-
-    if base.size:
-        __expand_limits(ax, [base.min(), (base + height).max()], which="y")
-    if intervals.size:
-        __expand_limits(ax, [intervals.min(), intervals.max()], which="x")
 
     return ax
 
@@ -825,7 +788,6 @@ def piano_roll(intervals, pitches=None, midi=None, ax=None, **kwargs):
     # Minor tick at each semitone
     ax.yaxis.set_minor_locator(MultipleLocator(1))
 
-    ax.axis("auto")
     return ax
 
 
