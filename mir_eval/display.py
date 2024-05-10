@@ -93,6 +93,7 @@ def segments(
     text=False,
     text_kw=None,
     ax=None,
+    prop_cycle=None,
     **kwargs
 ):
     """Plot a segmentation as a set of disjoint rectangles.
@@ -144,6 +145,16 @@ def segments(
 
     ax, new_axes = __get_axes(ax=ax)
 
+    if prop_cycle is None:
+        __AXMAP[ax].setdefault("prop_cycle", mpl.rcParams["axes.prop_cycle"])
+        __AXMAP[ax].setdefault("prop_iter", iter(mpl.rcParams["axes.prop_cycle"]))
+    elif "prop_iter" not in __AXMAP[ax]:
+        __AXMAP[ax]["prop_cycle"] = prop_cycle
+        __AXMAP[ax]["prop_iter"] = iter(prop_cycle)
+
+    prop_cycle = __AXMAP[ax]["prop_cycle"]
+    prop_iter = __AXMAP[ax]["prop_iter"]
+
     if new_axes:
         ax.set_ylim([0, 1])
         ax.set_yticks([])
@@ -157,25 +168,29 @@ def segments(
     if height is None:
         height = ax.get_ylim()[1]
 
-    # cycler = ax._get_patches_for_fill.prop_cycler
-
     seg_map = dict()
 
     for lab in labels:
         if lab in seg_map:
             continue
 
-        # style = next(cycler)
-        _bar = ax.bar([0.5], [0.5], visible=False)
+        try: 
+            properties = next(prop_iter)
+        except StopIteration:
+            prop_iter = iter(prop_cycle)
+            __AXMAP[ax]["prop_iter"] = prop_iter
+            properties = next(prop_iter)
+
         style = {
             k: v
-            for k, v in _bar[0].properties().items()
-            if k in ["facecolor", "edgecolor", "linewidth"]
+            for k, v in properties.items()
+            if k in ["color", "facecolor", "edgecolor", "linewidth"]
         }
-        _bar.remove()
+        # Swap color -> facecolor here so we preserve edgecolor on rects
+        style.setdefault("facecolor", style["color"])
+        style.pop("color", None)
         seg_map[lab] = seg_def_style.copy()
         seg_map[lab].update(style)
-        # Swap color -> facecolor here so we preserve edgecolor on rects
         seg_map[lab].update(kwargs)
         seg_map[lab]["label"] = lab
 
@@ -194,6 +209,10 @@ def segments(
                 **text_kw
             )
             ann.set_clip_path(rect)
+
+    # Only expand if we have data
+    if intervals.size:
+        __expand_limits(ax, [intervals.min(), intervals.max()], which="x")
 
     return ax
 
@@ -419,7 +438,7 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
     return ax
 
 
-def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, **kwargs):
+def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, prop_cycle=None, **kwargs):
     """Plot event times as a set of vertical lines
 
     Parameters
@@ -466,6 +485,16 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, **
     # Get the axes handle
     ax, new_axes = __get_axes(ax=ax)
 
+    if prop_cycle is None:
+        __AXMAP[ax].setdefault("prop_cycle", mpl.rcParams["axes.prop_cycle"])
+        __AXMAP[ax].setdefault("prop_iter", iter(mpl.rcParams["axes.prop_cycle"]))
+    elif "prop_iter" not in __AXMAP[ax]:
+        __AXMAP[ax]["prop_cycle"] = prop_cycle
+        __AXMAP[ax]["prop_iter"] = iter(prop_cycle)
+
+    prop_cycle = __AXMAP[ax]["prop_cycle"]
+    prop_iter = __AXMAP[ax]["prop_iter"]
+
     if base is None and height is None:
         # If neither are provided, we'll use axes coordinates to span the figure
         base, height = 0, 1
@@ -477,13 +506,19 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, **
     else:
         raise ValueError("When specifying base or height, both must be provided.")
 
-    _plot = ax.plot([], [], visible=False)[0]
+    # Advance the property iterator if we can, restart it if we must
+    try: 
+        properties = next(prop_iter)
+    except StopIteration:
+        prop_iter = iter(prop_cycle)
+        __AXMAP[ax]["prop_iter"] = prop_iter
+        properties = next(prop_iter)
+
     style = {
         k: v
-        for k, v in _plot.properties().items()
+        for k, v in properties.items()
         if k in ["color", "linestyle", "linewidth"]
     }
-    _plot.remove()
     style.update(kwargs)
 
     # If the user provided 'colors', don't override it with 'color'
@@ -497,7 +532,7 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, **
             ax.annotate(
                 lab,
                 xy=(path.vertices[0][0], height),
-                xycoords="data",
+                xycoords=transform,
                 xytext=(8, -10),
                 textcoords="offset points",
                 **text_kw
@@ -505,11 +540,6 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, **
 
     if new_axes:
         ax.set_yticks([])
-
-    __expand_limits(ax, [base, base + height], which="y")
-
-    if times.size:
-        __expand_limits(ax, [times.min(), times.max()], which="x")
 
     return ax
 
@@ -815,10 +845,14 @@ def separation(
     color_conv = ColorConverter()
 
     if prop_cycle is None:
-        __AXMAP[ax].setdefault("prop_cycle", iter(mpl.rcParams["axes.prop_cycle"]))
-        prop_cycle = __AXMAP[ax]["prop_cycle"]
+        __AXMAP[ax].setdefault("prop_cycle", mpl.rcParams["axes.prop_cycle"])
+        __AXMAP[ax].setdefault("prop_iter", iter(mpl.rcParams["axes.prop_cycle"]))
+    elif "prop_iter" not in __AXMAP[ax]:
+        __AXMAP[ax]["prop_cycle"] = prop_cycle
+        __AXMAP[ax]["prop_iter"] = iter(prop_cycle)
 
-    prop_iter = iter(prop_cycle)
+    prop_cycle = __AXMAP[ax]["prop_cycle"]
+    prop_iter = __AXMAP[ax]["prop_iter"]
 
     for i, spec in enumerate(specs):
         # For each source, grab a new color from the cycler
@@ -829,6 +863,7 @@ def separation(
             properties = next(prop_iter)
         except StopIteration:
             prop_iter = iter(prop_cycle)
+            __AXMAP[ax]["prop_iter"] = prop_iter
             properties = next(prop_iter)
 
         color = color_conv.to_rgba(properties["color"], alpha=alpha)
