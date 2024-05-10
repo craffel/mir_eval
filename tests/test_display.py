@@ -24,6 +24,10 @@ from packaging import version
 MPL_VERSION = version.parse(matplotlib.__version__)
 OLD_MPL = not (MPL_VERSION >= version.parse("3.8.0"))
 
+# Workaround for old freetype builds with our image fixtures
+FT_VERSION = version.parse(matplotlib.ft2font.__freetype_version__)
+OLD_FT = not (FT_VERSION >= version.parse("2.10"))
+
 STYLE = "default"
 
 
@@ -224,6 +228,7 @@ def test_display_hierarchy_label():
     style=STYLE,
     tolerance=6,
 )
+@pytest.mark.xfail(OLD_FT, reason=f"freetype version < {FT_VERSION}", strict=False)
 def test_display_pitch_hz():
     plt.figure()
 
@@ -386,6 +391,7 @@ def test_display_ticker_midi_zoom():
     style=STYLE,
     tolerance=6,
 )
+@pytest.mark.xfail(OLD_FT, reason=f"freetype version < {FT_VERSION}", strict=False)
 def test_display_separation():
     plt.figure()
 
@@ -403,6 +409,7 @@ def test_display_separation():
     style=STYLE,
     tolerance=6,
 )
+@pytest.mark.xfail(OLD_FT, reason=f"freetype version < {FT_VERSION}", strict=False)
 def test_display_separation_label():
     plt.figure()
 
