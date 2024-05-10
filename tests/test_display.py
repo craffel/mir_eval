@@ -22,7 +22,7 @@ from packaging import version
 
 # Workaround to enable test skipping on older matplotlibs where we know it to be problematic
 MPL_VERSION = version.parse(matplotlib.__version__)
-OLD_MPL = not(MPL_VERSION >= version.parse("3.8.0"))
+OLD_MPL = not (MPL_VERSION >= version.parse("3.8.0"))
 
 STYLE = "default"
 
