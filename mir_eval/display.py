@@ -102,6 +102,9 @@ def segments(
     ax : matplotlib.pyplot.axes
         An axis handle on which to draw the segmentation.
         If none is provided, a new set of axes is created.
+    prop_cycle : cycle.Cycler
+        An optional property cycle object to specify style properties.
+        If not provided, the default property cycler will be retrieved from matplotlib.
     **kwargs
         Additional keyword arguments to pass to
         ``matplotlib.patches.Rectangle``.
@@ -154,7 +157,7 @@ def segments(
         if lab in seg_map:
             continue
 
-        try: 
+        try:
             properties = next(prop_iter)
         except StopIteration:
             prop_iter = iter(prop_cycle)
@@ -260,6 +263,10 @@ def labeled_intervals(
     tick : bool
         If ``True``, sets tick positions and labels on the y-axis.
 
+    prop_cycle : cycle.Cycler
+        An optional property cycle object to specify style properties.
+        If not provided, the default property cycler will be retrieved from matplotlib.
+
     **kwargs
         Additional keyword arguments to pass to
         `matplotlib.collection.BrokenBarHCollection`.
@@ -308,7 +315,7 @@ def labeled_intervals(
 
     style = dict(linewidth=1)
 
-    try: 
+    try:
         properties = next(prop_iter)
     except StopIteration:
         prop_iter = iter(prop_cycle)
@@ -433,7 +440,16 @@ def hierarchy(intervals_hier, labels_hier, levels=None, ax=None, **kwargs):
     return ax
 
 
-def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, prop_cycle=None, **kwargs):
+def events(
+    times,
+    labels=None,
+    base=None,
+    height=None,
+    ax=None,
+    text_kw=None,
+    prop_cycle=None,
+    **kwargs
+):
     """Plot event times as a set of vertical lines
 
     Parameters
@@ -459,6 +475,9 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, pr
         If `labels` is provided, the properties of the text
         objects can be specified here.
         See `matplotlib.pyplot.Text` for valid parameters
+    prop_cycle : cycle.Cycler
+        An optional property cycle object to specify style properties.
+        If not provided, the default property cycler will be retrieved from matplotlib.
     **kwargs
         Additional keyword arguments to pass to
         `matplotlib.pyplot.vlines`.
@@ -502,7 +521,7 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, pr
         raise ValueError("When specifying base or height, both must be provided.")
 
     # Advance the property iterator if we can, restart it if we must
-    try: 
+    try:
         properties = next(prop_iter)
     except StopIteration:
         prop_iter = iter(prop_cycle)
@@ -510,9 +529,7 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, pr
         properties = next(prop_iter)
 
     style = {
-        k: v
-        for k, v in properties.items()
-        if k in ["color", "linestyle", "linewidth"]
+        k: v for k, v in properties.items() if k in ["color", "linestyle", "linewidth"]
     }
     style.update(kwargs)
 
@@ -539,7 +556,9 @@ def events(times, labels=None, base=None, height=None, ax=None, text_kw=None, pr
     return ax
 
 
-def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, prop_cycle=None, **kwargs):
+def pitch(
+    times, frequencies, midi=False, unvoiced=False, ax=None, prop_cycle=None, **kwargs
+):
     """Visualize pitch contours
 
     Parameters
@@ -565,6 +584,10 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, prop_cycle=No
     ax : matplotlib.pyplot.axes
         An axis handle on which to draw the pitch contours.
         If none is provided, a new set of axes is created.
+
+    prop_cycle : cycle.Cycler
+        An optional property cycle object to specify style properties.
+        If not provided, the default property cycler will be retrieved from matplotlib.
 
     **kwargs
         Additional keyword arguments to `matplotlib.pyplot.plot`.
@@ -608,7 +631,7 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, prop_cycle=No
             u_slices.append(idx)
 
     # Now we just need to plot the contour
-    try: 
+    try:
         style = next(prop_iter)
     except StopIteration:
         prop_iter = iter(prop_cycle)
@@ -636,7 +659,9 @@ def pitch(times, frequencies, midi=False, unvoiced=False, ax=None, prop_cycle=No
     return ax
 
 
-def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None, prop_cycle=None, **kwargs):
+def multipitch(
+    times, frequencies, midi=False, unvoiced=False, ax=None, prop_cycle=None, **kwargs
+):
     """Visualize multiple f0 measurements
 
     Parameters
@@ -666,6 +691,10 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None, prop_cyc
         An axis handle on which to draw the pitch contours.
         If none is provided, a new set of axes is created.
 
+    prop_cycle : cycle.Cycler
+        An optional property cycle object to specify style properties.
+        If not provided, the default property cycler will be retrieved from matplotlib.
+
     **kwargs
         Additional keyword arguments to `plt.scatter`.
 
@@ -688,7 +717,7 @@ def multipitch(times, frequencies, midi=False, unvoiced=False, ax=None, prop_cyc
     prop_iter = __AXMAP[ax]["prop_iter"]
 
     # Set up a style for the plot
-    try: 
+    try:
         style_voiced = next(prop_iter)
     except StopIteration:
         prop_iter = iter(prop_cycle)
