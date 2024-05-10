@@ -18,6 +18,11 @@ from mir_eval.io import load_labeled_events
 from mir_eval.io import load_ragged_time_series
 from mir_eval.io import load_wav
 
+from packaging import version
+
+# Workaround to enable test skipping on older matplotlibs where we know it to be problematic
+MPL_VERSION = version.parse(matplotlib.__version__)
+OLD_MPL = not(MPL_VERSION >= version.parse("3.8.0"))
 
 STYLE = "default"
 
@@ -48,6 +53,7 @@ def test_display_segment():
     style=STYLE,
     tolerance=6,
 )
+@pytest.mark.xfail(OLD_MPL, reason=f"matplotlib version < {MPL_VERSION}", strict=False)
 def test_display_segment_text():
     plt.figure()
 
