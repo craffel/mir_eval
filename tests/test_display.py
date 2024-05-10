@@ -278,7 +278,7 @@ def test_display_multipitch_midi():
 @pytest.mark.mpl_image_compare(
     baseline_images=["test_display_piano_roll"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_display_pianoroll():
+def test_display_piano_roll():
     plt.figure()
 
     ref_t, ref_p = load_valued_intervals("data/transcription/ref04.txt")
@@ -296,7 +296,7 @@ def test_display_pianoroll():
 @pytest.mark.mpl_image_compare(
     baseline_images=["test_display_piano_roll_midi"], extensions=["png"], style=STYLE, tolerance=6
 )
-def test_display_pianoroll_midi():
+def test_display_piano_roll_midi():
     plt.figure()
 
     ref_t, ref_p = load_valued_intervals("data/transcription/ref04.txt")

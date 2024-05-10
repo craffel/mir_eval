@@ -7,6 +7,7 @@ from weakref import WeakKeyDictionary
 import numpy as np
 from scipy.signal import spectrogram
 
+import matplotlib as mpl
 from matplotlib.patches import Rectangle
 from matplotlib.ticker import FuncFormatter, MultipleLocator
 from matplotlib.ticker import Formatter
@@ -733,7 +734,7 @@ def piano_roll(intervals, pitches=None, midi=None, ax=None, **kwargs):
     # Minor tick at each semitone
     ax.yaxis.set_minor_locator(MultipleLocator(1))
 
-    ax.axis("auto")
+    #ax.axis("auto")
     return ax
 
 
@@ -746,6 +747,7 @@ def separation(
     rasterized=True,
     edgecolors="None",
     shading="gouraud",
+    prop_cycle=None,
     **kwargs
 ):
     """Source-separation visualization
@@ -771,6 +773,9 @@ def separation(
     shading : str
         The shading method to use for the spectrogram.
         See `matplotlib.pyplot.pcolormesh` for valid options.
+    prop_cycle : cycle.Cycler
+        An optional property cycle object to specify colors for each signal.
+        If not provided, the default property cycler will be retrieved from matplotlib.
     **kwargs
         Additional keyword arguments to ``scipy.signal.spectrogram``
 
@@ -809,17 +814,24 @@ def separation(
 
     color_conv = ColorConverter()
 
+    if prop_cycle is None:
+        __AXMAP[ax].setdefault("prop_cycle", iter(mpl.rcParams["axes.prop_cycle"]))
+        prop_cycle = __AXMAP[ax]["prop_cycle"]
+
+    prop_iter = iter(prop_cycle)
+
     for i, spec in enumerate(specs):
         # For each source, grab a new color from the cycler
         # Then construct a colormap that interpolates from
         # [transparent white -> new color]
-        #
-        # To access the cycler, we'll create a temporary bar plot,
-        # pull its facecolor, and then remove it from the axes.
-        _bar = ax.bar([times.min()], [freqs.min()], visible=False)
-        color = _bar.patches[0].get_facecolor()
-        _bar.remove()
-        color = color_conv.to_rgba(color, alpha=alpha)
+        # Advance the property iterator if we can, restart it if we must
+        try:
+            properties = next(prop_iter)
+        except StopIteration:
+            prop_iter = iter(prop_cycle)
+            properties = next(prop_iter)
+
+        color = color_conv.to_rgba(properties["color"], alpha=alpha)
         cmap = LinearSegmentedColormap.from_list(
             labels[i], [(1.0, 1.0, 1.0, 0.0), color]
         )
@@ -840,11 +852,6 @@ def separation(
         ax.add_patch(
             Rectangle((times.min(), freqs.min()), 0, 0, color=color, label=labels[i])
         )
-
-    if new_axes:
-        # Set the axis limits to match the spectrogram parameters
-        ax.set_xlim(times.min(), times.max())
-        ax.set_ylim(freqs.min(), freqs.max())
 
     return ax
 
