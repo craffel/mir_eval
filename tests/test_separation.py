@@ -119,8 +119,9 @@ def test_empty_input(metric):
         # And that the metric returns empty arrays
         assert np.allclose(metric(*args), np.array([]))
 
-        assert "reference_sources is empty" in str(record[0].message)
-        assert "estimated_sources is empty" in str(record[1].message)
+        # These warning counters are now offset by 1 because of the deprecation message
+        assert "reference_sources is empty" in str(record[1].message)
+        assert "estimated_sources is empty" in str(record[2].message)
 
 
 @pytest.mark.parametrize(
