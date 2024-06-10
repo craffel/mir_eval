@@ -5,6 +5,8 @@ such as preprocessing, validation, and common computations.
 
 import os
 import inspect
+import warnings
+from decorator import decorator
 
 import numpy as np
 
@@ -939,3 +941,22 @@ def midi_to_hz(midi):
         Frequency/frequencies in Hz corresponding to `midi`
     """
     return 440.0 * (2.0 ** ((midi - 69.0) / 12.0))
+
+
+def deprecated(*, version, version_removed):
+    """Mark a function as deprecated.
+
+    Using the decorated (old) function will result in a warning.
+    """
+
+    def __wrapper(func, *args, **kwargs):
+        """Warn the user, and then proceed."""
+        warnings.warn(
+            f"{func.__module__}.{func.__name__}\n\tDeprecated as of mir_eval version {version}."
+            f"\n\tIt will be removed in mir_eval version {version_removed}.",
+            category=FutureWarning,
+            stacklevel=3,  # Would be 2, but the decorator adds a level
+        )
+        return func(*args, **kwargs)
+
+    return decorator(__wrapper)
