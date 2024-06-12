@@ -29,6 +29,7 @@ file_sets = list(zip(ref_files, est_files, sco_files))
 # Skip separation tests since deprecation
 pytest.skip(allow_module_level=True)
 
+
 @pytest.fixture
 def separation_data(request):
     ref_f, est_f, sco_f = request.param
