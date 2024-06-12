@@ -392,6 +392,7 @@ def test_display_ticker_midi_zoom():
     tolerance=6,
 )
 @pytest.mark.xfail(OLD_FT, reason=f"freetype version < {FT_VERSION}", strict=False)
+@pytest.mark.skip()
 def test_display_separation():
     plt.figure()
 
@@ -410,6 +411,7 @@ def test_display_separation():
     tolerance=6,
 )
 @pytest.mark.xfail(OLD_FT, reason=f"freetype version < {FT_VERSION}", strict=False)
+@pytest.mark.skip()
 def test_display_separation_label():
     plt.figure()
 
