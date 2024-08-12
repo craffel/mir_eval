@@ -837,7 +837,7 @@ def _safe_db(num, den):
     be 0.
     """
     if den == 0:
-        return np.Inf
+        return np.inf
     return 10 * np.log10(num / den)
 
 
