@@ -12,7 +12,6 @@ from matplotlib.patches import Rectangle
 from matplotlib.ticker import FuncFormatter, MultipleLocator
 from matplotlib.ticker import Formatter
 from matplotlib.colors import LinearSegmentedColormap, LogNorm, ColorConverter
-from matplotlib.collections import PolyCollection as BrokenBarHCollection
 from matplotlib.transforms import Bbox, TransformedBbox
 
 from .melody import freq_to_voicing
