@@ -151,7 +151,7 @@ def test_display_labeled_intervals_compare_noextend():
         est_int, est_labels, extend_labels=False, alpha=0.5, label="Estimate"
     )
 
-    plt.legend()
+    plt.legend(loc='upper right')
     return plt.gcf()
 
 
@@ -178,7 +178,7 @@ def test_display_labeled_intervals_compare_common():
         est_int, est_labels, label_set=label_set, alpha=0.5, label="Estimate"
     )
 
-    plt.legend()
+    plt.legend(loc='upper right')
     return plt.gcf()
 
 
@@ -344,7 +344,7 @@ def test_display_piano_roll():
         est_t, est_p, label="Estimate", alpha=0.5, facecolor="r"
     )
 
-    plt.legend()
+    plt.legend(loc='upper right')
     return plt.gcf()
 
 
@@ -367,7 +367,7 @@ def test_display_piano_roll_midi():
         est_t, midi=est_midi, label="Estimate", alpha=0.5, facecolor="r"
     )
 
-    plt.legend()
+    plt.legend(loc='upper right')
     return plt.gcf()
 
 
