@@ -183,18 +183,15 @@ def segments(
         seg_map[lab].pop("label", None)
 
         if text:
-            bbox = Bbox.from_extents(ival[0], base, ival[1], height)
-            tbbox = TransformedBbox(bbox, transform)
             ann = ax.annotate(
                 lab,
                 xy=(ival[0], height),
                 xycoords=transform,
                 xytext=(8, -10),
                 textcoords="offset points",
-                clip_path=rect,
-                clip_box=tbbox,
                 **text_kw
             )
+            ann.set_clip_path(rect)
 
     return ax
 
