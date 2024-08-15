@@ -12,7 +12,6 @@ from matplotlib.patches import Rectangle
 from matplotlib.ticker import FuncFormatter, MultipleLocator
 from matplotlib.ticker import Formatter
 from matplotlib.colors import LinearSegmentedColormap, LogNorm, ColorConverter
-from matplotlib.collections import BrokenBarHCollection
 from matplotlib.transforms import Bbox, TransformedBbox
 
 from .melody import freq_to_voicing
@@ -184,18 +183,15 @@ def segments(
         seg_map[lab].pop("label", None)
 
         if text:
-            bbox = Bbox.from_extents(ival[0], base, ival[1], height)
-            tbbox = TransformedBbox(bbox, transform)
             ann = ax.annotate(
                 lab,
                 xy=(ival[0], height),
                 xycoords=transform,
                 xytext=(8, -10),
                 textcoords="offset points",
-                clip_path=rect,
-                clip_box=tbbox,
                 **text_kw
             )
+            ann.set_clip_path(rect)
 
     return ax
 
@@ -264,7 +260,7 @@ def labeled_intervals(
 
     **kwargs
         Additional keyword arguments to pass to
-        `matplotlib.collection.BrokenBarHCollection`.
+        `matplotlib.collection.PolyCollection`.
 
     Returns
     -------
