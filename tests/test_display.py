@@ -47,7 +47,7 @@ def test_display_segment():
     mir_eval.display.segments(intervals, labels, text=False)
 
     # Draw a legend
-    plt.legend(loc='upper right')
+    plt.legend(loc="upper right")
     return plt.gcf()
 
 
@@ -126,7 +126,7 @@ def test_display_labeled_intervals_compare():
     )
     mir_eval.display.labeled_intervals(est_int, est_labels, alpha=0.5, label="Estimate")
 
-    plt.legend(loc='upper right')
+    plt.legend(loc="upper right")
     return plt.gcf()
 
 
@@ -151,7 +151,7 @@ def test_display_labeled_intervals_compare_noextend():
         est_int, est_labels, extend_labels=False, alpha=0.5, label="Estimate"
     )
 
-    plt.legend(loc='upper right')
+    plt.legend(loc="upper right")
     return plt.gcf()
 
 
@@ -198,7 +198,7 @@ def test_display_hierarchy_nolabel():
     # Plot reference and estimate with a common label set
     mir_eval.display.hierarchy([int0, int1], [lab0, lab1])
 
-    plt.legend(loc='upper right')
+    plt.legend(loc="upper right")
     return plt.gcf()
 
 
@@ -218,7 +218,7 @@ def test_display_hierarchy_label():
     # Plot reference and estimate with a common label set
     mir_eval.display.hierarchy([int0, int1], [lab0, lab1], levels=["Large", "Small"])
 
-    plt.legend(loc='upper right')
+    plt.legend(loc="upper right")
     return plt.gcf()
 
 
@@ -238,7 +238,7 @@ def test_display_pitch_hz():
     # Plot pitches on a Hz scale
     mir_eval.display.pitch(ref_times, ref_freqs, unvoiced=True, label="Reference")
     mir_eval.display.pitch(est_times, est_freqs, unvoiced=True, label="Estimate")
-    plt.legend(loc='upper left')
+    plt.legend(loc="upper left")
     return plt.gcf()
 
 
@@ -323,7 +323,7 @@ def test_display_multipitch_midi():
     mir_eval.display.multipitch(ref_t, ref_p, midi=True, alpha=0.5, label="Reference")
     mir_eval.display.multipitch(est_t, est_p, midi=True, alpha=0.5, label="Estimate")
 
-    plt.legend(loc='upper left')
+    plt.legend(loc="upper left")
     return plt.gcf()
 
 
@@ -421,7 +421,7 @@ def test_display_separation_label():
 
     mir_eval.display.separation([x0, x1, x2], fs=fs, labels=["Alice", "Bob", "Carol"])
 
-    plt.legend(loc='upper right')
+    plt.legend(loc="upper right")
     return plt.gcf()
 
 
@@ -441,7 +441,7 @@ def test_display_events():
     # Plot both with labels
     mir_eval.display.events(beats_ref, label="reference")
     mir_eval.display.events(beats_est, label="estimate")
-    plt.legend(loc='upper right')
+    plt.legend(loc="upper right")
     return plt.gcf()
 
 
