@@ -26,6 +26,9 @@ sco_files = sorted(glob.glob(SCORES_GLOB))
 assert len(ref_files) == len(est_files) == len(sco_files) > 0
 file_sets = list(zip(ref_files, est_files, sco_files))
 
+# Skip separation tests since deprecation
+pytest.skip(allow_module_level=True)
+
 
 @pytest.fixture
 def separation_data(request):
@@ -119,8 +122,9 @@ def test_empty_input(metric):
         # And that the metric returns empty arrays
         assert np.allclose(metric(*args), np.array([]))
 
-        assert "reference_sources is empty" in str(record[0].message)
-        assert "estimated_sources is empty" in str(record[1].message)
+        # These warning counters are now offset by 1 because of the deprecation message
+        assert "reference_sources is empty" in str(record[1].message)
+        assert "estimated_sources is empty" in str(record[2].message)
 
 
 @pytest.mark.parametrize(

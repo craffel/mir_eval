@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+.. warning::
+    The mir_eval.separation module is deprecated in mir_eval version 0.8, and will be removed.
+    We recommend that you migrate your code to use an alternative package such as sigsep-museval
+    https://sigsep.github.io/sigsep-mus-eval/
+    
+
 Source separation algorithms attempt to extract recordings of individual
 sources from a recording of a mixture of sources.  Evaluation methods for
 source separation compare the extracted sources from reference sources and
@@ -141,6 +147,7 @@ def _any_source_silent(sources):
     )
 
 
+@util.deprecated(version="0.8", version_removed="0.9")
 def bss_eval_sources(reference_sources, estimated_sources, compute_permutation=True):
     """
     Ordering and measurement of the separation quality for estimated source
@@ -251,6 +258,7 @@ def bss_eval_sources(reference_sources, estimated_sources, compute_permutation=T
         return (sdr, sir, sar, popt)
 
 
+@util.deprecated(version="0.8", version_removed="0.9")
 def bss_eval_sources_framewise(
     reference_sources,
     estimated_sources,
@@ -362,6 +370,7 @@ def bss_eval_sources_framewise(
     return sdr, sir, sar, perm
 
 
+@util.deprecated(version="0.8", version_removed="0.9")
 def bss_eval_images(reference_sources, estimated_sources, compute_permutation=True):
     """Compute the bss_eval_images function from the
     BSS_EVAL Matlab toolbox.
@@ -496,6 +505,7 @@ def bss_eval_images(reference_sources, estimated_sources, compute_permutation=Tr
         return (sdr, isr, sir, sar, popt)
 
 
+@util.deprecated(version="0.8", version_removed="0.9")
 def bss_eval_images_framewise(
     reference_sources,
     estimated_sources,
@@ -841,6 +851,7 @@ def _safe_db(num, den):
     return 10 * np.log10(num / den)
 
 
+@util.deprecated(version="0.8", version_removed="0.9")
 def evaluate(reference_sources, estimated_sources, **kwargs):
     """Compute all metrics for the given reference and estimated signals.
 
