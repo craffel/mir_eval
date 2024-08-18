@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Source separation algorithms attempt to extract recordings of individual
 sources from a recording of a mixture of sources.  Evaluation methods for

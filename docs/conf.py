@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # mir_eval documentation build configuration file, created by
 # sphinx-quickstart on Thu May  8 15:55:45 2014.

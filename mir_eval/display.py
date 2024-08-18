@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 """Display functions"""
 
 from collections import defaultdict
