@@ -303,19 +303,19 @@ def quality_to_bitmap(quality):
 # TODO(ejhumphrey): Revisit how minmaj7's are mapped. This is how TMC did it,
 #   but MMV handles it like a separate quality (rather than an add7).
 EXTENDED_QUALITY_REDUX = {
-    "minmaj7": ("min", set(["7"])),
-    "maj9": ("maj7", set(["9"])),
-    "min9": ("min7", set(["9"])),
-    "9": ("7", set(["9"])),
-    "b9": ("7", set(["b9"])),
-    "#9": ("7", set(["#9"])),
-    "11": ("7", set(["9", "11"])),
-    "#11": ("7", set(["9", "#11"])),
-    "13": ("7", set(["9", "11", "13"])),
-    "b13": ("7", set(["9", "11", "b13"])),
-    "min11": ("min7", set(["9", "11"])),
-    "maj13": ("maj7", set(["9", "11", "13"])),
-    "min13": ("min7", set(["9", "11", "13"])),
+    "minmaj7": ("min", {"7"}),
+    "maj9": ("maj7", {"9"}),
+    "min9": ("min7", {"9"}),
+    "9": ("7", {"9"}),
+    "b9": ("7", {"b9"}),
+    "#9": ("7", {"#9"}),
+    "11": ("7", {"9", "11"}),
+    "#11": ("7", {"9", "#11"}),
+    "13": ("7", {"9", "11", "13"}),
+    "b13": ("7", {"9", "11", "b13"}),
+    "min11": ("min7", {"9", "11"}),
+    "maj13": ("maj7", {"9", "11", "13"}),
+    "min13": ("min7", {"9", "11", "13"}),
 }
 
 
