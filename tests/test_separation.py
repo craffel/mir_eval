@@ -30,7 +30,7 @@ file_sets = list(zip(ref_files, est_files, sco_files))
 @pytest.fixture
 def separation_data(request):
     ref_f, est_f, sco_f = request.param
-    with open(sco_f, "r") as f:
+    with open(sco_f) as f:
         expected_results = json.load(f)
         expected_sources = expected_results["Sources"]
         expected_frames = expected_results["Framewise"]
