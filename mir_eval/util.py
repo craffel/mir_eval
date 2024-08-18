@@ -466,7 +466,7 @@ def intersect_files(flist1, flist2):
         """
         return os.path.splitext(os.path.split(abs_path)[-1])[0]
 
-    fmap = dict([(fname(f), f) for f in flist1])
+    fmap = {fname(f): f for f in flist1}
     pairs = [list(), list()]
     for f in flist2:
         if fname(f) in fmap:
@@ -563,7 +563,7 @@ def _bipartite_match(graph):
         # layer
         preds = {}
         unmatched = []
-        pred = dict([(u, unmatched) for u in graph])
+        pred = {u: unmatched for u in graph}
         for v in matching:
             del pred[matching[v]]
         layer = list(pred)

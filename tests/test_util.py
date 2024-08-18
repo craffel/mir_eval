@@ -165,8 +165,8 @@ def test_bipartite_match():
     assert len(matching) == len(u_set)
 
     # Make sure that there are no duplicate keys
-    lhs = set([k for k in matching])
-    rhs = set([matching[k] for k in matching])
+    lhs = {k for k in matching}
+    rhs = {matching[k] for k in matching}
 
     assert len(matching) == len(lhs)
     assert len(matching) == len(rhs)

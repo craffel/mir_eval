@@ -117,7 +117,7 @@ class InvalidChordException(Exception):
         self.message = message
         self.chord_label = chord_label
         self.name = self.__class__.__name__
-        super(InvalidChordException, self).__init__(message)
+        super().__init__(message)
 
 
 # --- Chord Primitives ---
@@ -125,14 +125,14 @@ def _pitch_classes():
     r"""Map from pitch class (str) to semitone (int)."""
     pitch_classes = ["C", "D", "E", "F", "G", "A", "B"]
     semitones = [0, 2, 4, 5, 7, 9, 11]
-    return dict([(c, s) for c, s in zip(pitch_classes, semitones)])
+    return {c: s for c, s in zip(pitch_classes, semitones)}
 
 
 def _scale_degrees():
     r"""Map scale degrees (str) to semitones (int)."""
     degrees = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
     semitones = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21]
-    return dict([(d, s) for d, s in zip(degrees, semitones)])
+    return {d: s for d, s in zip(degrees, semitones)}
 
 
 # Maps pitch classes (strings) to semitone indexes (ints).
@@ -408,7 +408,7 @@ def split(chord_label, reduce_extended_chords=False):
         chord_label, scale_degrees = chord_label.split("(")
         omission = "*" in scale_degrees
         scale_degrees = scale_degrees.strip(")")
-        scale_degrees = set([i.strip() for i in scale_degrees.split(",")])
+        scale_degrees = {i.strip() for i in scale_degrees.split(",")}
 
     # Note: Chords lacking quality AND added interval information are major.
     #   If a quality shorthand is specified, it is returned.
