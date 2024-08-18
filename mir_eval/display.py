@@ -72,7 +72,7 @@ def segments(
     text_kw=None,
     ax=None,
     prop_cycle=None,
-    **kwargs
+    **kwargs,
 ):
     """Plot a segmentation as a set of disjoint rectangles.
 
@@ -188,7 +188,7 @@ def segments(
                 xycoords=transform,
                 xytext=(8, -10),
                 textcoords="offset points",
-                **text_kw
+                **text_kw,
             )
             ann.set_clip_path(rect)
 
@@ -205,7 +205,7 @@ def labeled_intervals(
     ax=None,
     tick=True,
     prop_cycle=None,
-    **kwargs
+    **kwargs,
 ):
     """Plot labeled intervals with each label on its own row.
 
@@ -434,7 +434,7 @@ def events(
     ax=None,
     text_kw=None,
     prop_cycle=None,
-    **kwargs
+    **kwargs,
 ):
     """Plot event times as a set of vertical lines
 
@@ -533,7 +533,7 @@ def events(
                 xycoords=transform,
                 xytext=(8, -10),
                 textcoords="offset points",
-                **text_kw
+                **text_kw,
             )
 
     if new_axes:
@@ -797,7 +797,7 @@ def piano_roll(intervals, pitches=None, midi=None, ax=None, **kwargs):
         label_set=scale,
         tick=False,
         ax=ax,
-        **kwargs
+        **kwargs,
     )
 
     # Minor tick at each semitone
@@ -816,7 +816,7 @@ def separation(
     edgecolors="None",
     shading="gouraud",
     prop_cycle=None,
-    **kwargs
+    **kwargs,
 ):
     """Source-separation visualization
 
