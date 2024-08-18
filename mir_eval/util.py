@@ -66,7 +66,7 @@ def generate_labels(items, prefix="__"):
         Synthetically generated labels
 
     """
-    return ["{}{}".format(prefix, n) for n in range(len(items))]
+    return [f"{prefix}{n}" for n in range(len(items))]
 
 
 def intervals_to_samples(intervals, labels, offset=0, sample_size=0.1, fill_value=None):

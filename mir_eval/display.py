@@ -859,7 +859,7 @@ def separation(
     sources = np.atleast_2d(sources)
 
     if labels is None:
-        labels = ["Source {:d}".format(_) for _ in range(len(sources))]
+        labels = [f"Source {_:d}" for _ in range(len(sources))]
 
     kwargs.setdefault("scaling", "spectrum")
 
@@ -947,8 +947,8 @@ def __ticker_midi_note(x, pos):
     octave = int(x / 12) - 1
 
     if cents == 0:
-        return "{:s}{:2d}".format(NOTES[idx], octave)
-    return "{:s}{:2d}{:+02d}".format(NOTES[idx], octave, int(cents * 100))
+        return f"{NOTES[idx]:s}{octave:2d}"
+    return f"{NOTES[idx]:s}{octave:2d}{int(cents * 100):+02d}"
 
 
 def __ticker_midi_hz(x, pos):
@@ -957,7 +957,7 @@ def __ticker_midi_hz(x, pos):
     Inputs x are interpreted as midi numbers, and converted
     to Hz.
     """
-    return "{:g}".format(midi_to_hz(x))
+    return f"{midi_to_hz(x):g}"
 
 
 def ticker_notes(ax=None):
