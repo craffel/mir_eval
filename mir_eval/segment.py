@@ -580,7 +580,7 @@ def _adjusted_rand_index(reference_indices, estimated_indices):
     )
 
     sum_comb = sum(
-        (scipy.special.comb(n_ij, 2, exact=1) for n_ij in contingency.flatten())
+        scipy.special.comb(n_ij, 2, exact=1) for n_ij in contingency.flatten()
     )
     prod_comb = (sum_comb_c * sum_comb_k) / float(scipy.special.comb(n_samples, 2))
     mean_comb = (sum_comb_k + sum_comb_c) / 2.0
